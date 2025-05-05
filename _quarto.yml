@@ -1,10 +1,11 @@
 project:
   type: book
-
+  output-dir: _book
+  
 book:
-  title: "2026-amz-thesis"
-  author: "Norah Jones"
-  date: "5/4/2025"
+  title: "The Eco-Social nexus of Amazon Deforestation"
+  author: "Fernando Cymbaluk"
+  date: today
   chapters:
     - index.qmd
     - intro.qmd
@@ -12,6 +13,7 @@ book:
     - references.qmd
 
 bibliography: references.bib
+csl: apa.csl
 
 format:
   html:
@@ -20,6 +22,8 @@ format:
       - brand
   pdf:
     documentclass: scrreprt
+  
+  docx: default
 
 editor: visual
 
