@@ -1,10 +1,27 @@
-# Preface {.unnumbered}
+# Dedicatory, epigraph, acknowledgments and abstract {.unnumbered}
 
-This is a Quarto book.
+\clearpage
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+\section*{Dedicatory}
 
-```{r}
-1 + 1
-```
+To those who inspired me and gave me strength to walk this path.
+
+\clearpage
+
+\section*{Acknowledgments}
+
+I am deeply grateful to my advisors, colleagues, and family for their unwavering support throughout this journey.
+
+\clearpage
+
+\section*{Abstract}
+
+This dissertation investigates the relationship between environmental degradation and social inequality in the Brazilian Amazon, using quantitative methods to explore municipal-level data on deforestation and vulnerability.
+
+\clearpage
+
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{Table of Contents}
+\tableofcontents
+\clearpage
 

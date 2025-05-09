@@ -8,22 +8,34 @@ book:
   date: today
   chapters:
     - index.qmd
-    - intro.qmd
-    - summary.qmd
+    - i-list-of-figures.qmd
+    - ii-list-of-tables.qmd
+    - iii-list-of-abbreviations.qmd
+    - 0-intro.qmd
+    - 1st-chapter-theoretical-framework.qmd
+    - 2nd-chapter-context-amazon.qmd
+    - 3rd-chapter-methodological-approach.qmd
+    - 4th-chapter-causal-inference.qmd
+    - 5th-chapter-process-tracing.qmd
+    - 6th-chapter-conclusion.qmd
     - references.qmd
-
+  appendices:
+    - s-appendix-codebook.qmd
+    - t-appendix-scripts.qmd
+    - u-appendix-data-description.qmd
+    - v-appendix-full-tables.qmd
+    - w-appendix-case-study-materials.qmd
+    - x-appendix-prisma-flowchart.qmd
+        
 bibliography: references.bib
 csl: apa.csl
 
 format:
-  html:
-    theme:
-      - cosmo
-      - brand
   pdf:
+    pdf-engine: pdflatex
     documentclass: scrreprt
-  
-  docx: default
+    toc: false
+    number-sections: true
+    colorlinks: false
 
-editor: visual
-
+editor: source
