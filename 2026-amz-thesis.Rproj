@@ -1,5 +1,4 @@
 Version: 1.0
-ProjectId: 4f5e9781-69f5-4482-8f50-83c47ff0f4f7
 
 RestoreWorkspace: Default
 SaveWorkspace: Default
@@ -12,3 +11,5 @@ Encoding: UTF-8
 
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
+
+ZoteroLibraries: "My Library"
