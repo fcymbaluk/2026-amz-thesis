@@ -3,3 +3,804 @@ title: "Dataset description"
 ---
 
 not the raw data itself, but how it was built
+
+# Dataset building
+
+## 1. Environmental data
+
+### 1.1. Deforestation
+
+#### 1.1.1. Understand the data
+
+The deforestation data used in this study comes from the **MapBiomas Project**, a Brazilian initiative that provides annual land use and land cover data for the entire national territory. The data is derived from Landsat satellite imagery with 30-meter resolution, processed pixel by pixel to produce consistent information across all Brazilian biomes.
+
+I use the *Deforestation and Secondary Vegetation Database*, *version 9*, which covers the period from 1985 to 2023 (last updated in August 2024, available at <https://brasil.mapbiomas.org/estatisticas/>).
+
+The database provides the area (in hectares) of primary and secondary total vegetation and vegetation supression per year for Brazilian municipalities. Land use is categorized into six classes and organized across four levels of detail. For this research, I filter the data based on four land use classes:
+
+i.  *Primary Vegetation:* Indicates absence of deforestation event, i.e., permanence since the base year in one or more classes of Natural Vegetation
+
+ii. *Secondary Vegetation:* Indicates trajectory with the presence of a recovery for secondary vegetation event in previous years.
+
+iii. *Primary Vegetation Suppression:* Indicates a deforestation event occurring in year $t$, in a pixel previously classified as *Primary Vegetation*. In the following year $(t+1)$, the pixel is reclassified as *Anthropic Use*.
+
+iv. *Secondary Vegetation Suppression:* Indicates a deforestation event in year $t$, in a pixel previously classified as *Secondary Vegetation*, which is reclassified as *Anthropic Use* in year $t+1$.
+
+Regarding the levels of land use detail (e.g., forest formation, savana formation, floodable forest, and grassland formation as secondary levels for Forest), I use only *Level 1*, the most general level, as my objective is to analyze overall patterns of deforestation.
+
+#### 1.1.2. Import and inspect the data
+
+I download the data of *Deforestation and Secondary Vegetation* from the *Statistics* section of the Mapbiomas website. I inspect the data to ensure that the import function correctly interpret the decimal separator and recognize numbers as numeric or double values.
+
+The raw dataset contains 51 columns, including *country, state, municipality name, municipal geocode,* and the *transition category* (transition_name). It also includes four columns representing *land-use* categories and 38 columns corresponding to individual *years*, each containing the value of deforestation for that municipality and land-use category.
+
+With the initial inspection, I also discover that the values for *Primary Vegetation Suppression* for the years of 1985 and 1986 are all zero, which justifies the exclusion of those years from the dataset.
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+library(readr)
+library(writexl)
+library(ggplot2)
+
+data_deforestation_raw <- read_xlsx("_data/raw-environ-mapbiomas.xlsx", sheet = 2)
+
+data_deforestation_raw %>%
+  filter(transition_name == "Supressão Veg. Primária") %>%
+  summarise(all_zero = all(`1985` == 0)) #I repeated this check for the years 1985, 1986 and 2023
+
+data_deforestation_raw %>%
+  filter(transition_name == "Supressão Veg. Primária") %>%
+  summarise(non_zero_count_1985 = sum(`1985` != 0), 
+            non_zero_count_1986 = sum(`1986` != 0),
+            non_zero_count_1987 = sum(`1987` != 0),
+            non_zero_count_2023 = sum(`2023` != 0))
+```
+
+#### 1.1.3. Clean and transform the data
+
+I select relevant columns: *state*, *municipality*, *geocode*, *transition name*, and *area* in hectares for each year from 1987 to 2023, filter for Amazon states and the specific transitions that I am interested in (primary and secondary vegetation and their respective suppression), recode transition names, and reshape the data to a tidy format. I convert the *year* values to integers to enable numeric operations, and the *geocode* values to characters to prevent them from being treated as numbers. Finally, I check if all the *geocode* are correctly registered with seven digits.
+
+```{r}
+data_deforestation_clean <- data_deforestation_raw %>%
+  select(
+    state, municipality, geocode, transition_name, `1987`:`2023`
+  ) %>% 
+  filter(
+    state %in% c("Acre", "Amapá", "Amazonas", "Maranhão", "Mato Grosso", "Pará", "Rondônia", "Roraima", "Tocantins"),
+    transition_name %in%  c("Supressão Veg. Primária", "Supressão Veg. Secundária", "Veg. Primária", "Veg. Secundária")
+  ) %>%
+  mutate(
+    transition_name = recode(
+      transition_name,
+      "Supressão Veg. Primária" = "loss_of_primary_vegetation",
+      "Supressão Veg. Secundária" = "loss_of_secondary_vegetation",
+      "Veg. Primária" = "primary_vegetation",
+      "Veg. Secundária" = "secondary_vegetation"),
+    geocode = as.character(geocode)
+  ) %>%
+  pivot_longer(
+    cols = `1987`:`2023`,
+    names_to = "year",
+    values_to = "area_ha",
+    names_transform = list(year = as.integer)
+  )
+
+data_deforestation_clean %>%
+  filter(nchar(geocode) == 7) %>% 
+  count()
+```
+
+As my interest is in the total forest loss (the sum of primary and secondary vegetation loss), I create the new column *vegetation_category* where I categorize the vegetation variables only as *forest* (sum of primary and secondary vegetation) and *deforestation* (sum of loss of primary and secondary vegetation). I summarize the total area in hectares for each vegetation category by municipality, and reshape the data to a wide format.
+
+```{r}
+data_deforestation_tidy <- data_deforestation_clean %>%
+  mutate(
+    vegetation_category = case_when(
+      transition_name %in% c("primary_vegetation", "secondary_vegetation") ~ "forest",
+      transition_name %in% c("loss_of_primary_vegetation", "loss_of_secondary_vegetation") ~ "deforestation",
+      TRUE ~ NA_character_
+    )
+  ) %>%  
+  filter(!is.na(vegetation_category)) %>%
+  group_by(
+    state, municipality, geocode, year, vegetation_category
+  ) %>%
+  summarise(
+    total_area_ha = sum(area_ha, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>% 
+  pivot_wider(
+    id_cols = c(state, municipality, geocode, year),
+    names_from = vegetation_category,
+    values_from = total_area_ha,
+    values_fill = 0,
+    names_prefix = "area_"
+  )
+```
+
+#### 1.1.4. Check and validate the data
+
+I assess the dataset for missingness and find none. I also analyze the dataset for outliers using summary statistics and graphs. The data is skewed to the right, as expected, since the dataset currently includes municipalities across all Amazon states, including many with very low deforestation rates. I checked for duplicates and found none, indicating that the data is clean and that each record is unique.
+
+Finally, I cross-validate the dataset values against the online dashboard data available on the Mapbiomas website (`https://brasil.mapbiomas.org/` hit the "Maps and Data" button, then "Access the Platform", and "Mapbiomas Land Cover and Use platform"; select "Deforestment" in the left menu). The intention here is to evaluate whether the downloaded data is consistent with what is released online by Mapbiomas and whether I have correctly managed the transformations. I randomly selected municipalities to compare their values with those shown on the MapBiomas platform. As my dataset summarize the values for primary and secondary vegetation, I manually calculated the same sums using the values available on the platform. The validation confirms that the values in my dataset align with those available on the MapBiomas platform.
+
+#### 1.1.5. Correct and standardize units
+
+I perform two standardization transformations to smooth the cross-sectional variation in deforestation arising from heterogeneity in municipality size.
+
+First, I calculate the deforestation rate as the percentage of deforested area relative to the total forest area for each municipality-year observation. This enables a proportional comparison of deforestation intensity across units with varying forest sizes.
+
+The measure can be expressed mathematically as:
+
+$$
+\text{DefRate}_{it} = \frac{\text{DefArea}_{it}}{\text{ForestArea}_{it}} \times 100
+$$
+
+where $DefArea_{it}$ is the deforested area in municipality $i$ at time $t$, and $ForestArea_{it}$ is the total forest area of municipality $i$ in the same year.
+
+Second, I compute the z-scores for deforestation areas within each municipality, standardizing values by subtracting the municipal mean and dividing by the municipal standard deviation. Z-scores indicate how far each value deviates from the municipality’s average in standard deviation units. Positive values represent above-average deforestation, while negative values indicate below-average levels.
+
+The measure can be expressed mathematically as:
+
+$$
+Z_{it} = \frac{D_{it} - \mu_i}{\sigma_i}
+$$
+
+where $D_{it}$ is the deforestation area in municipality $i$ at time $t$, $\mu_i$ is the mean deforestation area of municipality $i$, and $\sigma_i$ is the corresponding standard deviation.
+
+```{r}
+data_deforestation_standardized <- data_deforestation_tidy %>%
+  mutate(
+    rate_deforestation = if_else(
+      area_forest > 0,
+      (area_deforestation / area_forest) * 100,
+      NA_real_
+    )
+  ) %>%
+  group_by(geocode) %>%
+  mutate(
+    mean_deforestation = mean(area_deforestation, na.rm = TRUE),
+    sd_deforestation = sd(area_deforestation, na.rm = TRUE),
+    z_deforestation = (area_deforestation - mean_deforestation) / sd_deforestation
+  ) %>%
+  ungroup()
+```
+
+## 1.2. Biome
+
+#### 1.2.1. Understand the data
+
+The data source used to determine which municipalities are included in the dataset is the Predominant Biome by Municipality for Statistical Purposes list (**Bioma Predominante por Município para Fins Estatísticos**), released by the Brazilian Institute of Geography and Statistics (IBGE) in June 2024 (avaiable at <https://www.ibge.gov.br/geociencias/cartas-e-mapas/informacoes-ambientais/15842-biomas.html?=&t=downloads>).
+
+This list identifies the predominant biome in each Brazilian municipality, providing a standardized criterion for aggregating municipal data by biome. Municipalities located in more than one biome are classified according to the biome that covers the largest proportion of their territorial area.
+
+In this study, I use the Amazon biome as a filter to select the municipalities to be analyzed. According to the IBGE classification, the Amazon is the predominant biome in 503 Brazilian municipalities.
+
+#### 1.2.1. Import and inspect the data
+
+I import and inspect the data to check the number of municipalities registered with "Amazônia" as the predominant biome, and correctly find 503 entries.
+
+```{r}
+data_biome_raw <- read_csv2("_data/raw-environ-ibge-biome.csv", locale = locale(encoding = "UTF-8"))
+
+unique(data_biome_raw$`Bioma predominante`)
+
+data_biome_raw %>%
+  count(`Bioma predominante`) %>%
+  arrange(desc(n))
+```
+
+#### 1.2.3. Clean and tidy the data
+
+I rename the columns and selected the ones of interest.
+
+```{r}
+data_biome_tidy <- data_biome_raw %>%
+  rename (
+    geocode = `Geocódigo`,
+    municipality = `Nome do município`,
+    state = `Sigla da UF`,
+    biome = `Bioma predominante`
+  ) %>%
+  mutate(geocode = as.character(geocode))
+
+data_biome_tidy %>%
+  filter(biome == "Amazônia") %>%
+  distinct(geocode) %>%
+  count()
+```
+
+#### 1.2.4. Join Deforestation and Biome datasets
+
+I join the biome data with the deforestation dataset using the geocode to match them. I use the *municipality* column to check if is there mismatch between the municipality information in both datasets, find only one related to a typo in the spelling of a municipality name and keep the column with the correct name. I tidy and clean the final dataset and filter by the *biome* of my interest, the Amazon biome.
+
+```{r}
+data_deforestation_with_biome <- data_deforestation_standardized %>%
+  left_join(data_biome_tidy, by = "geocode")
+
+mismatch_check <- data_deforestation_with_biome %>%
+  filter(municipality.x != municipality.y)
+
+view(mismatch_check)
+
+data_deforestation_final <- data_deforestation_with_biome %>%
+  rename(
+    municipality = municipality.x,
+    state = state.x,
+    state_abbreviation = state.y,
+  ) %>%
+  select(-municipality.y) %>% 
+  select(
+    geocode, 
+    municipality, 
+    state,
+    state_abbreviation, 
+    biome, 
+    year, 
+    area_forest, 
+    area_deforestation, 
+    rate_deforestation, 
+    z_deforestation,
+    mean_deforestation,
+    sd_deforestation
+  ) %>%
+  filter(biome == "Amazônia")
+```
+
+I count the number of unique geocodes and municipalities, which was supposed to be 503, as per the IBGE classification. I correctly find 503 unique geocodes, but only 499 municipalites. It is because some municipalities in different states can share the same name.
+
+```{r}
+data_deforestation_final %>%
+  distinct(geocode) %>%
+  count()
+
+data_deforestation_final %>%
+  distinct(municipality) %>%
+  count()
+
+
+```
+
+The municipalities with the same name are:
+
+| \#  | geocode | municipality      | state |
+|-----|---------|-------------------|-------|
+| 1   | 2100873 | Araguanã          | MA    |
+| 2   | 1702158 | Araguanã          | TO    |
+| 3   | 1505551 | Pau D'Arco        | PA    |
+| 4   | 1716307 | Pau D'Arco        | TO    |
+| 5   | 2109239 | Presidente Médici | MA    |
+| 6   | 1100254 | Presidente Médici | RO    |
+| 7   | 1200401 | Rio Branco        | AC    |
+| 8   | 5107206 | Rio Branco        | MT    |
+
+## 2. Social data
+
+### 2.1. Employment
+
+#### 2.1.1. Understand the data
+
+The employment data used in this study comes from the **Relação Anual de Informações Sociais (RAIS)**, an administrative dataset maintained by the Brazilian Ministry of Labor and Employment. RAIS compiles annual information reported by all formal-sector employers in Brazil, covering private firms, public agencies, and third-sector organizations. The dataset includes detailed records of each employment bond, such as the worker’s occupation, income, education level, sex, age, and location of employment. Because reporting to RAIS is mandatory, it provides near-complete coverage of formal employment relationships (vínculos) in the country.
+
+The dataset spans 1985–2024 and is divided into two main components:
+
+*Estabelecimentos*, containing establishment-level information, and *Vínculos*, containing individual employment-bond microdata.
+
+This study utilizes the microdados *Vínculos*, where each row corresponds to a unique employment bond in a given year. Variables describe the characteristics of the worker (e.g., education, sex, age), the job (e.g., wages, occupation), and the establishment. The data are anonymized.
+
+Due to its depth and temporal coverage, RAIS enables consistent measurement of formal employment trends at fine geographic scales, including municipalities within the Brazilian Amazon.
+
+#### 2.1.2. Import and inspect the data
+
+The RAIS microdata contain more than 2 billion rows, 350 GB, making local processing difficult. All data manipulation was therefore conducted using **Google BigQuery**, a distributed cloud data warehouse that enables scalable SQL processing and avoids local storage constraints.
+
+The data were accessed through **Base dos Dados (BD)**, a non-profit open-data infrastructure that republishes harmonized versions of major Brazilian administrative datasets @dahis2022. BD performs several preprocessing procedures to guarantee temporal consistency and standardization across years, including:
+
+-   Converting municipality identifiers to the official 7-digit IBGE geocode;
+
+-   Standardizing state identifiers to UF acronyms;
+
+-   Harmonizing classification systems (CNAE, CBO, establishment types) across regulatory changes;
+
+-   Replacing invalid or placeholder values (e.g., “9999”, “000”) with nulls.
+
+The dataset used corresponds to the BigQuery table *basedosdados.br_me_rais.microdados_vinculos*, with the latest update as of 2025-08-26 (accessed November 14, 2025). The dataset could be acessed through the BD website (<https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00?table=dabe5ea8-3bb5-4a3e-9d5a-3c7003cd4a60>) and directly in the Google BigQuerry storage (<https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sbasedosdados!2sbr_me_rais!3smicrodados_vinculos>). The BD cleaning scripts are publicly available in the associated GitHub repository (<https://github.com/rdahis/clean_RAIS>).
+
+Before proceeding to filtering and transformation, an initial inspection of the dataset was performed to check schema consistency, variable types, missingness patterns, and key descriptive distributions (e.g., number of vínculos by year, UF, and sector). It was possible to build some visualizations and graphs directly in Google BigQuery, using the Looker Studio. This confirmed the integrity of the BD harmonized structure.
+
+#### 2.1.3. Filter and transform the data
+
+This study constructs annual municipal indicators of formal employment for the Legal Amazon region from the RAIS Vínculos microdata. All steps described below were implemented through SQL queries in BigQuery, following a transparent, reproducible workflow. For clarity, the data transformation process is organized into six components:
+
+##### 2.1.3.1. Spatial filtering
+
+Municipality (*id_municipio* column in the original dataset): the variable *id_municipio*, already standardized to the 7-digit IBGE format by BD, was used as the primary geographic identifier.
+
+State selection (*sigla_uf* column in the original dataset): only municipalities located in the Legal Amazon were included (AC, AM, AP, MA, MT, PA, RO, RR, TO).
+
+##### 2.1.3.2. Temporal filtering
+
+To maintain consistency in key variables, the analysis uses data from 1999 to 2024 (*ano* column in the original dataset). Earlier years were excluded because they present limitations in occupational coding (CBO).
+
+##### 2.1.3.3. Employment-status filtering
+
+The variable identifies whether the work bond was active on December 31 of each year. Only bonds with *vinculo_ativo_3112* $= 1$ (meaning ‘active’) were retained to avoid duplicates and produce consistency.
+
+##### 2.1.3.4. Occupational categories
+
+RAIS uses the Brazilian Classification of Occupations/Classificação Brasileira de Ocupações (CBO) to code worker occupations. Over the study period, two versions of CBO were used, corresponding to the classification system used until 2002 (*cbo_1994*) and the one used thereafter (*cbo_2002*). To harmonize them:
+
+i.  When available, the 6-digit *cbo_2002* code was used directly.
+
+ii. When only 5-digit *cbo_1994* was available, the code was converted to a 6-digit format by appending a trailing zero.
+
+iii. The first number of both codes are related to mayor's group of the CBO. The category “Agricultural, Forestry, and Fishing Worker” has the code 6. To simplify analysis and produce a consistent agricultural–non-agricultural divide across the study period, a binary occupational variable was created:
+
+-   Agricultural workers (1): occupations whose unified CBO code begins with “6”
+-   Non-agricultural workers (0): all other occupations
+
+##### 2.1.3.5. Deflation, and wage groups
+
+The variable *valor_remuneracao_media* provides the worker’s annual average wage. Only positive, non-null wage values were kept. To allow temporal comparability, all wage values were **deflated to 2024** Brazilian reais using the **IPCA** national consumer price index (IBGE).
+
+Formally, the deflator for each year $t$ is defined as:
+
+$$
+Deflator(t) = \frac{IPCA(2024)}{IPCA(t)}
+$$
+
+The deflator table (constructed separately using a simple spreadsheet tool) was merged with RAIS data. Deflated wages were then calculated as:
+
+$$
+Wage^{2024}_{it} = Wage_{it} \times Deflator(t)
+$$
+
+Data on the IPCA historic series can be found in the IBGE website: https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=downloads (accessed November 14, 2025).
+
+The deflator table constructed and merged with RAIS data in BigQuerry can be accessed at the following link:
+
+Deflated wages were categorized into six groups using the 2024 minimum wage (R\$ 1,412.00) as the reference:
+
+1.  Up to 1 minimum wage
+
+2.  From 1 to 2 minimum wages
+
+3.  From 2 to 3 minimum wages
+
+4.  From 3 to 4 minimum wages
+
+5.  From 4 to 5 minimum wages
+
+6.  More than 5 minimum wages
+
+These categories capture the wage distribution at the base of the income pyramid and facilitate the interpretation of a phenomenon that I want to observe, which is the policy of increasing the minimum wage over the last 25 years.
+
+##### 2.1.3.6. Aggregation
+
+A final SQL query aggregated the processed microdata into municipal-year indicators by:
+
+-   year,
+-   municipality (geocode),
+-   occupational group (agricultural vs. non-agricultural),
+-   wage group, and
+-   total number of formal workers in each subgroup.
+
+Two SQL queries were executed in Google BigQuery to conduct all filtering, harmonization, deflation, and aggregation procedures. For transparency and reproducibility, both scripts are documented below.
+
+The **first query** filters the raw data, harmonizes occupation categories, and applies the wage deflation procedure:
+
+```{sql connection=}
+
+SELECT
+  r.ano,
+  r.sigla_uf,
+  r.id_municipio,
+  CASE
+  WHEN r.cbo_2002 IS NOT NULL THEN CAST(r.cbo_2002 AS STRING)
+  WHEN r.cbo_1994 IS NOT NULL THEN CONCAT(CAST(r.cbo_1994 AS STRING), '0')
+  ELSE NULL
+END AS cbo_unified,
+  r.vinculo_ativo_3112,
+  r.valor_remuneracao_media,
+  d.ipca_deflator,
+  SAFE_MULTIPLY(r.valor_remuneracao_media, d.ipca_deflator) AS valor_remuneracao_media_2024
+FROM
+  `basedosdados.br_me_rais.microdados_vinculos` AS r
+LEFT JOIN
+  `amz-data-dissertation.social_employment_1.deflator_ipca_2024` AS d
+ON
+  r.ano = d.year
+WHERE
+  r.sigla_uf IN ('AC', 'AM', 'AP', 'MA', 'MT', 'PA', 'RO', 'RR', 'TO')
+  AND r.vinculo_ativo_3112 = '1'
+  AND r.valor_remuneracao_media IS NOT NULL
+  AND r.valor_remuneracao_media > 0;
+```
+
+After running this script, I saved the resulting table in my personal Google BigQuery project. This intermediate table served as the basis for the next transformation step.
+
+The **second query** constructs the wage-range categories and generates the agricultural versus non-agricultural sector dummy variable:
+
+```{sql connection=}
+
+SELECT
+  ano AS year,
+  id_municipio AS geocode,
+  CASE
+    WHEN LEFT(LPAD(cbo_unified, 6, '0'), 1) = '6' THEN 1
+    ELSE 0
+  END AS workers_agricultural,
+CASE
+  WHEN valor_remuneracao_media_2024 <= 1.00 * 1412.00 THEN 1
+  WHEN valor_remuneracao_media_2024 > 1.00 * 1412.00 AND valor_remuneracao_media_2024 <= 2.00 * 1412.00 THEN 2
+  WHEN valor_remuneracao_media_2024 > 2.00 * 1412.00 AND valor_remuneracao_media_2024 <= 3.00 * 1412.00 THEN 3
+  WHEN valor_remuneracao_media_2024 > 3.00 * 1412.00 AND valor_remuneracao_media_2024 <= 4.00 * 1412.00 THEN 4
+  WHEN valor_remuneracao_media_2024 > 4.00 * 1412.00 AND valor_remuneracao_media_2024 <= 5.00 * 1412.00 THEN 5
+  ELSE 6
+END AS wage_code,
+  COUNT(*) AS workers_total
+FROM
+  `amz-data-dissertation.social_employment_1.rais_vinculos_deflat`
+GROUP BY
+  year,
+  geocode,
+  workers_agricultural,
+  wage_code
+ORDER BY
+  year,
+  geocode,
+  workers_agricultural,
+  wage_code;
+```
+
+Once executed, I saved this final processed table in my Google BigQuery project and subsequently exported it to my Google Cloud Storage environment. From there, I downloaded the dataset as a CSV file for use in the R data-analysis workflow.
+
+### 2.2. Active Age Population (PIA)
+
+#### 2.2.1. Understanding the data
+
+Municipal population data for persons aged 14 years or older were obtained from the Brazilian Institute of Geography and Statistics (IBGE) Census for the years 2000, 2010, and 2022. These data correspond to the **Population in Active Age** **- População em Idade Ativa (PIA) in Portuguese** -, the number of individuals within each municipality who are old enough to be considered part of the potential labor force. This variable is fundamental for estimating labor-market indicators, such as the Economically Active Population - População Economicamente Ativa (PEA) -, when combined with employment and unemployment data.
+
+#### 2.2.2. Import, and inspect the data
+
+The data was obtained from the IBGE’s Sidra website. (<https://sidra.ibge.gov.br/pesquisa/censo-demografico/demografico-2022/amostra-nupcialidade-e-familia>)
+
+#### 2.2.3. Clean and transform the data
+
+Because the census data were available exclusively for 2000, 2010, and 2022, to construct a complete annual series for the entire study period, it was necessary to interpolate and extrapolate population values for all intermediate and adjacent years. I applied simple linear interpolation for the years between census observations and linear extrapolation for the years before and after census observations.
+
+To do the interpolation, I used the `zoo` package to estimate the annual change between known census points, producing a smooth annual trajectory for each municipality from 2000 to 2022, as the equation shows:
+
+$$
+PIA_{it}
+=
+PIA_{i,t_1}
++
+\frac{PIA_{i,t_2}-PIA_{i,t_1}}{t_2 - t_1}
+\,(t - t_1),
+$$
+
+where $(t_1)$ and $(t_2)$ are the bounding census years (2000–2010 or 2010–2022).
+
+For the years 1999, 2023 and 2024, I computed the extraploation trends manually. The value for 1999 was obtained by backward linear extrapolation:
+
+$$
+PIA_{i,1999}
+=
+PIA_{i,2000}
+-
+\frac{PIA_{i,2010} - PIA_{i,2000}}{10}.
+$$
+
+Future years were estimated by forward linear extrapolation based on the most recent census slope:
+
+$$
+PIA_{i,t}
+=
+PIA_{i,2022}
++
+\frac{PIA_{i,2022} - PIA_{i,2010}}{12}
+\,(t - 2022),
+\qquad t \in \{2023, 2024\}.
+$$
+
+The code below shows all the interpolation and extrapolation transformations:
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(zoo)  
+
+population_pia <- population_pia %>%
+  arrange(id, year) %>%
+  group_by(id, state) %>%
+  complete(year = 2000:2022)
+
+population_pia <- population_pia %>%
+  group_by(id, state) %>%
+  mutate(total_interp = zoo::na.approx(total, x = year, na.rm = FALSE))
+
+population_pia <- population_pia %>%
+  arrange(id, year) %>%
+  group_by(id, state) %>%
+  complete(year = 1999:2024)
+
+population_pia  <- population_pia %>%
+  group_by(id, state) %>%
+  mutate(
+    first_year        = min(year[!is.na(total_interp)]),
+    second_year       = sort(year[!is.na(total_interp)])[2],
+    last_year         = max(year[!is.na(total_interp)]),
+    second_last_year  = sort(year[!is.na(total_interp)], decreasing = TRUE)[2],
+    
+    first_val         = total_interp[year == first_year][1],
+    second_val        = total_interp[year == second_year][1],
+    last_val          = total_interp[year == last_year][1],
+    second_last_val   = total_interp[year == second_last_year][1],
+    
+    slope_start = (second_val      - first_val)      / (second_year      - first_year),
+    slope_end   = (last_val        - second_last_val)/ (last_year        - second_last_year),
+    
+    Total_full = dplyr::case_when(
+      year < first_year ~ first_val + slope_start * (year - first_year),
+      year > last_year  ~ last_val  + slope_end   * (year - last_year),
+      TRUE              ~ total_interp
+    )
+  ) %>%
+  ungroup() %>%
+  select(state, id, year, total_interp = Total_full)
+
+
+population_pia <- population_pia %>%
+  mutate(total = total_interp) %>%
+  select(-total_interp)
+```
+
+### 2.3. Labor and Wage Indicators
+
+#### 2.3.1. Understanding the data
+
+I combined the RAIS and PIA datasets to analyze labor-market composition and wage structure at the municipality–year level. The two datasets were merged using year and geocode as keys, producing a unified panel in which all employment variables could be normalized by the population in active age (PIA). Normalizing employment by PIA allows for meaningful comparisons across municipalities with different population sizes and demographic structures.
+
+To construct the labor indicators, I used RAIS data on the total number of formal workers per municipality, the wage categories extract from RAIS (six groups defined relative to the 2024 minimum wage), and the dummy variable identifying agricultural occupations. For parsimony and analytical clarity, the six wage categories were aggregated into three broader groups (low, middle, and high wage).
+
+All employment indicators were then computed as ratios between the relevant worker counts and the corresponding PIA value for each municipality-year. These normalized measures form the basis for analyzing the scale and composition of local labor markets across the Amazon region.
+
+#### 2.3.2. Tidy and transform the data
+
+First, I aggregated the RAIS data by municipality, year, and wage code, summing the number of total workers and the number of agricultural workers. This step allowed me to eliminate the agricultural dummy variable and work directly with counts of agricultural and total employment within each wage category:
+
+```{r}
+totals <- data_employment_rais %>%
+  group_by(year, geocode, wage_code) %>%
+  summarise(
+    workers_total = sum(workers_total, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+totals_agricultural <- data_employment_rais %>%
+  filter(workers_agricultural == 1) %>%     
+  group_by(year, geocode, wage_code) %>%
+  summarise(
+    workers_agric = sum(workers_total, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+data_employment_rais_totals <- totals %>%
+  left_join(totals_agricultural, by = c("year", "geocode", "wage_code")) %>%
+  replace_na(list(workers_agric = 0L))
+```
+
+The wage ranges provided by RAIS were collapsed into three broader, substantive wage groups:
+
+-   Low wage: less then 1 minimum wage
+
+-   Middle wage: from 1 to 4 minimum wage
+
+-   High wage: more then 4 minimum wage
+
+This procedure reduces dimensionality while preserving substantive meaning, facilitating merging with other municipal-year datasets. I also constructed agricultural wage-range indicators, with the same wage-range grouping applied only to agricultural workers:
+
+```{r}
+rais_wage_groups <- data_employment_rais_totals %>%
+  mutate(
+    wage_group = case_when(
+      wage_code %in% 1 ~ "low",
+      wage_code %in% 2:4 ~ "mid",
+      wage_code %in% 5:6 ~ "high"
+    )
+  ) %>%
+  group_by(year, geocode, wage_group) %>%
+  summarise(
+    workers_group = sum(workers_total, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+data_employment_rais_wage_wide <- rais_wage_groups  %>%
+  tidyr::pivot_wider(
+    names_from = wage_group,
+    values_from = workers_group,
+    names_prefix = "workers_"
+  ) %>%
+  replace_na(list(
+    workers_low = 0L,
+    workers_mid = 0L,
+    workers_high = 0L
+  ))
+
+rais_wage_groups_agri <- data_employment_rais_totals %>%
+  mutate(
+    wage_group = case_when(
+      wage_code %in% 1 ~ "low",
+      wage_code %in% 2:4 ~ "mid",
+      wage_code %in% 5:6 ~ "high"
+    )
+  ) %>%
+  group_by(year, geocode, wage_group) %>%
+  summarise(
+    workers_group = sum(workers_agric, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+data_employment_rais_wage_wide_agri <- rais_wage_groups_agri  %>%
+  tidyr::pivot_wider(
+    names_from = wage_group,
+    values_from = workers_group,
+    names_prefix = "workers_agri_"
+  ) %>%
+  replace_na(list(
+    workers_low = 0L,
+    workers_mid = 0L,
+    workers_high = 0L
+  ))
+```
+
+#### 2.3.3. Correct and standardize units
+
+Using the ratio between the number of employees and the population in active age, I constructed two types of indicators. The first set consists of **employment rates** by municipality, year, and wage group, calculated separately for all occupations and for agricultural occupations. The second set consists of **labor-market composition indicators**, which measure the proportion of workers in each wage group within a municipality-year, again distinguishing between all occupations and agricultural occupations.
+
+##### 2.3.3.1. Employment Rates (Intensity Indicators)
+
+The employment intensity indicators normalize the number of formal workers from RAIS by the Population in Active Age (PIA). The indicator represent the density of formal jobs per active-age resident. The general form is:
+
+$$
+\text{EmploymentRate}_{it} = 
+\frac{\text{Workers}_{it}}{PIA_{it}},
+$$
+
+where $(i)$ indexes municipalities and $(t)$ indexes years. I construct these intensity indicator for the following wage-groups:
+
+-   Total and wage-group employment intensities:
+
+    -   total employment rate (*emp_rate_total*)
+
+    -   low wage employment rate (*emp_rate_low*)
+
+    -   medium wage employment rate (*emp_rate_mid*)
+
+    -   high wage employment rate (*emp_rate_high*)
+
+-   Total agricultural and agricultural wage-group employment intensities:
+
+    -   agricultural employment rate (*emp_rate_agric*)
+
+    -   low wage agricultural employment rate (*emp_rate_agri_low*)
+
+    -   medium wage agricultural employment rate (*emp_rate_agri_mid*)
+
+    -   high wage agricultural employment rate (*emp_rate_agri_high*)
+
+##### 2.3.3.2. Labor-Market Composition (Share Indicators)
+
+Labor-market composition indicators express the proportion of workers in each wage group relative to total formal employment. These shares were calculated using a simple ratio:
+
+$$
+\text{Share_low_wage}_{it}
+=
+\frac{\text{Workers_low_wage}_{it}}{\text{Workers_total}_{it}},
+$$
+
+$$
+\text{Share_mid_wage}_{it}
+=
+\frac{\text{Workers_mid_wage}_{it}}{\text{Workers_total}_{it}},
+$$
+
+$$
+\text{Share_high_wage}_{it}
+=
+\frac{\text{Workers_high_wage}_{it}}{\text{Workers_total}_{it}}.
+$$
+
+The share of agricultural employment in total formal employment, as well as the distribution of wage groups within agricultural employment, were computed as follows:
+
+$$
+\text{Share_workers_agriculture}_{it}
+=
+\frac{\text{Workers_agricultural}_{it}}{\text{Workers_total}_{it}}.
+$$
+
+$$
+\text{Share_low_wage_agricultural}_{it}
+=
+\frac{\text{Workers_low_wage_agricultural}_{it}}{\text{Workers_agricultural}_{it}},
+$$
+
+$$
+\text{Share_mid_wage_agricultural}_{it}
+=
+\frac{\text{Workers_mid_wage_agricultural}_{it}}{\text{Workers_agricultural}_{it}},
+$$
+
+$$
+\text{Share_high_wage_agricultural}_{it}
+=
+\frac{\text{Workers_high_wage_agricultural}_{it}}{\text{Workers_agricultural}_{it}}.
+$$
+
+Below, the code used to the computations:
+
+```{r}
+data_employment_rais_tidy <- data_employment_rais_totals %>%
+  group_by(year, geocode) %>%
+  summarise(
+    workers_total = sum(workers_total, na.rm = TRUE),
+    workers_agric = sum(workers_agric, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+data_employment_rais_full <- data_employment_rais_tidy %>%
+  left_join(data_employment_rais_wage_wide,
+            by = c("year", "geocode")) %>%
+  left_join(data_employment_rais_wage_wide_agri,
+            by = c("year", "geocode"))
+
+data_employment_rais_full <- data_employment_rais_full %>%
+  relocate(
+    workers_low,
+    workers_mid,
+    workers_high,
+    workers_agri_low,
+    workers_agri_mid,
+    workers_agri_high,
+    .after = workers_agric
+  )
+
+data_population_pia %>% 
+  filter(is.na(pia_total)) %>% 
+  print(n=30)
+
+data_population_pia <- data_population_pia %>%
+  mutate(geocode = as.integer(id)) %>%
+  select(geocode, year, pia_total = total)
+
+data_labor_with_pia <- data_employment_rais_full %>%
+  left_join(data_population_pia, by = c("year", "geocode"))
+
+data_labor_with_pia <- data_labor_with_pia %>%
+  mutate(
+    emp_rate_total      = workers_total / pia_total,
+    emp_rate_agric      = workers_agric / pia_total,
+    emp_rate_low        = workers_low / pia_total,
+    emp_rate_mid        = workers_mid / pia_total,
+    emp_rate_high       = workers_high / pia_total,
+    emp_rate_agri_low   = workers_agri_low / pia_total,
+    emp_rate_agri_mid   = workers_agri_mid / pia_total,
+    emp_rate_agri_high  = workers_agri_high / pia_total,
+      )
+
+data_labor_with_pia <- data_labor_with_pia %>%
+  mutate(
+    share_low_workers   = workers_low  / workers_total,
+    share_mid_workers   = workers_mid  / workers_total,
+    share_high_workers  = workers_high / workers_total,
+    share_agri_low_workers  = workers_agri_low  / workers_agric,
+    share_agri_mid_workers  = workers_agri_mid  / workers_agric,
+    share_agri_high_workers = workers_agri_high / workers_agric,
+    share_agri_workers  = workers_agric / workers_total
+  )
+```
+
+**Observation:** The municipality of Mojuí dos Campos (PA) — geocode 1504752 — contains missing values for all years except 2022. This occurs because Mojuí dos Campos was formerly a district of Santarém (PA) and became an independent municipality only in 2013. The missing observations were retained at this stage and will be addressed later during the construction of the complete dataset.

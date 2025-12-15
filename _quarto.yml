@@ -34,8 +34,14 @@ format:
   pdf:
     pdf-engine: pdflatex
     documentclass: scrreprt
+    mainfont: "Times New Roman"
     toc: false
     number-sections: true
-    colorlinks: false
+    colorlinks: true
+    link-citations: true
+    linkcolor: black
+    urlcolor: black
+    citecolor: blue
+    filecolor: black
 
 editor: source

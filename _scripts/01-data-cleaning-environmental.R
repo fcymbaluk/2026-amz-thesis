@@ -1,9 +1,4 @@
-# Download data and set up the dataset
 
-# Clean space
-rm(list = ls(all = TRUE))
-
-# Load packages
 library(tidyverse)
 library(magrittr)
 library(readxl)
@@ -11,44 +6,50 @@ library(readr)
 library(writexl)
 library(ggplot2)
 
-#' *Environmental data: Deforestation:* 
+rm(list = ls(all = TRUE))
 
-#' *1. Understand the data:* The deforestation data used in this study comes from the 
-#' *MapBiomas Project*, a Brazilian initiative that provides annual land use 
-#' and land cover data for the entire national territory. The data is derived 
-#' from Landsat satellite imagery with 30-meter resolution, processed pixel by 
-#' pixel to produce consistent information across all Brazilian biomes.
+getwd()
 
-#' I use the *Deforestation and Secondary Vegetation Database*, version 9, which 
-#' covers the period from 1985 to 2023 (last updated in August 2024, available at 
+#' *1.Environmental data*: 
+#' 
+#' *1.1.Deforestation:* 
+#'
+#' *1.1.1. Understand the data:* The deforestation data used in this study comes from the
+#' *MapBiomas Project*, a Brazilian initiative that provides annual land use
+# and land cover data for the entire national territory. The data is derived
+# from Landsat satellite imagery with 30-meter resolution, processed pixel by
+# pixel to produce consistent information across all Brazilian biomes.
+#'
+#' I use the *Deforestation and Secondary Vegetation Database*, version 9, which
+#' covers the period from 1985 to 2023 (last updated in August 2024, available at
 #' https://brasil.mapbiomas.org/estatisticas/).
-
-#' The database provides the area (in hectares) of primary and secondary total 
-#' vegetation and vegetation supression suppression per year for Brazilian 
-#' municipalities. Land use is categorized into six classes and organized across 
-#' four levels of detail. For this research, I filter the data based on four 
+#'
+#' The database provides the area (in hectares) of primary and secondary total
+#' vegetation and vegetation supression per year for Brazilian
+#' municipalities. Land use is categorized into six classes and organized across
+#' four levels of detail. For this research, I filter the data based on four
 #' land use classes:
-
-#'   i. *Primary Vegetation:* Indicates absence of deforestation event, i.e., permanence 
-#'   since the base year in one or more classes of Natural Vegetation 
- 
-#'   ii. *Secondary Vegetation:* Indicates trajectory with the presence of a recovery 
+#'
+#'   i. *Primary Vegetation:* Indicates absence of deforestation event, i.e., permanence
+#'   since the base year in one or more classes of Natural Vegetation
+#'
+#'   ii. *Secondary Vegetation:* Indicates trajectory with the presence of a recovery
 #'   for secondary vegetation event in previous years.
-
-#'   iii. *Primary Vegetation Suppression:* Indicates a deforestation event occurring 
-#'   in year *t*, in a pixel previously classified as *Primary Vegetation*. In the 
+#'
+#'   iii. *Primary Vegetation Suppression:* Indicates a deforestation event occurring
+#'   in year *t*, in a pixel previously classified as *Primary Vegetation*. In the
 #'   following year (*t+1*), the pixel is reclassified as *Anthropic Use*.
-
-#'   iv. *Secondary Vegetation Suppression:* Indicates a deforestation event in 
-#'   year *t*, in a pixel previously classified as *Secondary Vegetation*, which is 
+#'
+#'   iv. *Secondary Vegetation Suppression:* Indicates a deforestation event in
+#'   year *t*, in a pixel previously classified as *Secondary Vegetation*, which is
 #'   reclassified as *Anthropic Use* in year *t+1*.
-
-#' Regarding the levels of land use detail (e.g., forest formation, savana formation, 
-#' floodable forest, and grassland formation as secondary levels for Forest), I use 
-#' only *Level 1*, the most general level, as my objective is to analyze overall 
+#'
+#' Regarding the levels of land use detail (e.g., forest formation, savana formation,
+#' floodable forest, and grassland formation as secondary levels for Forest), I use
+#' only *Level 1*, the most general level, as my objective is to analyze overall
 #' patterns of deforestation.
-
-#' *2. Import and inspect the data:* I download the data of "Deforestation and
+#'
+#' *1.1.2. Import and inspect the data:* I download the data of "Deforestation and
 #' Secondary Vegetation" from the "Statistics" section of the Mapbiomas website.
 #' I inspect the data to ensure that the import function correctly interpret the decimal
 #' separator and recognize numbers as numeric or double values. With the initial
@@ -56,7 +57,7 @@ library(ggplot2)
 #' for the years of 1985 and 1986 are all zero, which justifies the exclusion of
 #' those years from the dataset.
 
-data_deforestation_raw <- read_xlsx("_data/raw-environ-mapbiomas.xlsx")
+data_deforestation_raw <- read_xlsx("_data/raw-environ-mapbiomas-deforestation-municipalities.xlsx", sheet = 2)
 
 glimpse(data_deforestation_raw)
 
@@ -71,8 +72,8 @@ data_deforestation_raw %>%
             non_zero_count_1987 = sum(`1987` != 0),
             non_zero_count_2023 = sum(`2023` != 0))
 
-#' *3. Clean and transform the data:* 
-
+#' *1.1.3. Clean and transform the data:* 
+#
 #' *3.a. Recode and tyde:* I select relevant columns: state, municipality, geocode, 
 #' transition name, and area in hectares for each year from 1987 to 2023, filter 
 #' for Amazon states and the specific transitions that I am interested in (primary 
@@ -145,12 +146,18 @@ data_deforestation_tidy <- data_deforestation_clean %>%
 
 glimpse(data_deforestation_tidy)
 
-#' *3.b. Quantify missingness and detect ouliers:* I assess the missingness in the 
-#' dataset and find no NAs.
-
+#' *3.b. Quantify missingness and detect outliers:* I assess the missingness in the 
+#' dataset and find no NAs. I also checked the values for Mojuí dos Campos (PA) — geocode 1504752 — 
+#' a former district of Santarém (PA) that became an independent municipality only in 2013. The 
+#' dataset contains the data for that municipality for all the years, which is correct.
+ 
 sum(is.na(data_deforestation_tidy))
 
-#' *3.c. Detect ouliers:* To evaluate record errors, I also analyze the dataset 
+data_deforestation_tidy %>%
+  filter(geocode == 1504752) %>% 
+  print(n = 40)
+
+#' *3.c. Detect outliers:* To evaluate record errors, I also analyze the dataset 
 #' for outliers using summary statistics and graphs. The data is skewed to the right, 
 #' which is expected, as the dataset currently contains data for municipalities 
 #' across all Amazon states, including many municipalities with very low deforestation 
@@ -180,7 +187,7 @@ data_deforestation_tidy %>%
   filter(duplicated(.)) %>%
   nrow()
 
-#' *5. Validate Against External Sources:* I cross-validate the dataset values 
+#' *3.e. Validate Against External Sources:* I cross-validate the dataset values 
 #' against the online dashboard data available on the Mapbiomas website 
 #' (https://brasil.mapbiomas.org/ hit the "Maps and Data" button, then "Access the 
 #' Platform", and "Mapbiomas Land Cover and Use platform"; select "Deforestment" 
@@ -228,7 +235,10 @@ ggplot(data_deforestation_tidy, aes(x = year, y = area_deforestation)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 
-#'*6. Correct and standardize units:* I perform two standardization transformations 
+
+#####CHANGE VARIABLES NAMES
+
+#'*1.1.4. Correct and standardize units:* I perform two standardization transformations 
 #'to smooth the cross-sectional variation in deforestation arising from heterogeneity 
 #'in municipality size. First, I calculate the deforestation rate as the percentage 
 #'of deforested area relative to the total forest area for each municipality-year 
@@ -242,7 +252,7 @@ ggplot(data_deforestation_tidy, aes(x = year, y = area_deforestation)) +
 
 data_deforestation_standardized <- data_deforestation_tidy %>%
   mutate(
-    rate_deforestation = if_else(
+    deforestation_rate = if_else(
       area_forest > 0,
       (area_deforestation / area_forest) * 100,
       NA_real_
@@ -250,9 +260,9 @@ data_deforestation_standardized <- data_deforestation_tidy %>%
   ) %>%
   group_by(geocode) %>%
   mutate(
-    mean_deforestation = mean(area_deforestation, na.rm = TRUE),
-    sd_deforestation = sd(area_deforestation, na.rm = TRUE),
-    z_deforestation = (area_deforestation - mean_deforestation) / sd_deforestation
+    deforestation_mean = mean(area_deforestation, na.rm = TRUE),
+    deforestation_sd = sd(area_deforestation, na.rm = TRUE),
+    deforestation_z = (area_deforestation - deforestation_mean) / deforestation_sd
   ) %>%
   ungroup()
 
@@ -260,7 +270,7 @@ glimpse(data_deforestation_standardized)
 
 print(data_deforestation_standardized, n = 100)
 
-#' *7. Save the data:* I save the cleaned and standardized dataset in CSV, RDS, 
+#' *1.1.5. Save the data:* I save the cleaned and standardized dataset in CSV, RDS, 
 #' and Excel formats for future use.
 
 write_csv(
@@ -273,28 +283,28 @@ write_rds(
   file = ("_data/data_deforestation_standardized.rds")
 )
 
-#' *Environmental data: Biome:* 
+#' *1.2.Biome:* 
 
-#' *1. Understand the data:* The data source used to determine which municipalities 
+#' *1.2.1. Understand the data:* The data source used to determine which municipalities 
 #' are included in the dataset is the Predominant Biome by Municipality for Statistical 
 #' Purposes list (*Bioma Predominante por Município para Fins Estatísticos*), released 
 #' by the Brazilian Institute of Geography and Statistics (IBGE) in June 2024 (avaiable at 
 #' https://www.ibge.gov.br/geociencias/cartas-e-mapas/informacoes-ambientais/15842-biomas.html?=&t=downloads)
-
+#
 #' This list identifies the predominant biome in each Brazilian municipality, 
 #' providing a standardized criterion for aggregating municipal data by biome.
 #' Municipalities located in more than one biome are classified according to the 
 #' biome that covers the largest proportion of their territorial area. 
-
+#
 #' In this study, I use the Amazon biome as a filter to select the municipalities 
 #' to be analyzed. According to the IBGE classification, the Amazon is the 
 #' predominant biome in 503 Brazilian municipalities.
-
-#' *2. Import and inspect the data:* I import and inspect the data to check the 
+#
+#' *1.2.2. Import and inspect the data:* I import and inspect the data to check the 
 #' number of municipalities registered with "Amazônia" as the predominant biome,
 #' and correctly find 503 entries. 
 
-data_biome_raw <- read_csv2("_data/raw-environ-ibge-biome.csv", locale = locale(encoding = "UTF-8"))
+data_biome_raw <- read_xlsx("_data/raw-environ-ibge-biome.xlsx")
 
 glimpse(data_biome_raw)
 
@@ -304,7 +314,7 @@ data_biome_raw %>%
   count(`Bioma predominante`) %>%
   arrange(desc(n))
 
-#' *3. Clean and tidy the data:* I rename the columns and selected the ones of 
+#' *1.2.3. Clean and tidy the data:* I rename the columns and selected the ones of 
 #' interest.
 
 colnames(data_biome_raw)
@@ -325,7 +335,7 @@ data_biome_tidy %>%
   distinct(geocode) %>%
   count()
 
-#' *Join Deforestation and Biome datasets:* I join the biome data with the deforestation 
+#' *1.2.4. Join Deforestation and Biome datasets:* I join the biome data with the deforestation 
 #' dataset using the geocode to match them. I use the `municipality` column to 
 #' check if is there mismatch between the municipality information in both datasets, 
 #' find only one related to a typo in the spelling of a municipality name and keep 
@@ -360,10 +370,10 @@ data_deforestation_final <- data_deforestation_with_biome %>%
     year, 
     area_forest, 
     area_deforestation, 
-    rate_deforestation, 
-    z_deforestation,
-    mean_deforestation,
-    sd_deforestation
+    deforestation_rate, 
+    deforestation_z,
+    deforestation_mean,
+    deforestation_sd
   ) %>%
   filter(biome == "Amazônia")
 
@@ -375,7 +385,7 @@ unique(data_deforestation_final$biome)
 #' be 503, as per the IBGE classification. I correctly find 503 unique geocodes, 
 #' but only 499 municipalites. It is because some municipalities in different states 
 #' can share the same name. The municipalities with the same name are:
-
+#
 #   geocode municipality      state_abbreviation
 # 1 2100873 Araguanã          MA                
 # 2 1702158 Araguanã          TO                
@@ -406,7 +416,7 @@ data_deforestation_final_municipality %>%
   filter(municipality %in% data_deforestation_final_duplicated_names) %>%
   arrange(municipality)
 
-#' *7. Save the data:* I save the final dataset in both Excel, CSV and RDS formats for future use.
+#' *1.2.6. Save the data:* I save the final dataset in both Excel, CSV and RDS formats for future use.
 
 write_csv(
   data_deforestation_final,
@@ -423,101 +433,3 @@ write_xlsx(
   "_data/outcome_deforestation.xlsx")
 
 
-
-
-#' *Social data:*
-#' 
-#' *- Inequality Idex (modified):* To measure inequality 
-#' 
-#' 
-#' 
-#' Includes 
-#' information on the overall social
-#' progress score, as well as scores for specific components such sanitation, health,
-#' and education. The data is available for 2014, 2018, 2021, and 2023.
-#' 
-							
-
-
-#' SidraR
-# 
-# library(sidrar)
-# library(tidyverse)
-# 
-# data_social_water_1_raw <- get_sidra(api = "/t/6804/n6/all/v/1000381/p/all/c301/allxt/c1817/72125/d/v1000381%202")
-# 
-# str(data_social_water)
-# head(data_social_water)
-# unique(data_social_water$`Principal forma de abastecimento de água`)
-# 
-# data_social_water_2_classified <- data_social_water %>%
-#   select(
-#     value = Valor,
-#     municipipality_id = `Município (Código)`,
-#     municipality_name = Município,
-#     water_supply_type = `Principal forma de abastecimento de água`
-#   ) %>% 
-#   mutate(
-#     water_supply_classification = case_when(
-#     water_supply_type == "Rede geral de distribuição" |
-#     water_supply_type == "Poço profundo ou artesiano" ~ "adequate_water_supply_2022",
-#     TRUE ~ "inadequate_water_supply_2022"
-#     )
-#   ) %>% 
-#   group_by(municipality_id, municipality_name, water_supply_classification) %>%
-#   summarise(
-#     total_value = sum(value, na.rm = TRUE),
-#     .groups = 'drop'
-#   ) %>% 
-#   filter(water_supply_classification == "inadequate_water_supply_2022")
-# 
-# print(data_social_water_2_classified)
-# 
-# data_social_water_3_inadequate_supply <- data_social_water_2_classified %>%
-#   select(municipipality_id, municipality_name, inadequate_water_supply_2022_value = total_value)
-# 
-# print(data_social_water_3_inadequate_supply)
-# 
-
-
-
-#' Social data:
-#' - Imigration:
-#' 
-#' - Employment (unemployment, informality, :
-#' 
-#' - Household income (per capita income, before and after taxes):
-#' 
-#' - Inequality (Gini, poverty rate, 20 percentile):
-#' 
-#' - The Social Progress Index (IPS) is a composite index that measures social
-#' progress in Brazilian municipalities. Includes information on the overall social
-#' progress score, as well as scores for specific components such sanitation, health,
-#' and education. The data is available for 2014, 2018, 2021, and 2023.
-#' 
-#' - Social transfers (Bolsa Família, Bolsa Verde):
-#' 
-#' - Welfare policies (health, education, social assistance)
-
-# source('http://cemin.wikidot.com/local--files/raisr/rais.r')
-
-# Others:
-
-#' - PIB-Munic: The Brazilian Institute of Geography and Statistics (IBGE) provides
-#' data of Brazilian municipalities on the Gross Domestic Product (GDP) at current
-#' prices, taxes, net of subsidies on products, gross value added, total and by economic
-#' activity, and respective shares. Data is available from 2002 to 2018.
-#' 
-#' - PAM: The Municipal Agricultural Production (PAM) is an annual survey conducted
-#' by IBGE which provides on the production of crops in Brazilian municipalities.
-#' Output is only included in the dataset if the planted area occupies over 1 acre.
-#' The data available has a yearly frequency and is available from 1974 to the present.
-#' 
-#' - PPM: The Municipal Livestock Production (PPM) is an annual survey conducted by
-#' IBGE which provides data on the production of livestock in Brazilian municipalities,
-#' such inventories (e.g:cattle, pigs and hogs) and production (e.g: milk, eggs, honey).
-#' The data available has a yearly frequency and is available from 1974 to the present.
-#' 
-#' - SIGMINE: The National Mining Agency (ANM) provides data on mining legally activities
-#' in Brazilian municipalities. The data includes information on location, status,
-#' product being mined and area in square meters etc
