@@ -17,3 +17,4 @@ _data/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+**/*.quarto_ipynb

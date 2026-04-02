@@ -1,8 +1,7 @@
 ---
 title: "Dataset description"
+bibliography: references.bib
 ---
-
-not the raw data itself, but how it was built
 
 # Dataset building
 
@@ -18,15 +17,15 @@ I use the *Deforestation and Secondary Vegetation Database*, *version 9*, which 
 
 The database provides the area (in hectares) of primary and secondary total vegetation and vegetation supression per year for Brazilian municipalities. Land use is categorized into six classes and organized across four levels of detail. For this research, I filter the data based on four land use classes:
 
-i.  *Primary Vegetation:* Indicates absence of deforestation event, i.e., permanence since the base year in one or more classes of Natural Vegetation
+i.  *Primary Vegetation:* Indicates absence of deforestation event, i.e., permanence since the base year in one or more classes of natural vegetation
 
-ii. *Secondary Vegetation:* Indicates trajectory with the presence of a recovery for secondary vegetation event in previous years.
+ii. *Secondary Vegetation:* Indicates trajectory with the presence of a recovery for deforestation event in previous years.
 
 iii. *Primary Vegetation Suppression:* Indicates a deforestation event occurring in year $t$, in a pixel previously classified as *Primary Vegetation*. In the following year $(t+1)$, the pixel is reclassified as *Anthropic Use*.
 
 iv. *Secondary Vegetation Suppression:* Indicates a deforestation event in year $t$, in a pixel previously classified as *Secondary Vegetation*, which is reclassified as *Anthropic Use* in year $t+1$.
 
-Regarding the levels of land use detail (e.g., forest formation, savana formation, floodable forest, and grassland formation as secondary levels for Forest), I use only *Level 1*, the most general level, as my objective is to analyze overall patterns of deforestation.
+Regarding the levels of land use detail (e.g., forest formation, savana formation, floodable forest, and grassland formationt), I use only *Level 1*, the most general level, as my objective is to analyze overall patterns of deforestation.
 
 #### 1.1.2. Import and inspect the data
 
@@ -44,11 +43,13 @@ library(readr)
 library(writexl)
 library(ggplot2)
 
-data_deforestation_raw <- read_xlsx("_data/raw-environ-mapbiomas.xlsx", sheet = 2)
+data_deforestation_raw <- read_xlsx("_data/raw-environ-mapbiomas-deforestation-municipalities.xlsx", sheet = 2)
 
 data_deforestation_raw %>%
   filter(transition_name == "Supressão Veg. Primária") %>%
-  summarise(all_zero = all(`1985` == 0)) #I repeated this check for the years 1985, 1986 and 2023
+  summarise(all_zero = all(`1985` == 0)) 
+
+# I repeated this check for the years 1986, 1987, and 2023
 
 data_deforestation_raw %>%
   filter(transition_name == "Supressão Veg. Primária") %>%
@@ -172,7 +173,7 @@ data_deforestation_standardized <- data_deforestation_tidy %>%
 
 #### 1.2.1. Understand the data
 
-The data source used to determine which municipalities are included in the dataset is the Predominant Biome by Municipality for Statistical Purposes list (**Bioma Predominante por Município para Fins Estatísticos**), released by the Brazilian Institute of Geography and Statistics (IBGE) in June 2024 (avaiable at <https://www.ibge.gov.br/geociencias/cartas-e-mapas/informacoes-ambientais/15842-biomas.html?=&t=downloads>).
+I use the Predominant Biome by Municipality for Statistical Purposes list (**Bioma Predominante por Município para Fins Estatísticos**) to determine which municipalities I should include in the dataset. The data on biome by municipalities was released by the Brazilian Institute of Geography and Statistics (IBGE) in June 2024 (avaiable at <https://www.ibge.gov.br/geociencias/cartas-e-mapas/informacoes-ambientais/15842-biomas.html?=&t=downloads>).
 
 This list identifies the predominant biome in each Brazilian municipality, providing a standardized criterion for aggregating municipal data by biome. Municipalities located in more than one biome are classified according to the biome that covers the largest proportion of their territorial area.
 
@@ -249,7 +250,7 @@ data_deforestation_final <- data_deforestation_with_biome %>%
   filter(biome == "Amazônia")
 ```
 
-I count the number of unique geocodes and municipalities, which was supposed to be 503, as per the IBGE classification. I correctly find 503 unique geocodes, but only 499 municipalites. It is because some municipalities in different states can share the same name.
+I count the number of unique geocodes and municipalities, which was supposed to be 503, as the IBGE classification. I correctly find 503 unique geocodes, but only 499 municipalites. My inspection pointed out that this is because some municipalities in different states can share the same name.
 
 ```{r}
 data_deforestation_final %>%
@@ -259,8 +260,6 @@ data_deforestation_final %>%
 data_deforestation_final %>%
   distinct(municipality) %>%
   count()
-
-
 ```
 
 The municipalities with the same name are:
@@ -282,7 +281,7 @@ The municipalities with the same name are:
 
 #### 2.1.1. Understand the data
 
-The employment data used in this study comes from the **Relação Anual de Informações Sociais (RAIS)**, an administrative dataset maintained by the Brazilian Ministry of Labor and Employment. RAIS compiles annual information reported by all formal-sector employers in Brazil, covering private firms, public agencies, and third-sector organizations. The dataset includes detailed records of each employment bond, such as the worker’s occupation, income, education level, sex, age, and location of employment. Because reporting to RAIS is mandatory, it provides near-complete coverage of formal employment relationships (vínculos) in the country.
+The employment data used in this study comes from the **Relação Anual de Informações Sociais (RAIS)**, an administrative dataset maintained by the Brazilian Ministry of Labor and Employment. RAIS compiles annual information reported by all formal-sector employers in Brazil, covering private firms, public agencies, and third-sector organizations. The dataset includes detailed records of each employment bond, such as the worker’s occupation, income, education level, sex, age, and location of employment. Because reporting to RAIS is mandatory, it provides near-complete coverage of formal employment relationships in the country.
 
 The dataset spans 1985–2024 and is divided into two main components:
 
@@ -294,7 +293,7 @@ Due to its depth and temporal coverage, RAIS enables consistent measurement of f
 
 #### 2.1.2. Import and inspect the data
 
-The RAIS microdata contain more than 2 billion rows, 350 GB, making local processing difficult. All data manipulation was therefore conducted using **Google BigQuery**, a distributed cloud data warehouse that enables scalable SQL processing and avoids local storage constraints.
+The RAIS microdata contain more than 2 billion rows, 350 GB, making local processing difficult. Therefore, I conduct all data manipulation using **Google BigQuery**, a distributed cloud data warehouse that enables scalable SQL processing and avoids local storage constraints.
 
 The data were accessed through **Base dos Dados (BD)**, a non-profit open-data infrastructure that republishes harmonized versions of major Brazilian administrative datasets @dahis2022. BD performs several preprocessing procedures to guarantee temporal consistency and standardization across years, including:
 
@@ -306,13 +305,13 @@ The data were accessed through **Base dos Dados (BD)**, a non-profit open-data i
 
 -   Replacing invalid or placeholder values (e.g., “9999”, “000”) with nulls.
 
-The dataset used corresponds to the BigQuery table *basedosdados.br_me_rais.microdados_vinculos*, with the latest update as of 2025-08-26 (accessed November 14, 2025). The dataset could be acessed through the BD website (<https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00?table=dabe5ea8-3bb5-4a3e-9d5a-3c7003cd4a60>) and directly in the Google BigQuerry storage (<https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sbasedosdados!2sbr_me_rais!3smicrodados_vinculos>). The BD cleaning scripts are publicly available in the associated GitHub repository (<https://github.com/rdahis/clean_RAIS>).
+The dataset I use corresponds to the BigQuery table *basedosdados.br_me_rais.microdados_vinculos*, with the latest update as of 2025-08-26 (accessed November 14, 2025). The dataset could be acessed through the BD website (<https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00?table=dabe5ea8-3bb5-4a3e-9d5a-3c7003cd4a60>) and directly in the Google BigQuerry storage (<https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sbasedosdados!2sbr_me_rais!3smicrodados_vinculos>). The BD cleaning scripts are publicly available in the associated GitHub repository (<https://github.com/rdahis/clean_RAIS>).
 
-Before proceeding to filtering and transformation, an initial inspection of the dataset was performed to check schema consistency, variable types, missingness patterns, and key descriptive distributions (e.g., number of vínculos by year, UF, and sector). It was possible to build some visualizations and graphs directly in Google BigQuery, using the Looker Studio. This confirmed the integrity of the BD harmonized structure.
+Before proceeding to filtering and transformation, I performed an initial inspection of the dataset to check schema consistency, variable types, missingness patterns, and key descriptive distributions (e.g., number of vínculos by year, UF, and sector). It was possible to build some visualizations and graphs directly in Google BigQuery, using the Looker Studio. This confirmed the integrity of the BD harmonized structure.
 
 #### 2.1.3. Filter and transform the data
 
-This study constructs annual municipal indicators of formal employment for the Legal Amazon region from the RAIS Vínculos microdata. All steps described below were implemented through SQL queries in BigQuery, following a transparent, reproducible workflow. For clarity, the data transformation process is organized into six components:
+I construct annual municipal indicators of formal employment for the Legal Amazon region from the RAIS *Vínculos* microdata. All steps described below were implemented through SQL queries in BigQuery, following a transparent, reproducible workflow. For clarity, the data transformation process is organized into six components:
 
 ##### 2.1.3.1. Spatial filtering
 
@@ -322,7 +321,7 @@ State selection (*sigla_uf* column in the original dataset): only municipalities
 
 ##### 2.1.3.2. Temporal filtering
 
-To maintain consistency in key variables, the analysis uses data from 1999 to 2024 (*ano* column in the original dataset). Earlier years were excluded because they present limitations in occupational coding (CBO).
+To maintain consistency in key variables, only data from 1999 to 2024 (*ano* column in the original dataset) are used. Earlier years were excluded because they present limitations in occupational coding (CBO).
 
 ##### 2.1.3.3. Employment-status filtering
 
@@ -330,18 +329,18 @@ The variable identifies whether the work bond was active on December 31 of each 
 
 ##### 2.1.3.4. Occupational categories
 
-RAIS uses the Brazilian Classification of Occupations/Classificação Brasileira de Ocupações (CBO) to code worker occupations. Over the study period, two versions of CBO were used, corresponding to the classification system used until 2002 (*cbo_1994*) and the one used thereafter (*cbo_2002*). To harmonize them:
+RAIS uses the Brazilian Classification of Occupations/Classificação Brasileira de Ocupações (CBO) to code worker occupations. Over the study period, two versions of CBO were used, corresponding to the classification system used until 2002 (*cbo_1994*) and the one used after (*cbo_2002*). To harmonize them:
 
 i.  When available, the 6-digit *cbo_2002* code was used directly.
 
-ii. When only 5-digit *cbo_1994* was available, the code was converted to a 6-digit format by appending a trailing zero.
+ii. When only 5-digit *cbo_1994* was available, the code was converted to a 6-digit format by appending a zero.
 
 iii. The first number of both codes are related to mayor's group of the CBO. The category “Agricultural, Forestry, and Fishing Worker” has the code 6. To simplify analysis and produce a consistent agricultural–non-agricultural divide across the study period, a binary occupational variable was created:
 
 -   Agricultural workers (1): occupations whose unified CBO code begins with “6”
 -   Non-agricultural workers (0): all other occupations
 
-##### 2.1.3.5. Deflation, and wage groups
+##### 2.1.3.5. Deflation and wage groups {#sec-deflation}
 
 The variable *valor_remuneracao_media* provides the worker’s annual average wage. Only positive, non-null wage values were kept. To allow temporal comparability, all wage values were **deflated to 2024** Brazilian reais using the **IPCA** national consumer price index (IBGE).
 
@@ -359,7 +358,7 @@ $$
 
 Data on the IPCA historic series can be found in the IBGE website: https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=downloads (accessed November 14, 2025).
 
-The deflator table constructed and merged with RAIS data in BigQuerry can be accessed at the following link:
+The deflator table constructed and merged with RAIS data in BigQuerry can be accessed at the following link: *XXXXXXXXXXXXXXXXXXXX*
 
 Deflated wages were categorized into six groups using the 2024 minimum wage (R\$ 1,412.00) as the reference:
 
@@ -469,9 +468,9 @@ The data was obtained from the IBGE’s Sidra website. (<https://sidra.ibge.gov.
 
 #### 2.2.3. Clean and transform the data
 
-Because the census data were available exclusively for 2000, 2010, and 2022, to construct a complete annual series for the entire study period, it was necessary to interpolate and extrapolate population values for all intermediate and adjacent years. I applied simple linear interpolation for the years between census observations and linear extrapolation for the years before and after census observations.
+Because the census data are available exclusively for 2000, 2010, and 2022, to construct a complete annual series for the entire study period, it is necessary to interpolate and extrapolate population values for all intermediate and adjacent years. I apply simple linear interpolation for the years between census observations and linear extrapolation for the years before and after census observations.
 
-To do the interpolation, I used the `zoo` package to estimate the annual change between known census points, producing a smooth annual trajectory for each municipality from 2000 to 2022, as the equation shows:
+To do the interpolation, I use the `zoo` package to estimate the annual change between known census points, producing a smooth annual trajectory for each municipality from 2000 to 2022, as the equation shows:
 
 $$
 PIA_{it}
@@ -484,7 +483,7 @@ $$
 
 where $(t_1)$ and $(t_2)$ are the bounding census years (2000–2010 or 2010–2022).
 
-For the years 1999, 2023 and 2024, I computed the extraploation trends manually. The value for 1999 was obtained by backward linear extrapolation:
+For the years 1999, 2023 and 2024, I compute the extraploation trends manually. The value for 1999 is obtained by backward linear extrapolation:
 
 $$
 PIA_{i,1999}
@@ -494,7 +493,7 @@ PIA_{i,2000}
 \frac{PIA_{i,2010} - PIA_{i,2000}}{10}.
 $$
 
-Future years were estimated by forward linear extrapolation based on the most recent census slope:
+Future years are estimated by forward linear extrapolation based on the most recent census slope:
 
 $$
 PIA_{i,t}
@@ -562,15 +561,15 @@ population_pia <- population_pia %>%
 
 #### 2.3.1. Understanding the data
 
-I combined the RAIS and PIA datasets to analyze labor-market composition and wage structure at the municipality–year level. The two datasets were merged using year and geocode as keys, producing a unified panel in which all employment variables could be normalized by the population in active age (PIA). Normalizing employment by PIA allows for meaningful comparisons across municipalities with different population sizes and demographic structures.
+I combine the Employment and PIA datasets (geocode and year as keys) to normalize all employment variables by the population in active age (PIA). Normalizing employment by PIA allows for meaningful comparisons across municipalities with different population sizes and demographic structures.
 
-To construct the labor indicators, I used RAIS data on the total number of formal workers per municipality, the wage categories extract from RAIS (six groups defined relative to the 2024 minimum wage), and the dummy variable identifying agricultural occupations. For parsimony and analytical clarity, the six wage categories were aggregated into three broader groups (low, middle, and high wage).
+To construct the labor indicators, I use employment data on (i) the total number of formal workers per municipality; (ii) the wage categories (six groups defined relative to the 2024 minimum wage), and (iii) the dummy variable identifying agricultural occupations.
 
-All employment indicators were then computed as ratios between the relevant worker counts and the corresponding PIA value for each municipality-year. These normalized measures form the basis for analyzing the scale and composition of local labor markets across the Amazon region.
+I compute the ratios of each variable to the corresponding PIA value for each municipality-year. These normalized measures form the basis for analyzing the scale and composition of local labor markets across the Amazon region.
 
 #### 2.3.2. Tidy and transform the data
 
-First, I aggregated the RAIS data by municipality, year, and wage code, summing the number of total workers and the number of agricultural workers. This step allowed me to eliminate the agricultural dummy variable and work directly with counts of agricultural and total employment within each wage category:
+First, I aggregate the labor indicators dataset by municipality, year, and wage code, summing the number of total workers and the number of agricultural workers. This step allow me to eliminate the agricultural dummy variable and work directly with counts of agricultural and total employment within each wage category:
 
 ```{r}
 totals <- data_employment_rais %>%
@@ -593,7 +592,7 @@ data_employment_rais_totals <- totals %>%
   replace_na(list(workers_agric = 0L))
 ```
 
-The wage ranges provided by RAIS were collapsed into three broader, substantive wage groups:
+I also collapse the wage ranges previously constructed with the data I got from RAIS into three broader, substantive wage groups:
 
 -   Low wage: less then 1 minimum wage
 
@@ -659,20 +658,20 @@ data_employment_rais_wage_wide_agri <- rais_wage_groups_agri  %>%
 
 #### 2.3.3. Correct and standardize units
 
-Using the ratio between the number of employees and the population in active age, I constructed two types of indicators. The first set consists of **employment rates** by municipality, year, and wage group, calculated separately for all occupations and for agricultural occupations. The second set consists of **labor-market composition indicators**, which measure the proportion of workers in each wage group within a municipality-year, again distinguishing between all occupations and agricultural occupations.
+Using the ratio between the number of employees and the population in active age, I construct two types of indicators. The first set consists of **employment rates** by municipality, year, and wage group, calculated separately for all occupations and for agricultural occupations. The second set consists of **labor-market composition indicators**, which measure the proportion of workers in each wage group within a municipality-year, again distinguishing between all occupations and agricultural occupations.
 
 ##### 2.3.3.1. Employment Rates (Intensity Indicators)
 
-The employment intensity indicators normalize the number of formal workers from RAIS by the Population in Active Age (PIA). The indicator represent the density of formal jobs per active-age resident. The general form is:
+The employment intensity indicators normalize the number of formal workers by the Population in Active Age (PIA). The indicator represent the density of formal jobs per active-age resident. The general form is:
 
 $$
 \text{EmploymentRate}_{it} = 
 \frac{\text{Workers}_{it}}{PIA_{it}},
 $$
 
-where $(i)$ indexes municipalities and $(t)$ indexes years. I construct these intensity indicator for the following wage-groups:
+where $(i)$ indexes municipalities and $(t)$ indexes years. I construct these intensity indicators for the following groups:
 
--   Total and wage-group employment intensities:
+-   Total and wage-group employment rates:
 
     -   total employment rate (*emp_rate_total*)
 
@@ -682,7 +681,7 @@ where $(i)$ indexes municipalities and $(t)$ indexes years. I construct these in
 
     -   high wage employment rate (*emp_rate_high*)
 
--   Total agricultural and agricultural wage-group employment intensities:
+-   Total agricultural wage-group employment rates:
 
     -   agricultural employment rate (*emp_rate_agric*)
 
@@ -694,7 +693,7 @@ where $(i)$ indexes municipalities and $(t)$ indexes years. I construct these in
 
 ##### 2.3.3.2. Labor-Market Composition (Share Indicators)
 
-Labor-market composition indicators express the proportion of workers in each wage group relative to total formal employment. These shares were calculated using a simple ratio:
+Labor-market composition indicators express the proportion of workers in each wage group relative to total formal employment. These shares are calculated using a simple ratio:
 
 $$
 \text{Share_low_wage}_{it}
@@ -714,7 +713,7 @@ $$
 \frac{\text{Workers_high_wage}_{it}}{\text{Workers_total}_{it}}.
 $$
 
-The share of agricultural employment in total formal employment, as well as the distribution of wage groups within agricultural employment, were computed as follows:
+The share of agricultural employment in total formal employment, as well as the distribution of wage groups within agricultural employment, are computed as follows:
 
 $$
 \text{Share_workers_agriculture}_{it}
@@ -804,3 +803,361 @@ data_labor_with_pia <- data_labor_with_pia %>%
 ```
 
 **Observation:** The municipality of Mojuí dos Campos (PA) — geocode 1504752 — contains missing values for all years except 2022. This occurs because Mojuí dos Campos was formerly a district of Santarém (PA) and became an independent municipality only in 2013. The missing observations were retained at this stage and will be addressed later during the construction of the complete dataset.
+
+### 2.4. Cash transfer (Bolsa Família program)
+
+#### 2.4.1. Understand the data
+
+The cash transfer data used in this study comes from administrative records of the Bolsa Família program published by Brazil’s **Ministério do Desenvolvimento e Assistência Social, Família e Combate à Fome (MDS)** in the **Dados Abertos (Open Data)** portal of the Federal Government of Brazil (last updated in March 2026, available at <https://dados.gov.br/dados/conjuntos-dados/bolsa-familia>).
+
+The raw data is organized as monthly municipality-level files (one file per year), with CSV files for each year from 2004 (the first year of the policy) to 2026. Because my final dataset is a municipality-year panel, I select a **reference month** to represent each year. I conduct stability checks on candidate months (see below), and end up with **February** and **June** as alternative reference months for robustness. I also restrict the panel to **2004–2019**, excluding 2020 onward due to the COVID-19 period and program substitution dynamics that generate structural discontinuities in the Bolsa Família series.
+
+The standard structure of the raw files includes:
+
+-   `ibge`: IBGE municipality code
+-   `anomes`: reference year-month (format `YYYYMM`)
+-   `qtd_familias_beneficiarias_bolsa_familia`: number of beneficiary families in the municipality-month
+-   `valor_repassado_bolsa_familia`: total value transferred to beneficiary families in the municipality-month
+
+These variables allow the construction of three complementary dimensions of program intensity:
+
+i.  **Coverage**: number of beneficiary families
+
+ii. **Generosity**: average transfer per beneficiary family (total transfers / beneficiary families)
+
+iii. **State effort**: total transfers (in constant prices)
+
+#### 2.4.2. Import and inspect the data
+
+I store the raw files locally as CSV files with the naming convention `bf-YYYY.txt`. I read all files into R using a function that applies consistent parsing rules and adds a `source_file` variable to track the origin of each observation.
+
+```{r}
+
+bf_path <- "_data/raw_mds_bolsa_familia"
+
+bf_files <- list.files(
+  path = bf_path,
+  pattern = "^bf-\\d{4}\\.txt$",
+  full.names = TRUE
+)
+
+read_bf <- function(file) {
+  read_csv(
+    file,
+    col_types = cols(
+      ibge = col_double(),
+      anomes = col_double(),
+      qtd_familias_beneficiarias_bolsa_familia = col_double(),
+      valor_repassado_bolsa_familia = col_double()
+    )
+  ) %>%
+    mutate(source_file = basename(file))
+}
+
+data_bf_all <- map_dfr(bf_files, read_bf)
+```
+
+I apply a set of integrity checks to ensure that the two key variables—beneficiary families and total transfers—are consistently recorded across yearly files. These include missingness, zeros, negative values, logical inconsistencies (beneficiary families with zero transfers), and duplicate municipality-month keys.
+
+```{r}
+bf_qa_summary <- data_bf_all %>%
+  group_by(source_file) %>%
+  summarise(
+    n_rows = n(),
+    na_families = sum(is.na(qtd_familias_beneficiarias_bolsa_familia)),
+    na_transfers = sum(is.na(valor_repassado_bolsa_familia)),
+    zero_families = sum(qtd_familias_beneficiarias_bolsa_familia == 0, na.rm = TRUE),
+    zero_transfers = sum(valor_repassado_bolsa_familia == 0, na.rm = TRUE),
+    neg_families = sum(qtd_familias_beneficiarias_bolsa_familia < 0, na.rm = TRUE),
+    neg_transfers = sum(valor_repassado_bolsa_familia < 0, na.rm = TRUE),
+    families_pos_transfers_zero = sum(
+      qtd_familias_beneficiarias_bolsa_familia > 0 & valor_repassado_bolsa_familia == 0,
+      na.rm = TRUE
+    ),
+    duplicated_ibge_anomes = sum(duplicated(paste(ibge, anomes))),
+    .groups = "drop"
+  )
+
+bf_qa_summary
+```
+
+I also compute distributional diagnostics for the implied average transfer per family (`valor_repassado_bolsa_familia / qtd_familias_beneficiarias_bolsa familia`) as a way to detect anomalous tails that may reflect reporting artifacts or program regime changes.
+
+```{r}
+bf_transfer_dist <- data_bf_all %>%
+  mutate(
+    avg_transfer = if_else(
+      qtd_familias_beneficiarias_bolsa_familia > 0,
+      valor_repassado_bolsa_familia / qtd_familias_beneficiarias_bolsa_familia,
+      NA_real_
+    )
+  ) %>%
+  group_by(source_file) %>%
+  summarise(
+    p1 = quantile(avg_transfer, 0.01, na.rm = TRUE),
+    median = median(avg_transfer, na.rm = TRUE),
+    p99 = quantile(avg_transfer, 0.99, na.rm = TRUE),
+    max = max(avg_transfer, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+bf_transfer_dist
+```
+
+To select the reference months, I conduct **stability checks** (among others, see the socia data cleaning procedure in the respective script [`02-data-cleaning-populational-social.R`](_scripts/02-data-cleaning-populational-social.R)), comparing the number of beneficiary families and the average transfer per family in candidate months (February, June, July, September, and November) with their adjacent months. I do not chose January neither December because they will lack some adjacent months for the stability checks in the first and final years of the series (2004 and 2019).
+
+The goal is to identify months that do not exhibit anomalous spikes or drops that may reflect reporting artifacts or program regime changes. I end up with June as the primary reference month for the panel, with February as an alternative reference month for robustness checks.
+
+```{r}
+candidate_months <- c(2, 6, 7, 9, 11)
+
+library(dplyr)
+library(tidyr)
+
+bf_m <- bf_all %>%
+  filter(anomes >= 200401 & anomes <= 201912) %>%
+  mutate(
+    year  = as.integer(substr(anomes, 1, 4)),
+    month = as.integer(substr(anomes, 5, 6)),
+    valor_por_familia = if_else(
+      qtd_familias_beneficiarias_bolsa_familia > 0,
+      valor_repassado_bolsa_familia /
+        qtd_familias_beneficiarias_bolsa_familia,
+      NA_real_
+    )
+  )
+
+tail(bf_m)
+
+stability <- bf_m %>%
+  filter(month %in% c(candidate_months,
+                      candidate_months - 1,
+                      candidate_months + 1)) %>%
+  group_by(ibge, year) %>%
+  arrange(month) %>%
+  mutate(
+    fam_lag = lag(qtd_familias_beneficiarias_bolsa_familia),
+    fam_lead = lead(qtd_familias_beneficiarias_bolsa_familia),
+    val_lag = lag(valor_por_familia),
+    val_lead = lead(valor_por_familia)
+  ) %>%
+  filter(month %in% candidate_months) %>%
+  summarise(
+    month = first(month),
+    fam_instability =
+      mean(abs(qtd_familias_beneficiarias_bolsa_familia - fam_lag) /
+             fam_lag, na.rm = TRUE),
+    val_instability =
+      mean(abs(valor_por_familia - val_lag) /
+             val_lag, na.rm = TRUE),
+    .groups = "drop"
+  )
+print(stability, n = 22)
+```
+
+#### 2.4.3. Clean and transform the data
+
+To build a municipality-year panel, I extract the year and month from `anomes`, filter to the analysis window (2004–2019), and select February and June as reference months. I then construct:
+
+-   `bf_beneficiary_families`: coverage (number of beneficiary families)
+-   `bf_total_transfers_brl`: state effort (nominal BRL)
+-   `bf_avg_transfer_brl`: generosity (nominal BRL per beneficiary family)
+-   `bf_reference_month`: indicate the reference month (Feb or Jun)
+
+Coverage is measured by the number of beneficiary families, while generosity is calculated as the average transfer per family. State effort is represented by the total transfers. The resulting panel is sorted by reference month, year, and municipality geocode.
+
+```{r}
+data_bf_panel <- data_bf_all %>%
+  mutate(
+    year  = as.integer(str_sub(as.character(anomes), 1, 4)),
+    month = as.integer(str_sub(as.character(anomes), 5, 6))
+  ) %>%
+  filter(year >= 2004, year <= 2019, month %in% c(2, 6)) %>%
+  transmute(
+    geocode = as.character(as.integer(ibge)),
+    year = year,
+    bf_ref_month = recode(month, `2` = "Feb", `6` = "Jun"),
+    bf_beneficiary_families = qtd_familias_beneficiarias_bolsa_familia,
+    bf_total_transfers_brl = valor_repassado_bolsa_familia,
+    bf_avg_transfer_brl = if_else(
+      qtd_familias_beneficiarias_bolsa_familia > 0,
+      valor_repassado_bolsa_familia / qtd_familias_beneficiarias_bolsa_familia,
+      NA_real_
+    )
+  ) %>%
+  arrange(bf_ref_month, year, geocode)
+
+data_bf_panel %>% count(bf_ref_month, year)
+```
+
+#### 2.4.4. Correct and standardize units
+
+##### 2.4.4.1. Deflation to constant prices
+
+To compare monetary values over time, I deflate Bolsa Família transfers using an IPCA-based deflator with **2024 as the base year** (deflator multiplier). I apply the deflator to both total transfers and the average transfer per family.
+
+The *deflator data is the same that I use to deflate labor and wage indicators*. See @sec-deflation for details on the construction of the deflator table.
+
+```{r}
+deflator_path <- "_data/deflator_ipca_2024.csv"
+
+data_ipca_deflator <- read_csv(
+  deflator_path,
+  col_types = cols(
+    year = col_integer(),
+    ipca_index = col_double(),
+    ipca_deflator = col_double()
+  )
+) %>%
+  select(year, ipca_deflator)
+
+data_bf_panel_real <- data_bf_panel %>%
+  left_join(data_ipca_deflator, by = "year") %>%
+  mutate(
+    bf_total_transfers_brl_2024 = bf_total_transfers_brl * ipca_deflator,
+    bf_avg_transfer_brl_2024    = bf_avg_transfer_brl * ipca_deflator
+  )
+
+data_bf_panel_real %>%
+  summarise(
+    n = n(),
+    missing_deflator = sum(is.na(ipca_deflator)),
+    min_year = min(year),
+    max_year = max(year)
+  )
+```
+
+Finally, I compute a simple annual diagnostic summary to confirm that the transformation does not introduce unexpected missingness patterns.
+
+```{r}
+data_bf_panel_real %>%
+  group_by(bf_ref_month, year) %>%
+  summarise(
+    n = n(),
+    na_avg_transfer = mean(is.na(bf_avg_transfer_brl_2024)),
+    zero_total_transfers = mean(bf_total_transfers_brl_2024 == 0, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+#### 2.4.5. Check and validate the data
+
+I conduct a final set of checks to confirm that the the dataset is consistent with known patterns of the Bolsa Família program. I examine the temporal trends of total transfers, beneficiary families, and average transfer per family across the two reference months to ensure that they align with expected trajectories based on program history and previous research.
+
+The plots of the annual trajectories of the three key indicators are consistent with the known expansion and stabilization phases of the Bolsa Família program over the 2004–2019 period as shown by @souza2022 .
+
+```{r}
+bf_effort_yearly <- data_bf_panel_deflate %>%
+  group_by(bf_ref_month, year) %>%
+  summarise(
+    real_total_transfers =
+      sum(bf_total_transfers_2024, na.rm = TRUE),
+    total_beneficiary_families =
+      sum(bf_beneficiary_families, na.rm = TRUE),
+    avg_transfer_2024 =
+      real_total_transfers / total_beneficiary_families,
+    .groups = "drop"
+  )
+
+ggplot(bf_effort_yearly,
+       aes(x = year,
+           y = real_total_transfers,
+           linetype = bf_ref_month)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Total real Bolsa Família transfers (2024 BRL)",
+    x = "Year",
+    y = "Total transfers (2024 BRL)",
+    linetype = "Reference month"
+  ) +
+  theme_minimal()
+
+ggplot(bf_effort_yearly,
+       aes(x = year,
+           y = total_beneficiary_families,
+           linetype = bf_ref_month)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Total Bolsa Família beneficiary families",
+    x = "Year",
+    y = "Total beneficiary families",
+    linetype = "Reference month"
+  ) +
+  theme_minimal()
+
+ggplot(bf_effort_yearly,
+       aes(x = year,
+           y = avg_transfer_2024,
+           linetype = bf_ref_month)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Average Bolsa Família transfer per beneficiary family (2024 BRL)"
+    subtitle = "Yearly averages using February and June as reference months",
+    x = "Year",
+    y = "Average transfer per family (2024 BRL)",
+    linetype = "Reference month"
+  ) +
+  theme_minimal()
+
+```
+
+quotas
+
+ESTIMATIVA DE FAMÍLIAS POBRES - até  março/2006 (PNAD 2001)
+
+ESTIMATIVA DE FAMÍLIAS POBRES - abril/2006 a abril/2009 (PNAD 2004)
+
+ESTIMATIVA DE FAMÍLIAS POBRES - maio/2009 a abril/2012
+(Mapa de Pobreza)
+
+ESTIMATIVA DE FAMÍLIAS POBRES  - maio/2012 até o momento
+(PNAD 2010) 
+
+
+
+PEA (IBGE/Censo)
+
+2022 - table 9517
+2010 - table 2098
+2002 - table 2098
+
+
+### 2.5 Informality in the Employed Population 
+
+The **employed population (população ocupada)** includes individuals who performed any economic activity during the reference period, either for wages, profit, or family production.
+
+Brazilian labor statistics classify workers by **position in the occupation (posição na ocupação)**. Informality is not directly reported in the Demographic Census and must be **constructed from these occupational categories**.
+
+Informal workers include:
+
+- Private employees **without a formal contract**
+- Domestic workers **without a formal contract**
+- Self-employed **without registered business**
+- Employers **without registered business**
+- Unpaid family workers
+
+Formal workers include:
+
+- Private employees **with a formal contract**
+- Domestic workers **with a formal contract**
+- Public sector employees and military
+- Self-employed **with registered business**
+- Employers **with registered business**
+
+Informality (IBGE/Censo)
+
+2022 - table 10261
+2010 - table 2031
+2002 - table 2031
+
+
+
+
+- explicar 5 indicadores
+- explicar interpolação
+- explicar mojui dos campos em PEA
+- qdo criar a tabela "só AMZ", seguir caminho que está no GPT para criar indicador com referência na média geral
+

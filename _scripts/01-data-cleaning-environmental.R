@@ -236,8 +236,6 @@ ggplot(data_deforestation_tidy, aes(x = year, y = area_deforestation)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 
 
-#####CHANGE VARIABLES NAMES
-
 #'*1.1.4. Correct and standardize units:* I perform two standardization transformations 
 #'to smooth the cross-sectional variation in deforestation arising from heterogeneity 
 #'in municipality size. First, I calculate the deforestation rate as the percentage 

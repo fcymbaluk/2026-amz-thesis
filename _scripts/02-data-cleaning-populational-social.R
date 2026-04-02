@@ -634,81 +634,15 @@ write_xlsx(data_labor_with_pia, "_data/outcome_employment.xlsx")
 write_csv(data_labor_with_pia, "_data/outcome_employment.csv")
 write_rds(data_labor_with_pia, "_data/outcome_employment.rds")
 
-#' *- Inequality Idex (modified):* To measure inequality 
+#' *3. Cash transfers - Bolsa Família* 
 #' 
-#' 
-#' 
-#' Includes 
-#' information on the overall social
-#' progress score, as well as scores for specific components such sanitation, health,
-#' and education. The data is available for 2014, 2018, 2021, and 2023.
 #' 
 
 
 
-#' SidraR
-# 
-# library(sidrar)
-# library(tidyverse)
-# 
-# data_social_water_1_raw <- get_sidra(api = "/t/6804/n6/all/v/1000381/p/all/c301/allxt/c1817/72125/d/v1000381%202")
-# 
-# str(data_social_water)
-# head(data_social_water)
-# unique(data_social_water$`Principal forma de abastecimento de água`)
-# 
-# data_social_water_2_classified <- data_social_water %>%
-#   select(
-#     value = Valor,
-#     municipipality_id = `Município (Código)`,
-#     municipality_name = Município,
-#     water_supply_type = `Principal forma de abastecimento de água`
-#   ) %>% 
-#   mutate(
-#     water_supply_classification = case_when(
-#     water_supply_type == "Rede geral de distribuição" |
-#     water_supply_type == "Poço profundo ou artesiano" ~ "adequate_water_supply_2022",
-#     TRUE ~ "inadequate_water_supply_2022"
-#     )
-#   ) %>% 
-#   group_by(municipality_id, municipality_name, water_supply_classification) %>%
-#   summarise(
-#     total_value = sum(value, na.rm = TRUE),
-#     .groups = 'drop'
-#   ) %>% 
-#   filter(water_supply_classification == "inadequate_water_supply_2022")
-# 
-# print(data_social_water_2_classified)
-# 
-# data_social_water_3_inadequate_supply <- data_social_water_2_classified %>%
-#   select(municipipality_id, municipality_name, inadequate_water_supply_2022_value = total_value)
-# 
-# print(data_social_water_3_inadequate_supply)
-# 
 
-
-
-#' Social data:
-#' - Imigration:
-#' 
-#' - Employment (unemployment, informality, :
-#' 
-#' - Household income (per capita income, before and after taxes):
-#' 
-#' - Inequality (Gini, poverty rate, 20 percentile):
-#' 
-#' - The Social Progress Index (IPS) is a composite index that measures social
-#' progress in Brazilian municipalities. Includes information on the overall social
-#' progress score, as well as scores for specific components such sanitation, health,
-#' and education. The data is available for 2014, 2018, 2021, and 2023.
-#' 
-#' - Social transfers (Bolsa Família, Bolsa Verde):
-#' 
-#' - Welfare policies (health, education, social assistance)
-
-# source('http://cemin.wikidot.com/local--files/raisr/rais.r')
-
-# Others:
+ 
+# Other data:
 
 #' - PIB-Munic: The Brazilian Institute of Geography and Statistics (IBGE) provides
 #' data of Brazilian municipalities on the Gross Domestic Product (GDP) at current
