@@ -7,7 +7,7 @@ bibliography: references.bib
 
 ## 1. Environmental data
 
-### 1.1. Deforestation
+### 1.1. Deforestation {#sec-deforestation}
 
 #### 1.1.1. Understand the data
 
@@ -1104,60 +1104,238 @@ ggplot(bf_effort_yearly,
 
 ```
 
-quotas
+#### 2.4.6. Standardize units and construct indicators
 
-ESTIMATIVA DE FAMÍLIAS POBRES - até  março/2006 (PNAD 2001)
+To enable comparisons across municipalities with different population sizes, I standardize the units of the Bolsa Família indicators using the following complementary demographic and policy data:
 
-ESTIMATIVA DE FAMÍLIAS POBRES - abril/2006 a abril/2009 (PNAD 2004)
+*Economically Active Population / População Economicamente Ativa (PEA)*: the total number of individuals participating in the labor market (either employed or actively seeking employment). It allows the scaling of social transfers relative to the size of the **local labor force**.
 
-ESTIMATIVA DE FAMÍLIAS POBRES - maio/2009 a abril/2012
-(Mapa de Pobreza)
+I obtained PEA data in each municipality-year from the Brazilian population censuses (IBGE) for the years 2000, 2010, and 2022, and interpolate it to construct a complete annual panel.
 
-ESTIMATIVA DE FAMÍLIAS POBRES  - maio/2012 até o momento
-(PNAD 2010) 
+*Bolsa Família municipal quota*: defined by the federal government based on official estimates of the number of poor families (such as PNAD surveys). As such, represents the maximum number of beneficiary families that can be served by the program in a given municipality and serves as a **policy target for coverage**, indicating the intended scale of the program in each locality.
 
+Mncipal quotas has been updated overtime as follows:
 
+-   **Up to March 2006:**\
+    Estimates based on the **2001 PNAD (Pesquisa Nacional por Amostra de Domicílios)**
 
-PEA (IBGE/Censo)
+-   **April 2006 to April 2009:**\
+    Estimates based on the **2004 PNAD**
 
-2022 - table 9517
-2010 - table 2098
-2002 - table 2098
+-   **May 2009 to April 2012:**\
+    Estimates based on the **Mapa de Pobreza** (Poverty Map), which incorporates small-area estimation techniques to improve geographic precision
 
+-   **From May 2012 onward:**\
+    Estimates based on the **2010 PNAD**
 
-### 2.5 Informality in the Employed Population 
+I obtained the municipal quota data using the federal transparency portal **Busca LAI**, which gather formal requests of data under Brazil’s **Access to Information Law / Lei de Acesso à Informação (LAI)**. The request was submitted to the Ministry of Development and Social Assistance, Family and Fight against Hunger (MDS) (Protocol number 71003.017363/2022-16, available at <https://buscalai.cgu.gov.br/busca/4388082>, last acess in April 2026).
+
+*Informality rate:* I also gathered data on the proportion of employed individuals in informal work arrangements, including workers without a formal contract, self-employed individuals without CNPJ registration, and unpaid family workers.
 
 The **employed population (população ocupada)** includes individuals who performed any economic activity during the reference period, either for wages, profit, or family production.
 
-Brazilian labor statistics classify workers by **position in the occupation (posição na ocupação)**. Informality is not directly reported in the Demographic Census and must be **constructed from these occupational categories**.
+Brazilian labor statistics classify workers by **position in the occupation (posição na ocupação)**. Informality is not directly reported in the Demographic Census and must be constructed from these occupational categories.
 
 Informal workers include:
 
-- Private employees **without a formal contract**
-- Domestic workers **without a formal contract**
-- Self-employed **without registered business**
-- Employers **without registered business**
-- Unpaid family workers
+-   Private employees **without a formal contract**
+-   Domestic workers **without a formal contract**
+-   Self-employed **without registered business**
+-   Employers **without registered business**
+-   Unpaid family workers
 
 Formal workers include:
 
-- Private employees **with a formal contract**
-- Domestic workers **with a formal contract**
-- Public sector employees and military
-- Self-employed **with registered business**
-- Employers **with registered business**
+-   Private employees **with a formal contract**
+-   Domestic workers **with a formal contract**
+-   Public sector employees and military
+-   Self-employed **with registered business**
+-   Employers **with registered business**
 
-Informality (IBGE/Censo)
+##### 2.4.6.1. Economically Active Population (PEA) data
 
-2022 - table 10261
-2010 - table 2031
-2002 - table 2031
+I construct a balanced annual panel for the economically active population (PEA) and generate interpolated values to fill gaps between census years. I apply **linear interpolation** within each municipality using the available census observations (2000, 2010, and 2022). The interpolated variable is computed by linearly connecting observed values across time, producing a smooth annual series of the economically active population for each municipality.
+
+Interpolation was performed within municipalities, preserving the temporal structure of each unit and avoiding cross-sectional assumptions. The resulting dataset provides a complete municipality-year panel (2000–2022) of PEA values, combining observed census data and interpolated estimates, and is used in subsequent stages to standardize social and labor market indicators.
+
+Before performing interpolation, it is necessary to address cases of municipal boundary changes that generate missing observations in earlier years. The only substantively relevant case in the sample is **Mojuí dos Campos (PA)** (IBGE code **1504752**), which was created in **2013** through the territorial dismemberment of **Santarém (PA)** (code **1506807**). As a result, Mojuí dos Campos does not have census observations for 2000 and 2010, and only appears in the data from 2022.
+
+To address it, I first calculate the share of the combined 2022 PEA of Santarém and Mojuí dos Campos that corresponds to Mojuí dos Campos. I then use this proportion as a fixed allocation rule to reconstruct Mojuí dos Campos’s historical values for 2000 and 2010. Correspondingly, Santarém’s pre-2013 PEA values were reduced by the complementary share, so that the historical total of the original territory was redistributed between the two municipalities in a consistent way.
+
+This procedure produces a territorially harmonized series in which Mojuí dos Campos and Santarém are treated as analytically comparable units over time. The adjustment assumes that the relative demographic weight of the two territories observed in 2022 approximates their relative distribution in earlier years. Although this assumption cannot be verified directly for the pre-creation period, it is a reasonable approximation for backward harmonization and is preferable to leaving Mojuí dos Campos missing or inconsistently defined in the panel.
+
+In the deforestation dataset @ref(#sec-deforestation), this harmonization is already implemented, and the procedure described here ensures consistency between socioeconomic and environmental variables.
+
+```{r}
+population_pea_2022 <- population_pea %>%
+  filter(year == 2022) %>%
+  select(geocode, pea)
+
+pea_pair <- population_pea_2022 %>%
+  filter(geocode %in% c(1506807, 1504752))
+
+share_mojui <- pea_pair %>%
+  summarise(
+    share = pea[geocode == 1504752] /
+      (pea[geocode == 1504752] + pea[geocode == 1506807])
+  ) %>%
+  pull(share)
+
+population_pea_mj_adjusted <- population_pea %>%
+  mutate(geocode = as.numeric(geocode)) %>%
+  bind_rows(
+    tibble(
+      geocode = 1504752,
+      pea = NA_real_,
+      year = c(2000, 2010)
+    )
+  ) %>%
+  distinct(geocode, year, .keep_all = TRUE) %>%
+  left_join(
+    population_pea %>%
+      mutate(geocode = as.numeric(geocode)) %>%
+      filter(geocode == 1506807) %>%
+      select(year, pea_santarem = pea),
+    by = "year"
+  ) %>%
+  mutate(
+    pea = case_when(
+      geocode == 1504752 & year < 2013 ~ pea_santarem * share_mojui,
+      geocode == 1506807 & year < 2013 ~ pea_santarem * (1 - share_mojui),
+      TRUE ~ pea
+    )
+  ) %>%
+  select(-pea_santarem)
 
 
+population_pea_panel <- population_pea_mj_adjusted %>%
+  mutate(
+    geocode = as.numeric(geocode),
+    year = as.integer(year)
+  ) %>%
+  group_by(geocode, year) %>%
+  summarise(pea = first(pea), .groups = "drop") %>%
+  group_by(geocode) %>%
+  complete(year = 2000:2022) %>%
+  arrange(geocode, year) %>%
+  mutate(
+    pea_interp = zoo::na.approx(pea, x = year, na.rm = FALSE)
+  ) %>%
+  ungroup()
 
+```
 
-- explicar 5 indicadores
-- explicar interpolação
-- explicar mojui dos campos em PEA
-- qdo criar a tabela "só AMZ", seguir caminho que está no GPT para criar indicador com referência na média geral
+##### 2.4.6.2. Bolsa Família Municipal Quota data
+
+I reshaped the municipal quota dataset into a municipality-year panel and then merged it with the deflated Bolsa Família panel. Before merging, I harmonized the municipality identifiers across the two sources.
+
+Before the merge, I identified an inconsistency in the geographic identifiers: the quota dataset used **7-digit IBGE municipality codes**, while the deflated Bolsa Família panel used **6-digit codes**. To make the two datasets compatible, I dropped the last digit of the 7-digit quota geocode, creating a harmonized 6-digit identifier (`geocode_6`). I then created the same harmonized field in the Bolsa Família panel and merged the two datasets by **municipality** and **year**.
+
+```{r}
+data_bf_quota <- read_xlsx("_data/raw_mds_bolsa_familia/bf-quotas.xlsx")
+
+data_bf_quota_panel <- data_bf_quota %>%
+  pivot_longer(
+    cols = starts_with ("quota_"),
+    names_to = "year",
+    values_to = "bf_quota"
+  ) %>% 
+  mutate(
+    year = str_remove(year, "quota_") |> as.integer(),
+    geocode = as.integer(geocode),
+    bf_quota = as.numeric(bf_quota)
+  ) %>%
+  arrange(geocode, year)
+  
+data_bf_quota_panel <- data_bf_quota_panel %>%
+  mutate(
+    geocode_6 = geocode %/% 10
+  )
+
+data_bf_panel_deflate <- data_bf_panel_deflate %>%
+  mutate(
+    geocode_6 = geocode
+  )
+
+data_bf_panel_final <- data_bf_panel_deflate %>% 
+  left_join(data_bf_quota_panel, by = c("geocode_6", "year"))
+
+```
+
+##### 2.4.6.3. Final Bolsa Família dataset
+
+To construct the final Bolsa Família, I restrict to **June**, which serve as the main reference period in the analysis (I repeat after the same procedures filtering for **Feb**).
+
+I standardized variable names to improve clarity and consistency. - defined **bf_families_n** as the number of beneficiary families,\
+- defined **bf_transfers_total_brl_2024** as the total transfers (in 2024 BRL), and\
+- defined **bf_transfers_avg_brl_2024** as the average transfer per family (in 2024 BRL).
+
+Next, I merged the dataset with the **economically active population (PEA) panel**, matching by municipality and year. From the merged dataset, I constructed three key indicators:
+
+-   **Coverage (quota ratio):**
+
+$$
+Coverage_{it} = \frac{BeneficiaryFamilies_{it}}{Quota_{it}}
+$$
+
+-   **Effort per economically active population (PEA):**
+
+$$
+Effort^{PEA}_{it} = \frac{TotalTransfers_{it}}{PEA_{it}}
+$$
+
+-   **Effort per quota:**
+
+$$
+Effort^{Quota}_{it} = \frac{TotalTransfers_{it}}{Quota_{it}}
+$$
+
+These indicators jointly capture **coverage**, **generosity**, and **fiscal intensity** of the program at the municipal level.
+
+```{r}
+outcome_bf <- data_bf_panel_final %>%
+  filter(bf_ref_month == "Jun") %>%
+  rename(
+    geocode = geocode.y,
+    bf_families_n = bf_beneficiary_families,
+    bf_transfers_total_brl_2024 = bf_total_transfers_2024,
+    bf_transfers_avg_brl_2024 = bf_avg_transfer_2024
+  ) %>%
+  select(
+    geocode,
+    year,
+    bf_families_n,
+    bf_transfers_total_brl_2024,
+    # Generosity
+    bf_transfers_avg_brl_2024,
+    bf_quota
+  ) %>%
+  left_join(
+    data_population_pea_panel %>% 
+    select(geocode, year, pea), 
+    by = c("geocode", "year")) %>%
+  mutate(
+    # Coverage (ratio)
+    bf_families_quota_ratio = if_else(
+      !is.na(bf_quota) & bf_quota > 0,
+      bf_families_n / bf_quota,
+      NA_real_
+    ),
+    # Effort per PEA (in 2024 BRL)
+    bf_transfers_pea_brl_2024 = if_else(
+      !is.na(pea) & pea > 0,
+      bf_transfers_total_brl_2024 / pea,
+      NA_real_
+    ),
+
+    # Effort (in 2024 BRL)
+    bf_transfers_quota_brl_2024 = if_else(
+      !is.na(bf_quota) & bf_quota > 0,
+      bf_transfers_total_brl_2024 / bf_quota,
+      NA_real_
+    )
+  ) %>% 
+  arrange(geocode, 
+          year)
+```
 
