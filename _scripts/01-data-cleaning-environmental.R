@@ -430,4 +430,93 @@ write_xlsx(
   data_deforestation_final,
   "_data/outcome_deforestation.xlsx")
 
+#' *1.3.PPCDAm:* 
+
+#' *1.3.1. Understand the data:* The data used to identify municipalities subject 
+#' to intensified environmental enforcement under the PPCDAm are derived from a set 
+#' of official normative acts issued by the Brazilian federal government between 2007 
+#' and 2013. These include the Decreto Nº 6.321 and subsequent ministerial ordinances 
+#' (Portarias) published by the Ministry of the Environment (MMA), which operationalized 
+#' the policy by defining and updating the list of so-called priority municipalities.
+
+#' The PPCDAm (Plano de Ação para Prevenção e Controle do Desmatamento na Amazônia Legal) 
+#' introduced a targeted enforcement strategy based on the identification of municipalities 
+#' with critical deforestation dynamics. The initial legal framework established by the decree 
+#' defined criteria for inclusion in the list, which typically combined:
+#' 
+#' - High absolute levels of deforestation (total deforestation area);
+#' - Rapid recent increases in deforestation (deforestation area in the last three years);
+#' - Persistent deforestation over time (increase in deforestation rate in at least three 
+#' of five years prior to the decree publication).
+
+#' Subsequent ordinances — such as Portaria MMA 28 and Portaria MMA 102 — periodically updated 
+#' the list by adding new municipalities, maintaining those that continued to meet the criteria, 
+#' and, in some cases, removing municipalities that demonstrated sustained reductions in deforestation 
+#' and compliance with environmental regulations.
+
+# Inclusion in the list triggered a set of stricter command-and-control measures, including:
+# - Intensified environmental monitoring and inspections;
+# - Restrictions on access to rural credit;
+# - Embargoes on properties associated with illegal deforestation;
+# - Increased coordination among federal enforcement agencies.
+
+#' *1.3.2. Data construction and coding:*
+#' 
+#' The information contained in the decrees and ordinances was manually compiled and harmonized 
+#' into a municipality-year panel dataset. Each legal document was reviewed to extract the list 
+#' of municipalities classified as priority in the corresponding year. Given that the ordinances 
+#' were issued at different points in time and sometimes updated the list within the same year, 
+#' the dataset was standardized to an annual frequency. For each municipality $i$ and year $t$, 
+#' a binary indicator was constructed:
+#' 
+#' This coding implies the following operational decisions:
+
+# - **Treatment group (1):** municipalities listed as priority in a given year;
+# - **Control group (0):** municipalities not listed in that year;
+#' 
+#' *1.3.3. Clean and transform the data:* 
+
+ppcdam_wide <- read_xlsx("_data/data_ppcdam.xlsx") %>%
+  rename(
+    geocode = `Geocode`,
+    municipality = `Município`
+  ) %>%
+  select(-`Estado`) 
+
+ppcdam_wide <- ppcdam_wide %>%
+  mutate(
+    geocode = as.character(geocode)
+  )
+
+ppcdam_long <- ppcdam_wide %>%
+  pivot_longer(
+    cols = -c(municipality, geocode),
+    names_to = "year",
+    values_to = "ppcdam_list"
+  ) %>%
+  mutate(
+    year = as.integer(year),
+    geocode = as.character(geocode),
+    ppcdam_list = as.integer(ppcdam_list)
+  ) %>%
+  arrange(geocode, year)
+
+ppcdam_long
+
+#' *1.3.4. Save the data:* 
+
+write_csv(
+  ppcdam_long,
+  file = ("_data/outcome_ppcdam_long.csv")
+)
+
+write_xlsx(
+  ppcdam_long,
+  "_data/outcome_ppcdam_long.xlsx")
+
+write_rds(
+  ppcdam_long,
+  file = ("_data/outcome_ppcdam_long.rds")
+)
+
 

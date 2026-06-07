@@ -275,6 +275,80 @@ The municipalities with the same name are:
 | 7   | 1200401 | Rio Branco        | AC    |
 | 8   | 5107206 | Rio Branco        | MT    |
 
+
+### 1.3. PPCDAm
+
+#### 1.3.1. Understand the data
+
+The data used to identify municipalities subject to intensified environmental enforcement under the PPCDAm are derived from a set of official normative acts issued by the Brazilian federal government between 2007 and 2013. These include the [Decreto Nº 6.321](https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2007/decreto/d6321.htm) and subsequent ministerial ordinances (Portarias) published by the Ministry of the Environment (MMA), which operationalized the policy by defining and updating the list of *priority municipalities*.
+
+The *PPCDAm* (*Plano de Ação para Prevenção e Controle do Desmatamento na Amazônia Legal*) introduced a targeted enforcement strategy based on the identification of municipalities with critical deforestation dynamics. The initial legal framework established by the decree defined criteria for inclusion in the list, which typically combined:
+
+- High absolute levels of deforestation;
+- Rapid recent increases in deforestation;
+- Persistent deforestation over time.
+
+Subsequent ordinances periodically updated the list by adding new municipalities, maintaining those that continued to meet the criteria, and, in some cases, removing municipalities that demonstrated sustained reductions in deforestation and compliance with environmental regulations. All the ordinances could be found here (XXXXX)
+
+Inclusion in the list triggered a set of stricter command-and-control measures, including:
+
+- Intensified environmental monitoring and inspections;
+- Restrictions on access to rural credit;
+- Embargoes on properties associated with illegal deforestation;
+- Increased coordination among federal enforcement agencies.
+
+### 1.3.2 Data construction and coding
+
+The information contained in the decrees and ordinances was manually compiled and harmonized into a municipality-year panel dataset. Each legal document was reviewed to extract the list of municipalities classified as priority in the corresponding year.
+
+Given that the ordinances were issued at different points in time and sometimes updated the list within the same year, the dataset was standardized to an annual frequency. For each municipality $i$ and year $t$, a binary indicator was constructed:
+
+$$
+PPCDAm_{it} =
+\begin{cases}
+1 & \text{if municipality } i \text{ is included in the priority list in year } t \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+This coding implies the following operational decisions:
+
+- **Treatment group (1):** municipalities listed as priority in a given year;
+- **Control group (0):** municipalities not listed in that year;
+
+### 1.3.3. Clean and transform the data
+
+The original spreadsheet was organized horizontally, then I reshaped it into long format for the purposes of panel data analysis. 
+
+After reshaping, the resulting dataset contains at least four core variables:
+
+- `municipality_name`: municipality name;
+- `ibge_code`: official IBGE municipality code;
+- `year`: reference year;
+- `ppcdam_list`: binary indicator of PPCDAm priority-list status in that year.
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+
+ppcdam_long <- ppcdam_wide %>%
+  pivot_longer(
+    cols = starts_with("ppcdam_"),
+    names_to = "year",
+    names_prefix = "ppcdam_",
+    values_to = "ppcdam_list"
+  ) %>%
+  mutate(
+    year = as.integer(year),
+    ibge_code = as.numeric(ibge_code),
+    ppcdam_list = as.integer(ppcdam_list)
+  ) %>%
+  arrange(ibge_code, year)
+```
+
+
 ## 2. Social data
 
 ### 2.1. Employment
@@ -1339,3 +1413,633 @@ outcome_bf <- data_bf_panel_final %>%
           year)
 ```
 
+## 3. Control variables
+
+### 3.1. Labor market informality
+
+#### 3.1.1. Understand the data
+
+The labor market informality data used in this study comes from the **Brazilian Demographic Census** (*Censo Demográfico*), conducted by the **Instituto Brasileiro de Geografia e Estatística (IBGE)**. I use the census waves of **2000**, **2010**, and **2022**, which are the three waves available within the study's time frame.
+
+The IBGE operationalizes labor market informality based on the worker's posição na ocupação (position in occupation), a categorical variable collected in the Census questionnaire. The following categories are classified as informal: private-sector employees without a signed work permit (carteira de trabalho assinada); domestic workers without a signed work permit; employers not registered with the CNPJ (the Brazilian tax registry for firms); own-account workers (trabalhadores por conta própria) without CNPJ registration; and unpaid contributing family workers (trabalhadores familiares auxiliares). This definition follows the ILO standard for measuring informal employment and is the same criterion IBGE applies in its official informality rate releases via the PNAD Contínua. Formally employed workers — those with a signed work permit in the private sector, public servants, military personnel, and registered employers — constitute the complement. The informality rate is therefore a measure of the prevalence of unprotected, unregistered labor relationships within the occupied population of each municipality, capturing both employment vulnerability and the local reach of labor market institutions.
+
+The Census provides municipality-level counts of the working-age population classified as employed in either the formal or informal sector. The variable of interest is the **informality rate**: the share of the occupied population working in informal arrangements, defined by the absence of a signed work permit (*carteira de trabalho assinada*) or equivalent formal employment bond.
+
+Because the Census is conducted at decennial intervals (with the addition of the 2022 wave), data is only available for three benchmark years across the 2000–2022 period. I linearly interpolate the informality rate between census years to construct a continuous annual panel, under the assumption that structural change in local labor markets follows a gradual trajectory between observation points.
+
+To preserve temporal consistency in the municipal panel, I applied a backward harmonization procedure. I inserted observations for Mojuí dos Campos in 2000 and 2010 and assigned to them the same formal and informal labor-market shares observed for Santarém in those years. This procedure assumes that, before administrative separation, the labor-market structure of the future Mojuí dos Campos territory was similar to that of Santarém. Although this is an approximation, it avoids treating the absence of Mojuí dos Campos before 2013 as a substantive missing-data pattern and ensures consistency with the municipality-year structure used in the rest of the analysis.
+
+#### 3.1.2. Import and inspect the data
+
+I import three separate Excel files, one per census wave. Each file contains municipality identifiers (`geocode`), municipality names (`munic`), and counts of formally and informally employed workers (`Formal`, `Informal`). I add a `year` variable to each and strip non-numeric characters from the geocode field to ensure consistent integer coding.
+
+```{r}
+population_informal_2000 <- read_excel("_data/raw_censo_labor_population/informality-2000.xlsx")
+population_informal_2010 <- read_excel("_data/raw_censo_labor_population/informality-2010.xlsx")
+population_informal_2022 <- read_excel("_data/raw_censo_labor_population/informality-2022.xlsx")
+
+population_informal_2022 <- population_informal_2022 %>%
+  mutate(year    = 2022,
+         geocode = as.integer(gsub("[^0-9]", "", geocode)))
+
+population_informal_2010 <- population_informal_2010 %>%
+  mutate(year    = 2010,
+         geocode = as.integer(gsub("[^0-9]", "", geocode)))
+
+population_informal_2000 <- population_informal_2000 %>%
+  mutate(year    = 2000,
+         geocode = as.integer(gsub("[^0-9]", "", geocode)))
+
+population_informal <- bind_rows(
+  population_informal_2000,
+  population_informal_2010,
+  population_informal_2022
+) %>%
+  arrange(geocode, year)
+```
+
+I check for duplicate municipality-year entries, which would indicate an import or reshaping error, and identify municipalities that are present in fewer than three census waves — typically units created by municipal splits after 2000.
+
+```{r}
+# Check for duplicates
+population_informal %>%
+  count(geocode, year) %>%
+  filter(n > 1)
+
+# Identify municipalities with incomplete census coverage
+population_informal %>%
+  mutate(geocode = as.numeric(geocode)) %>%
+  filter(geocode != 1) %>%
+  distinct(geocode, year) %>%
+  count(geocode) %>%
+  filter(n < 3)
+```
+
+#### 3.1.3. Handle the Mojuí dos Campos municipality split
+
+As with the GDP and population variables, the creation of **Mojuí dos Campos** (IBGE geocode `1504752`) from **Santarém** (geocode `1506807`) in 2013 requires a backcasting adjustment to maintain panel consistency. Mojuí dos Campos has no Census records for 2000 or 2010, since it did not exist as an independent administrative unit at those reference dates.
+
+I address this by inserting placeholder rows for Mojuí dos Campos in 2000 and 2010 with missing values, then imputing those values directly from Santarém's observed formal and informal employment counts for the same years. This approach differs slightly from the GDP backcasting procedure (see Section 3.2.4), where proportional shares were applied: here, because the Census already records employment by municipality and the pre-split territory of Mojuí was administratively part of Santarém, I use Santarém's raw counts as the basis for imputation, under the assumption that the two territories' labor market structure was indistinguishable prior to the split. The interpolation step that follows (Section 3.1.4) then produces smooth trajectories for both municipalities between the census anchor points.
+
+```{r}
+population_informal_mj_adjusted <- population_informal %>%
+  mutate(geocode = as.numeric(geocode)) %>%
+  bind_rows(
+    tibble(
+      geocode  = 1504752,
+      munic    = "Mojuí dos Campos (PA)",
+      Formal   = NA_real_,
+      Informal = NA_real_,
+      year     = c(2000, 2010)
+    )
+  ) %>%
+  distinct(geocode, year, .keep_all = TRUE) %>%
+  left_join(
+    population_informal %>%
+      mutate(geocode = as.numeric(geocode)) %>%
+      filter(geocode == 1506807) %>%
+      select(year,
+             informal_santarem = Informal,
+             formal_santarem   = Formal),
+    by = "year"
+  ) %>%
+  mutate(
+    Informal = case_when(
+      geocode == 1504752 & year < 2013 ~ informal_santarem,
+      TRUE ~ Informal
+    ),
+    Formal = case_when(
+      geocode == 1504752 & year < 2013 ~ formal_santarem,
+      TRUE ~ Formal
+    )
+  ) %>%
+  select(-informal_santarem, -formal_santarem)
+```
+
+#### 3.1.4. Construct the informality rate and interpolate
+
+I compute the informality rate as the share of informal workers in the total occupied population (formal + informal) for each municipality-year observation:
+
+$$
+\text{Informality}_{it} = \frac{\text{Informal}_{it}}{\text{Formal}_{it} + \text{Informal}_{it}}
+$$
+
+where $\text{Informal}_{it}$ and $\text{Formal}_{it}$ are the counts of informally and formally employed workers in municipality $i$ at census year $t$.
+
+I then expand the panel to cover all years from 2000 to 2022 using `complete()` and apply linear interpolation via `zoo::na.approx()` to fill non-census years. The formal rate is derived as the complement:
+
+$$
+\text{Formal}_{it'} = 1 - \text{Informality}_{it'}, \qquad \forall \ t' \notin \{2000, 2010, 2022\}
+$$
+
+Municipality names are propagated across the expanded rows using a bidirectional fill.
+
+```{r}
+population_informal_panel <- population_informal_mj_adjusted %>%
+  mutate(geocode = as.numeric(geocode),
+         year    = as.integer(year)) %>%
+  group_by(geocode, year) %>%
+  summarise(
+    munic    = first(munic),
+    informal = first(Informal),
+    .groups  = "drop"
+  ) %>%
+  group_by(geocode) %>%
+  complete(year = 2000:2022) %>%
+  arrange(geocode, year) %>%
+  fill(munic, .direction = "downup") %>%
+  mutate(
+    informal_interp = zoo::na.approx(informal, x = year, na.rm = FALSE),
+    formal_interp   = 100 - informal_interp
+  ) %>%
+  ungroup()
+```
+
+#### 3.1.5. Check and validate the data
+
+I inspect the interpolated series visually for Mojuí dos Campos and Santarém to verify that the trajectories are plausible and internally consistent. I also confirm that no municipality has a constant informality rate across all years (which would suggest a failed interpolation) and that the series is bounded between 0 and 100.
+
+```{r}
+# Visual inspection for Mojuí dos Campos and Santarém
+ggplot(filter(population_informal_panel, geocode == 1504752),
+       aes(x = year, y = informal_interp)) +
+  geom_line(linewidth = 1.2, color = "salmon") +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Informality rate — Mojuí dos Campos (1504752)",
+       x = "Year", y = "Informality rate (%)")
+
+ggplot(filter(population_informal_panel, geocode == 1506807),
+       aes(x = year, y = informal_interp)) +
+  geom_line(linewidth = 1.2, color = "red") +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Informality rate — Santarém (1506807)",
+       x = "Year", y = "Informality rate (%)")
+
+# Bounds check
+population_informal_panel %>%
+  summarise(
+    min_informal = min(informal_interp, na.rm = TRUE),
+    max_informal = max(informal_interp, na.rm = TRUE),
+    n_na         = sum(is.na(informal_interp))
+  )
+```
+
+The final dataset retains only the geocode, year, and interpolated informality rate, saved in CSV, Excel, and RDS formats for downstream merging.
+
+```{r}
+data_population_informal_panel <- population_informal_panel %>%
+  select(geocode, year, informal_interp) %>%
+  rename(informal = informal_interp)
+
+data_population_informal_panel %>% write_csv("_data/outcome_population_informality.csv")
+data_population_informal_panel %>% write_xlsx("_data/outcome_population_informality.xlsx")
+data_population_informal_panel %>% write_rds("_data/outcome_population_informality.rds")
+```
+
+
+### 3.2. Municipal GDP per capita
+
+#### 3.2.1. Understand the data
+
+Municipal GDP data comes from the **Instituto Brasileiro de Geografia e Estatística (IBGE)**, which publishes the *Produto Interno Bruto dos Municípios* series annually. The variable of interest is GDP at current prices, expressed in thousands of Brazilian Reais (*Produto Interno Bruto a preços correntes — Mil Reais*). The dataset covers Brazilian municipalities from 2002 to 2023.
+
+Population data, required to compute GDP per capita, comes from the **2000, 2010 and 2022 Demographic Censuses**, which provide headcount population for those benchmark years. Since census data is only available at decennial intervals (plus the 2022 wave), I interpolate population linearly across non-census years to construct a continuous annual panel, following the same procedure applied to other socioeconomic variables in this dataset.
+
+To allow temporal comparability, all GDP values are **deflated to 2024 Brazilian Reais** using the **IPCA** national consumer price index (IBGE). The deflator is the same used for wage and Bolsa Família transfer variables throughout this appendix (see @sec-deflation for details on its construction).
+
+#### 3.2.2. Import and inspect the data
+
+The raw GDP file requires skipping three header rows and setting a maximum row count to exclude metadata appended at the bottom of the file by IBGE. Missing value codes used by IBGE (`"..."` and `"-"`) are declared explicitly at import so that they are correctly parsed as `NA` rather than treated as strings.
+
+```{r}
+data_ipca_deflator <- read_csv(
+  "_data/deflator_ipca_2024.csv",
+  col_types = cols(
+    year          = col_integer(),
+    ipca_index    = col_double(),
+    ipca_deflator = col_double()
+  )
+) %>%
+  select(year, ipca_deflator)
+
+data_pib_munic     <- read_csv(
+  "_data/raw_ibge_pib/pib_munic.csv",
+  skip  = 3,
+  n_max = 5570,
+  na    = c("", "NA", "...", "-")
+)
+
+data_pop_2000_2010 <- read_excel("_data/raw_ibge_pib/pop_censo_2010_2000.xlsx")
+data_pop_2022      <- read_excel("_data/raw_ibge_pib/pop_censo_2022.xlsx")
+```
+
+#### 3.2.3. Clean and transform the data
+
+**Population panel.** I reshape the 2000/2010 census data and the 2022 census data from wide to long format and bind them into a single panel. I then expand the panel to include all years from 2000 to 2022 using `complete()` and linearly interpolate population values between census years using `zoo::na.approx()`. Municipality names are filled in both directions to avoid `NA`s arising from the expansion step.
+
+```{r}
+data_pop_2000_2010_long <- data_pop_2000_2010 %>%
+  mutate(across(c(`2000`, `2010`), ~ parse_number(as.character(.)))) %>%
+  pivot_longer(cols      = c(`2000`, `2010`),
+               names_to  = "year",
+               values_to = "population") %>%
+  mutate(year = as.integer(year), geocode = as.character(geocode)) %>%
+  select(geocode, municipality, year, population)
+
+data_pop_2022_long <- data_pop_2022 %>%
+  mutate(year     = 2022L,
+         geocode  = as.character(geocode),
+         population = as.numeric(population)) %>%
+  select(geocode, municipality, year, population)
+
+data_population_panel <- bind_rows(data_pop_2000_2010_long,
+                                   data_pop_2022_long) %>%
+  arrange(geocode, year) %>%
+  group_by(geocode) %>%
+  complete(year = 2000:2022) %>%
+  arrange(year) %>%
+  mutate(
+    population = zoo::na.approx(population, x = year, na.rm = FALSE)
+  ) %>%
+  fill(municipality, .direction = "downup") %>%
+  ungroup() %>%
+  select(geocode, year, municipality, population)
+```
+
+**GDP panel.** I reshape the wide GDP file to long format, converting year columns (2002–2023) to an integer variable and GDP values to numeric. I convert GDP from thousands to full Reais by multiplying by 1,000. I then join the IPCA deflator and deflate all values to 2024 Reais:
+
+$$
+GDP^{2024}_{it} = GDP^{nominal}_{it} \times \text{Deflator}(t), \qquad \text{where} \quad \text{Deflator}(t) = \frac{IPCA_{2024}}{IPCA_t}
+$$
+
+```{r}
+data_pib_long <- data_pib_munic %>%
+  rename(geocode      = Cód.,
+         municipality = Município) %>%
+  mutate(geocode = as.character(geocode)) %>%
+  pivot_longer(cols      = `2002`:`2023`,
+               names_to  = "year",
+               values_to = "pib_thousand_brl") %>%
+  mutate(
+    year    = as.integer(year),
+    pib_brl = as.numeric(pib_thousand_brl) * 1000
+  ) %>%
+  left_join(data_ipca_deflator, by = "year") %>%
+  mutate(
+    pib_brl_2024 = pib_brl * ipca_deflator
+  ) %>%
+  arrange(geocode, year)
+```
+
+I then merge the deflated GDP panel with the population panel:
+
+```{r}
+data_pib_per_capita_panel <- data_pib_long %>%
+  left_join(
+    data_population_panel %>% select(geocode, year, population),
+    by = c("geocode", "year")
+  )
+```
+
+#### 3.2.4. Handle the Mojuí dos Campos municipality split
+
+A structural data challenge arises from the creation of **Mojuí dos Campos** (IBGE geocode `1504752`) in 2012, when it was split off from **Santarém** (geocode `1506807`), in the state of Pará. Prior to 2013, Mojuí dos Campos did not exist as an independent administrative unit and therefore has no historical GDP or population records in the IBGE series. Leaving it as `NA` for the pre-2013 period would introduce a spurious discontinuity in the panel and render the municipality unusable for the analysis.
+
+To address this, I backcast GDP and population for Mojuí dos Campos for years prior to 2013 by applying the municipality's 2022 share of the Santarém–Mojuí combined total to Santarém's historical values. I use 2022 — the most recent census year with reliable, independently measured data for both municipalities — as the reference year for computing these shares. Santarém's pre-2013 values are simultaneously adjusted downward to subtract the imputed Mojuí contribution, ensuring that the two municipalities sum to the correct historical aggregate throughout the panel.
+
+Since the dataset contains both nominal and deflated GDP series, I compute separate 2022 shares for each: $\hat{s}^{GDP}$ for nominal values and $\hat{s}^{GDP,2024}$ for deflated values. Population shares ($\hat{s}^{pop}$) are identical across both series. Formally, for any year $t < 2013$:
+
+$$
+GDP^{Mojuí}_{t} = GDP^{Santarém}_{t} \times \hat{s}^{GDP}, \qquad GDP^{Mojuí,2024}_{t} = GDP^{Santarém,2024}_{t} \times \hat{s}^{GDP,2024}
+$$
+
+$$
+GDP^{Santarém*}_{t} = GDP^{Santarém}_{t} \times (1 - \hat{s}^{GDP}), \qquad GDP^{Santarém*,2024}_{t} = GDP^{Santarém,2024}_{t} \times (1 - \hat{s}^{GDP,2024})
+$$
+
+$$
+Pop^{Mojuí}_{t} = Pop^{Santarém}_{t} \times \hat{s}^{pop}, \qquad Pop^{Santarém*}_{t} = Pop^{Santarém}_{t} \times (1 - \hat{s}^{pop})
+$$
+
+This is the same backcasting strategy applied to the Bolsa Família and PEA datasets elsewhere in this appendix (see @sec-bolsafamilia).
+
+The operations are split across two sequential `mutate()` calls to avoid within-mutate column reference ambiguity in dplyr: the first call backcasts Mojuí's values from Santarém's original pre-split records; the second subtracts the imputed Mojuí share from Santarém's records.
+
+```{r}
+id_mojui    <- "1504752"
+id_santarem <- "1506807"
+
+shares_2022 <- data_pib_per_capita_panel %>%
+  filter(year == 2022, geocode %in% c(id_mojui, id_santarem)) %>%
+  summarise(
+    pop_mojui      = population[geocode == id_mojui],
+    pop_sant       = population[geocode == id_santarem],
+    gdp_mojui      = pib_brl[geocode == id_mojui],
+    gdp_sant       = pib_brl[geocode == id_santarem],
+    gdp_mojui_2024 = pib_brl_2024[geocode == id_mojui],
+    gdp_sant_2024  = pib_brl_2024[geocode == id_santarem]
+  ) %>%
+  mutate(
+    pop_share_mojui      = pop_mojui / (pop_mojui + pop_sant),
+    gdp_share_mojui      = gdp_mojui / (gdp_mojui + gdp_sant),
+    gdp_share_mojui_2024 = gdp_mojui_2024 / (gdp_mojui_2024 + gdp_sant_2024)
+  )
+
+data_pib_adjusted <- data_pib_per_capita_panel %>%
+  left_join(shares_2022, by = character()) %>%
+  group_by(year) %>%
+  # Step A: backcast Mojuí from Santarém's original values
+  mutate(
+    pib_brl = case_when(
+      geocode == id_mojui & year < 2013 ~
+        pib_brl[geocode == id_santarem] * gdp_share_mojui,
+      TRUE ~ pib_brl
+    ),
+    pib_brl_2024 = case_when(
+      geocode == id_mojui & year < 2013 ~
+        pib_brl_2024[geocode == id_santarem] * gdp_share_mojui_2024,
+      TRUE ~ pib_brl_2024
+    ),
+    population = case_when(
+      geocode == id_mojui & year < 2013 ~
+        population[geocode == id_santarem] * pop_share_mojui,
+      TRUE ~ population
+    )
+  ) %>%
+  # Step B: subtract Mojuí's imputed share from Santarém's original values
+  mutate(
+    pib_brl = case_when(
+      geocode == id_santarem & year < 2013 ~
+        pib_brl * (1 - gdp_share_mojui),
+      TRUE ~ pib_brl
+    ),
+    pib_brl_2024 = case_when(
+      geocode == id_santarem & year < 2013 ~
+        pib_brl_2024 * (1 - gdp_share_mojui_2024),
+      TRUE ~ pib_brl_2024
+    ),
+    population = case_when(
+      geocode == id_santarem & year < 2013 ~
+        population * (1 - pop_share_mojui),
+      TRUE ~ population
+    )
+  ) %>%
+  ungroup() %>%
+  filter(year <= 2022)
+```
+
+#### 3.2.5. Construct GDP per capita and log transformation
+
+I compute GDP per capita as the ratio of real GDP (in 2024 Reais) to municipal population, and apply a natural logarithm transformation to compress the distribution and reduce the influence of extreme values, which is standard practice for income variables in panel analyses:
+
+$$
+GDPpc^{2024}_{it} = \frac{GDP^{2024}_{it}}{Population_{it}}
+$$
+
+$$
+\ln GDPpc^{2024}_{it} = \ln\left(\frac{GDP^{2024}_{it}}{Population_{it}}\right)
+$$
+
+where $GDP^{2024}_{it}$ is real municipal GDP in 2024 Reais and $Population_{it}$ is the interpolated population of municipality $i$ in year $t$.
+
+```{r}
+data_gdp_per_capita_panel <- data_pib_adjusted %>%
+  mutate(
+    gdp_per_capita_2024     = if_else(
+      !is.na(population) & population > 0,
+      pib_brl_2024 / population,
+      NA_real_
+    ),
+    log_gdp_per_capita_2024 = log(gdp_per_capita_2024)
+  ) %>%
+  select(geocode, municipality, year,
+         pib_brl_2024, population,
+         gdp_per_capita_2024, log_gdp_per_capita_2024)
+```
+
+#### 3.2.6. Check and validate the data
+
+I verify that the Mojuí dos Campos and Santarém series are internally consistent by confirming that the two municipalities sum to the original Santarém aggregate in all pre-2013 years, for both nominal and deflated GDP and for population. I also inspect the dataset for missing values, confirm that all geocodes are valid 7-digit IBGE identifiers, and cross-validate a random sample of observations against IBGE's online *Sistema IBGE de Recuperação Automática* (SIDRA) platform.
+
+```{r}
+# Santarém + Mojuí should recover the original combined total in all pre-2013 years
+data_pib_adjusted %>%
+  filter(geocode %in% c(id_mojui, id_santarem), year < 2013) %>%
+  group_by(year) %>%
+  summarise(
+    combined_pib      = sum(pib_brl),
+    combined_pib_2024 = sum(pib_brl_2024),
+    combined_pop      = sum(population)
+  ) %>%
+  left_join(
+    data_pib_per_capita_panel %>%
+      filter(geocode == id_santarem, year < 2013) %>%
+      select(year,
+             original_pib      = pib_brl,
+             original_pib_2024 = pib_brl_2024,
+             original_pop      = population),
+    by = "year"
+  ) %>%
+  mutate(
+    check_pib      = round(combined_pib      - original_pib,      2),
+    check_pib_2024 = round(combined_pib_2024 - original_pib_2024, 2),
+    check_pop      = round(combined_pop      - original_pop,       2)
+  ) %>%
+  select(year, check_pib, check_pib_2024, check_pop) %>%
+  print()
+# All three check columns should be 0 (or negligible floating-point error)
+```
+
+### 3.3. Electoral competitiveness
+
+#### 3.3.1. Understand the data
+
+The electoral data used in this study comes from the **Tribunal Superior Eleitoral (TSE)**, Brazil's supreme electoral authority, which publishes official results for all federal, state, and municipal elections. The raw microdata was accessed through the **Base dos Dados** initiative [@basedosdados], a Brazilian open-data infrastructure project that standardizes, documents, and makes publicly available a wide range of administrative and governmental datasets. Base dos Dados pre-processes the TSE raw files to harmonize variable names, resolve encoding inconsistencies, and assign stable municipality identifiers compatible with the IBGE geocode standard.
+
+I use the municipal election results for mayoral races (*cargo = "prefeito"*) from the **ordinary elections** (*eleição ordinária*) held in 2000, 2004, 2008, 2012, 2016, and 2020. The raw dataset is structured at the voting section level (*seção eleitoral*), meaning each row records the number of votes received by a given candidate in a given voting section of a given municipality. The key variables are: `ano` (election year), `id_municipio` (7-digit IBGE municipality code), `id_candidato_bd` (unique candidate identifier assigned by Base dos Dados), `sigla_partido` (party abbreviation), `turno` (round), `tipo_eleicao` (election type), and `votos` (votes cast).
+
+#### 3.3.2. Clean and transform the data
+
+The construction of the electoral competitiveness variables follows three sequential aggregation steps.
+
+**Step 1 — Filter and pre-process.** I restrict the data to first-round results (`turno == 1`) of ordinary elections (`tipo_eleicao == "eleicao ordinaria"`), which drops supplementary elections (*eleições suplementares*) that are not comparable to regular electoral cycles. This choice follows the standard approach in the Brazilian electoral competition literature [@chamon2019; @arvate2013], which uses first-round vote shares to ensure comparability across all municipalities, given that only municipalities above 200,000 registered voters are subject to a second-round runoff rule. I also convert the `votos` variable from character to integer, as it is stored as a string in the raw TSE files.
+
+**Step 2 — Aggregate to the candidate $\times$ municipality $\times$ year level.** Since the raw data is recorded at the voting-section level, I sum votes across all sections within each municipality for each candidate, identified by `id_candidato_bd`. This produces one row per candidate per municipality per election year, with the variable `candidate_votes` representing total votes received by that candidate in that municipality.
+
+**Step 3 — Compute vote shares.** I calculate the total number of valid votes cast in each municipality-year as the sum of `candidate_votes` across all candidates, and then divide each candidate's total votes by that sum to obtain their individual vote share:
+
+$$
+s_{kit} = \frac{V_{kit}}{\sum_{j=1}^{N_{it}} V_{jit}}
+$$
+
+where $V_{kit}$ is the total votes received by candidate $k$ in municipality $i$ at election year $t$, and $N_{it}$ is the number of candidates running in that municipality-year.
+
+```{r}
+# Step 1: Filter and pre-process
+mayors <- data_elections_raw %>%
+  filter(
+    cargo        == "prefeito",
+    turno        == "1",
+    tipo_eleicao == "eleicao ordinaria"
+  ) %>%
+  mutate(
+    year  = as.integer(ano),
+    votes = as.integer(votos)
+  )
+
+# Step 2: Aggregate to candidate × municipality × year
+candidates <- mayors %>%
+  group_by(year, id_municipio, sigla_uf, id_candidato_bd,
+           numero_candidato, sigla_partido, numero_partido) %>%
+  summarise(
+    candidate_votes = sum(votes, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Step 3: Compute vote shares
+candidates <- candidates %>%
+  group_by(year, id_municipio) %>%
+  mutate(
+    total_votes = sum(candidate_votes),
+    vote_share  = candidate_votes / total_votes
+  ) %>%
+  ungroup()
+```
+
+#### 3.3.3. Construct the competitiveness variables
+
+From the candidate-level dataset, I collapse to the municipality $\times$ year level and construct five variables, described below.
+
+##### Effective Number of Candidates (ENC)
+
+The **Effective Number of Candidates** ($ENC$) is the standard measure of electoral fragmentation in the political economy literature [@laakso1979; @chamon2019; @arvate2013]. It is defined as the inverse of the Herfindahl-Hirschman Index (HHI) of vote-share concentration:
+
+$$
+ENC_{it} = \frac{1}{\sum_{k=1}^{N_{it}} s_{kit}^{2}}
+$$
+
+where $s_{kit}$ is the vote share of candidate $k$ in municipality $i$ at election $t$. The ENC equals 1 when a single candidate runs uncontested and increases as both the number of candidates and the evenness of vote distribution grow. It thus captures not only the raw count of competitors but also how competitively their votes are distributed, giving greater weight to races where multiple candidates hold substantial shares. An ENC of 2, for instance, indicates the electoral equivalent of two equally matched candidates, regardless of how many nominal candidates appear on the ballot.
+
+##### Margin of Victory (MoV)
+
+The **Margin of Victory** ($MoV$) is defined as the difference in vote shares between the first- and second-placed candidates:
+
+$$
+MoV_{it} = s_{(1)it} - s_{(2)it}
+$$
+
+where $s_{(1)it}$ and $s_{(2)it}$ are the vote shares of the winner and the runner-up in municipality $i$ at election $t$, respectively. Smaller values indicate closer races and therefore greater electoral pressure on the winner. Unlike winner vote share alone, MoV correctly classifies fragmented races where the winner holds a low absolute share but faces no single strong challenger, and closely contested two-candidate races where the winner holds a majority but barely defeated one opponent. This distinction is substantively relevant: a mayor who won with 36% of the vote in a four-candidate race may face less re-election risk than one who won with 53% against a single strong rival.
+
+##### Competitive dummy
+
+I construct a binary indicator equal to 1 if the election was competitive, defined as a race in which the margin of victory is below 10 percentage points:
+
+$$
+\text{Competitive}_{it} = \mathbb{1}[MoV_{it} < 0.10]
+$$
+
+This threshold is standard in the literature [@ballotpedia] and identifies elections where the outcome was genuinely uncertain. The dummy is used in robustness checks and descriptive analyses; the continuous $MoV$ is preferred in the main specifications to avoid information loss at the threshold.
+
+##### Uncontested dummy
+
+I flag municipalities where only one candidate ran for mayor:
+
+$$
+\text{Uncontested}_{it} = \mathbb{1}[N_{it} = 1]
+$$
+
+For uncontested races, $MoV$ is undefined (no runner-up exists) and is set to `NA`. $ENC$ is set to 1 by construction. These observations are retained in the dataset but excluded from analyses where electoral competition is the variable of interest, as they represent the structural absence of competition rather than a particular degree of it.
+
+```{r}
+data_competitiveness <- candidates %>%
+  group_by(year, id_municipio, sigla_uf) %>%
+  arrange(year, id_municipio, desc(vote_share)) %>%
+  summarise(
+    enc          = 1 / sum(vote_share^2),
+    mov          = vote_share[1] - vote_share[2],
+    winner_share = vote_share[1],
+    n_candidates = n(),
+    total_votes  = first(total_votes),
+    winner_party = sigla_partido[1],
+    winner_id    = id_candidato_bd[1],
+    .groups      = "drop"
+  ) %>%
+  mutate(
+    competitive  = as.integer(mov < 0.10),
+    uncontested  = as.integer(n_candidates == 1),
+    mov          = if_else(uncontested == 1, NA_real_, mov),
+    enc          = if_else(uncontested == 1, 1, enc)
+  )
+```
+
+#### 3.3.4. Check and validate the data
+
+The final dataset contains 5,113 municipality-year observations across six election cycles (2000, 2004, 2008, 2012, 2016, and 2020). I verify the absence of duplicate municipality-year records and confirm that all `id_municipio` values match valid 7-digit IBGE geocodes. I also inspect the distribution of each variable by election year to identify implausible values and confirm consistency over time.
+
+I cross-validate a random sample of municipality-year observations against the official TSE results published on the TSE website (<https://resultados.tse.jus.br/oficial/app/index.html>), confirming that the aggregated vote totals and winner identities are consistent with the official records.
+
+@tbl-competitiveness-summary presents descriptive statistics for the continuous competitiveness measures, by election year.
+
+```{r}
+#| label: tbl-competitiveness-summary
+#| tbl-cap: "Descriptive statistics for electoral competitiveness variables, by election year"
+
+data_competitiveness %>%
+  filter(uncontested == 0) %>%
+  group_by(year) %>%
+  summarise(
+    N             = n(),
+    `ENC (mean)`  = round(mean(enc,  na.rm = TRUE), 2),
+    `ENC (sd)`    = round(sd(enc,    na.rm = TRUE), 2),
+    `MoV (mean)`  = round(mean(mov,  na.rm = TRUE), 3),
+    `MoV (sd)`    = round(sd(mov,    na.rm = TRUE), 3),
+    `% Competitive` = round(100 * mean(competitive, na.rm = TRUE), 1),
+    `% Uncontested` = round(100 * mean(uncontested), 1)
+  ) %>%
+  knitr::kable()
+```
+
+
+#### 3.3.5. Expand to a yearly panel and carry forward electoral values
+
+The competitiveness dataset produced in the previous steps contains one observation per municipality per **election year** (2000, 2004, 2008, 2012, 2016, and 2020). Since the dissertation analysis requires a balanced municipality-year panel covering the full period from 2000 to 2020, I expand the dataset to include all intervening years and carry the electoral values forward across each four-year mayoral term.
+
+The underlying rationale is straightforward: the competitiveness of the election that brought a mayor to office characterizes the political context under which that mayor governs for the entirety of their term. The ENC, MoV, and derived dummy variables computed for election year $t$ therefore apply to years $t+1$, $t+2$, and $t+3$, until the next election resets the values. No interpolation is performed between election cycles, as electoral competition has no meaningful continuous trajectory within a term.
+
+Formally, for any non-election year $t'$ belonging to the term initiated by election $t$:
+
+$$
+ENC_{it'} = ENC_{it}, \quad MoV_{it'} = MoV_{it}, \qquad \forall \ t' \in \{t+1, t+2, t+3\}
+$$
+
+I first construct a complete panel shell containing all combinations of municipalities and years from 2000 to 2020, then left-join the competitiveness data onto it, and finally apply a downward fill within each municipality. An indicator variable `election_year` is added to distinguish observed election-year values from carried-forward ones.
+
+```{r}
+# Full municipality × year panel shell
+panel_shell <- data_competitiveness %>%
+  distinct(id_municipio, sigla_uf, geocode) %>%
+  cross_join(tibble(year = 2000:2020))
+
+# Join and carry forward
+panel_competitiveness <- panel_shell %>%
+  left_join(
+    data_competitiveness %>%
+      select(year, id_municipio, enc, mov, winner_share,
+             n_candidates, total_votes, winner_party, winner_id,
+             competitive, uncontested),
+    by = c("year", "id_municipio")
+  ) %>%
+  arrange(id_municipio, year) %>%
+  group_by(id_municipio) %>%
+  fill(enc, mov, winner_share, n_candidates, total_votes,
+       winner_party, winner_id, competitive, uncontested,
+       .direction = "down") %>%
+  ungroup() %>%
+  mutate(
+    election_year = as.integer(year %in% c(2000, 2004, 2008, 2012, 2016, 2020))
+  )
+```
+
+Any remaining `NA` values after the fill reflect municipalities that are absent from the TSE records for a given election cycle — typically units created by municipal splits after 2000 that did not yet exist as independent electoral jurisdictions. These are treated as structural missings and retained as `NA` rather than imputed.
