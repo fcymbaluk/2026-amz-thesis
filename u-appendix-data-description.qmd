@@ -2043,3 +2043,199 @@ panel_competitiveness <- panel_shell %>%
 ```
 
 Any remaining `NA` values after the fill reflect municipalities that are absent from the TSE records for a given election cycle — typically units created by municipal splits after 2000 that did not yet exist as independent electoral jurisdictions. These are treated as structural missings and retained as `NA` rather than imputed.
+
+## 4. Agricultural commodity prices
+
+The central explanatory variable in this dissertation is a **municipality-specific agricultural price index** that measures each municipality's exposure to movements in international commodity prices. The index follows the strategy of @harding2021 and @assuncao2015, and has the structure of a *shift-share* (Bartik) instrument [@bartik1991; @goldsmithpinkham2020]: a common, exogenous time series of international prices (the *shift*) is combined with predetermined, municipality-specific weights that capture the local importance of each commodity (the *share*). Because the weights are fixed at the start of the sample and the prices are set on world markets, the resulting index is plausibly exogenous to the deforestation and policy dynamics that occur within Brazilian municipalities during the study period.
+
+I build the index from three sources: international prices from the **World Bank Pink Sheet**; predetermined crop weights from the IBGE **Municipal Agricultural Production survey (PAM)**; and predetermined cattle weights from the IBGE **Municipal Livestock survey (PPM)**. Crops and cattle are kept as two separate indices, for the reasons explained in @sec-cattle-weights.
+
+### 4.1. International commodity prices {#sec-prices}
+
+#### 4.1.1. Understand the data
+
+International prices come from the World Bank *Commodity Price Data*, known as the **"Pink Sheet"**, which reports benchmark prices for primary commodities traded on world markets (available at <https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/world-bank-commodities-price-data-the-pink-sheet>, accessed in June 15, 2026). The Pink Sheet publishes each series in both **nominal** and **real (constant 2010 US dollars)** terms.
+
+I use the **real** series. Deforestation responds to the *real* opportunity cost of clearing land — the profitability of agriculture relative to the general price level — so a nominal increase that merely reflects worldwide inflation does not change the incentive to deforest. Using real prices also removes the secular inflationary trend that would otherwise dominate the descriptive series. This follows @harding2021, who deflate their commodity prices with the same World Bank deflator.
+
+The World Bank obtains real prices by deflating nominal prices with the **Manufactures Unit Value Index (MUV)** — a US-dollar index of the prices of manufactured goods exported by fifteen major economies — using 2010 as the base year:
+
+$$
+P^{\text{real}}_{jt} = \frac{P^{\text{nominal}}_{jt}}{MUV_t / 100}
+$$
+
+The MUV expresses commodity prices in terms of their purchasing power over manufactured goods, which is the relevant deflator for producers whose revenues are in commodities but whose costs are largely in manufactures.
+
+#### 4.1.2. Import and normalize the data
+
+I read the *Annual Prices (Real)* sheet and keep the five commodities that enter the index: **soybeans, maize, rice (Thai 5%), cotton (A Index), and beef**. The first four are the crops that dominate planted area in the sample (see @sec-crop-weights), and beef captures the cattle-ranching channel that drives most land conversion in the Legal Amazon. I restrict the series to the 2000–2020 period and normalize each commodity to its base-year (2000) value, so that every series equals 1 in 2000 and later values express cumulative real change:
+
+$$
+\tilde{P}_{jt} = \frac{P^{\text{real}}_{jt}}{P^{\text{real}}_{j,2000}}
+$$
+
+```{r}
+#| eval: false
+
+prices_raw <- read_excel(
+  "_data/raw-prices-world_bank-pink_sheet.xlsx",
+  sheet = "Annual Prices (Real)", skip = 6
+)
+names(prices_raw) <- str_trim(names(prices_raw))
+names(prices_raw)[1] <- "year"
+
+prices_norm <- prices_raw %>%
+  slice(-1) %>%                                   # drop the units row
+  select(year,
+         soy = Soybeans, corn = Maize, rice = `Rice, Thai 5%`,
+         cotton = `Cotton, A Index`, beef = Beef) %>%
+  mutate(across(everything(), as.numeric)) %>%
+  filter(year >= 2000, year <= 2020) %>%
+  mutate(across(c(soy, corn, rice, cotton, beef),
+                ~ .x / .x[year == 2000]))         # normalize to 2000 = 1
+```
+
+Because each series is normalized, the heterogeneous raw units (US\$/metric ton for the grains, US\$/kg for cotton and beef) become irrelevant: all five commodities enter the index as unit-free indices equal to 1 in the base year.
+
+### 4.2. Crop weights {#sec-crop-weights}
+
+#### 4.2.1. Understand the data
+
+The crop weights measure how exposed each municipality is to each crop's price. They come from the IBGE **Produção Agrícola Municipal (PAM)**, *Table 5457* — variable *Área plantada ou destinada à colheita* (planted area) — accessed through the SIDRA system (<https://sidra.ibge.gov.br/pesquisa/pam>, accessed June 15, 2026).
+
+I use **planted area**, not harvested area or value of production, and the choice is deliberate. Planted area reflects the farmer's *ex ante* land-allocation decision, which is the structural measure of a municipality's exposure to a crop. Harvested area is contaminated by within-year weather and crop-abandonment shocks, while value of production embeds price itself and would therefore break the exogeneity the index relies on.
+
+The four crops — **soybeans, maize, rice, and cotton** — were selected by ranking crops by planted area across the sample over 2000–2002; together they account for the large majority of cultivated area in the Legal Amazon, with soybeans and maize dominating the deforestation frontier. Cassava, although widely planted, is excluded because it is a subsistence crop with no internationally traded price.
+
+#### 4.2.2. Construct the weights
+
+I reshape the wide SIDRA export to a tidy municipality $\times$ year $\times$ crop format, recode the SIDRA symbols (treating "`-`" as a true zero and "`...`" as missing), convert planted area to km², and divide by total municipal area (from IBGE, see @sec-deforestation conventions). The weight of crop $j$ in municipality $i$ is its planted area as a share of the municipality's total area, averaged over the base period 2000–2002:
+
+$$
+w_{ij} = \frac{\overline{A}_{ij,\,2000\text{–}2002}}{\text{Area}_i}
+$$
+
+where $\overline{A}_{ij}$ is average planted area (km²) and $\text{Area}_i$ is the municipality's total area (km²). Averaging over three years smooths any single-year anomaly, and fixing the weights at the start of the sample makes them **predetermined** — they are not affected by farmers' responses to the price and policy variation the analysis exploits. Municipal area is used as the denominator (rather than total cropland) so that the weight expresses each crop as a land-use *intensity*, a form that also supports the descriptive figures on crop-area evolution.
+
+```{r}
+#| eval: false
+
+# crop_area: tidy long table (geocode, year, crop, area_planted_km2) from PAM 5457
+# areas:     municipal areas (geocode, area_km2) from IBGE
+
+crop_weights <- crop_area %>%
+  filter(year %in% 2000:2002) %>%
+  group_by(geocode, crop) %>%
+  summarise(area_base_km2 = mean(area_planted_km2, na.rm = TRUE),
+            .groups = "drop") %>%
+  left_join(areas, by = "geocode") %>%
+  mutate(w = area_base_km2 / area_km2)
+```
+
+### 4.3. Cattle weights {#sec-cattle-weights}
+
+#### 4.3.1. Understand the data
+
+Cattle exposure comes from the IBGE **Pesquisa da Pecuária Municipal (PPM)**, *Table 3939* (effective cattle herd, in head), also through SIDRA. Unlike crops, cattle has no "planted area", and annual municipal pasture area is not available (it is recorded only in the decennial Agricultural Census). Following @assuncao2015, I therefore measure cattle exposure as **herd density** — head of cattle per km² of municipal area — averaged over the base period:
+
+$$
+w^{\text{cattle}}_{i} = \frac{\overline{H}_{i,\,2000\text{–}2002}}{\text{Area}_i}
+$$
+
+where $\overline{H}_{i}$ is the average cattle herd (head).
+
+Cattle is kept as a **separate** index rather than folded into the crop index, for three reasons. First, its exposure is measured in incompatible units (head per area, not a land share), so it cannot enter the same weighted average. Second, beef prices follow distinct dynamics from crop prices. Third, separating the two channels lets the analysis estimate the crop and ranching effects independently — the more informative specification, given that pasture rather than cropland is the dominant land use following deforestation in the Legal Amazon.
+
+```{r}
+#| eval: false
+
+# cattle_herd: tidy long table (geocode, year, head) from PPM 3939
+
+cattle_weights <- cattle_herd %>%
+  filter(year %in% 2000:2002) %>%
+  group_by(geocode) %>%
+  summarise(herd_base = mean(head, na.rm = TRUE), .groups = "drop") %>%
+  left_join(areas, by = "geocode") %>%
+  mutate(w_cattle = herd_base / area_km2)
+```
+
+### 4.4. The municipality-specific price index {#sec-price-index}
+
+I combine the normalized prices with the predetermined weights to obtain, for each municipality and year, a crop price index and a cattle price index. The crop index is the weighted sum of the normalized crop prices:
+
+$$
+P^{\text{crop}}_{it} = \sum_{j \,\in\, \{\text{soy, maize, rice, cotton}\}} w_{ij}\,\tilde{P}_{jt}
+$$
+
+and the cattle index is the cattle weight multiplied by the normalized beef price:
+
+$$
+P^{\text{cattle}}_{it} = w^{\text{cattle}}_{i}\,\tilde{P}^{\text{beef}}_{t}
+$$
+
+```{r}
+#| eval: false
+
+crop_prices <- prices_norm %>%
+  select(year, soy, corn, rice, cotton) %>%
+  pivot_longer(-year, names_to = "crop", values_to = "price")
+
+crop_index <- crop_weights %>%
+  inner_join(crop_prices, by = "crop", relationship = "many-to-many") %>%
+  group_by(geocode, year) %>%
+  summarise(price_index_crop = sum(w * price), .groups = "drop")
+
+cattle_index <- cattle_weights %>%
+  crossing(prices_norm %>% select(year, beef)) %>%
+  mutate(price_index_cattle = w_cattle * beef)
+```
+
+Because the weights are fixed at 2000–2002, all time variation in both indices comes from world prices, weighted by each municipality's predetermined commodity mix. In the econometric analysis the indices enter with a **one-year lag**, reflecting that deforestation recorded for year $t$ (the August $t-1$ to July $t$ window) responds to the prices farmers observed when making the previous season's land-use decisions. The crop and cattle indices are entered as two separate regressors.
+
+#### 4.4.1. Check and validate the data
+
+I confirm that every commodity series equals exactly 1 in the base year 2000, and that the real series reproduce the well-documented commodity cycles — in particular the 2008 and 2011 price peaks — which provides a sanity check on the deflation and normalization. I verify the absence of duplicate municipality–year records in both indices, and I check coverage by confirming that the panel municipalities are matched in the PAM and PPM sources; the small number of municipalities absent from those surveys (typically units with no reported crop or herd) are carried as `NA` rather than imputed. Finally, I inspect the distribution of the constructed indices over time to confirm that they track the underlying price series weighted by each municipality's commodity mix.
+
+
+## TO FURTHER REVIEW:
+
+## Population-normalized indicators and endogeneity — draft text for write-up
+
+Notation/choices to confirm before pasting:
+- Census years: written as **2000, 2010, and 2022** (adjust if your data labels the last wave 2020).
+- Transfer denominator: shown as **[total population / municipal quota]** — pick the one you adopt.
+- Citation keys `@bartik1991`, `@goldsmithpinkham2020` — confirm against your `references.bib`.
+
+---
+
+### For the methodological section
+
+Several of the social variables enter the analysis as population-normalized rates, which requires choosing a denominator. For the formal-employment indicators I normalize by the working-age population (*População em Idade Ativa*, PIA); for the Bolsa Família intensity measure I normalize by [total population / the program's municipal quota]. These choices are made on identification grounds rather than by convention.
+
+The natural alternative denominator, the economically active population (PEA, the labor force), is endogenous to the treatment. Labor-force participation responds to agricultural commodity prices — the variation the empirical strategy exploits — so a price shock that draws individuals into the labor force inflates the denominator and moves the normalized rate mechanically, independently of the numerator. PIA, by contrast, is demographic and predetermined with respect to short-run price movements, and corresponds to the standard employment-to-population ratio used to compare labor-market scale across heterogeneous units.
+
+This distinction is not innocuous under the panel specification. A PEA-normalized rate equals the PIA-normalized rate divided by the participation rate (PEA/PIA); in logs the two differ by the log participation rate, which varies across municipalities and over time and itself responds to prices. It is therefore not absorbed by the municipality and year fixed effects, and the denominator choice has real consequences for the estimated coefficients. The same logic applies, more acutely, to the cash-transfer effort measure: there the numerator is also income-responsive (eligibility falls as local incomes rise), so a PEA-normalized transfer ratio is entangled with the treatment through both numerator and denominator, and the labor force is in any case not the program's target population.
+
+A predetermined, base-year denominator (the 2000 Census value held fixed across years) removes the endogeneity by construction. This is a predetermined *rescaling*, however, and not a shift-share (Bartik) instrument [@bartik1991; @goldsmithpinkham2020]: it lacks the interaction of predetermined shares with a common, time-varying shock, and generates no exogenous time variation. Moreover, with the normalized variable in logs and municipality fixed effects, a time-invariant denominator is collinear with the fixed effects and is therefore absorbed, making it equivalent to the unnormalized count — it matters for interpretation, not identification. Because the only component of the denominator that affects the estimates is its within-municipality time variation, and because for PIA that variation is predominantly demographic and only weakly price-responsive, I retain the interpolated, time-varying PIA as the primary denominator. PEA-normalized and base-year-fixed versions are reported as robustness checks.
+
+---
+
+### For the data description section
+
+The population denominators used to normalize the employment and cash-transfer indicators come from the IBGE Census waves (2000, 2010, and 2022) and are linearly interpolated to the intervening years. Two denominators are available: the working-age population (*População em Idade Ativa*, PIA) and the economically active population (*População Economicamente Ativa*, PEA).
+
+I use **PIA** as the primary denominator. PIA is a demographic measure — the population old enough to be part of the labor force — and is therefore predetermined with respect to short-run commodity-price movements, whereas PEA (the labor force) reflects the participation decision, which responds to the same price variation the analysis studies. Normalizing by PIA also yields the conventional employment-to-population ratio, comparable across municipalities of different sizes. I retain the PEA-normalized rates (suffix `_pea`) as an alternative for robustness and for any analysis specifically concerned with formalization conditional on labor-market participation. For the Bolsa Família intensity measure I normalize by [total population / the municipal quota] for the same reason; the transfers-per-PEA variant is kept only as a robustness alternative.
+
+Because the denominators are interpolated between three Census benchmarks, their year-to-year movement is a smooth function of the surrounding Census values rather than a measured annual response. This attenuates short-run reactivity to prices but does not render the denominators fully exogenous, since the Census anchors themselves embed cumulative participation changes. As an additional check I also construct rates with each denominator held fixed at its 2000 value; under the log specification with municipality fixed effects this predetermined denominator is absorbed, so the resulting rates are equivalent — up to a municipality-specific constant — to the corresponding worker or transfer counts.
+
+---
+
+### Key decisions at a glance
+
+- **Primary employment denominator:** interpolated, time-varying **PIA** (demographic, weakly endogenous; its time variation is mostly genuine population change).
+- **Primary transfer-intensity denominator:** **per capita (total population)** or the **municipal quota** — not PEA.
+- **PEA-normalized rates:** retained as **robustness only** (and for formalization-specific questions).
+- **Base-year-fixed denominators:** describe as **predetermined denominators, not Bartik instruments**; note they are **absorbed** under logs + municipality fixed effects.
+- **Interpolation:** **attenuates but does not remove** endogeneity (smooths high-frequency response; Census anchors remain endogenous; adds mild look-ahead).
+- **General rule invoked:** under logs + municipality FE, only the **within-municipality time variation** of a denominator affects the estimates.
+

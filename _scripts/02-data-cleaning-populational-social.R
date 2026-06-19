@@ -220,6 +220,7 @@ population_pia_2022 <- read_excel("_data/raw-population-pia-censo2022.xlsx")
 
 # Inspecting:
 
+
 head(population_pia_2000)
 head(population_pia_2010)
 head(population_pia_2022) 
@@ -325,9 +326,16 @@ population_pia %>%
   filter(id == "1302603") %>% 
   print(n = 26)
 
+
+
+
 #' *2.2.4. Save the data:* I 
 
 write_xlsx(population_pia, "_data/data-population-pia-censo-interpolate.xlsx")
+
+write_csv(population_pia, "_data/outcome_population_pia.csv")
+
+write_rds(population_pia, "_data/outcome_population_pia.rds")
 
 #' *2.3. Labor and Wage Indicators*
 
@@ -355,7 +363,8 @@ rm(list = ls(all = TRUE))
 getwd()
 
 data_employment_rais <- read.csv ("_data/data_employment_rais")
-data_population_pia <- read_excel("_data/data_population_ibge_censo_pia_interpolate.xlsx")
+data_population_pia <- read_excel("_data/data-population-pia-censo-interpolate.xlsx")
+data_population_pea <- read_excel("_data/outcome_population_pea.xlsx")
 
 # Inspecting:
 
@@ -363,6 +372,23 @@ glimpse(data_employment_rais)
 head(data_employment_rais, n=10)
 data_employment_rais %>%
   count(workers_agricultural)
+
+
+range(data_employment_rais$year, na.rm = TRUE)
+
+library(dplyr)
+
+data_employment_rais %>%
+  group_by(workers_agricultural) %>%
+  summarise(
+    workers_total = sum(workers_total, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    share = workers_total / sum(workers_total),
+    share_pct = share * 100
+  )
+
 
 # Transforming: 
 
@@ -533,22 +559,43 @@ data_employment_rais_full <- data_employment_rais_full %>%
 head(data_employment_rais_full, n=10) %>% print(n=10)
 glimpse(data_employment_rais_full)
 
+# Join with PIA data:
+
+data_population_pia
+
 data_population_pia %>% 
-  filter(is.na(pia_total)) %>% 
+  filter(is.na(total)) %>% 
   print(n=30)
 
 data_population_pia <- data_population_pia %>%
-  mutate(geocode = as.integer(id)) %>%
-  select(geocode, year, pia_total = total)
+#  mutate(geocode = as.integer(id)) %>%
+  rename (pia = total) %>%
+  select(geocode, year, pia)
+
+data_population_pia
+
+# Prepare PEA (economically active population) the same way, for a second
+# normalization. The file already carries geocode, year, pea.
+data_population_pea <- data_population_pea %>%
+  mutate(geocode = as.integer(geocode)) %>%
+  select(geocode, year, pea)
+
+data_population_pea
 
 # Inspecting:
 
 glimpse(data_population_pia)
+glimpse(data_population_pea)
 
 # Transforming:
 
 data_labor_with_pia <- data_employment_rais_full %>%
-  left_join(data_population_pia, by = c("year", "geocode"))
+  left_join(data_population_pia, by = c("year", "geocode")) %>%
+  left_join(data_population_pea, by = c("year", "geocode"))
+
+print(data_labor_with_pia, n = 500)
+
+
 
 # Inspecting:
 
@@ -556,28 +603,42 @@ glimpse(data_labor_with_pia)
 sum(is.na(data_labor_with_pia$pia_total))
 data_labor_with_pia %>% summarise_all(~sum(is.na(.)))
 colSums(is.na(data_labor_with_pia))[colSums(is.na(data_labor_with_pia)) > 0]
-data_labor_with_pia$pia_total %>% filter(!complete.cases(.))
+data_labor_with_pia$pia %>% filter(!complete.cases(.))
 
 install.packages("naniar")
 library(naniar)
 vis_miss(data_labor_with_pia)
 
 data_labor_with_pia %>% 
-  filter(is.na(pia_total)) %>% 
+  filter(is.na(pia)) %>% 
   print(n=30)
 
 # Transforming:
 
+# Employment rates normalized by PIA (working-age population)
 data_labor_with_pia <- data_labor_with_pia %>%
   mutate(
-    emp_rate_total      = workers_total / pia_total,
-    emp_rate_agric      = workers_agric / pia_total,
-    emp_rate_low        = workers_low / pia_total,
-    emp_rate_mid        = workers_mid / pia_total,
-    emp_rate_high       = workers_high / pia_total,
-    emp_rate_agri_low   = workers_agri_low / pia_total,
-    emp_rate_agri_mid   = workers_agri_mid / pia_total,
-    emp_rate_agri_high  = workers_agri_high / pia_total,
+    emp_rate_total_pia      = workers_total / pia,
+    emp_rate_agric_pia      = workers_agric / pia,
+    emp_rate_low_pia        = workers_low / pia,
+    emp_rate_mid_pia        = workers_mid / pia,
+    emp_rate_high_pia       = workers_high / pia,
+    emp_rate_agri_low_pia   = workers_agri_low / pia,
+    emp_rate_agri_mid_pia   = workers_agri_mid / pia,
+    emp_rate_agri_high_pia  = workers_agri_high / pia
+  )
+
+# Employment rates normalized by PEA (economically active population)
+data_labor_with_pia <- data_labor_with_pia %>%
+  mutate(
+    emp_rate_total_pea      = workers_total / pea,
+    emp_rate_agric_pea      = workers_agric / pea,
+    emp_rate_low_pea        = workers_low / pea,
+    emp_rate_mid_pea        = workers_mid / pea,
+    emp_rate_high_pea       = workers_high / pea,
+    emp_rate_agri_low_pea   = workers_agri_low / pea,
+    emp_rate_agri_mid_pea   = workers_agri_mid / pea,
+    emp_rate_agri_high_pea  = workers_agri_high / pea
   )
 
 data_labor_with_pia <- data_labor_with_pia %>%
