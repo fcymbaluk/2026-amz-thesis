@@ -8,6 +8,7 @@
 .quarto
 _book/
 _data/
+_output/
 
 /.quarto/
 
@@ -18,3 +19,9 @@ _data/
 *.fdb_latexmk
 *.synctex.gz
 **/*.quarto_ipynb
+
+# LaTeX / Quarto PDF build artifacts
+*.aux
+*.log
+*.toc
+index.tex

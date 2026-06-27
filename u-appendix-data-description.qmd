@@ -1,5 +1,6 @@
 ---
 title: "Dataset description"
+format: pdf
 bibliography: references.bib
 ---
 
@@ -36,6 +37,7 @@ The raw dataset contains 51 columns, including *country, state, municipality nam
 With the initial inspection, I also discover that the values for *Primary Vegetation Suppression* for the years of 1985 and 1986 are all zero, which justifies the exclusion of those years from the dataset.
 
 ```{r}
+#| eval: false
 library(tidyverse)
 library(magrittr)
 library(readxl)
@@ -64,6 +66,7 @@ data_deforestation_raw %>%
 I select relevant columns: *state*, *municipality*, *geocode*, *transition name*, and *area* in hectares for each year from 1987 to 2023, filter for Amazon states and the specific transitions that I am interested in (primary and secondary vegetation and their respective suppression), recode transition names, and reshape the data to a tidy format. I convert the *year* values to integers to enable numeric operations, and the *geocode* values to characters to prevent them from being treated as numbers. Finally, I check if all the *geocode* are correctly registered with seven digits.
 
 ```{r}
+#| eval: false
 data_deforestation_clean <- data_deforestation_raw %>%
   select(
     state, municipality, geocode, transition_name, `1987`:`2023`
@@ -96,6 +99,7 @@ data_deforestation_clean %>%
 As my interest is in the total forest loss (the sum of primary and secondary vegetation loss), I create the new column *vegetation_category* where I categorize the vegetation variables only as *forest* (sum of primary and secondary vegetation) and *deforestation* (sum of loss of primary and secondary vegetation). I summarize the total area in hectares for each vegetation category by municipality, and reshape the data to a wide format.
 
 ```{r}
+#| eval: false
 data_deforestation_tidy <- data_deforestation_clean %>%
   mutate(
     vegetation_category = case_when(
@@ -152,6 +156,7 @@ $$
 where $D_{it}$ is the deforestation area in municipality $i$ at time $t$, $\mu_i$ is the mean deforestation area of municipality $i$, and $\sigma_i$ is the corresponding standard deviation.
 
 ```{r}
+#| eval: false
 data_deforestation_standardized <- data_deforestation_tidy %>%
   mutate(
     rate_deforestation = if_else(
@@ -184,13 +189,16 @@ In this study, I use the Amazon biome as a filter to select the municipalities t
 I import and inspect the data to check the number of municipalities registered with "Amazônia" as the predominant biome, and correctly find 503 entries.
 
 ```{r}
-data_biome_raw <- read_csv2("_data/raw-environ-ibge-biome.csv", locale = locale(encoding = "UTF-8"))
+#| eval: false
 
-unique(data_biome_raw$`Bioma predominante`)
 
-data_biome_raw %>%
-  count(`Bioma predominante`) %>%
-  arrange(desc(n))
+# data_biome_raw <- read_csv2("_data/raw-environ-ibge-biome.csv", locale = locale(encoding = "UTF-8"))
+
+# unique(data_biome_raw$`Bioma predominante`)
+# 
+# data_biome_raw %>%
+#   count(`Bioma predominante`) %>%
+#   arrange(desc(n))
 ```
 
 #### 1.2.3. Clean and tidy the data
@@ -198,6 +206,7 @@ data_biome_raw %>%
 I rename the columns and selected the ones of interest.
 
 ```{r}
+#| eval: false
 data_biome_tidy <- data_biome_raw %>%
   rename (
     geocode = `Geocódigo`,
@@ -218,6 +227,7 @@ data_biome_tidy %>%
 I join the biome data with the deforestation dataset using the geocode to match them. I use the *municipality* column to check if is there mismatch between the municipality information in both datasets, find only one related to a typo in the spelling of a municipality name and keep the column with the correct name. I tidy and clean the final dataset and filter by the *biome* of my interest, the Amazon biome.
 
 ```{r}
+#| eval: false
 data_deforestation_with_biome <- data_deforestation_standardized %>%
   left_join(data_biome_tidy, by = "geocode")
 
@@ -253,6 +263,7 @@ data_deforestation_final <- data_deforestation_with_biome %>%
 I count the number of unique geocodes and municipalities, which was supposed to be 503, as the IBGE classification. I correctly find 503 unique geocodes, but only 499 municipalites. My inspection pointed out that this is because some municipalities in different states can share the same name.
 
 ```{r}
+#| eval: false
 data_deforestation_final %>%
   distinct(geocode) %>%
   count()
@@ -275,7 +286,6 @@ The municipalities with the same name are:
 | 7   | 1200401 | Rio Branco        | AC    |
 | 8   | 5107206 | Rio Branco        | MT    |
 
-
 ### 1.3. PPCDAm
 
 #### 1.3.1. Understand the data
@@ -284,18 +294,18 @@ The data used to identify municipalities subject to intensified environmental en
 
 The *PPCDAm* (*Plano de Ação para Prevenção e Controle do Desmatamento na Amazônia Legal*) introduced a targeted enforcement strategy based on the identification of municipalities with critical deforestation dynamics. The initial legal framework established by the decree defined criteria for inclusion in the list, which typically combined:
 
-- High absolute levels of deforestation;
-- Rapid recent increases in deforestation;
-- Persistent deforestation over time.
+-   High absolute levels of deforestation;
+-   Rapid recent increases in deforestation;
+-   Persistent deforestation over time.
 
 Subsequent ordinances periodically updated the list by adding new municipalities, maintaining those that continued to meet the criteria, and, in some cases, removing municipalities that demonstrated sustained reductions in deforestation and compliance with environmental regulations. All the ordinances could be found here (XXXXX)
 
 Inclusion in the list triggered a set of stricter command-and-control measures, including:
 
-- Intensified environmental monitoring and inspections;
-- Restrictions on access to rural credit;
-- Embargoes on properties associated with illegal deforestation;
-- Increased coordination among federal enforcement agencies.
+-   Intensified environmental monitoring and inspections;
+-   Restrictions on access to rural credit;
+-   Embargoes on properties associated with illegal deforestation;
+-   Increased coordination among federal enforcement agencies.
 
 ### 1.3.2 Data construction and coding
 
@@ -313,22 +323,23 @@ $$
 
 This coding implies the following operational decisions:
 
-- **Treatment group (1):** municipalities listed as priority in a given year;
-- **Control group (0):** municipalities not listed in that year;
+-   **Treatment group (1):** municipalities listed as priority in a given year;
+-   **Control group (0):** municipalities not listed in that year;
 
 ### 1.3.3. Clean and transform the data
 
-The original spreadsheet was organized horizontally, then I reshaped it into long format for the purposes of panel data analysis. 
+The original spreadsheet was organized horizontally, then I reshaped it into long format for the purposes of panel data analysis.
 
 After reshaping, the resulting dataset contains at least four core variables:
 
-- `municipality_name`: municipality name;
-- `ibge_code`: official IBGE municipality code;
-- `year`: reference year;
-- `ppcdam_list`: binary indicator of PPCDAm priority-list status in that year.
-
+-   `municipality_name`: municipality name;
+-   `ibge_code`: official IBGE municipality code;
+-   `year`: reference year;
+-   `ppcdam_list`: binary indicator of PPCDAm priority-list status in that year.
 
 ```{r}
+#| eval: false
+
 library(dplyr)
 library(tidyr)
 library(readr)
@@ -347,7 +358,6 @@ ppcdam_long <- ppcdam_wide %>%
   ) %>%
   arrange(ibge_code, year)
 ```
-
 
 ## 2. Social data
 
@@ -464,8 +474,7 @@ Two SQL queries were executed in Google BigQuery to conduct all filtering, harmo
 
 The **first query** filters the raw data, harmonizes occupation categories, and applies the wage deflation procedure:
 
-```{sql connection=}
-
+``` sql
 SELECT
   r.ano,
   r.sigla_uf,
@@ -496,7 +505,7 @@ After running this script, I saved the resulting table in my personal Google Big
 
 The **second query** constructs the wage-range categories and generates the agricultural versus non-agricultural sector dummy variable:
 
-```{sql connection=}
+``` sql
 
 SELECT
   ano AS year,
@@ -582,6 +591,7 @@ $$
 The code below shows all the interpolation and extrapolation transformations:
 
 ```{r}
+#| eval: false
 library(dplyr)
 library(tidyr)
 library(zoo)  
@@ -646,6 +656,7 @@ I compute the ratios of each variable to the corresponding PIA value for each mu
 First, I aggregate the labor indicators dataset by municipality, year, and wage code, summing the number of total workers and the number of agricultural workers. This step allow me to eliminate the agricultural dummy variable and work directly with counts of agricultural and total employment within each wage category:
 
 ```{r}
+#| eval: false
 totals <- data_employment_rais %>%
   group_by(year, geocode, wage_code) %>%
   summarise(
@@ -677,6 +688,7 @@ I also collapse the wage ranges previously constructed with the data I got from 
 This procedure reduces dimensionality while preserving substantive meaning, facilitating merging with other municipal-year datasets. I also constructed agricultural wage-range indicators, with the same wage-range grouping applied only to agricultural workers:
 
 ```{r}
+#| eval: false
 rais_wage_groups <- data_employment_rais_totals %>%
   mutate(
     wage_group = case_when(
@@ -816,6 +828,7 @@ $$
 Below, the code used to the computations:
 
 ```{r}
+#| eval: false
 data_employment_rais_tidy <- data_employment_rais_totals %>%
   group_by(year, geocode) %>%
   summarise(
@@ -906,7 +919,7 @@ iii. **State effort**: total transfers (in constant prices)
 I store the raw files locally as CSV files with the naming convention `bf-YYYY.txt`. I read all files into R using a function that applies consistent parsing rules and adds a `source_file` variable to track the origin of each observation.
 
 ```{r}
-
+#| eval: false
 bf_path <- "_data/raw_mds_bolsa_familia"
 
 bf_files <- list.files(
@@ -934,6 +947,7 @@ data_bf_all <- map_dfr(bf_files, read_bf)
 I apply a set of integrity checks to ensure that the two key variables—beneficiary families and total transfers—are consistently recorded across yearly files. These include missingness, zeros, negative values, logical inconsistencies (beneficiary families with zero transfers), and duplicate municipality-month keys.
 
 ```{r}
+#| eval: false
 bf_qa_summary <- data_bf_all %>%
   group_by(source_file) %>%
   summarise(
@@ -958,6 +972,7 @@ bf_qa_summary
 I also compute distributional diagnostics for the implied average transfer per family (`valor_repassado_bolsa_familia / qtd_familias_beneficiarias_bolsa familia`) as a way to detect anomalous tails that may reflect reporting artifacts or program regime changes.
 
 ```{r}
+#| eval: false
 bf_transfer_dist <- data_bf_all %>%
   mutate(
     avg_transfer = if_else(
@@ -983,6 +998,7 @@ To select the reference months, I conduct **stability checks** (among others, se
 The goal is to identify months that do not exhibit anomalous spikes or drops that may reflect reporting artifacts or program regime changes. I end up with June as the primary reference month for the panel, with February as an alternative reference month for robustness checks.
 
 ```{r}
+#| eval: false
 candidate_months <- c(2, 6, 7, 9, 11)
 
 library(dplyr)
@@ -1041,6 +1057,7 @@ To build a municipality-year panel, I extract the year and month from `anomes`, 
 Coverage is measured by the number of beneficiary families, while generosity is calculated as the average transfer per family. State effort is represented by the total transfers. The resulting panel is sorted by reference month, year, and municipality geocode.
 
 ```{r}
+#| eval: false
 data_bf_panel <- data_bf_all %>%
   mutate(
     year  = as.integer(str_sub(as.character(anomes), 1, 4)),
@@ -1073,6 +1090,7 @@ To compare monetary values over time, I deflate Bolsa Família transfers using a
 The *deflator data is the same that I use to deflate labor and wage indicators*. See @sec-deflation for details on the construction of the deflator table.
 
 ```{r}
+#| eval: false
 deflator_path <- "_data/deflator_ipca_2024.csv"
 
 data_ipca_deflator <- read_csv(
@@ -1104,6 +1122,7 @@ data_bf_panel_real %>%
 Finally, I compute a simple annual diagnostic summary to confirm that the transformation does not introduce unexpected missingness patterns.
 
 ```{r}
+#| eval: false
 data_bf_panel_real %>%
   group_by(bf_ref_month, year) %>%
   summarise(
@@ -1121,6 +1140,7 @@ I conduct a final set of checks to confirm that the the dataset is consistent wi
 The plots of the annual trajectories of the three key indicators are consistent with the known expansion and stabilization phases of the Bolsa Família program over the 2004–2019 period as shown by @souza2022 .
 
 ```{r}
+#| eval: false
 bf_effort_yearly <- data_bf_panel_deflate %>%
   group_by(bf_ref_month, year) %>%
   summarise(
@@ -1241,6 +1261,7 @@ This procedure produces a territorially harmonized series in which Mojuí dos Ca
 In the deforestation dataset @ref(#sec-deforestation), this harmonization is already implemented, and the procedure described here ensures consistency between socioeconomic and environmental variables.
 
 ```{r}
+#| eval: false
 population_pea_2022 <- population_pea %>%
   filter(year == 2022) %>%
   select(geocode, pea)
@@ -1306,6 +1327,7 @@ I reshaped the municipal quota dataset into a municipality-year panel and then m
 Before the merge, I identified an inconsistency in the geographic identifiers: the quota dataset used **7-digit IBGE municipality codes**, while the deflated Bolsa Família panel used **6-digit codes**. To make the two datasets compatible, I dropped the last digit of the 7-digit quota geocode, creating a harmonized 6-digit identifier (`geocode_6`). I then created the same harmonized field in the Bolsa Família panel and merged the two datasets by **municipality** and **year**.
 
 ```{r}
+#| eval: false
 data_bf_quota <- read_xlsx("_data/raw_mds_bolsa_familia/bf-quotas.xlsx")
 
 data_bf_quota_panel <- data_bf_quota %>%
@@ -1367,6 +1389,7 @@ $$
 These indicators jointly capture **coverage**, **generosity**, and **fiscal intensity** of the program at the municipal level.
 
 ```{r}
+#| eval: false
 outcome_bf <- data_bf_panel_final %>%
   filter(bf_ref_month == "Jun") %>%
   rename(
@@ -1434,6 +1457,7 @@ To preserve temporal consistency in the municipal panel, I applied a backward ha
 I import three separate Excel files, one per census wave. Each file contains municipality identifiers (`geocode`), municipality names (`munic`), and counts of formally and informally employed workers (`Formal`, `Informal`). I add a `year` variable to each and strip non-numeric characters from the geocode field to ensure consistent integer coding.
 
 ```{r}
+#| eval: false
 population_informal_2000 <- read_excel("_data/raw_censo_labor_population/informality-2000.xlsx")
 population_informal_2010 <- read_excel("_data/raw_censo_labor_population/informality-2010.xlsx")
 population_informal_2022 <- read_excel("_data/raw_censo_labor_population/informality-2022.xlsx")
@@ -1461,6 +1485,7 @@ population_informal <- bind_rows(
 I check for duplicate municipality-year entries, which would indicate an import or reshaping error, and identify municipalities that are present in fewer than three census waves — typically units created by municipal splits after 2000.
 
 ```{r}
+#| eval: false
 # Check for duplicates
 population_informal %>%
   count(geocode, year) %>%
@@ -1482,6 +1507,7 @@ As with the GDP and population variables, the creation of **Mojuí dos Campos** 
 I address this by inserting placeholder rows for Mojuí dos Campos in 2000 and 2010 with missing values, then imputing those values directly from Santarém's observed formal and informal employment counts for the same years. This approach differs slightly from the GDP backcasting procedure (see Section 3.2.4), where proportional shares were applied: here, because the Census already records employment by municipality and the pre-split territory of Mojuí was administratively part of Santarém, I use Santarém's raw counts as the basis for imputation, under the assumption that the two territories' labor market structure was indistinguishable prior to the split. The interpolation step that follows (Section 3.1.4) then produces smooth trajectories for both municipalities between the census anchor points.
 
 ```{r}
+#| eval: false
 population_informal_mj_adjusted <- population_informal %>%
   mutate(geocode = as.numeric(geocode)) %>%
   bind_rows(
@@ -1535,6 +1561,7 @@ $$
 Municipality names are propagated across the expanded rows using a bidirectional fill.
 
 ```{r}
+#| eval: false
 population_informal_panel <- population_informal_mj_adjusted %>%
   mutate(geocode = as.numeric(geocode),
          year    = as.integer(year)) %>%
@@ -1560,6 +1587,7 @@ population_informal_panel <- population_informal_mj_adjusted %>%
 I inspect the interpolated series visually for Mojuí dos Campos and Santarém to verify that the trajectories are plausible and internally consistent. I also confirm that no municipality has a constant informality rate across all years (which would suggest a failed interpolation) and that the series is bounded between 0 and 100.
 
 ```{r}
+#| eval: false
 # Visual inspection for Mojuí dos Campos and Santarém
 ggplot(filter(population_informal_panel, geocode == 1504752),
        aes(x = year, y = informal_interp)) +
@@ -1589,6 +1617,7 @@ population_informal_panel %>%
 The final dataset retains only the geocode, year, and interpolated informality rate, saved in CSV, Excel, and RDS formats for downstream merging.
 
 ```{r}
+#| eval: false
 data_population_informal_panel <- population_informal_panel %>%
   select(geocode, year, informal_interp) %>%
   rename(informal = informal_interp)
@@ -1597,7 +1626,6 @@ data_population_informal_panel %>% write_csv("_data/outcome_population_informali
 data_population_informal_panel %>% write_xlsx("_data/outcome_population_informality.xlsx")
 data_population_informal_panel %>% write_rds("_data/outcome_population_informality.rds")
 ```
-
 
 ### 3.2. Municipal GDP per capita
 
@@ -1614,6 +1642,7 @@ To allow temporal comparability, all GDP values are **deflated to 2024 Brazilian
 The raw GDP file requires skipping three header rows and setting a maximum row count to exclude metadata appended at the bottom of the file by IBGE. Missing value codes used by IBGE (`"..."` and `"-"`) are declared explicitly at import so that they are correctly parsed as `NA` rather than treated as strings.
 
 ```{r}
+#| eval: false
 data_ipca_deflator <- read_csv(
   "_data/deflator_ipca_2024.csv",
   col_types = cols(
@@ -1640,6 +1669,7 @@ data_pop_2022      <- read_excel("_data/raw_ibge_pib/pop_censo_2022.xlsx")
 **Population panel.** I reshape the 2000/2010 census data and the 2022 census data from wide to long format and bind them into a single panel. I then expand the panel to include all years from 2000 to 2022 using `complete()` and linearly interpolate population values between census years using `zoo::na.approx()`. Municipality names are filled in both directions to avoid `NA`s arising from the expansion step.
 
 ```{r}
+#| eval: false
 data_pop_2000_2010_long <- data_pop_2000_2010 %>%
   mutate(across(c(`2000`, `2010`), ~ parse_number(as.character(.)))) %>%
   pivot_longer(cols      = c(`2000`, `2010`),
@@ -1675,6 +1705,7 @@ GDP^{2024}_{it} = GDP^{nominal}_{it} \times \text{Deflator}(t), \qquad \text{whe
 $$
 
 ```{r}
+#| eval: false
 data_pib_long <- data_pib_munic %>%
   rename(geocode      = Cód.,
          municipality = Município) %>%
@@ -1696,6 +1727,7 @@ data_pib_long <- data_pib_munic %>%
 I then merge the deflated GDP panel with the population panel:
 
 ```{r}
+#| eval: false
 data_pib_per_capita_panel <- data_pib_long %>%
   left_join(
     data_population_panel %>% select(geocode, year, population),
@@ -1728,6 +1760,7 @@ This is the same backcasting strategy applied to the Bolsa Família and PEA data
 The operations are split across two sequential `mutate()` calls to avoid within-mutate column reference ambiguity in dplyr: the first call backcasts Mojuí's values from Santarém's original pre-split records; the second subtracts the imputed Mojuí share from Santarém's records.
 
 ```{r}
+#| eval: false
 id_mojui    <- "1504752"
 id_santarem <- "1506807"
 
@@ -1805,6 +1838,7 @@ $$
 where $GDP^{2024}_{it}$ is real municipal GDP in 2024 Reais and $Population_{it}$ is the interpolated population of municipality $i$ in year $t$.
 
 ```{r}
+#| eval: false
 data_gdp_per_capita_panel <- data_pib_adjusted %>%
   mutate(
     gdp_per_capita_2024     = if_else(
@@ -1824,6 +1858,7 @@ data_gdp_per_capita_panel <- data_pib_adjusted %>%
 I verify that the Mojuí dos Campos and Santarém series are internally consistent by confirming that the two municipalities sum to the original Santarém aggregate in all pre-2013 years, for both nominal and deflated GDP and for population. I also inspect the dataset for missing values, confirm that all geocodes are valid 7-digit IBGE identifiers, and cross-validate a random sample of observations against IBGE's online *Sistema IBGE de Recuperação Automática* (SIDRA) platform.
 
 ```{r}
+#| eval: false
 # Santarém + Mojuí should recover the original combined total in all pre-2013 years
 data_pib_adjusted %>%
   filter(geocode %in% c(id_mojui, id_santarem), year < 2013) %>%
@@ -1866,7 +1901,7 @@ The construction of the electoral competitiveness variables follows three sequen
 
 **Step 1 — Filter and pre-process.** I restrict the data to first-round results (`turno == 1`) of ordinary elections (`tipo_eleicao == "eleicao ordinaria"`), which drops supplementary elections (*eleições suplementares*) that are not comparable to regular electoral cycles. This choice follows the standard approach in the Brazilian electoral competition literature [@chamon2019; @arvate2013], which uses first-round vote shares to ensure comparability across all municipalities, given that only municipalities above 200,000 registered voters are subject to a second-round runoff rule. I also convert the `votos` variable from character to integer, as it is stored as a string in the raw TSE files.
 
-**Step 2 — Aggregate to the candidate $\times$ municipality $\times$ year level.** Since the raw data is recorded at the voting-section level, I sum votes across all sections within each municipality for each candidate, identified by `id_candidato_bd`. This produces one row per candidate per municipality per election year, with the variable `candidate_votes` representing total votes received by that candidate in that municipality.
+**Step 2 — Aggregate to the candidate** $\times$ municipality $\times$ year level. Since the raw data is recorded at the voting-section level, I sum votes across all sections within each municipality for each candidate, identified by `id_candidato_bd`. This produces one row per candidate per municipality per election year, with the variable `candidate_votes` representing total votes received by that candidate in that municipality.
 
 **Step 3 — Compute vote shares.** I calculate the total number of valid votes cast in each municipality-year as the sum of `candidate_votes` across all candidates, and then divide each candidate's total votes by that sum to obtain their individual vote share:
 
@@ -1877,7 +1912,8 @@ $$
 where $V_{kit}$ is the total votes received by candidate $k$ in municipality $i$ at election year $t$, and $N_{it}$ is the number of candidates running in that municipality-year.
 
 ```{r}
-# Step 1: Filter and pre-process
+#| eval: false
+# Filter and pre-process
 mayors <- data_elections_raw %>%
   filter(
     cargo        == "prefeito",
@@ -1889,7 +1925,7 @@ mayors <- data_elections_raw %>%
     votes = as.integer(votos)
   )
 
-# Step 2: Aggregate to candidate × municipality × year
+# Aggregate to candidate × municipality × year
 candidates <- mayors %>%
   group_by(year, id_municipio, sigla_uf, id_candidato_bd,
            numero_candidato, sigla_partido, numero_partido) %>%
@@ -1898,7 +1934,7 @@ candidates <- mayors %>%
     .groups = "drop"
   )
 
-# Step 3: Compute vote shares
+# Compute vote shares
 candidates <- candidates %>%
   group_by(year, id_municipio) %>%
   mutate(
@@ -1953,6 +1989,7 @@ $$
 For uncontested races, $MoV$ is undefined (no runner-up exists) and is set to `NA`. $ENC$ is set to 1 by construction. These observations are retained in the dataset but excluded from analyses where electoral competition is the variable of interest, as they represent the structural absence of competition rather than a particular degree of it.
 
 ```{r}
+#| eval: false
 data_competitiveness <- candidates %>%
   group_by(year, id_municipio, sigla_uf) %>%
   arrange(year, id_municipio, desc(vote_share)) %>%
@@ -1983,6 +2020,7 @@ I cross-validate a random sample of municipality-year observations against the o
 @tbl-competitiveness-summary presents descriptive statistics for the continuous competitiveness measures, by election year.
 
 ```{r}
+#| eval: false
 #| label: tbl-competitiveness-summary
 #| tbl-cap: "Descriptive statistics for electoral competitiveness variables, by election year"
 
@@ -2001,7 +2039,6 @@ data_competitiveness %>%
   knitr::kable()
 ```
 
-
 #### 3.3.5. Expand to a yearly panel and carry forward electoral values
 
 The competitiveness dataset produced in the previous steps contains one observation per municipality per **election year** (2000, 2004, 2008, 2012, 2016, and 2020). Since the dissertation analysis requires a balanced municipality-year panel covering the full period from 2000 to 2020, I expand the dataset to include all intervening years and carry the electoral values forward across each four-year mayoral term.
@@ -2017,6 +2054,7 @@ $$
 I first construct a complete panel shell containing all combinations of municipalities and years from 2000 to 2020, then left-join the competitiveness data onto it, and finally apply a downward fill within each municipality. An indicator variable `election_year` is added to distinguish observed election-year values from carried-forward ones.
 
 ```{r}
+#| eval: false
 # Full municipality × year panel shell
 panel_shell <- data_competitiveness %>%
   distinct(id_municipio, sigla_uf, geocode) %>%
@@ -2076,7 +2114,6 @@ $$
 
 ```{r}
 #| eval: false
-
 prices_raw <- read_excel(
   "_data/raw-prices-world_bank-pink_sheet.xlsx",
   sheet = "Annual Prices (Real)", skip = 6
@@ -2085,7 +2122,7 @@ names(prices_raw) <- str_trim(names(prices_raw))
 names(prices_raw)[1] <- "year"
 
 prices_norm <- prices_raw %>%
-  slice(-1) %>%                                   # drop the units row
+  slice(-1) %>%                                  
   select(year,
          soy = Soybeans, corn = Maize, rice = `Rice, Thai 5%`,
          cotton = `Cotton, A Index`, beef = Beef) %>%
@@ -2196,21 +2233,15 @@ Because the weights are fixed at 2000–2002, all time variation in both indices
 
 I confirm that every commodity series equals exactly 1 in the base year 2000, and that the real series reproduce the well-documented commodity cycles — in particular the 2008 and 2011 price peaks — which provides a sanity check on the deflation and normalization. I verify the absence of duplicate municipality–year records in both indices, and I check coverage by confirming that the panel municipalities are matched in the PAM and PPM sources; the small number of municipalities absent from those surveys (typically units with no reported crop or herd) are carried as `NA` rather than imputed. Finally, I inspect the distribution of the constructed indices over time to confirm that they track the underlying price series weighted by each municipality's commodity mix.
 
+## TO FURTHER REVIEW: Population-normalized indicators and endogeneity — draft text for write-up
 
-## TO FURTHER REVIEW:
+Notation/choices to confirm before pasting: - Census years: written as **2000, 2010, and 2022** (adjust if your data labels the last wave 2020). - Transfer denominator: shown as **\[total population / municipal quota\]** — pick the one you adopt. - Citation keys `@bartik1991`, `@goldsmithpinkham2020` — confirm against your `references.bib`.
 
-## Population-normalized indicators and endogeneity — draft text for write-up
-
-Notation/choices to confirm before pasting:
-- Census years: written as **2000, 2010, and 2022** (adjust if your data labels the last wave 2020).
-- Transfer denominator: shown as **[total population / municipal quota]** — pick the one you adopt.
-- Citation keys `@bartik1991`, `@goldsmithpinkham2020` — confirm against your `references.bib`.
-
----
+------------------------------------------------------------------------
 
 ### For the methodological section
 
-Several of the social variables enter the analysis as population-normalized rates, which requires choosing a denominator. For the formal-employment indicators I normalize by the working-age population (*População em Idade Ativa*, PIA); for the Bolsa Família intensity measure I normalize by [total population / the program's municipal quota]. These choices are made on identification grounds rather than by convention.
+Several of the social variables enter the analysis as population-normalized rates, which requires choosing a denominator. For the formal-employment indicators I normalize by the working-age population (*População em Idade Ativa*, PIA); for the Bolsa Família intensity measure I normalize by \[total population / the program's municipal quota\]. These choices are made on identification grounds rather than by convention.
 
 The natural alternative denominator, the economically active population (PEA, the labor force), is endogenous to the treatment. Labor-force participation responds to agricultural commodity prices — the variation the empirical strategy exploits — so a price shock that draws individuals into the labor force inflates the denominator and moves the normalized rate mechanically, independently of the numerator. PIA, by contrast, is demographic and predetermined with respect to short-run price movements, and corresponds to the standard employment-to-population ratio used to compare labor-market scale across heterogeneous units.
 
@@ -2218,24 +2249,23 @@ This distinction is not innocuous under the panel specification. A PEA-normalize
 
 A predetermined, base-year denominator (the 2000 Census value held fixed across years) removes the endogeneity by construction. This is a predetermined *rescaling*, however, and not a shift-share (Bartik) instrument [@bartik1991; @goldsmithpinkham2020]: it lacks the interaction of predetermined shares with a common, time-varying shock, and generates no exogenous time variation. Moreover, with the normalized variable in logs and municipality fixed effects, a time-invariant denominator is collinear with the fixed effects and is therefore absorbed, making it equivalent to the unnormalized count — it matters for interpretation, not identification. Because the only component of the denominator that affects the estimates is its within-municipality time variation, and because for PIA that variation is predominantly demographic and only weakly price-responsive, I retain the interpolated, time-varying PIA as the primary denominator. PEA-normalized and base-year-fixed versions are reported as robustness checks.
 
----
+------------------------------------------------------------------------
 
 ### For the data description section
 
 The population denominators used to normalize the employment and cash-transfer indicators come from the IBGE Census waves (2000, 2010, and 2022) and are linearly interpolated to the intervening years. Two denominators are available: the working-age population (*População em Idade Ativa*, PIA) and the economically active population (*População Economicamente Ativa*, PEA).
 
-I use **PIA** as the primary denominator. PIA is a demographic measure — the population old enough to be part of the labor force — and is therefore predetermined with respect to short-run commodity-price movements, whereas PEA (the labor force) reflects the participation decision, which responds to the same price variation the analysis studies. Normalizing by PIA also yields the conventional employment-to-population ratio, comparable across municipalities of different sizes. I retain the PEA-normalized rates (suffix `_pea`) as an alternative for robustness and for any analysis specifically concerned with formalization conditional on labor-market participation. For the Bolsa Família intensity measure I normalize by [total population / the municipal quota] for the same reason; the transfers-per-PEA variant is kept only as a robustness alternative.
+I use **PIA** as the primary denominator. PIA is a demographic measure — the population old enough to be part of the labor force — and is therefore predetermined with respect to short-run commodity-price movements, whereas PEA (the labor force) reflects the participation decision, which responds to the same price variation the analysis studies. Normalizing by PIA also yields the conventional employment-to-population ratio, comparable across municipalities of different sizes. I retain the PEA-normalized rates (suffix `_pea`) as an alternative for robustness and for any analysis specifically concerned with formalization conditional on labor-market participation. For the Bolsa Família intensity measure I normalize by \[total population / the municipal quota\] for the same reason; the transfers-per-PEA variant is kept only as a robustness alternative.
 
 Because the denominators are interpolated between three Census benchmarks, their year-to-year movement is a smooth function of the surrounding Census values rather than a measured annual response. This attenuates short-run reactivity to prices but does not render the denominators fully exogenous, since the Census anchors themselves embed cumulative participation changes. As an additional check I also construct rates with each denominator held fixed at its 2000 value; under the log specification with municipality fixed effects this predetermined denominator is absorbed, so the resulting rates are equivalent — up to a municipality-specific constant — to the corresponding worker or transfer counts.
 
----
+------------------------------------------------------------------------
 
 ### Key decisions at a glance
 
-- **Primary employment denominator:** interpolated, time-varying **PIA** (demographic, weakly endogenous; its time variation is mostly genuine population change).
-- **Primary transfer-intensity denominator:** **per capita (total population)** or the **municipal quota** — not PEA.
-- **PEA-normalized rates:** retained as **robustness only** (and for formalization-specific questions).
-- **Base-year-fixed denominators:** describe as **predetermined denominators, not Bartik instruments**; note they are **absorbed** under logs + municipality fixed effects.
-- **Interpolation:** **attenuates but does not remove** endogeneity (smooths high-frequency response; Census anchors remain endogenous; adds mild look-ahead).
-- **General rule invoked:** under logs + municipality FE, only the **within-municipality time variation** of a denominator affects the estimates.
-
+-   **Primary employment denominator:** interpolated, time-varying **PIA** (demographic, weakly endogenous; its time variation is mostly genuine population change).
+-   **Primary transfer-intensity denominator:** **per capita (total population)** or the **municipal quota** — not PEA.
+-   **PEA-normalized rates:** retained as **robustness only** (and for formalization-specific questions).
+-   **Base-year-fixed denominators:** describe as **predetermined denominators, not Bartik instruments**; note they are **absorbed** under logs + municipality fixed effects.
+-   **Interpolation:** **attenuates but does not remove** endogeneity (smooths high-frequency response; Census anchors remain endogenous; adds mild look-ahead).
+-   **General rule invoked:** under logs + municipality FE, only the **within-municipality time variation** of a denominator affects the estimates.
