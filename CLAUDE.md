@@ -101,9 +101,10 @@ follow the fuller header in
   destructive git commands (`push --force`, `reset --hard`, `clean -f`,
   history rewriting).
 - **Respect the reproducibility contract** (see README):
-  `ch4-causal-analysis/_data/interim/` and `_data/final/`, and both
-  chapters' `output/` folders, must remain regenerable from the immutable
-  inputs plus scripts and logs. Never edit files in those folders directly, by any tool: to
+  ``ch4-causal-analysis/_data/interim/` and `_data/final/`, 
+  `ch4-causal-analysis/output/` and `ch3-systematic-review/6-output/` must be 
+  regenerable from the immutable inputs plus scripts and logs. 
+  Never edit files in those folders directly, by any tool: to
   change generated data or output, change the generating script and
   rerun it.
 - **Never silently drop observations, recode variables, or change a

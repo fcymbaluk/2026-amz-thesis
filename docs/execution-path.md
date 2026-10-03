@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "0 — machine setup"
-updated: 2026-10-01
+current_stage: "2 — reorg branch"
+updated: 2026-10-03
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -26,13 +26,13 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 2 — Reorg branch (author + Claude Code, 1-2 sessions)
 
 - [x] Commit and push anything outstanding; `git tag pre-reorg && git push --tags`.
-- [ ] Branch `reorg-structure`.
-- [ ] Unzip the consolidated scaffold at the repo root; commit.
-- [ ] `git rm` the empty chapter qmds, `board-tasks.md`, and superseded appendix qmds (empty ones deleted; any with prose go to `ch4-causal-analysis/_annex/parked/`).
-- [ ] `git mv`: root `_scripts/` → `ch4-causal-analysis/_scripts/`; `references.bib` + both CSLs → `manuscript/`.
-- [ ] Merge the old `_quarto.yml` formatting (scrreprt, APA CSL, appendix mechanism) into `manuscript/_quarto.yml` (produced in chat from both files).
-- [ ] Merge `.gitignore`s, with the `!**/_data/aux/` exception so codebook and crosswalk stay versioned.
-- [ ] Commit the moves WITHOUT editing script contents (in-script path fixes belong to phase 1).
+- [x] Branch `reorg-structure`.
+- [x] Unzip the consolidated scaffold at the repo root; commit.
+- [x] `git rm` the empty chapter qmds, `board-tasks.md`, and superseded appendix qmds (empty ones deleted; any with prose go to `ch4-causal-analysis/_annex/parked/`).
+- [x] `git mv`: root `_scripts/` → `ch4-causal-analysis/_scripts/`; `references.bib` + both CSLs → `manuscript/`.
+- [x] Merge the old `_quarto.yml` formatting (scrreprt, APA CSL, appendix mechanism) into `manuscript/_quarto.yml` (produced in chat from both files).
+- [x] Merge `.gitignore`s: `ch4-causal-analysis/_data/` contents ignored except the `.gitkeep` skeleton and `aux/`, so codebook and crosswalk stay versioned. (A bare `!**/_data/aux/` cannot re-include files under a directory-level ignore; the rule is anchored instead.)
+- [x] Commit the moves WITHOUT editing script contents (in-script path fixes belong to phase 1).
 - [ ] Review the branch diff; merge to `main`; delete the branch.
 - [ ] `renv::init()`, `renv::snapshot()`, commit the lockfile.
 - [ ] Open Claude Code once and confirm the settings.json deny rules fire.

@@ -60,8 +60,9 @@ guidance files of Chapters 1, 2 and 4 (Chapter 3 postdates the review).
 
 ## Reproducibility contract
 
-`ch4-causal-analysis/_data/interim/` and `_data/final/`, and both chapters'
-`output/` folders, must be regenerable from the immutable inputs
+`ch4-causal-analysis/_data/interim/` and `_data/final/`, 
+`ch4-causal-analysis/output/` and `ch3-systematic-review/6-output/` must be 
+regenerable from the immutable inputs.
 (`ch4-causal-analysis/_data/raw/`, `ch3-systematic-review/2-search/raw/`)
 plus the scripts and logs; `compare_outputs.R` checks builds against the
 frozen `_data/reference/`. If that
