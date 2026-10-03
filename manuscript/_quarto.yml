@@ -4,7 +4,7 @@ project:
 
 book:
   title: "Eco-Social Policy and Environmental Governance in the Brazilian Amazon"
-  author: "Fernando <surname>"
+  author: "Fernando Cymbaluk"
   date: last-modified
   chapters:
     - index.qmd
@@ -13,17 +13,21 @@ book:
     - ch3-systematic-review.qmd
     - ch4-causal-analysis.qmd
     - references.qmd
+  # Appendix mechanism (carried from the old config). The single ch4 annex
+  # (Stage 10) is listed here once it exists, e.g.:
+  # appendices:
+  #   - annex-variables.qmd
 
 bibliography: references.bib
-# csl: <add journal/university CSL file here, e.g. abnt.csl>
+csl: apsa.csl         # apa.csl also available in manuscript/
 
-lang: en            # switch to pt-BR per document if needed
+lang: en              # switch to pt-BR per document if needed
 number-sections: true
 crossref:
   chapters: true
 
 execute:
-  freeze: auto      # cached chapter computations; re-runs only what changed
+  freeze: auto        # cached chapter computations; re-runs only what changed
 
 format:
   html:
@@ -37,13 +41,22 @@ format:
     # reference-doc: reference.docx
     toc: true
   pdf:
-    documentclass: scrbook
+    pdf-engine: xelatex           # required for mainfont; pdflatex ignores it
+    documentclass: scrreprt       # one-sided; switch to scrbook for double-sided print
     papersize: a4
-    toc: true
+    fontsize: 12pt
+    linestretch: 1.5
+    mainfont: "Times New Roman"
+    toc: false                    # TOC/LoF/LoT placed manually in index.qmd
     number-sections: true
     colorlinks: true
+    link-citations: true
+    linkcolor: blue               # TOC/LoF/LoT kept black locally in index.qmd
+    urlcolor: blue
+    citecolor: blue
+    filecolor: blue
     geometry:
       - margin=3cm
     # Placeholder LaTeX setup. The university thesis template will replace
-    # this via a format extension (template-partials) — see README
+    # this via a format extension (template-partials); see README
     # "Deferred upgrades".
