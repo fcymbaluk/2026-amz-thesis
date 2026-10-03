@@ -1,0 +1,3 @@
+# _scripts/ conventions
+
+Pipeline scripts 01-06 follow `../rebuild/01-script-template.md` (its header is the only sanctioned boilerplate). Analysis scripts 07 onward, and everything in `models/` and `robustness/`, open with the light four-line header: Purpose / Inputs / Outputs / Status (updated date). `utils/` holds `compare_outputs.R` and shared functions (definitions only, sourced after libraries; the comparator is never sourced by pipeline scripts). `sql/` holds the RAIS track's query logs. File names per `docs/repo-conventions.md`. Python is allowed only in `robustness/`. Every change that drops observations, recodes a variable, or alters a definition is logged with a D-ID in `../DECISIONS.md`.

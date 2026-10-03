@@ -1,0 +1,48 @@
+# Front matter {.unnumbered .unlisted}
+
+```{=latex}
+\clearpage
+```
+
+## Dedication {.unnumbered .unlisted}
+
+To those who inspired me and gave me strength to walk this path.
+
+```{=latex}
+\clearpage
+```
+
+## Acknowledgments {.unnumbered .unlisted}
+
+I am deeply grateful to my advisors, colleagues, and family for their unwavering support throughout this journey.
+
+```{=latex}
+\clearpage
+```
+
+## Abstract {.unnumbered .unlisted}
+
+[Placeholder. Write from the final state of the four chapters.]
+
+```{=latex}
+\clearpage
+```
+
+## Resumo {.unnumbered .unlisted}
+
+[Placeholder. Versão em português do abstract.]
+
+```{=latex}
+\clearpage
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{Table of Contents}
+\begingroup
+\hypersetup{linkcolor=black}
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\endgroup
+\clearpage
+```

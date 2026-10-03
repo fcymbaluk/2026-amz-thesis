@@ -1,0 +1,4 @@
+# Literature review placeholder title
+
+<!-- Migrate current chapter text here. Citations: @key against
+references.bib (Zotero → Better BibTeX auto-export, pinned keys). -->

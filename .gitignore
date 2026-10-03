@@ -1,27 +1,65 @@
-.Rproj.user
+# R
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-.Rdata
 .httr-oauth
-.DS_Store
-.quarto
-_book/
-_data/
-_output/
 
-/.quarto/
+# renv (library is local; lockfile IS tracked)
+renv/library/
+renv/staging/
+renv/local/
+renv/cellar/
 
-# Quarto / Pandoc / LaTeX intermediates
+# Quarto
+.quarto/
+/manuscript/_book/
+**/*.quarto_ipynb
+
+# Rendered manuscript output (frozen copies go in docs/submitted/ deliberately)
+manuscript/*.pdf
+manuscript/*.docx
+manuscript/*.html
+manuscript/*.tex
+
+# LaTeX intermediates
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.blg
 *.lof
 *.lot
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-**/*.quarto_ipynb
 
-# LaTeX / Quarto PDF build artifacts
-*.aux
-*.log
-*.toc
-index.tex
+# Python (robustness checks)
+__pycache__/
+*.pyc
+.venv/
+
+# Throwaway scripts (any language), never committed
+scratch/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Claude Code: settings.json IS tracked; personal overrides stay local
+.claude/settings.local.json
+
+# Ch4 data: contents ignored (backed up to the Drive mirror), except
+# the folder skeleton (.gitkeep files) and aux/ (codebook, crosswalk)
+ch4-causal-analysis/_data/**
+!ch4-causal-analysis/_data/**/
+!ch4-causal-analysis/_data/**/.gitkeep
+!ch4-causal-analysis/_data/aux/**
+
+# Local environment secrets
+.env
+
+# Accidental renders of root-level markdown (CLAUDE.md, README.md, ...)
+/*.html
+/*_files/
