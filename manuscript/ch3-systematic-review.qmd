@@ -1,0 +1,5 @@
+# Systematic review placeholder title
+
+<!-- New chapter: PRISMA systematic review of causal research on the
+causes of Amazon deforestation. PRISMA diagram and DAG figures are
+generated in ch3-systematic-review/output/ and included from there. -->

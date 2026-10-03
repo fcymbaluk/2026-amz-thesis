@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Bash(ls*)",
+      "Bash(find*)",
+      "Bash(grep*)",
+      "Bash(rg*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(wc*)",
+      "Bash(cat*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git add*)",
+      "Bash(git checkout -b*)",
+      "Bash(git switch*)",
+      "Bash(git stash list*)",
+      "Bash(Rscript*)",
+      "Bash(quarto preview*)",
+      "Bash(quarto render*)",
+      "Bash(quarto check*)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(rm -fr*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(git rebase*)",
+      "Bash(git filter-branch*)",
+      "Bash(chmod*)",
+      "Read(.env*)",
+      "Read(**/.env*)",
+      "Write(ch4-causal-analysis/_data/raw/**)",
+      "Edit(ch4-causal-analysis/_data/raw/**)",
+      "Write(ch4-causal-analysis/_data/reference/**)",
+      "Edit(ch4-causal-analysis/_data/reference/**)",
+      "Write(ch3-systematic-review/2-search/raw/**)",
+      "Edit(ch3-systematic-review/2-search/raw/**)",
+      "Write(docs/submitted/**)",
+      "Edit(docs/submitted/**)"
+    ]
+  }
+}

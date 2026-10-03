@@ -1,0 +1,4 @@
+# Preface {.unnumbered}
+
+Front matter placeholder: abstract/resumo, acknowledgements, and formal
+front-matter elements will be handled by the thesis LaTeX template.

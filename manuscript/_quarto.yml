@@ -1,0 +1,49 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Eco-Social Policy and Environmental Governance in the Brazilian Amazon"
+  author: "Fernando <surname>"
+  date: last-modified
+  chapters:
+    - index.qmd
+    - ch1-theoretical.qmd
+    - ch2-historical.qmd
+    - ch3-systematic-review.qmd
+    - ch4-causal-analysis.qmd
+    - references.qmd
+
+bibliography: references.bib
+# csl: <add journal/university CSL file here, e.g. abnt.csl>
+
+lang: en            # switch to pt-BR per document if needed
+number-sections: true
+crossref:
+  chapters: true
+
+execute:
+  freeze: auto      # cached chapter computations; re-runs only what changed
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+  docx:
+    # For supervisor comment rounds. Style it once:
+    # 1) quarto render --to docx, 2) edit styles in Word, save as reference.docx
+    # 3) uncomment:
+    # reference-doc: reference.docx
+    toc: true
+  pdf:
+    documentclass: scrbook
+    papersize: a4
+    toc: true
+    number-sections: true
+    colorlinks: true
+    geometry:
+      - margin=3cm
+    # Placeholder LaTeX setup. The university thesis template will replace
+    # this via a format extension (template-partials) — see README
+    # "Deferred upgrades".
