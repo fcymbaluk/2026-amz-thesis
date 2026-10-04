@@ -1,6 +1,6 @@
 ---
 role: execution-path
-current_stage: "2 — reorg branch"
+current_stage: "3 — author decision gate"
 updated: 2026-10-03
 ---
 
@@ -33,10 +33,10 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [x] Merge the old `_quarto.yml` formatting (scrreprt, APA CSL, appendix mechanism) into `manuscript/_quarto.yml` (produced in chat from both files).
 - [x] Merge `.gitignore`s: `ch4-causal-analysis/_data/` contents ignored except the `.gitkeep` skeleton and `aux/`, so codebook and crosswalk stay versioned. (A bare `!**/_data/aux/` cannot re-include files under a directory-level ignore; the rule is anchored instead.)
 - [x] Commit the moves WITHOUT editing script contents (in-script path fixes belong to phase 1).
-- [ ] Review the branch diff; merge to `main`; delete the branch.
-- [ ] `renv::init()`, `renv::snapshot()`, commit the lockfile.
-- [ ] Open Claude Code once and confirm the settings.json deny rules fire.
-- [ ] Done when `main` holds the new tree and the `pre-reorg` tag is on GitHub.
+- [x] Review the branch diff; merge to `main`; delete the branch.
+- [x] `renv::init()`, `renv::snapshot()`, commit the lockfile.
+- [x] Open Claude Code once and confirm the settings.json deny rules fire.
+- [x] Done when `main` holds the new tree and the `pre-reorg` tag is on GitHub.
 
 ## Stage 3 — Author decision gate (author, one sitting)
 
@@ -45,6 +45,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [ ] Set the BigQuery budget alert on `amz-data-dissertation`.
 - [ ] Optionally settle the Chapter 3 protocol TODOs.
 - [ ] Done when ch4's checklist item 1 is ticked. Nothing in the pipeline starts before this stage closes.
+- [ ] Decide deflator placement: original file in `raw/`, derived lookup in `aux/` (templates currently say `aux/`).
 
 ## Stage 4 — Phase 0 (Claude Code, one session, plan mode)
 
@@ -54,6 +55,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [ ] `compare_outputs.R` built and self-tested (zero diff on a file against itself).
 - [ ] `DECISIONS.md` seeded with the known-history entries; `codebook.csv` skeleton from the recovered panel's columns.
 - [ ] Commit. Done per `rebuild/00-rebuild-phases.md` phase 0 acceptance.
+- [ ] After placement, lock immutable layers: `chflags -R uchg ch4-causal-analysis/_data/raw ch4-causal-analysis/_data/reference` (deny rules cover Claude's file tools only; Bash and Rscript can still write).
 
 ## Stage 5 — Re-acquisition (author; parallel with stage 6)
 
