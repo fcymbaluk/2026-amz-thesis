@@ -15,7 +15,7 @@ next_milestone: "Protocol finalized and searches executed"
 
 Stage conventions live in "Method: PRISMA workflow" below; this list tracks completion only. Check items off with a pointer to the record that proves them (log file, export, script). The frontmatter `current_focus` names the live stage; do not reopen checked stages without being asked.
 
-- [ ] Settle the protocol decisions marked TODO in "Protocol": final research-question wording, spatial scope, time window, study types, languages, publication types, databases.
+- [ ] Settle the protocol decisions marked TODO in "Protocol": final research-question wording, spatial scope, time window, study types, languages, publication types, databases. (Deferred by the author at the stage 3 gate, 2026-10-05: settled when Chapter 3 work starts, not before.)
 - [ ] Decide whether to preregister the protocol (e.g., OSF; PROSPERO generally does not accept reviews outside health). Optional, but decide explicitly and record the decision.
 - [ ] Write and freeze the protocol in `1-protocol/`: eligibility criteria, the fixed list of exclusion reasons, extraction field list, and search strings per database.
 - [ ] Pilot the search strings; log retrieval counts; adjust and version the strings.

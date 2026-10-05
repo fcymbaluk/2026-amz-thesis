@@ -110,7 +110,7 @@ After phase 2 passes its equivalence checks, the naming convention is applied pe
 
 The RAIS re-extraction (`rebuild/upstream-reform-rais.md`, tasks A to C) runs as a parallel track once its section 0 decisions are confirmed. It merges into the pipeline through its regression rule: the rebuilt extraction must reproduce the current `_data/data_employment_rais` exactly before any new variable enters script 02. New RAIS variables land before phase 3 so the annex documents them.
 
-After phase 2, the rename and the RAIS merge, the analysis scripts (08b at minimum) are rerun so the new stratum ATTs are known before any annex text is written.
+After phase 2, the rename and the RAIS merge, the analysis scripts (`08-data-analysis-2WFE-CS.R` at minimum) are rerun so the new stratum ATTs are known before any annex text is written.
 
 ## Phase 3. Documentation from the final state
 
