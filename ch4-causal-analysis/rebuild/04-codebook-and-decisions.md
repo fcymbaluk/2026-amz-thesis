@@ -92,7 +92,7 @@ Sections:
 2. **Layout.** The folder tree from `00-rebuild-phases.md`.
 3. **Run order.** Scripts 01 to 06 with one line each, then analysis scripts 07 onward.
 4. **Reproduce.** `renv::restore()`, then `source()` each script in order, then `compare_outputs.R` against `_data/reference/` to confirm the build.
-5. **Provenance table.** One row per raw file.
+5. **Provenance table.** One row per raw file, rendered from `_data/aux/provenance.csv` (the salvage register phase 0 creates and stage 5 appends to, one row per download at download time; it carries the columns below plus `size_bytes`, `sha256`, `recovery_location`, `recovery_timestamp`, `class` and `script_path_expected`).
 
 Provenance table columns:
 

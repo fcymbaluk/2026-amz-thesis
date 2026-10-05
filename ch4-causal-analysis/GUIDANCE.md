@@ -3,7 +3,7 @@ chapter: 4
 title: Descriptive analysis and causal inference
 stage: revising # dataset rebuild specified (rebuild/), execution pending; identification strategy re-opened"
 updated: 2026-10-05
-current_focus: "Rebuild phase 0: author decisions closed (stage 3 gate, 2026-10-05); next, place salvaged files and the deflator pair, then setup per rebuild/00-rebuild-phases.md"
+current_focus: "Rebuild phase 0 deliverables built 2026-10-05 (provenance.csv, compare_outputs.R self-tested, DECISIONS.md seeded, codebook.csv skeleton); phase closes when the author confirms the Drive mirror and the chflags lock; next, phase 1 script 01"
 next_milestone: "Phase 1 gate passed: pipeline reproduces the recovered final panel on recovered inputs, with drift documented for re-acquired sources"
 ---
 
@@ -16,7 +16,7 @@ next_milestone: "Phase 1 gate passed: pipeline reproduces the recovered final pa
 <!-- One checkbox per block of the rebuild sequence. Check items off as they are addressed and append a pointer to the record that proves them (commit hash, DECISIONS.md ID, compare_outputs report). Dissertation-level items live in dissertation-map.md. -->
 
 - [x] Resolve every decision reserved to the author: CONFIRM items in `rebuild/naming-convention.md` and section 0 of `rebuild/upstream-reform-rais.md`. Nothing downstream starts before this. Done 2026-10-05: resolutions recorded inline in both files (naming convention version 2; RAIS brief section 0 header); baseline-window choice in `docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md`.
-- [ ] Phase 0 setup per `rebuild/00-rebuild-phases.md`: folder layout, salvaged originals placed in `_data/raw/` with the salvage register, recovered final panel frozen in `_data/reference/`, Drive mirror of `_data/`, `compare_outputs.R`, empty `DECISIONS.md` seeded with the known-history entries, codebook skeleton.
+- [ ] Phase 0 setup per `rebuild/00-rebuild-phases.md`: folder layout, salvaged originals placed in `_data/raw/` with the salvage register, recovered final panel frozen in `_data/reference/`, Drive mirror of `_data/`, `compare_outputs.R`, empty `DECISIONS.md` seeded with the known-history entries, codebook skeleton. Deliverables built 2026-10-05 (`_data/aux/provenance.csv`, `_scripts/utils/compare_outputs.R` self-test PASS, `DECISIONS.md` D-2026-10-05-a…q, `_data/aux/codebook.csv`); open: Drive mirror and `chflags` lock (author).
 - [ ] Phase 1: refactor scripts 01-06 to `rebuild/01-script-template.md`, one script per session (provisional acceptance: assertions + audit notebook); exploration code moves to `_audit/` per `rebuild/02-audit-notebook-template.md`; then the phase 1 gate: full run compared against the recovered final panel, exact for recovered-input variables, documented drift for re-acquired sources.
 - [ ] Phase 2: data fixes, one per session and commit, in the order of the phase 2 table (tasks 1.1-1.9 in `rebuild/tasks.md`; 1.10 is absorbed by phase 1).
 - [ ] Phase 2R: variable rename via crosswalk per `rebuild/naming-convention.md` (task 2.1), after equivalence passes.
