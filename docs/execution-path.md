@@ -1,6 +1,6 @@
 ---
 role: execution-path
-current_stage: "4 — phase 0 deliverables built 2026-10-05 (register, comparator self-tested, DECISIONS.md seeded, codebook skeleton); Drive mirror and chflags lock pending (author)"
+current_stage: "5/6 — phase 0 closed 2026-10-05 (commit 4966a40, mirror and lock confirmed); next: stage 5 re-acquisition (author) and stage 6 phase 1, script 01"
 updated: 2026-10-05
 ---
 
@@ -51,11 +51,11 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 - [x] Salvaged originals placed in `_data/raw/<provider>/` under original filenames (2026-10-05); salvage register written in `_data/aux/provenance.csv` (12 rows, sha256-verified; recovery timestamps and the two duplicate notes still to be confirmed by the author).
 - [x] `dataset_final_v6` frozen in `_data/reference/` under its recovered name (2026-10-05; sha256 13833de8…).
-- [ ] `_data/` mirrored to Drive (author; no Drive sync folder or rclone remote on this machine as of 2026-10-05).
+- [x] `_data/` mirrored to Drive (2026-10-05, rclone remote `gdrive`, `rclone sync` + `rclone check`: 0 differences, 21 files, 221 MiB; refresh command in the README once written: `rclone sync ch4-causal-analysis/_data gdrive:2026-AMZ/data-mirror --exclude .DS_Store`).
 - [x] `compare_outputs.R` built and self-tested (zero diff on the reference against itself; eight negative tests on perturbed copies passed, 2026-10-05).
 - [x] `DECISIONS.md` seeded with the known-history entries (17: the 16 listed in rebuild/04 plus Mojuí dos Campos); `codebook.csv` skeleton from the recovered panel's 85 columns.
-- [ ] Commit. Done per `rebuild/00-rebuild-phases.md` phase 0 acceptance.
-- [ ] After placement, lock immutable layers: `chflags -R uchg ch4-causal-analysis/_data/raw ch4-causal-analysis/_data/reference` (deny rules cover Claude's file tools only; Bash and Rscript can still write).
+- [x] Commit. Done per `rebuild/00-rebuild-phases.md` phase 0 acceptance (commit 4966a40, merged 4baa9d8, 2026-10-05).
+- [x] After placement, lock immutable layers: `chflags -R uchg ch4-causal-analysis/_data/raw ch4-causal-analysis/_data/reference` (deny rules cover Claude's file tools only; Bash and Rscript can still write). Locked 2026-10-05, all 19 entries carry `uchg`; lift with `nouchg` to place stage 5 downloads, then relock.
 
 ## Stage 5 — Re-acquisition (author; parallel with stage 6)
 
