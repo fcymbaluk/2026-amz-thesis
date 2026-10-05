@@ -46,13 +46,13 @@ Entry format:
 ## D-2026-02-20  Moderator baseline window fixed at 2006-2007
 
 Status: closed (commit a3f9c21)
-Scope: script 05, script 08b, annex §4.1
+Scope: script 05, script 08-data-analysis-2WFE-CS.R, annex §4.1
 Context: wider windows were tested (2006-2010, 2006-2012) to gain
          precision on the moderator.
 Reason: a DiD of listing on coverage returns -0.13 to -0.18 with the
         wider windows, so coverage after 2007 is post-treatment.
 Evidence: _audit/bf.qmd, Q5
-Affects: bf_families_quota_ratio baseline, stratum split, all 08b rows
+Affects: bf_families_quota_ratio baseline, stratum split, all 08-data-analysis-2WFE-CS.R rows
 Supersedes: none
 ```
 

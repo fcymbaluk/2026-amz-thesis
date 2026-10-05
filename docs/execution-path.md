@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "3 — author decision gate"
-updated: 2026-10-03
+current_stage: "4 — phase 0 setup (waiting on the author's deflator pair and salvaged originals)"
+updated: 2026-10-05
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -40,12 +40,12 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 3 — Author decision gate (author, one sitting)
 
-- [ ] Resolve the CONFIRM items in `ch4-causal-analysis/rebuild/naming-convention.md`.
-- [ ] Resolve the section 0 decisions in `ch4-causal-analysis/rebuild/upstream-reform-rais.md`.
-- [ ] Set the BigQuery budget alert on `amz-data-dissertation`.
-- [ ] Optionally settle the Chapter 3 protocol TODOs.
-- [ ] Done when ch4's checklist item 1 is ticked. Nothing in the pipeline starts before this stage closes.
-- [ ] Decide deflator placement: original file in `raw/`, derived lookup in `aux/` (templates currently say `aux/`).
+- [x] Resolve the CONFIRM items in `ch4-causal-analysis/rebuild/naming-convention.md` (2026-10-05; resolutions inline, version 2; dummy suffix now `_dum`).
+- [x] Resolve the section 0 decisions in `ch4-causal-analysis/rebuild/upstream-reform-rais.md` (2026-10-05; the reliability floor stays provisional until evidence from the extraction).
+- [x] Set the BigQuery budget alert on `amz-data-dissertation` (author, confirmed set 2026-10-05).
+- [x] Optionally settle the Chapter 3 protocol TODOs — decided 2026-10-05 to defer them to the Ch3 writing track; they are settled when Chapter 3 work starts.
+- [x] Done when ch4's checklist item 1 is ticked (2026-10-05). Nothing in the pipeline starts before this stage closes.
+- [x] Decide deflator placement: the IPCA series as downloaded goes to `raw/`, the hand-built lookup to `aux/` (2026-10-05; the author brings both files for stage 4).
 
 ## Stage 4 — Phase 0 (Claude Code, one session, plan mode)
 
@@ -95,7 +95,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 10 — Rerun + Phase 3: documentation
 
-- [ ] Analysis scripts rerun (08b at minimum); new stratum ATTs known.
+- [ ] Analysis scripts rerun (`08-data-analysis-2WFE-CS.R` at minimum); new stratum ATTs known.
 - [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here).
 - [ ] Codebook §6 and provenance §7 rendered; chapter README written.
 - [ ] Done when `panel_amz_2000_2024` exists and is fully documented.

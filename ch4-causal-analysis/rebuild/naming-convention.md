@@ -1,6 +1,6 @@
 # Variable naming convention
 
-**Project:** Dissertation Chapter 4 (causal inference), Amazon eco-social policy panel **Applies to:** `final_dataset_*.csv` (municipal panel, 2000–2020) and `outcome_atlas_poverty_geocoded.csv` (Atlas Brasil, census vintages) **Status:** proposal, version 1 (2026-09-24). Items marked **CONFIRM** require a decision from Fernando before implementation.
+**Project:** Dissertation Chapter 4 (causal inference), Amazon eco-social policy panel **Applies to:** `final_dataset_*.csv` (municipal panel, 2000–2020) and `outcome_atlas_poverty_geocoded.csv` (Atlas Brasil, census vintages) **Status:** version 2 (2026-10-05): all CONFIRM items of version 1 (2026-09-24) resolved at the stage 3 gate, resolutions recorded inline; dummy suffix changed from `_d` to `_dum`. Any item marked **CONFIRM** in the future requires a decision from Fernando before implementation.
 
 ## 1. Purpose
 
@@ -79,7 +79,7 @@ Design rationale: the theory distinguishes policy instruments (`enf_`, `sop_`) f
 | `cattle` | cattle herd (PPM) |
 | `price` | commodity price (World Bank Pink Sheet, MUV-deflated) |
 | `mayor` | mayoral election |
-| `enc` | effective number of candidates (**CONFIRM** that `elec_enc` means this) |
+| `enc` | effective number of candidates (confirmed 2026-10-05: `03-data-cleaning-controls.R` computes `1 / sum(vote_share^2)`) |
 | `margin` | margin of victory |
 | `winner` | winning candidate |
 | `cand` | candidates |
@@ -122,7 +122,7 @@ Placed immediately before the unit.
 | `_rate` | incidence over a named at-risk population | 0–1 |
 | `_ratio` | quotient that may exceed 1 | ≥ 0 |
 | `_idx` | index or composite score |  |
-| `_d` | binary dummy | 0/1 |
+| `_dum` | binary dummy (pairs with `_cat`) | 0/1 |
 | `_cat` | categorical (character or factor) |  |
 | `_id` | identifier |  |
 | `_gyear` | first-treatment (cohort) year, `Inf` or `0` for never-treated per estimator convention | year |
@@ -159,7 +159,7 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 4.  A variable with a denominator must name it. `emp_rate` is not acceptable; `emp_formal_pia_rate` is.
 5.  "avg", "total" and "mean" are not tokens. "avg" almost always hides a denominator; name the denominator instead. "total" is the default and needs no token.
 6.  Derived variables keep the full name of their parent and add suffixes. `eco_gdp_pc_brl24_log` is derived from `eco_gdp_pc_brl24`.
-7.  Baseline covariates used in analysis scripts follow the same grammar with `_blYYYY` instead of an ad hoc `0`. Replace `gdp0`, `informal0`, `agri0` with `eco_gdp_pc_brl24_bl0607`, `lab_informal_share_bl0607`, `lab_emp_formal_agri_share_bl0607` (**CONFIRM** the actual baseline window and the exact parent variable of each).
+7.  Baseline covariates used in analysis scripts follow the same grammar with `_blYYYY` instead of an ad hoc `0`: `gdp0`, `informal0`, `agri0` become `eco_gdp_pc_brl24_log_bl<window>`, `lab_informal_share_bl<window>`, `lab_emp_formal_agri_share_bl<window>` (parents per `08-data-analysis-2WFE-CS.R`). Decided 2026-10-05: these are built in the analysis scripts, never stored in the panel, because the baseline window is a parameter to be explored at the causal stage (governing rule for derived variables, `GUIDANCE.md`; memo `docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md`). The window digits are set by each analysis script; the current script uses 2002-2007 (`_bl0207`).
 8.  One name, one meaning, across all datasets and scripts. The crosswalk (section 6) is the single source of truth.
 
 ## 5. Crosswalk: current → proposed
@@ -173,10 +173,10 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `state` | `state` | key |
 | `state_abbreviation` | `uf` | key |
 | `year` | `year` | key |
-| `ppcdam_list` | `enf_ppcdam_listed_d` |  |
-| `ppcdam_main` | `enf_ppcdam_listed_main_d` | **CONFIRM** coding. If it stores a cohort year, use `enf_ppcdam_main_gyear` |
-| `ppcdam_robust` | `enf_ppcdam_listed_robust_d` | **CONFIRM** as above |
-| `ppcdam_ever_full` | `enf_ppcdam_ever_d` | **CONFIRM** as above |
+| `ppcdam_list` | `enf_ppcdam_listed_dum` |  |
+| `ppcdam_main` | `enf_ppcdam_listed_main_dum` | confirmed 2026-10-05: 0/1, ever listed within 2004-2010 (`05-sample-definition.R`, `treat_by()`) |
+| `ppcdam_robust` | `enf_ppcdam_listed_robust_dum` | confirmed: 0/1, ever listed within 2004-2012 |
+| `ppcdam_ever_full` | `enf_ppcdam_ever_dum` | confirmed: 0/1, ever listed over the full panel |
 | `forest_area_km2` | `env_forest_area_km2` |  |
 | `deforestation_area_km2` | `env_defor_area_km2` |  |
 | `deforestation_forest_rate` | `env_defor_forest_share` | deforested area over forest stock |
@@ -185,7 +185,7 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `log_forest_exposure` | `env_forest_exposure_log` |  |
 | `pressure_defor` | `env_defor_pressure_idx` |  |
 | `pressure_agri` | `agr_pressure_idx` |  |
-| `pressure_score` | `smp_pressure_idx` | composite used only for sample definition. **CONFIRM** |
+| `pressure_score` | `smp_pressure_idx` | confirmed 2026-10-05: `z(pressure_defor + pressure_agri)`, used only for sample definition (`05-sample-definition.R`) |
 | `bf_families_n` | `sop_bf_fam_n` |  |
 | `bf_quota` | `sop_bf_quota_n` |  |
 | `bf_transfers_total_brl_2024` | `sop_bf_transf_brl24` |  |
@@ -199,15 +199,15 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `emp_pia_rate_low` | `lab_emp_formal_lowwage_pia_rate` |  |
 | `emp_pia_rate_mid` | `lab_emp_formal_midwage_pia_rate` |  |
 | `emp_pia_rate_high` | `lab_emp_formal_highwage_pia_rate` |  |
-| `emp_share_low_workers` | `lab_emp_formal_lowwage_share` | share of all formal workers. **CONFIRM** |
+| `emp_share_low_workers` | `lab_emp_formal_lowwage_share` | confirmed 2026-10-05: `workers_low / workers_total`, share of all formal workers |
 | `emp_share_mid_workers` | `lab_emp_formal_midwage_share` |  |
 | `emp_share_high_workers` | `lab_emp_formal_highwage_share` |  |
-| `emp_share_agri_low_workers` | `lab_emp_formal_agri_lowwage_share` | **CONFIRM** denominator: all formal workers, or agricultural formal workers only. If the latter, use `lab_emp_formal_lowwage_agri_share` and document |
-| `emp_share_agri_mid_workers` | `lab_emp_formal_agri_midwage_share` | same |
-| `emp_share_agri_high_workers` | `lab_emp_formal_agri_highwage_share` | same |
+| `emp_share_agri_low_workers` | `lab_emp_formal_lowwage_agri_share` | confirmed 2026-10-05: denominator is agricultural formal workers (`workers_agri_low / workers_agric`, `02-data-cleaning-populational-social.R`), hence `_agri` in the denominator slot |
+| `emp_share_agri_mid_workers` | `lab_emp_formal_midwage_agri_share` | same |
+| `emp_share_agri_high_workers` | `lab_emp_formal_highwage_agri_share` | same |
 | `emp_share_agri_workers` | `lab_emp_formal_agri_share` |  |
 | `pea` | `lab_pea_n` |  |
-| `informal` | `lab_informal_share` | **CONFIRM** unit, source and denominator |
+| `informal` | `lab_informal_share` | confirmed 2026-10-05: IBGE census informality share of the employed population, stored on a 0-100 scale and linearly interpolated between the 2000, 2010 and 2022 censuses (`02-data-cleaning-populational-social.R`); rescaled to 0-1 under task 1.9 |
 | `population` | `dem_pop_n` |  |
 | `gdp_brl` | `eco_gdp_brl` | nominal |
 | `gdp_per_capita` | `eco_gdp_pc_brl` | nominal |
@@ -215,23 +215,23 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `gdp_brl_2024` | `eco_gdp_brl24` |  |
 | `gdp_per_capita_2024` | `eco_gdp_pc_brl24` |  |
 | `gdp_per_capita_2024_log` | `eco_gdp_pc_brl24_log` |  |
-| `elec_enc` | `pol_mayor_enc_idx` | **CONFIRM** meaning of `enc` |
+| `elec_enc` | `pol_mayor_enc_idx` | confirmed: effective number of candidates (section 3.2) |
 | `elec_mov` | `pol_mayor_margin_share` |  |
 | `elec_winner_share` | `pol_mayor_winner_share` |  |
 | `elec_n_candidates` | `pol_mayor_cand_n` |  |
 | `elec_winner_party` | `pol_mayor_winner_party_cat` |  |
 | `elec_winner_id` | `pol_mayor_winner_id` |  |
-| `elec_competitive` | `pol_mayor_competitive_d` |  |
-| `elec_uncontested` | `pol_mayor_uncontested_d` |  |
-| `election_year` | `pol_elec_year_d` | **CONFIRM**: if it is a 0/1 flag for election years, keep `_d`; if it stores the year of the most recent election, use `pol_mayor_elec_year` |
-| `elec_enc_gov` | `pol_mayor_enc_idx_term` | **CONFIRM** that `_gov` means "aligned to governing term". If it means gubernatorial, use `pol_governor_*` instead |
+| `elec_competitive` | `pol_mayor_competitive_dum` |  |
+| `elec_uncontested` | `pol_mayor_uncontested_dum` |  |
+| `election_year` | `pol_elec_year_dum` | confirmed 2026-10-05: 0/1 flag for election years (`03-data-cleaning-controls.R`, `year %in% election_years`) |
+| `elec_enc_gov` | `pol_mayor_enc_idx_term` | confirmed 2026-10-05: `_gov` means aligned to the governing mayor, built as a one-year lag in `04-data-panel.R` (the off-by-one is task 1.5); not gubernatorial |
 | `elec_mov_gov` | `pol_mayor_margin_share_term` | same |
 | `elec_winner_share_gov` | `pol_mayor_winner_share_term` | same |
 | `elec_n_candidates_gov` | `pol_mayor_cand_n_term` | same |
 | `elec_winner_party_gov` | `pol_mayor_winner_party_cat_term` | same |
 | `elec_winner_id_gov` | `pol_mayor_winner_id_term` | same |
-| `elec_competitive_gov` | `pol_mayor_competitive_d_term` | same |
-| `elec_uncontested_gov` | `pol_mayor_uncontested_d_term` | same |
+| `elec_competitive_gov` | `pol_mayor_competitive_dum_term` | same |
+| `elec_uncontested_gov` | `pol_mayor_uncontested_dum_term` | same |
 | `munic_area_km2` | `geo_area_km2` |  |
 | `crop_soy_area_planted_km2` | `agr_soy_planted_km2` |  |
 | `crop_corn_area_planted_km2` | `agr_corn_planted_km2` |  |
@@ -250,9 +250,9 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `price_index_crop_lag1_z` | `mkt_price_crop_idx_z_lag1` |  |
 | `price_index_cattle_z` | `mkt_price_cattle_idx_z` |  |
 | `price_index_cattle_lag1_z` | `mkt_price_cattle_idx_z_lag1` |  |
-| `avail_ok` | `smp_avail_d` |  |
-| `at_risk_broad` | `smp_atrisk_broad_d` |  |
-| `at_risk_narrow` | `smp_atrisk_narrow_d` |  |
+| `avail_ok` | `smp_avail_dum` |  |
+| `at_risk_broad` | `smp_atrisk_broad_dum` |  |
+| `at_risk_narrow` | `smp_atrisk_narrow_dum` |  |
 
 ### 5.2 Atlas Brasil (`outcome_atlas_poverty_geocoded.csv`)
 
@@ -265,7 +265,7 @@ Wide file, one row per municipality, three census vintages. Apply `_cYYYY` for t
 | `geocode` | `geocode` | key |
 | `r1040_YYYY` | `soc_r1040_ratio_cYYYY` |  |
 | `gini_YYYY` | `soc_gini_idx_cYYYY` |  |
-| `rpc_YYYY` | `soc_inc_pc_brl10_cYYYY` | **CONFIRM** price base of Atlas income (2010 BRL in the standard release) |
+| `rpc_YYYY` | `soc_inc_pc_brl10_cYYYY` | confirmed 2026-10-05: Atlas income in August-2010 BRL (`07-data-analysis-EDA-poverty.R` labels) |
 | `ext_YYYY` | `soc_extpov_share_cYYYY` | rescale to 0-1 at construction if the source is percent |
 | `pov_YYYY` | `soc_pov_share_cYYYY` | same |
 | `vul_YYYY` | `soc_vuln_share_cYYYY` | same |
@@ -298,7 +298,7 @@ If the Atlas file is later reshaped to long format, drop the vintage suffix and 
 
 5.  **Generate the codebook from the crosswalk**, not by hand, so names and documentation cannot drift.
 
-6.  **Resolve every CONFIRM item with Fernando before writing the crosswalk.** Do not guess. Where the answer changes a name, update this file and the crosswalk together.
+6.  **Resolve every CONFIRM item with Fernando before writing the crosswalk.** Do not guess. Where the answer changes a name, update this file and the crosswalk together. Status: all CONFIRM items were resolved on 2026-10-05 (stage 3 gate); each resolution is recorded in the row or rule it concerns. Any new ambiguity found while building the crosswalk is a new CONFIRM item, raised the same way.
 
 7.  **Do not create new variables with old-style names.** Any variable added during the rebuild follows the grammar from the start.
 
