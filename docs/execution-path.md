@@ -1,6 +1,6 @@
 ---
 role: execution-path
-current_stage: "4 — phase 0 setup (waiting on the author's deflator pair and salvaged originals)"
+current_stage: "4 — phase 0 setup (inputs placed 2026-10-05; session pending)"
 updated: 2026-10-05
 ---
 
