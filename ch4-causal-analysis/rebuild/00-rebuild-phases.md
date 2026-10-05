@@ -41,7 +41,7 @@ Goal: a repository in which every later change can be checked against a frozen r
 
 1b. Naming: folders and files follow `docs/repo-conventions.md` (interim datasets source-first; the final panel is `panel_amz_2000_2024`).
 
-2. Freeze the oracle. Copy the recovered final panel (`dataset_final_v6`) into `_data/reference/` under its recovered filename; it is read-only from now on. Build the salvage register: one provenance row per recovered file (source, version markers, recovery location, Drive/Project timestamps) and one per re-acquired source as downloads happen. Mirror `_data/` to Google Drive immediately; the mirror is refreshed at every phase acceptance from here on.
+2. Freeze the oracle. Copy the recovered final panel (`dataset_final_v6`) into `_data/reference/` under its recovered filename; it is read-only from now on. Build the salvage register in `_data/aux/provenance.csv`: one provenance row per recovered file (source, version markers, recovery location, Drive/Project timestamps, sha256) and one per re-acquired source as downloads happen; the README provenance table (phase 3) is rendered from it. Mirror `_data/` to Google Drive immediately; the mirror is refreshed at every phase acceptance from here on.
 
 3. renv is managed at the repository root. Run `renv::snapshot()` after any approved package install and commit the lockfile.
 

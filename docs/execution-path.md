@@ -1,6 +1,6 @@
 ---
 role: execution-path
-current_stage: "4 — phase 0 setup (inputs placed 2026-10-05; session pending)"
+current_stage: "4 — phase 0 deliverables built 2026-10-05 (register, comparator self-tested, DECISIONS.md seeded, codebook skeleton); Drive mirror and chflags lock pending (author)"
 updated: 2026-10-05
 ---
 
@@ -49,11 +49,11 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 4 — Phase 0 (Claude Code, one session, plan mode)
 
-- [ ] Salvaged originals placed in `_data/raw/<provider>/` under original filenames; salvage register written.
-- [ ] `dataset_final_v6` frozen in `_data/reference/` under its recovered name.
-- [ ] `_data/` mirrored to Drive.
-- [ ] `compare_outputs.R` built and self-tested (zero diff on a file against itself).
-- [ ] `DECISIONS.md` seeded with the known-history entries; `codebook.csv` skeleton from the recovered panel's columns.
+- [x] Salvaged originals placed in `_data/raw/<provider>/` under original filenames (2026-10-05); salvage register written in `_data/aux/provenance.csv` (12 rows, sha256-verified; recovery timestamps and the two duplicate notes still to be confirmed by the author).
+- [x] `dataset_final_v6` frozen in `_data/reference/` under its recovered name (2026-10-05; sha256 13833de8…).
+- [ ] `_data/` mirrored to Drive (author; no Drive sync folder or rclone remote on this machine as of 2026-10-05).
+- [x] `compare_outputs.R` built and self-tested (zero diff on the reference against itself; eight negative tests on perturbed copies passed, 2026-10-05).
+- [x] `DECISIONS.md` seeded with the known-history entries (17: the 16 listed in rebuild/04 plus Mojuí dos Campos); `codebook.csv` skeleton from the recovered panel's 85 columns.
 - [ ] Commit. Done per `rebuild/00-rebuild-phases.md` phase 0 acceptance.
 - [ ] After placement, lock immutable layers: `chflags -R uchg ch4-causal-analysis/_data/raw ch4-causal-analysis/_data/reference` (deny rules cover Claude's file tools only; Bash and Rscript can still write).
 
