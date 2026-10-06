@@ -253,3 +253,114 @@ Reason: the programme ran to late 2021, was replaced by Auxílio Brasil and
 Evidence: pending (_audit/bf.qmd)
 Affects: bf_* columns 2020-2024
 Supersedes: none (extends D-2026-10-05-b)
+
+## D-2026-10-06-a  MapBiomas year window 1987-2023
+
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, line 88; refactored in phase 1, script 01)
+Scope: 01-env-deforestation.R (MAPBIOMAS_YEARS); area_forest, area_deforestation and derived columns
+Context: the Collection 9 municipal statistics cover 1985-2023, but both
+         suppression classes are zero for every municipality in 1985 and
+         1986, the first two years of the Landsat series.
+Reason: two all-zero years would enter the municipality means and standard
+        deviations as artificial zeros; the window starts at the first year
+        with observed suppression.
+Evidence: _audit/mapbiomas.qmd, Q2
+Affects: every row of the interim deforestation panel; deforestation_mean,
+         deforestation_sd, deforestation_z
+Supersedes: none
+
+## D-2026-10-06-b  Forest and deforestation aggregated over all level-1 classes
+
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 86-145; refactored in phase 1, script 01)
+Scope: 01-env-deforestation.R (MAPBIOMAS_FOREST_TRANSITIONS, MAPBIOMAS_DEFOR_TRANSITIONS);
+       area_forest, area_deforestation
+Context: the source reports areas by transition class (primary vegetation,
+         secondary vegetation, their suppression, and others) crossed with
+         four levels of land-cover class.
+Reason: forest is the sum of primary and secondary vegetation and
+        deforestation the sum of their suppression, with no restriction on
+        class_level_1, as in the surviving script. The audit shows that the
+        vegetation rows include non-forest natural formation, water and
+        other classes. Whether to restrict both aggregates to class 1
+        (Forest) is left open for the author; it is not a phase 2 task.
+Evidence: _audit/mapbiomas.qmd, Q3
+Affects: area_forest, area_deforestation, deforestation_rate; downstream
+         forest_area_km2, deforestation_area_km2, defor_norm_*
+Supersedes: none
+
+## D-2026-10-06-c  Sample rule in script 01: nine states, then IBGE predominant biome Amazônia
+
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 91, 376; refactored in phase 1, script 01); reopened by D-2026-10-05-m (task 1.1)
+Scope: 01-env-deforestation.R (AMZ_STATES, BIOME_KEEP, N_MUNIC_*_EXPECTED)
+Context: MapBiomas covers all 5,571 municipalities; the study population is
+         the Amazon.
+Reason: the IBGE list gives a standard criterion (the biome covering the
+        largest share of the municipal area): 503 municipalities, Mojuí dos
+        Campos included at this stage and dropped in the panel scripts
+        (D-2026-10-05-l). The nine-state subset (808 municipalities) is
+        built in full before the biome filter, which is one delimited block
+        governed by BIOME_KEEP, so that step 2.9 can replace the filter with
+        the biome_amazon and legal_amazon flags.
+Evidence: _audit/ibge_biome.qmd, Q2; _audit/mapbiomas.qmd, Q1
+Affects: the row set of every downstream dataset
+Supersedes: none
+
+## D-2026-10-06-d  deforestation_rate = deforestation / contemporaneous forest x 100
+
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 251-258; refactored in phase 1, script 01); reopened by task 1.9 (phase 2 step 2.8)
+Scope: 01-env-deforestation.R (RATE_SCALE); deforestation_rate, downstream deforestation_forest_rate
+Context: municipalities differ in size, so the cleared area is also
+         expressed relative to the forest stock.
+Reason: the denominator is the same year's forest area, not the lagged one;
+        the value is a percentage; NA when forest is zero. Task 1.9 rescales
+        to 0-1 and records the denominator timing in the codebook.
+Evidence: _audit/mapbiomas.qmd, Q8
+Affects: deforestation_forest_rate
+Supersedes: none
+
+## D-2026-10-06-e  Municipality-level deforestation mean, sd and z-score stored in the interim panel
+
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 259-265; refactored in phase 1, script 01); flagged for task 2.2
+Scope: 01-env-deforestation.R; deforestation_mean, deforestation_sd, deforestation_z
+Context: computed within municipality over 1987-2023; mean and sd are
+         dropped in script 04 and z in script 06, so none reaches the final
+         panel.
+Reason: kept in phase 1 so that script 04 receives the same input it had;
+        whether they remain in the interim file is decided in the storage
+        audit (task 2.2), not here.
+Evidence: scripts 04 (line 23) and 06 (line 115) at tag pre-reorg
+Affects: interim file only
+Supersedes: none
+
+## D-2026-10-06-f  PPCDAm geocodes attached from the IBGE municipality lookup
+
+Status: open
+Scope: 01-env-ppcdam.R (PPCDAM_STATE_UF); geocode of ppcdam_list
+Context: the surviving script read a data_ppcdam.xlsx with a hand-entered
+         Geocode column, lost with the machine; the recovered
+         ppcdam_lists.xlsx (sheet Lista) carries municipality name and state
+         only.
+Reason: all 92 names match raw/ibge/ibge_munic_id.xlsx on (name, state)
+        with no duplicates, and the joined list reproduces the reference
+        panel's ppcdam_list column exactly for 502 municipalities x
+        2000-2020 (compare_outputs, n_diff 0). Behavior change relative to
+        the lost script, confirmed by the author 2026-10-06.
+Evidence: _audit/ppcdam.qmd, Q2 and Q3; compare_outputs report in the
+          phase 1 script 01 commit message
+Affects: ppcdam_list and every ppcdam_* variable downstream
+Supersedes: none
+
+## D-2026-10-06-g  Sheet Lista is the PPCDAm indicator; the missing 2024 cell stays NA
+
+Status: closed (phase 1, script 01)
+Scope: 01-env-ppcdam.R (PPCDAM_SHEET, N_PPCDAM_NA_EXPECTED)
+Context: the workbook holds Lista (0/1), Lista_dummy (identical), Lista_cat
+         (-1/0/1 status coding) and Decretos (normative record); Grajaú (MA)
+         has no value for 2024.
+Reason: Lista is the sheet the surviving script read (first sheet);
+        Lista_cat is left for a possible status coding later. The NA is
+        outside the reference window and recoding it to 0 would be a silent
+        change.
+Evidence: _audit/ppcdam.qmd, Q1 and Q5
+Affects: ppcdam_list for Grajaú 2024 (outside the current panel)
+Supersedes: none

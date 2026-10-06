@@ -2,8 +2,8 @@
 chapter: 4
 title: Descriptive analysis and causal inference
 stage: revising # dataset rebuild specified (rebuild/), execution pending; identification strategy re-opened"
-updated: 2026-10-05
-current_focus: "Rebuild phase 0 closed 2026-10-05 (commit 4966a40; Drive mirror and chflags lock confirmed). Next: phase 1, script 01 refactored to rebuild/01-script-template.md, one script per session; stage 5 re-acquisition runs in parallel"
+updated: 2026-10-06
+current_focus: "Rebuild phase 1 under way: script 01 refactored 2026-10-06 into 01-env-deforestation.R and 01-env-ppcdam.R (branch phase1-script01; audit notebooks mapbiomas, ibge_biome, ppcdam; D-2026-10-06-a..g; environmental and PPCDAm columns reproduce the reference exactly). Next: script 02, one script per session; stage 5 re-acquisition runs in parallel (script 02 needs the MDS files)"
 next_milestone: "Phase 1 gate passed: pipeline reproduces the recovered final panel on recovered inputs, with drift documented for re-acquired sources"
 ---
 
@@ -17,7 +17,7 @@ next_milestone: "Phase 1 gate passed: pipeline reproduces the recovered final pa
 
 - [x] Resolve every decision reserved to the author: CONFIRM items in `rebuild/naming-convention.md` and section 0 of `rebuild/upstream-reform-rais.md`. Nothing downstream starts before this. Done 2026-10-05: resolutions recorded inline in both files (naming convention version 2; RAIS brief section 0 header); baseline-window choice in `docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md`.
 - [x] Phase 0 setup per `rebuild/00-rebuild-phases.md`: folder layout, salvaged originals placed in `_data/raw/` with the salvage register, recovered final panel frozen in `_data/reference/`, Drive mirror of `_data/`, `compare_outputs.R`, empty `DECISIONS.md` seeded with the known-history entries, codebook skeleton. Done 2026-10-05, commit 4966a40 (`_data/aux/provenance.csv`, `_scripts/utils/compare_outputs.R` self-test PASS, `DECISIONS.md` D-2026-10-05-a…q, `_data/aux/codebook.csv`); Drive mirror checked with 0 differences and `chflags uchg` lock confirmed the same day.
-- [ ] Phase 1: refactor scripts 01-06 to `rebuild/01-script-template.md`, one script per session (provisional acceptance: assertions + audit notebook); exploration code moves to `_audit/` per `rebuild/02-audit-notebook-template.md`; then the phase 1 gate: full run compared against the recovered final panel, exact for recovered-input variables, documented drift for re-acquired sources.
+- [ ] Phase 1: refactor scripts 01-06 to `rebuild/01-script-template.md`, one script per session (provisional acceptance: assertions + audit notebook); exploration code moves to `_audit/` per `rebuild/02-audit-notebook-template.md`; then the phase 1 gate: full run compared against the recovered final panel, exact for recovered-input variables, documented drift for re-acquired sources. Progress: script 01 done 2026-10-06 (`_scripts/01-env-deforestation.R`, `_scripts/01-env-ppcdam.R`; `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`; `DECISIONS.md` D-2026-10-06-a…g; partial `compare_outputs` PASS on the 7 environmental and PPCDAm columns, 502 × 2000-2020).
 - [ ] Phase 2: data fixes, one per session and commit, in the order of the phase 2 table (tasks 1.1-1.9 in `rebuild/tasks.md`; 1.10 is absorbed by phase 1).
 - [ ] Phase 2R: variable rename via crosswalk per `rebuild/naming-convention.md` (task 2.1), after equivalence passes.
 - [ ] RAIS reform, tasks 3.A-3.C per `rebuild/upstream-reform-rais.md`, once its section 0 decisions are confirmed; the regression rule guards the existing variables.

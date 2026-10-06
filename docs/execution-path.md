@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "5/6 — phase 0 closed 2026-10-05 (commit 4966a40, mirror and lock confirmed); next: stage 5 re-acquisition (author) and stage 6 phase 1, script 01"
-updated: 2026-10-05
+current_stage: "5/6 — phase 1 script 01 refactored 2026-10-06 (branch phase1-script01); next: stage 5 re-acquisition (author; MDS files needed for script 02) and stage 6 phase 1, script 02"
+updated: 2026-10-06
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -67,7 +67,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 6 — Phase 1: refactor (Claude Code, six sessions + gate)
 
-- [ ] Script 01 refactored to template; provisional acceptance (assertions + audit notebook); commit.
+- [x] Script 01 refactored to template; provisional acceptance (assertions + audit notebook); commit. Done 2026-10-06, split into `01-env-deforestation.R` and `01-env-ppcdam.R`; notebooks `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`; D-2026-10-06-a…g; the 7 environmental and PPCDAm panel columns reproduce the reference exactly (`compare_outputs` PASS, 502 × 2000-2020).
 - [ ] Script 02 — same.
 - [ ] Script 03 — same.
 - [ ] Script 04 — same.
