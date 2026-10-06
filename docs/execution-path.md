@@ -59,7 +59,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 5 — Re-acquisition (author; parallel with stage 6)
 
-- [ ] MDS Bolsa Família monthly files through 2024 + municipal quotas (front-load: feeds script 02 and task 1.2).
+- [x] MDS Bolsa Família monthly files through 2024 + municipal quotas (front-load: feeds script 02 and task 1.2). Done 2026-10-06: 22 yearly files 2004-2021 and 2023-2026 downloaded from the MI Social service (no 2022 resource exists) and the LAI quota workbook placed in `_data/raw/mds/`; 23 provenance rows.
 - [ ] TSE electoral data (front-load: feeds script 03).
 - [ ] PAM/PPM; IBGE PIB dos Municípios incl. value added by activity (task 4.1); Pink Sheet prices; Atlas Brasil.
 - [ ] One provenance row per download, at download time.
