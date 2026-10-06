@@ -46,5 +46,32 @@
       "Write(docs/submitted/**)",
       "Edit(docs/submitted/**)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowWrite": [
+        "~/.claude/projects/-Users-fcymbaluk-Projects-2026-amz-thesis/memory",
+        "~/Library/Caches/org.R-project.R",
+        "~/Library/Caches/quarto",
+        "~/Library/Application Support/quarto",
+        "~/Library/TinyTeX",
+        "~/.config/gcloud"
+      ],
+      "denyRead": [
+        "~/Documents",
+        "~/Desktop",
+        "~/Downloads",
+        "~/.ssh",
+        "~/.aws"
+      ]
+    },
+    "network": {
+      "allowLocalBinding": true
+    }
+  },
+  "env": {
+    "RENV_CONFIG_SANDBOX_ENABLED": "FALSE"
   }
 }
