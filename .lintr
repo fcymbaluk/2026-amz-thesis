@@ -1,0 +1,12 @@
+linters: linters_with_defaults(
+    line_length_linter(80),
+    pipe_consistency_linter("%>%"),
+    object_name_linter(styles = c("snake_case", "SNAKE_CASE",
+                                  "symbols")),
+    object_usage_linter = NULL
+  )
+exclusions: list(
+    "renv",
+    "scratch",
+    "ch4-causal-analysis/_annex/parked"
+  )
