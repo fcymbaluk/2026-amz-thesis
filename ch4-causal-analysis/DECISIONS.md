@@ -334,7 +334,7 @@ Supersedes: none
 
 ## D-2026-10-06-f  PPCDAm geocodes attached from the IBGE municipality lookup
 
-Status: open
+Status: closed (commit 34d0d1f)
 Scope: 01-env-ppcdam.R (PPCDAM_STATE_UF); geocode of ppcdam_list
 Context: the surviving script read a data_ppcdam.xlsx with a hand-entered
          Geocode column, lost with the machine; the recovered
