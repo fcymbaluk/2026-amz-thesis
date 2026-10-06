@@ -100,6 +100,8 @@ Order of fixes. Value-level fixes on the existing sample first, most upstream fi
 
 Task 1.10 (character to numeric coercion) is handled inside phase 1 under the permitted type correction, logged per script.
 
+Open definitional question raised in phase 1 (script 01, 2026-10-06): which level-1 classes compose the four MapBiomas transitions the pipeline sums. `area_forest` is primary plus secondary vegetation of every class (Forest, Non Forest Natural Formation, Water, Non vegetated area, Not Observed, and Farming under secondary vegetation), and `area_deforestation` includes suppression of non-forest natural formation. For the biome municipalities in 2020 the Forest class is 95 percent of `area_forest` and 98 percent of `area_deforestation`. Phase 1 reproduces the aggregate as inherited (D-2026-10-06-b; evidence `_audit/mapbiomas.qmd` Q3). **CONFIRM:** the author decides whether both aggregates are restricted to class 1 (Forest). If so, the change is a new phase 2 step after 2.9 (values of every environmental column, `defor_norm_*` included), with its own decision entry and the comparator report; if not, D-2026-10-06-b is confirmed and the annex states the definition.
+
 After 2.9 every audit notebook is re-rendered on the extended sample. New municipalities may expose source problems the biome sample never had, and those become new decision entries.
 
 ## Phase 2R. Rename and storage audit
