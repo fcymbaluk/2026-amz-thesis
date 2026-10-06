@@ -1,0 +1,192 @@
+---
+title: "Audit: PPCDAm priority municipality lists"
+date: 2026-10-06
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: author's compilation of the PPCDAm priority lists from the MMA
+ordinances (Decreto 6.321/2007 and Portarias MMA 2008-2024), file created
+2025-02-11, last modified 2025-12-18.
+Raw files: `_data/raw/ppcdam/ppcdam_lists.xlsx`;
+`_data/raw/ibge/ibge_munic_id.xlsx` (geocode lookup).
+Pipeline script: `_scripts/01-env-ppcdam.R`.
+Interim output: `_data/interim/ppcdam_list_2004_2024.rds`.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+path <- "_data/raw/ppcdam/ppcdam_lists.xlsx"
+lista <- read_xlsx(path, sheet = "Lista")
+lista_dummy <- read_xlsx(path, sheet = "Lista_dummy")
+lista_cat <- suppressMessages(read_xlsx(path, sheet = "Lista_cat", .name_repair = "minimal"))
+decretos <- read_xlsx(path, sheet = "Decretos")
+munic_id <- read_xlsx("_data/raw/ibge/ibge_munic_id.xlsx", sheet = "Municípios",
+                      col_types = c("text", "numeric", "text", "text"))
+biome_amz <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
+                        col_types = cols(.default = col_character()),
+                        locale = locale(encoding = "UTF-8"), show_col_types = FALSE) %>%
+  filter(`Bioma predominante` == "Amazônia")
+ppcdam <- read_rds("_data/interim/ppcdam_list_2004_2024.rds")
+year_cols <- as.character(2004:2024)
+```
+
+## Q1. What does the workbook contain, and which sheet is the indicator?
+
+What is checked: the four sheets, whether `Lista` and `Lista_dummy`
+differ, the values each coding takes, and the structure of the normative
+record.
+
+```{r q1}
+excel_sheets(path)
+tibble(lista_rows = nrow(lista), lista_cols = ncol(lista),
+       lista_equals_dummy = isTRUE(all.equal(lista, lista_dummy)))
+names(lista)
+table(unlist(lista[, year_cols]), useNA = "ifany")
+table(unlist(lista_cat[, -(1:2)]), useNA = "ifany")
+decretos %>% select(Norm, Year, Ministry, n_prior, n_monitor, n_regress) %>%
+  mutate(Norm = str_replace_all(Norm, "\r\n", " | "))
+```
+
+**Finding.** `Lista` is a 92 by 23 table (municipality, state, years
+2004-2024) of 0/1 values with a single missing cell; `Lista_dummy` is
+identical; `Lista_cat` codes the same cells as -1, 0 and 1 (a status
+coding not used by the pipeline); `Decretos` lists the nineteen normative
+acts with the municipalities each added (`prior`), moved to monitoring or
+removed (`regress`). The surviving script read the first sheet, `Lista`.
+**Decision.** D-2026-10-06-g: `PPCDAM_SHEET = "Lista"`.
+**Assertion.** `01-env-ppcdam.R`, raw-state block (column names, values
+in {0, 1, NA}).
+
+## Q2. Can every municipality be geocoded from the IBGE lookup?
+
+What is checked: the join of (name, state) to `ibge_munic_id.xlsx`; names
+that exist in more than one state in the lookup, which is why the state is
+part of the key.
+
+```{r q2}
+state_uf <- c(Acre = "AC", Amazonas = "AM", Maranhão = "MA", `Mato Grosso` = "MT",
+              Pará = "PA", Rondônia = "RO", Roraima = "RR")
+geocoded <- lista %>%
+  mutate(uf = unname(state_uf[Estado])) %>%
+  left_join(munic_id %>% select(munic, uf, geocode = munic_id), by = c("Município" = "munic", "uf"))
+tibble(municipalities = nrow(geocoded),
+       matched = sum(!is.na(geocoded$geocode)),
+       distinct_geocodes = n_distinct(geocoded$geocode))
+munic_id %>%
+  filter(munic %in% lista$Município) %>%
+  count(munic) %>% filter(n > 1) %>%
+  inner_join(munic_id, by = "munic") %>%
+  select(munic, uf, munic_id) %>% arrange(munic)
+```
+
+**Finding.** All 92 municipalities match a unique IBGE code on name plus
+state. Several names exist in more than one state nationally (table), so
+the state is a necessary part of the key; within the compilation no name
+repeats.
+**Decision.** D-2026-10-06-f: geocodes attached from the lookup through
+`PPCDAM_STATE_UF`. Behavior change relative to the lost script, which read
+a hand-entered Geocode column; confirmed by the author 2026-10-06.
+**Assertion.** `01-env-ppcdam.R`, output block (`!anyNA(geocode)`,
+92 distinct geocodes).
+
+## Q3. Which listed municipalities fall outside the biome sample, and when were they listed?
+
+What is checked: the 92 municipalities against the 503 of the IBGE biome
+list, and the listing years of those outside it; the number of biome
+municipalities ever listed within the current panel window (2008-2020),
+Mojuí dos Campos excluded as in the panel.
+
+```{r q3}
+outside <- geocoded %>% filter(!geocode %in% biome_amz$Geocódigo)
+outside %>%
+  pivot_longer(all_of(year_cols), names_to = "year", values_to = "listed") %>%
+  filter(listed == 1) %>%
+  group_by(Município, Estado, geocode) %>%
+  summarise(listed_years = paste(year, collapse = " "), .groups = "drop")
+ppcdam %>%
+  filter(geocode %in% biome_amz$Geocódigo, geocode != "1504752", year %in% 2008:2020) %>%
+  group_by(geocode) %>%
+  summarise(ever = any(ppcdam_list == 1, na.rm = TRUE)) %>%
+  summarise(biome_munis_ever_listed_2008_2020 = sum(ever))
+ppcdam %>%
+  filter(geocode == "1504752", ppcdam_list == 1) %>%
+  summarise(mojui_listed_years = paste(year, collapse = " "))
+```
+
+**Finding.** Four listed municipalities have a predominant biome other
+than Amazônia (Grajaú MA; Comodoro, Paranatinga and Ribeirão Cascalheira
+MT) and leave the panel with the biome filter; Mojuí dos Campos is in the
+biome but dropped downstream. Among the remaining biome municipalities, 61
+are listed at some point in 2008-2020, the number the pre-rebuild panel
+carries.
+**Decision.** none required now. The four outside municipalities return
+with the Legal Amazon extension (D-2026-10-05-m, task 1.1).
+**Assertion.** none in script 01; the 61 is a property of the joined
+panel, checked at the phase 1 gate.
+
+## Q4. Does the compilation match the ordinances year by year?
+
+What is checked: the yearly count of listed municipalities in `Lista`
+against the counts the `Decretos` sheet records for each normative act
+(municipalities added as priority, moved to monitoring, removed).
+
+```{r q4}
+yearly <- tibble(year = year_cols, listed = colSums(lista[, year_cols], na.rm = TRUE))
+acts <- decretos %>%
+  group_by(Year) %>%
+  summarise(acts = n(), added_prior = sum(n_prior, na.rm = TRUE),
+            to_monitor = sum(n_monitor, na.rm = TRUE),
+            removed = sum(n_regress, na.rm = TRUE), .groups = "drop") %>%
+  mutate(year = as.character(Year)) %>% select(-Year)
+yearly %>% left_join(acts, by = "year") %>%
+  mutate(change = listed - lag(listed),
+         implied = added_prior - to_monitor + removed) %>%
+  print(n = 21)
+```
+
+**Finding.** The first list (2008) has 36 municipalities, as the decree
+and Portaria 28 name, and 2009 adds the seven of Portaria 102. Read as
+additions minus transfers to monitoring plus returns from monitoring
+(`n_regress`), the act counts reproduce the yearly change in 2010, 2012,
+2013, 2017, 2018 and 2020-2022. 2011 differs by one (the sheet has no
+`n_regress` value for Portarias 138-139), and 2023-2024 cannot be
+reconciled this way: those acts record 51 and 71 municipalities against
+changes of 13 and 11, so they appear to restate the whole list rather than
+its changes.
+**Decision.** open. A full reconciliation requires the ordinance texts;
+it belongs to the annex's treatment-variable section, not to phase 1. The
+2011 gap and the 2023-2024 coding are the points to check first.
+**Assertion.** `01-env-ppcdam.R`, output block
+(`N_PPCDAM_LISTED_EXPECTED = 805`), which pins the compilation as read.
+
+## Q5. Where is the missing cell, and how is it treated?
+
+```{r q5}
+lista %>% filter(if_any(all_of(year_cols), is.na)) %>%
+  select(Município, Estado, `2019`, `2020`, `2021`, `2022`, `2023`, `2024`)
+ppcdam %>% filter(is.na(ppcdam_list))
+```
+
+**Finding.** Grajaú (MA) has no value for 2024; every other cell is 0 or
+1. The pipeline keeps the cell as NA. Grajaú is outside the biome sample
+and 2024 is outside the current panel, so the value has no effect on the
+reference comparison.
+**Decision.** D-2026-10-06-g: kept NA, never recoded to 0.
+**Assertion.** `01-env-ppcdam.R`, raw-state and output blocks
+(`N_PPCDAM_NA_EXPECTED = 1`).

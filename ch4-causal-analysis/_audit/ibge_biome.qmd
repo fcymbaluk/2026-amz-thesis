@@ -1,0 +1,113 @@
+---
+title: "Audit: IBGE predominant biome by municipality"
+date: 2026-10-06
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: IBGE, Bioma predominante por município para fins estatísticos,
+file dated 2025-05-16 (recovered from the Claude Project).
+Raw file: `_data/raw/ibge/ibge_bioma.csv` (semicolon-delimited, UTF-8 with BOM).
+Pipeline script: `_scripts/01-env-deforestation.R` (biome join and sample filter).
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 100)
+```
+
+```{r read}
+biome_raw <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
+                        col_types = cols(.default = col_character()),
+                        locale = locale(encoding = "UTF-8"), show_col_types = FALSE)
+biome <- biome_raw %>% filter(str_detect(Geocódigo, "^[0-9]{7}$"))
+biome_amz <- biome %>% filter(`Bioma predominante` == "Amazônia")
+```
+
+## Q1. What does the file contain, and which release is it?
+
+What is checked: the rows that are not municipalities (the footer), what
+they say about the source, and the number of municipality rows.
+
+```{r q1}
+tibble(lines = nrow(biome_raw), municipality_rows = nrow(biome),
+       footer_rows = nrow(biome_raw) - nrow(biome))
+biome_raw %>%
+  filter(!str_detect(Geocódigo, "^[0-9]{7}$")) %>%
+  select(Geocódigo, `Nome do município`) %>%
+  mutate(`Nome do município` = str_trunc(`Nome do município`, 160))
+```
+
+**Finding.** 5,579 data lines: 5,572 geocoded rows and a seven-row footer.
+The footer identifies the source as the IBGE Malha Municipal Digital 2022,
+accessed December 2023, which resolves the release question left open in
+the salvage register. The surviving script read an xlsx export of the same
+list; the recovered file is the csv.
+**Decision.** none required; provenance note updated 2026-10-06.
+**Assertion.** `01-env-deforestation.R`, raw-state block
+(`N_BIOME_FOOTER_ROWS`).
+
+## Q2. Does the list contain 503 Amazônia municipalities with seven-digit codes?
+
+```{r q2}
+biome %>% count(`Bioma predominante`, sort = TRUE)
+tibble(amazonia = nrow(biome_amz),
+       distinct_geocodes = n_distinct(biome_amz$Geocódigo),
+       seven_digits = all(nchar(biome_amz$Geocódigo) == 7),
+       states = paste(sort(unique(biome_amz$`Sigla da UF`)), collapse = " "))
+```
+
+**Finding.** 503 municipalities have Amazônia as predominant biome, all
+with unique seven-digit codes, across the nine Legal Amazon states.
+**Decision.** D-2026-10-06-c (`BIOME_KEEP = "Amazônia"`,
+`N_MUNIC_BIOME_EXPECTED = 503`); reopened by D-2026-10-05-m (task 1.1).
+**Assertion.** `01-env-deforestation.R`, raw-state block.
+
+## Q3. Which municipalities share a name across states?
+
+```{r q3}
+biome_amz %>%
+  count(`Nome do município`) %>%
+  filter(n > 1) %>%
+  inner_join(biome_amz, by = "Nome do município") %>%
+  select(`Nome do município`, Geocódigo, `Sigla da UF`) %>%
+  arrange(`Nome do município`)
+tibble(geocodes = n_distinct(biome_amz$Geocódigo),
+       names = n_distinct(biome_amz$`Nome do município`))
+```
+
+**Finding.** Four names are shared by two municipalities each (Araguanã
+MA/TO, Pau D'Arco PA/TO, Presidente Médici MA/RO, Rio Branco AC/MT): 503
+geocodes, 499 names. Every join in the pipeline is on geocode.
+**Decision.** none required.
+**Assertion.** keys are `geocode` and `year` in every script and in
+`compare_outputs.R`.
+
+## Q4. Do municipality names agree between the IBGE list and MapBiomas?
+
+```{r q4}
+mapbiomas_names <- read_xlsx("_data/raw/mapbiomas/mapbiomas_munic.xlsx", sheet = "DEF_SECVEG") %>%
+  distinct(geocode = as.character(geocode), municipality, state)
+joined <- biome_amz %>% left_join(mapbiomas_names, by = c("Geocódigo" = "geocode"))
+tibble(biome_munis = nrow(joined),
+       missing_in_mapbiomas = sum(is.na(joined$municipality)),
+       name_mismatches = sum(joined$`Nome do município` != joined$municipality, na.rm = TRUE))
+joined %>% filter(`Nome do município` != municipality)
+```
+
+**Finding.** All 503 biome municipalities are in MapBiomas and every name
+agrees. The one spelling difference noted in the pre-rebuild script
+belonged to the lost xlsx export of the list.
+**Decision.** none required.
+**Assertion.** `01-env-deforestation.R`, raw-state block (`munic_names`).

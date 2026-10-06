@@ -1,0 +1,272 @@
+---
+title: "Audit: MapBiomas deforestation and secondary vegetation"
+date: 2026-10-06
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: MapBiomas, Deforestation and Secondary Vegetation statistics by
+municipality, Collection 9 (August 2024), file dated 2025-04-24.
+Raw file: `_data/raw/mapbiomas/mapbiomas_munic.xlsx`, sheet `DEF_SECVEG`.
+Pipeline script: `_scripts/01-env-deforestation.R`.
+Interim output: `_data/interim/mapbiomas_deforestation_amz_1987_2023.rds`.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 100)
+```
+
+```{r read}
+mapbiomas_raw <- read_xlsx("_data/raw/mapbiomas/mapbiomas_munic.xlsx", sheet = "DEF_SECVEG")
+biome <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
+                    col_types = cols(.default = col_character()),
+                    locale = locale(encoding = "UTF-8"), show_col_types = FALSE) %>%
+  filter(str_detect(Geocódigo, "^[0-9]{7}$"))
+biome_amz <- biome %>% filter(`Bioma predominante` == "Amazônia")
+defor <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds")
+
+AMZ_STATES <- c("Acre", "Amapá", "Amazonas", "Maranhão", "Mato Grosso",
+                "Pará", "Rondônia", "Roraima", "Tocantins")
+FOREST_TR <- c("Veg. Primária", "Veg. Secundária")
+DEFOR_TR  <- c("Supressão Veg. Primária", "Supressão Veg. Secundária")
+year_cols <- as.character(1985:2023)
+```
+
+## Q1. Is the raw sheet complete and keyed as expected?
+
+What is checked: dimensions, distinct geocodes and their length, missing
+values in the year columns, the transition classes present, and the size
+of the nine-state subset the pipeline starts from.
+
+```{r q1}
+tibble(
+  rows = nrow(mapbiomas_raw),
+  cols = ncol(mapbiomas_raw),
+  geocodes = n_distinct(mapbiomas_raw$geocode),
+  geocode_lengths = paste(unique(nchar(as.character(mapbiomas_raw$geocode))), collapse = ","),
+  na_in_year_cols = sum(is.na(mapbiomas_raw[, year_cols]))
+)
+mapbiomas_raw %>% count(transition_name)
+nine <- mapbiomas_raw %>% filter(state %in% AMZ_STATES)
+tibble(rows_nine_states = nrow(nine),
+       geocodes_nine_states = n_distinct(nine$geocode),
+       biome_munis_present = sum(biome_amz$Geocódigo %in% as.character(nine$geocode)))
+```
+
+**Finding.** 264,692 rows and 51 columns; 5,571 geocodes, all seven digits;
+no missing value in the 39 year columns; eight transition classes. The nine
+Amazon states hold 45,801 rows and 808 municipalities, and all 503
+municipalities of the IBGE biome list are among them.
+**Decision.** none required.
+**Assertion.** `01-env-deforestation.R`, raw-state block
+(`N_MUNIC_BR_EXPECTED`, `N_MUNIC_STATES_EXPECTED`).
+
+## Q2. Are 1985 and 1986 zero for vegetation suppression?
+
+What is checked: for the two suppression classes, the number of
+municipalities with a nonzero value in each of the first four years and in
+the last year of the series, nationally.
+
+```{r q2}
+mapbiomas_raw %>%
+  filter(transition_name %in% DEFOR_TR) %>%
+  select(transition_name, `1985`, `1986`, `1987`, `1988`, `2023`) %>%
+  pivot_longer(-transition_name, names_to = "year", values_to = "area") %>%
+  group_by(transition_name, year) %>%
+  summarise(rows_nonzero = sum(area != 0), total_ha = sum(area), .groups = "drop") %>%
+  pivot_wider(names_from = year, values_from = c(rows_nonzero, total_ha))
+```
+
+**Finding.** Both suppression classes are zero in every municipality in
+1985 and 1986, the first two years of the Landsat series. 1987 is the
+first year with observed primary suppression; secondary suppression starts
+in 1989. 2023 carries values.
+**Decision.** D-2026-10-06-a: `MAPBIOMAS_YEARS = 1987:2023`.
+**Assertion.** `01-env-deforestation.R`, raw-state block
+(`suppression_dropped_years`).
+
+## Q3. Which level-1 classes compose the four transitions the pipeline sums?
+
+What is checked: the land-cover classes (`class_level_1`) found under each
+of the four transitions in the nine states, and the share of `area_forest`
+that the Forest class represents for the biome municipalities in 2020.
+
+```{r q3}
+nine %>%
+  filter(transition_name %in% c(FOREST_TR, DEFOR_TR)) %>%
+  count(transition_name, class_level_1) %>%
+  pivot_wider(names_from = transition_name, values_from = n, values_fill = 0)
+
+nine %>%
+  filter(transition_name %in% c(FOREST_TR, DEFOR_TR),
+         as.character(geocode) %in% biome_amz$Geocódigo) %>%
+  mutate(category = if_else(transition_name %in% FOREST_TR, "area_forest", "area_deforestation"),
+         class_1 = if_else(class_level_1 == "1. Forest", "Forest", "other classes")) %>%
+  group_by(category, class_1) %>%
+  summarise(area_2020_ha = sum(`2020`), .groups = "drop_last") %>%
+  mutate(share = area_2020_ha / sum(area_2020_ha)) %>%
+  ungroup()
+```
+
+**Finding.** Primary vegetation rows span the classes Forest, Non Forest
+Natural Formation, Non vegetated area, Water and Not Observed; secondary
+vegetation rows also include Farming; the two suppression classes span
+Forest and Non Forest Natural Formation. The surviving script sums all of
+them, so `area_forest` is primary plus secondary vegetation of any class,
+not the Forest class alone, and `area_deforestation` includes suppression
+of non-forest natural formation. For the biome municipalities in 2020
+the Forest class accounts for 95 percent of `area_forest` and 98 percent of
+`area_deforestation`; the remainder is mostly non-forest natural formation.
+**Decision.** D-2026-10-06-b reproduces the aggregate as inherited.
+Whether the two aggregates should be restricted to class 1 (Forest) is
+`open`: a definitional question for the author, outside the phase 2 task
+list.
+**Assertion.** none; the choice is encoded in
+`MAPBIOMAS_FOREST_TRANSITIONS` and `MAPBIOMAS_DEFOR_TRANSITIONS`.
+
+## Q4. What do the distributions of the two areas look like, and are the tails real?
+
+What is checked: summary statistics and quantiles of `area_deforestation`
+and `area_forest` over the biome municipalities, 1987-2023; the largest
+municipality-years; the yearly total for the biome sample.
+
+```{r q4}
+defor %>%
+  summarise(across(c(area_deforestation, area_forest),
+                   list(min = min, p25 = ~ quantile(.x, 0.25), median = median,
+                        mean = mean, p75 = ~ quantile(.x, 0.75), p95 = ~ quantile(.x, 0.95),
+                        max = max))) %>%
+  pivot_longer(everything(), names_to = c("variable", "stat"), names_sep = "_(?=[a-z0-9]+$)") %>%
+  pivot_wider(names_from = stat, values_from = value)
+
+defor %>%
+  arrange(desc(area_deforestation)) %>%
+  select(geocode, municipality, state_abbreviation, year, area_deforestation, area_forest) %>%
+  head(10)
+
+ggplot(defor, aes(x = area_deforestation)) +
+  geom_histogram(bins = 60) +
+  scale_x_log10() +
+  labs(title = "area_deforestation, biome municipalities 1987-2023 (log scale)",
+       x = "hectares", y = "municipality-years") +
+  theme_minimal()
+
+defor %>%
+  group_by(year) %>%
+  summarise(total_km2 = sum(area_deforestation) / 100) %>%
+  ggplot(aes(x = year, y = total_km2)) +
+  geom_col() +
+  labs(title = "Deforestation, biome municipalities", x = NULL, y = "km2") +
+  theme_minimal()
+```
+
+**Finding.** Both areas are strongly right-skewed, as expected from the
+heterogeneity of municipal size. The largest municipality-years belong to
+the known frontier municipalities (see table), and the yearly biome total
+follows the known trajectory (peaks above 31,000 km2 in 2003 and 2004, a
+trough near 11,000 km2 in 2010-2012, a rise afterward), so the tails
+reflect the territory rather than record errors.
+**Decision.** none required.
+**Assertion.** none; distributional facts are not assertable.
+
+## Q5. Do the aggregates match the MapBiomas platform for sampled municipalities?
+
+What is checked: yearly deforestation for Acrelândia (AC) and Paragominas
+(PA), the two municipalities the original run compared by hand with the
+values shown on the MapBiomas platform.
+
+```{r q5}
+defor %>%
+  filter(municipality %in% c("Acrelândia", "Paragominas")) %>%
+  select(municipality, year, area_deforestation, area_forest) %>%
+  pivot_wider(names_from = municipality, values_from = c(area_deforestation, area_forest)) %>%
+  print(n = 40)
+```
+
+**Finding.** The tables reproduce the series the original run (2025)
+compared against the platform and found consistent. The online comparison
+is a manual step and was not repeated in the rebuild; the tables are kept
+so that a reader can repeat it.
+**Decision.** none required.
+**Assertion.** none.
+
+## Q6. Does Mojuí dos Campos carry data before its 2013 installation?
+
+```{r q6}
+defor %>%
+  filter(geocode == "1504752") %>%
+  summarise(years = n(), first_year = min(year), last_year = max(year),
+            years_with_forest = sum(area_forest > 0))
+```
+
+**Finding.** Yes: MapBiomas uses the current municipal mesh for the whole
+series, so Mojuí dos Campos (emancipated from Santarém in 2013) has values
+for all 37 years. The pipeline keeps it at this stage; it is dropped in the
+panel scripts because its social and economic series start in 2013.
+**Decision.** D-2026-10-05-l (downstream).
+**Assertion.** `N_MUNIC_BIOME_EXPECTED = 503` in `01-env-deforestation.R`.
+
+## Q7. Which municipalities lack rows for some transition, and is the zero fill correct?
+
+What is checked: the number of the four transitions present per biome
+municipality in the raw sheet, and the rows of any municipality with
+fewer than four.
+
+```{r q7}
+coverage <- nine %>%
+  filter(transition_name %in% c(FOREST_TR, DEFOR_TR),
+         as.character(geocode) %in% biome_amz$Geocódigo) %>%
+  distinct(geocode, municipality, transition_name) %>%
+  count(geocode, municipality, name = "transitions_present")
+coverage %>% count(transitions_present)
+incomplete <- coverage %>% filter(transitions_present < 4)
+incomplete
+nine %>%
+  filter(geocode %in% incomplete$geocode, transition_name %in% c(FOREST_TR, DEFOR_TR)) %>%
+  count(municipality, transition_name, class_level_1)
+```
+
+**Finding.** One municipality, Santa Cruz do Arari (PA), has no secondary
+vegetation and no secondary suppression rows: its forest is primary
+vegetation alone and its deforestation primary suppression alone, which
+totals 16 hectares over the whole series. MapBiomas omits transitions with
+no pixels,
+so `values_fill = 0` in the wide reshape is the correct treatment.
+**Decision.** none required.
+**Assertion.** `01-env-deforestation.R`, output block (no NA in the area
+columns).
+
+## Q8. Are geocode-year keys unique and the output columns complete?
+
+```{r q8}
+tibble(
+  rows = nrow(defor),
+  expected = 503 * length(1987:2023),
+  geocodes = n_distinct(defor$geocode),
+  duplicate_keys = sum(duplicated(paste(defor$geocode, defor$year))),
+  na_area_forest = sum(is.na(defor$area_forest)),
+  na_area_deforestation = sum(is.na(defor$area_deforestation)),
+  na_rate = sum(is.na(defor$deforestation_rate)),
+  zero_forest_rows = sum(defor$area_forest == 0),
+  na_z = sum(is.na(defor$deforestation_z))
+)
+```
+
+**Finding.** 18,611 rows, 503 municipalities times 37 years, with unique
+keys; no missing area; the rate is missing only where forest is zero (no
+such row in this sample); the z-score is defined for every row.
+**Decision.** none required. The rate is on 0-100 with the contemporaneous
+forest area as denominator (D-2026-10-06-d; task 1.9 rescales it).
+**Assertion.** `01-env-deforestation.R`, output block.
