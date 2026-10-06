@@ -8,10 +8,11 @@
 #          comparisons across the phase 2R rename.
 # Outputs  A `compare_report` list; optionally the per-variable summary as csv.
 #          Definitions only when sourced. CLI when run with Rscript:
-#            Rscript _scripts/utils/compare_outputs.R new.csv ref.csv [report.csv]
+#            Rscript _scripts/utils/compare_outputs.R new.csv ref.csv \
+#              [report.csv]
 # Status   Phase 0 self-tested on the reference against itself, 2026-10-05.
 
-suppressPackageStartupMessages(library(tidyverse))  # magrittr %>% throughout, never the native pipe
+suppressPackageStartupMessages(library(tidyverse))  # magrittr %>%, never |>
 
 read_output <- function(path) {
   ext <- tolower(tools::file_ext(path))
@@ -27,7 +28,8 @@ read_output <- function(path) {
   }
 }
 
-# A text column counts as numeric when every non-missing cell parses as a number.
+# A text column counts as numeric when every non-missing cell parses as a
+# number.
 # A typed column (from .rds) counts as numeric when R says so.
 numeric_parse <- function(x) {
   if (is.numeric(x) || is.logical(x)) return(as.numeric(x))
@@ -60,8 +62,10 @@ compare_outputs <- function(new, ref, keys = c("geocode", "year"), tol = 1e-8,
          paste(missing_keys, collapse = ", "))
   }
 
-  new_df <- new_df %>% mutate(across(all_of(keys), ~ str_trim(as.character(.x))))
-  ref_df <- ref_df %>% mutate(across(all_of(keys), ~ str_trim(as.character(.x))))
+  new_df <- new_df %>%
+    mutate(across(all_of(keys), ~ str_trim(as.character(.x))))
+  ref_df <- ref_df %>%
+    mutate(across(all_of(keys), ~ str_trim(as.character(.x))))
 
   dup_new <- new_df %>% count(across(all_of(keys))) %>% filter(n > 1)
   dup_ref <- ref_df %>% count(across(all_of(keys))) %>% filter(n > 1)
@@ -90,9 +94,17 @@ compare_outputs <- function(new, ref, keys = c("geocode", "year"), tol = 1e-8,
       one_na  <- (is.na(xn) | is.na(yn)) & !both_na
       abs_diff <- abs(xn - yn)
       differs <- one_na | (!both_na & !one_na & abs_diff > tol)
-      max_abs <- if (any(!is.na(abs_diff))) max(abs_diff, na.rm = TRUE) else NA_real_
+      max_abs <- if (any(!is.na(abs_diff))) {
+        max(abs_diff, na.rm = TRUE)
+      } else {
+        NA_real_
+      }
     } else {
-      type_status <- if (is.null(xn) == is.null(yn)) "both_character" else "type_mismatch"
+      type_status <- if (is.null(xn) == is.null(yn)) {
+        "both_character"
+      } else {
+        "type_mismatch"
+      }
       xt <- as_text(x)
       yt <- as_text(y)
       both_na <- is.na(xt) & is.na(yt)
@@ -100,7 +112,8 @@ compare_outputs <- function(new, ref, keys = c("geocode", "year"), tol = 1e-8,
       differs <- one_na | (!both_na & !one_na & xt != yt)
       max_abs <- NA_real_
     }
-    affected <- joined[differs, keys, drop = FALSE] %>% mutate(variable = v, .before = 1)
+    affected <- joined[differs, keys, drop = FALSE] %>%
+      mutate(variable = v, .before = 1)
     summary <- tibble(
       variable        = v,
       type_status     = type_status,
@@ -109,7 +122,11 @@ compare_outputs <- function(new, ref, keys = c("geocode", "year"), tol = 1e-8,
       n_na_ref_only   = sum(!is.na(as_text(x)) & is.na(as_text(y))),
       max_abs_diff    = max_abs,
       n_munic         = n_distinct(affected[[keys[1]]]),
-      years           = if (length(keys) > 1) collapse_years(affected[[keys[2]]]) else NA_character_
+      years           = if (length(keys) > 1) {
+        collapse_years(affected[[keys[2]]])
+      } else {
+        NA_character_
+      }
     )
     list(summary = summary, affected = affected)
   }
@@ -130,7 +147,8 @@ compare_outputs <- function(new, ref, keys = c("geocode", "year"), tol = 1e-8,
     rows_only_ref = rows_only_ref,
     cols_only_new = cols_only_new,
     cols_only_ref = cols_only_ref,
-    n_rows        = c(new = nrow(new_df), ref = nrow(ref_df), joined = nrow(joined)),
+    n_rows        = c(new = nrow(new_df), ref = nrow(ref_df),
+                      joined = nrow(joined)),
     keys          = keys,
     tol           = tol,
     pass          = schema_ok && rows_ok && values_ok && types_ok
@@ -155,20 +173,28 @@ collapse_years <- function(y) {
 print.compare_report <- function(x, n_top = 15, ...) {
   cat("compare_outputs:", if (x$pass) "PASS" else "FAIL",
       sprintf("(keys: %s; tol = %g)\n", paste(x$keys, collapse = ", "), x$tol))
-  cat(sprintf("rows: new %d, ref %d, joined %d; only in new %d, only in ref %d\n",
+  cat(sprintf(paste0("rows: new %d, ref %d, joined %d; ",
+                     "only in new %d, only in ref %d\n"),
               x$n_rows[["new"]], x$n_rows[["ref"]], x$n_rows[["joined"]],
               nrow(x$rows_only_new), nrow(x$rows_only_ref)))
   cat(sprintf("columns compared: %d; only in new: %d; only in ref: %d\n",
-              nrow(x$summary), length(x$cols_only_new), length(x$cols_only_ref)))
-  if (length(x$cols_only_new) > 0) cat("  only in new:", paste(x$cols_only_new, collapse = ", "), "\n")
-  if (length(x$cols_only_ref) > 0) cat("  only in ref:", paste(x$cols_only_ref, collapse = ", "), "\n")
+              nrow(x$summary), length(x$cols_only_new),
+              length(x$cols_only_ref)))
+  if (length(x$cols_only_new) > 0) {
+    cat("  only in new:", paste(x$cols_only_new, collapse = ", "), "\n")
+  }
+  if (length(x$cols_only_ref) > 0) {
+    cat("  only in ref:", paste(x$cols_only_ref, collapse = ", "), "\n")
+  }
   mism <- x$summary %>% filter(type_status == "type_mismatch")
   cat(sprintf("type mismatches: %d\n", nrow(mism)))
   if (nrow(mism) > 0) cat("  ", paste(mism$variable, collapse = ", "), "\n")
   diffs <- x$summary %>% filter(n_diff > 0) %>% arrange(desc(n_diff))
-  cat(sprintf("variables with differences: %d of %d\n", nrow(diffs), nrow(x$summary)))
+  cat(sprintf("variables with differences: %d of %d\n",
+              nrow(diffs), nrow(x$summary)))
   if (nrow(diffs) > 0) {
-    print(head(diffs %>% select(variable, type_status, n_diff, n_munic, years, max_abs_diff), n_top))
+    print(head(diffs %>% select(variable, type_status, n_diff, n_munic,
+                                years, max_abs_diff), n_top))
   }
   invisible(x)
 }
@@ -180,7 +206,11 @@ if (sys.nframe() == 0L) {
     stop("usage: Rscript compare_outputs.R <new> <ref> [report.csv]")
   }
   report <- compare_outputs(args[1], args[2],
-                            report_path = if (length(args) >= 3) args[3] else NULL)
+                            report_path = if (length(args) >= 3) {
+                              args[3]
+                            } else {
+                              NULL
+                            })
   print(report)
   quit(status = if (report$pass) 0L else 1L)
 }

@@ -30,6 +30,7 @@ write
 8. Source descriptions (what MapBiomas is, how the PPCDAm list works) do not belong in the script. The header points to the annex section.
 9. A function used by more than one script moves to `_scripts/utils/` and is sourced right after the libraries. Utils files contain function definitions only: no side effects, no reads or writes at source time. `compare_outputs.R` lives in `utils/` but is the acceptance comparator, never sourced by a pipeline script.
 10. Whether a derived variable is built here (stored in the panel) or in an analysis script is decided by the governing rule for derived variables in `GUIDANCE.md` (Methodological standards). Sample-dependent quantities never enter the pipeline.
+11. Lines stay within 80 characters, the tidyverse limit that `.lintr` at the repository root enforces (`line_length_linter(80)`); wrap comments and long calls rather than exceed it. Added 2026-10-06; applies to `utils/` and the analysis scripts as well.
 
 ## Constants
 

@@ -24,23 +24,25 @@
 # RUN ORDER First script; no pipeline inputs. Feeds 04-data-panel.R, which
 #           codes unlisted municipality-years as 0.
 
-library(tidyverse)  # pipe operator: magrittr %>% throughout, never the native pipe
+library(tidyverse)  # magrittr %>% throughout, never the native pipe
 library(readxl)
 
 # ---- Constants --------------------------------------------------------------
-PPCDAM_SHEET             <- "Lista"                                          # D-2026-10-06-g
-PPCDAM_YEARS             <- 2004:2024
-PPCDAM_STATE_UF          <- c(Acre = "AC", Amazonas = "AM", Maranhão = "MA",
-                              `Mato Grosso` = "MT", Pará = "PA",
-                              Rondônia = "RO", Roraima = "RR")               # D-2026-10-06-f
+PPCDAM_SHEET <- "Lista"                                       # D-2026-10-06-g
+PPCDAM_YEARS <- 2004:2024
+PPCDAM_STATE_UF <- c(Acre = "AC", Amazonas = "AM",            # D-2026-10-06-f
+                     Maranhão = "MA", `Mato Grosso` = "MT",
+                     Pará = "PA", Rondônia = "RO", Roraima = "RR")
 N_PPCDAM_MUNIC_EXPECTED  <- 92L
-N_PPCDAM_LISTED_EXPECTED <- 805L   # municipality-years listed, 2008-2024
-N_PPCDAM_NA_EXPECTED     <- 1L                                                # D-2026-10-06-g
+N_PPCDAM_LISTED_EXPECTED <- 805L  # municipality-years listed, 2008-2024
+N_PPCDAM_NA_EXPECTED     <- 1L                                # D-2026-10-06-g
 
 # ---- Read -------------------------------------------------------------------
-ppcdam_wide <- read_xlsx("_data/raw/ppcdam/ppcdam_lists.xlsx", sheet = PPCDAM_SHEET)
+ppcdam_wide <- read_xlsx("_data/raw/ppcdam/ppcdam_lists.xlsx",
+                         sheet = PPCDAM_SHEET)
 
-munic_id <- read_xlsx("_data/raw/ibge/ibge_munic_id.xlsx", sheet = "Municípios",
+munic_id <- read_xlsx("_data/raw/ibge/ibge_munic_id.xlsx",
+                      sheet = "Municípios",
                       col_types = c("text", "numeric", "text", "text"))
 
 # ---- Assert: raw state ------------------------------------------------------
