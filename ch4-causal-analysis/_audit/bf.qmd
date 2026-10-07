@@ -85,9 +85,14 @@ file.exists(file.path(bf_dir, "bf-2022.txt"))
 codes for twelve months, with no negative values and no duplicate keys.
 Families are missing in a few dozen municipality-months per year until
 2013 and in 11,152 rows of 2021 (the programme's last months before the
-Auxílio Brasil substitution); zero transfers against positive families
-appear in 2004-2006 (rollout) and again in 2020 (the emergency-transfer
-months). No file exists for 2022, and the 2023-2026 files use a new layout
+Auxílio Brasil substitution). In 2004-2006 the zero cells are rows where
+both families and transfers are zero (930, 213 and 41 municipality-months;
+in 2004, 28 municipalities for all twelve months and 55 for eight), which
+is consistent with municipalities entering the programme during its
+rollout rather than with reporting gaps; no row of those years has
+positive families with zero transfers. That pattern appears only in 2020
+(269 rows, April to December, 42 in June, the emergency-transfer months).
+No file exists for 2022, and the 2023-2026 files use a new layout
 (`codigo_ibge`, `anomes_s`, suffixed value columns, an average-benefit
 column), with 2023 starting in March.
 **Decision.** D-2026-10-05-b: panel truncated at 2019; the 2020-2026
