@@ -97,7 +97,7 @@ Purpose: the panel has no sectoral composition of formal employment; the agricul
 - Scripts: add Queries 3 and 4 and the modified Query 1 to the SQL block in `02-data-cleaning-populational-social.R`, in the same commented format, with a dated note explaining why the extraction was reopened. Update the six-component description (3.1–3.6) to add the sector and legal-nature step.
 - Annex: add the wage-distribution statistics, the private-sector variants and `workers_public`, and the sectoral file to the annex per `rebuild/03-annex-variable-template.md`, prose per `docs/writing-rules.md`.
 - Task 1.1 of `rebuild/tasks.md` (full Legal Amazon coverage with a `biome_amazon` flag) already requires the 9-state scope; all outputs here keep that scope so the two reforms do not conflict.
-- Standing conventions apply: coerce `geocode` with `as.numeric()` at every load; restart R between script runs; no changes to the existing variable definitions; no estimation and no model-specific indices in this reform. How the new variables are used is decided in the analysis, after the files exist.
+- Standing conventions apply: `geocode` is a seven-digit character key at every load, as in the phase 1 pipeline scripts (the pre-rebuild `as.numeric()` rule is retired; decided 2026-10-07); restart R between script runs; no changes to the existing variable definitions; no estimation and no model-specific indices in this reform. How the new variables are used is decided in the analysis, after the files exist.
 
 ## Appendix — Route B: rebuild from the raw PDET microdata (fallback only)
 
