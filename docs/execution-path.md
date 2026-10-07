@@ -61,6 +61,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 - [x] MDS Bolsa Família monthly files through 2024 + municipal quotas (front-load: feeds script 02 and task 1.2). Done 2026-10-06: 22 yearly files 2004-2021 and 2023-2026 downloaded from the MI Social service (no 2022 resource exists) and the LAI quota workbook placed in `_data/raw/mds/`; 23 provenance rows.
 - [ ] TSE electoral data (front-load: feeds script 03).
+- [x] PEA and informality census anchors (not on the original list): 33 SIDRA API extracts (tables 616, 1572, 2953, 6580, 2031, 10261) placed in `_data/raw/ibge/sidra/` 2026-10-06. 2000 and 2022 PEA and all three informality anchors reproduce the reference; the 2010 PEA anchor does not (D-2026-10-06-h, registered, not chased: PIA is the primary denominator).
 - [ ] PAM/PPM; IBGE PIB dos Municípios incl. value added by activity (task 4.1); Pink Sheet prices; Atlas Brasil.
 - [ ] One provenance row per download, at download time.
 - [ ] Done when every script's inputs exist before its phase 1 session.
