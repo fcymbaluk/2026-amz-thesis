@@ -367,7 +367,7 @@ Supersedes: none
 
 ## D-2026-10-06-h  2010 PEA anchor not reproducible from the re-acquired census tables
 
-Status: closed (phase 1, script 02, 2026-10-07: D-2026-10-07-b builds the 2010 anchor from Tabela 616 PEA 15+; drift quantified in the script 02 commit message)
+Status: closed (phase 1, script 02, 2026-10-07: D-2026-10-07-b builds the 2010 anchor from Tabela 616 PEA 15+; drift quantified in commit 41a1e99)
 Scope: script 02 (PEA interpolation), pea, bf_transfers_pea_brl_2024; raw/ibge/sidra/
 Context: the lost pea-2000/2010/2022.xlsx extracts were re-acquired from the
          SIDRA API on 2026-10-06. The 2000 anchor is PEA aged 15 and over from
@@ -403,8 +403,7 @@ Reason: the "Total" is the population of all ages (it equals the panel's
         thirteen in 2010. The rebuilt tidy step reproduces the twelve emp_*
         panel columns exactly (compare_outputs, 0 differing cells at 1e-8,
         502 x 2000-2020), which pins the definition.
-Evidence: _audit/census.qmd, Q1; compare_outputs report in the phase 1
-          script 02 commit message
+Evidence: _audit/census.qmd, Q1; compare_outputs report in commit 41a1e99
 Affects: pia, emp_pia_rate_total/agric/low/mid/high
 Supersedes: none
 
@@ -425,8 +424,7 @@ Reason: PEA 10+ minus PEA 10-14 from Tabela 616 reproduces the recovered
         author's decision of 2026-10-06 not to chase the lost 2010 source.
         It propagates to pea in 2001-2021 and to bf_transfers_pea_brl_2024
         (8,016 cells, max 16.0 BRL).
-Evidence: _audit/census.qmd, Q2; compare_outputs report in the phase 1
-          script 02 commit message
+Evidence: _audit/census.qmd, Q2; compare_outputs report in commit 41a1e99
 Affects: pea (2001-2021 drift), bf_transfers_pea_brl_2024 (2004-2019 drift)
 Supersedes: none (closes D-2026-10-06-h)
 
@@ -452,8 +450,7 @@ Reason: formal in 2000 and 2010 = employees with a signed card, military
         differences of a few persons between the 2025 web export and the
         API. The author chose (2026-10-07) to store the unrounded share.
         Scale stays 0-100 as inherited (task 1.9).
-Evidence: _audit/census.qmd, Q3; compare_outputs report in the phase 1
-          script 02 commit message (informal: 10,532 cells differ, max
+Evidence: _audit/census.qmd, Q3; compare_outputs report in commit 41a1e99 (informal: 10,532 cells differ, max
           0.20 pp)
 Affects: informal (all years, through interpolation)
 Supersedes: none
@@ -530,8 +527,7 @@ Reason: the recovered panel's quota is constant within those periods and
         2009-2011 and 2012-2019. The rebuilt step reproduces bf_quota and
         the two quota ratios exactly (0 differing cells). The fourteen
         Mato Grosso outliers of task 1.4 are in the source values.
-Evidence: _audit/bf.qmd, Q4; compare_outputs report in the phase 1 script
-          02 commit message
+Evidence: _audit/bf.qmd, Q4; compare_outputs report in commit 41a1e99
 Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024
 Supersedes: none
 
@@ -548,8 +544,7 @@ Reason: the seventh IBGE digit is a check digit, so the six-digit prefix is
         dependence of the key on the quota source. The bf_* columns
         reproduce the reference exactly (bf_families_n and bf_quota with 0
         differing cells; the deflated transfers within 4e-9).
-Evidence: _audit/bf.qmd, Q5; compare_outputs report in the phase 1 script
-          02 commit message
+Evidence: _audit/bf.qmd, Q5; compare_outputs report in commit 41a1e99
 Affects: geocode of every bf_* row
 Supersedes: none
 
