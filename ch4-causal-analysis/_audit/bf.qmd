@@ -1,0 +1,266 @@
+---
+title: "Audit: Bolsa Família (MDS)"
+date: 2026-10-07
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: MDS (SAGI), MI Social query service behind the dados.gov.br
+conjunto *bolsa-familia*, yearly municipal monthly files downloaded
+2026-10-06 (`_data/raw/mds/bf-YYYY.txt`, 2004-2021 and 2023-2026); municipal
+quota (estimativa de famílias pobres) from the SENARC LAI response of
+protocol 71003.017363/2022-16
+(`_data/raw/mds/Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx`).
+Pipeline script: `_scripts/02-social-bf.R`.
+Interim output: `_data/interim/bf_panel_2004_2019.rds`.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+bf_dir <- "_data/raw/mds"
+old_files <- file.path(bf_dir, sprintf("bf-%d.txt", c(2004:2021)))
+new_files <- file.path(bf_dir, sprintf("bf-%d.txt", 2023:2026))
+read_old <- function(f) {
+  read_csv(f, col_types = cols(ibge = col_character(), anomes = col_integer(),
+                               .default = col_double()), progress = FALSE) %>%
+    mutate(source_file = basename(f))
+}
+bf_old <- map_dfr(old_files, read_old)
+bf_new <- map_dfr(new_files, ~ read_csv(.x, col_types = cols(.default = col_character()),
+                                        progress = FALSE) %>% mutate(source_file = basename(.x)))
+bf_panel <- read_rds("_data/interim/bf_panel_2004_2019.rds")
+munic_id <- read_xlsx("_data/raw/ibge/ibge_munic_id.xlsx", sheet = "Municípios",
+                      col_types = c("text", "numeric", "text", "text"))
+quota_file <- file.path(bf_dir, "Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx")
+quota_raw <- read_excel(quota_file, sheet = 1, skip = 6, col_types = "text",
+                        .name_repair = "minimal")
+```
+
+## Q1. Are the yearly raw files complete and internally consistent?
+
+What is checked: rows, municipalities, months, missingness, zeros,
+negatives, positive families with zero transfers and duplicate keys per
+file for 2004-2021; and the layout of the 2023-2026 files.
+
+```{r q1-qa}
+bf_old %>%
+  group_by(source_file) %>%
+  summarise(n = n(), municipalities = n_distinct(ibge), months = n_distinct(anomes),
+            na_families = sum(is.na(qtd_familias_beneficiarias_bolsa_familia)),
+            na_transfers = sum(is.na(valor_repassado_bolsa_familia)),
+            zero_families = sum(qtd_familias_beneficiarias_bolsa_familia == 0, na.rm = TRUE),
+            zero_transfers = sum(valor_repassado_bolsa_familia == 0, na.rm = TRUE),
+            negative = sum(qtd_familias_beneficiarias_bolsa_familia < 0 |
+                             valor_repassado_bolsa_familia < 0, na.rm = TRUE),
+            families_pos_transfers_zero = sum(qtd_familias_beneficiarias_bolsa_familia > 0 &
+                                                valor_repassado_bolsa_familia == 0, na.rm = TRUE),
+            duplicate_keys = sum(duplicated(paste(ibge, anomes)))) %>%
+  print(n = 20)
+```
+
+```{r q1-new}
+names(read_csv(new_files[1], n_max = 0, col_types = cols(.default = col_character())))
+bf_new %>% group_by(source_file) %>%
+  summarise(n = n(), municipalities = n_distinct(codigo_ibge), months = n_distinct(anomes_s),
+            first = min(anomes_s), last = max(anomes_s))
+file.exists(file.path(bf_dir, "bf-2022.txt"))
+```
+
+**Finding.** Every file from 2004 to 2021 carries the same 5,571 six-digit
+codes for twelve months, with no negative values and no duplicate keys.
+Families are missing in a few dozen municipality-months per year until
+2013 and in 11,152 rows of 2021 (the programme's last months before the
+Auxílio Brasil substitution); zero transfers against positive families
+appear in 2004-2006 (rollout) and again in 2020 (the emergency-transfer
+months). No file exists for 2022, and the 2023-2026 files use a new layout
+(`codigo_ibge`, `anomes_s`, suffixed value columns, an average-benefit
+column), with 2023 starting in March.
+**Decision.** D-2026-10-05-b: panel truncated at 2019; the 2020-2026
+evidence feeds task 1.2.
+**Assertion.** `02-social-bf.R`, raw-state block (files present, columns,
+twelve months per year, no duplicates, no negatives).
+
+## Q2. Which month represents the year?
+
+Candidates: February, June, July, September, November. Criteria, as in the
+lost script: stability relative to the previous month, distance from the
+yearly median, completeness, for beneficiary families and for the transfer
+per family, 2004-2019.
+
+```{r q2-decision}
+candidate_months <- c(2, 6, 7, 9, 11)
+bf_m <- bf_old %>%
+  filter(anomes >= 200401, anomes <= 201912) %>%
+  mutate(year = anomes %/% 100L, month = anomes %% 100L,
+         families = qtd_familias_beneficiarias_bolsa_familia,
+         per_family = if_else(families > 0, valor_repassado_bolsa_familia / families, NA_real_))
+stability <- bf_m %>%
+  group_by(ibge, year) %>% arrange(month, .by_group = TRUE) %>%
+  mutate(fam_lag = lag(families), val_lag = lag(per_family), lag_month = lag(month)) %>%
+  ungroup() %>%
+  filter(month %in% candidate_months, lag_month == month - 1) %>%
+  transmute(month, fam_instability = abs(families - fam_lag) / fam_lag,
+            val_instability = abs(per_family - val_lag) / val_lag) %>%
+  group_by(month) %>%
+  summarise(fam_instability_p50 = median(fam_instability, na.rm = TRUE),
+            fam_jump_20 = mean(fam_instability > 0.2, na.rm = TRUE),
+            val_instability_p50 = median(val_instability, na.rm = TRUE),
+            val_jump_20 = mean(val_instability > 0.2, na.rm = TRUE))
+centrality <- bf_m %>%
+  group_by(ibge, year) %>%
+  mutate(fam_med = median(families, na.rm = TRUE), val_med = median(per_family, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(month %in% candidate_months) %>%
+  group_by(month) %>%
+  summarise(fam_distance = mean(abs(families - fam_med) / fam_med, na.rm = TRUE),
+            val_distance = mean(abs(per_family - val_med) / val_med, na.rm = TRUE))
+completeness <- bf_m %>%
+  filter(month %in% candidate_months) %>%
+  group_by(month) %>%
+  summarise(na_fam = mean(is.na(families)), zero_fam = mean(families == 0, na.rm = TRUE),
+            na_val = mean(is.na(per_family)))
+stability %>% left_join(centrality, by = "month") %>% left_join(completeness, by = "month")
+```
+
+**Finding.** On the re-acquired files June is the most central month
+(smallest mean distance to the yearly medians of families and of the
+transfer per family, 1.9 and 1.4 percent) with completeness equal to the
+other candidates, while February is the most stable month relative to
+the previous one (lowest median change and lowest share of jumps above
+20 percent); September and November return an infinite distance because
+some municipality-years have a zero median. The inherited pair (June as
+reference, February as alternative) is kept; the author may revisit the
+ranking, since the lost script's prose credited June with the lowest
+instability as well.
+**Decision.** D-2026-10-05-a: `BF_REF_MONTH = 6`, `BF_ALT_MONTH = 2`.
+**Assertion.** `02-social-bf.R`, output block (both months present for
+every municipality-year).
+
+## Q3. Is the implied transfer per family plausible across years?
+
+```{r q3-per-family}
+bf_m %>%
+  filter(month == 6) %>%
+  group_by(year) %>%
+  summarise(p1 = quantile(per_family, .01, na.rm = TRUE), p50 = median(per_family, na.rm = TRUE),
+            p99 = quantile(per_family, .99, na.rm = TRUE), max = max(per_family, na.rm = TRUE)) %>%
+  print(n = 16)
+bf_panel %>%
+  filter(bf_ref_month == 6) %>%
+  group_by(year) %>%
+  summarise(families_millions = sum(bf_families_n, na.rm = TRUE) / 1e6,
+            transfers_bn_brl_2024 = sum(bf_transfers_total_brl_2024, na.rm = TRUE) / 1e9,
+            per_family_brl_2024 = transfers_bn_brl_2024 * 1e9 / (families_millions * 1e6)) %>%
+  print(n = 16)
+```
+
+**Finding.** The nominal transfer per family dips in 2005-2007 and then
+rises with each benefit revision; the real series (2024 BRL) shows the
+coverage expansion to 2014 and the stabilisation afterwards, the known
+trajectory of the programme; the tails stay within a few multiples of the
+median.
+**Decision.** none required.
+**Assertion.** none (distributional).
+
+## Q4. Do the municipal quota values look plausible?
+
+What is checked: the LAI workbook's layout, the period-to-year mapping,
+the quota ratio distribution in 2006-2007, the fourteen Mato Grosso cases
+of task 1.4, and the zero-family rows of task 1.8.
+
+```{r q4-workbook}
+names(quota_raw)[1:9]
+quota_munic <- quota_raw %>%
+  select(UF, MUNICÍPIOS, IBGE, starts_with("ESTIMATIVA")) %>%
+  filter(!is.na(IBGE), str_detect(IBGE, "^[0-9]{7}$")) %>%
+  mutate(across(starts_with("ESTIMATIVA"), as.numeric))
+nrow(quota_munic)
+quota_munic %>% filter(IBGE == "1100015")
+bf_panel %>% filter(geocode == "1100015", bf_ref_month == 6) %>% select(year, bf_quota) %>%
+  pivot_wider(names_from = year, values_from = bf_quota)
+```
+
+```{r q4-outliers}
+mt_cases <- c("Alta Floresta", "Apiacás", "Barra do Bugres", "Confresa", "Guarantã do Norte",
+              "Juara", "Nova Canaã do Norte", "Nova Olímpia", "Pontes e Lacerda",
+              "São José dos Quatro Marcos", "Santa Carmem", "Salto do Céu",
+              "São Félix do Araguaia", "Nova Monte Verde")
+ratio_0607 <- bf_panel %>%
+  filter(bf_ref_month == 6, year %in% 2006:2007) %>%
+  left_join(munic_id %>% select(geocode = munic_id, munic, uf), by = "geocode")
+ratio_0607 %>%
+  summarise(p50 = median(bf_families_quota_ratio, na.rm = TRUE),
+            p99 = quantile(bf_families_quota_ratio, .99, na.rm = TRUE),
+            above_3 = sum(bf_families_quota_ratio > 3, na.rm = TRUE),
+            above_3_mt = sum(bf_families_quota_ratio > 3 & uf == "MT", na.rm = TRUE))
+ratio_0607 %>%
+  filter(uf == "MT", munic %in% mt_cases) %>%
+  group_by(geocode, munic) %>%
+  summarise(families = max(bf_families_n), quota_2006_08 = first(bf_quota),
+            ratio = max(bf_families_quota_ratio), .groups = "drop") %>%
+  arrange(desc(ratio))
+ratio_0607 %>% filter(bf_families_quota_ratio > 3, !(uf == "MT" & munic %in% mt_cases)) %>%
+  select(geocode, munic, uf, year, bf_families_n, bf_quota, bf_families_quota_ratio)
+```
+
+```{r q4-zero}
+bf_panel %>% filter(bf_ref_month == 6, bf_families_n == 0) %>%
+  left_join(munic_id %>% select(geocode = munic_id, munic, uf), by = "geocode") %>%
+  count(year)
+```
+
+**Finding.** The workbook (header on row 7) carries one row per
+municipality with a 7-digit code and four estimates of poor families, one
+per period; the pipeline assigns them to 2004-2005, 2006-2008, 2009-2011
+and 2012-2019, which is the constant-within-period pattern of the lost
+`bf-quotas.xlsx`. The 2006-2007 ratio has a median near one (1.04) and a
+99th percentile of 2.1. Sixty-nine municipality-years exceed 3, 61 of
+them in Mato Grosso; the fourteen municipalities of task 1.4 are the
+largest cases (3.1 to 12.5) and other Mato Grosso municipalities (Barra
+do Garças among them) and a few in Mato Grosso do Sul and Paraná also
+exceed 3. The values exceed 3 in the source itself: the LAI workbook is
+the quota's origin, so the outliers are source-borne, not a tidy-step
+error, and the fix (if any) needs an external quota series. Rows with
+zero beneficiary families against a positive quota exist nationally in
+June 2004 (98), 2005 (23) and 2006 (4).
+**Decision.** D-2026-10-07-g (period mapping); task 1.4 stays open as a
+source question; task 1.8 (zero rows) open.
+**Assertion.** `02-social-bf.R`, raw-state and output blocks (header
+names, 5,570 unique codes, every panel row of a listed municipality has a
+quota).
+
+## Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?
+
+```{r q5-codes}
+geocode_map <- munic_id %>% transmute(ibge = str_sub(munic_id, 1, 6), geocode = munic_id)
+tibble(lookup_rows = nrow(munic_id), unique_prefixes = n_distinct(geocode_map$ibge),
+       mds_codes = n_distinct(bf_old$ibge), matched = sum(unique(bf_old$ibge) %in% geocode_map$ibge))
+bf_old %>%
+  filter(ibge %in% c("150475", "150680"), anomes %% 100 == 6, anomes %/% 100 %in% 2011:2016) %>%
+  select(ibge, anomes, qtd_familias_beneficiarias_bolsa_familia) %>%
+  pivot_wider(names_from = ibge, values_from = qtd_familias_beneficiarias_bolsa_familia)
+```
+
+**Finding.** The seventh IBGE digit is a check digit, so the six-digit
+prefix identifies every one of the 5,571 municipalities of the lookup, and
+every MDS code matches one. Mojuí dos Campos carries its own beneficiary
+counts from 2014 only; Santarém's earlier counts are not split, as
+inherited.
+**Decision.** D-2026-10-07-h.
+**Assertion.** `02-social-bf.R`, raw-state block (unique prefixes, every
+MDS code matched) and output block (no NA geocode).

@@ -15,7 +15,7 @@ entries is produced in phase 1.
 
 ## D-2026-10-05-a  Bolsa Família reference month June, February for robustness
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg)
+Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-bf.R)
 Scope: script 02 (lines 1028, 1200), bf_* columns, annex §4
 Context: MDS publishes monthly municipal counts and transfers; the panel is
          annual, so one month must stand for the year.
@@ -27,7 +27,7 @@ Supersedes: none
 
 ## D-2026-10-05-b  Bolsa Família panel truncated at 2019
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg); reopened by D-2026-10-05-q
+Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-bf.R); reopened by D-2026-10-05-q
 Scope: script 02 (lines 876, 1028), bf_* columns 2004-2019
 Context: the MDS series continues past 2019, but 2020 carries the COVID
          emergency transfers and the 2021-2023 Auxílio Brasil substitution.
@@ -52,7 +52,7 @@ Supersedes: none
 
 ## D-2026-10-05-d  RAIS wage brackets anchored to R$ 1,412 (2024 minimum wage)
 
-Status: closed (pre-rebuild; BigQuery extraction and script 02 at tag pre-reorg)
+Status: closed (pre-rebuild; BigQuery extraction and script 02 at tag pre-reorg; refactored in phase 1, 02-social-rais.R)
 Scope: BigQuery query 2 (rebuild/upstream-reform-rais.md), script 02 (lines 396-470)
 Context: RAIS reports wages in nominal BRL; bracket membership must be
          comparable across years.
@@ -65,7 +65,7 @@ Supersedes: none
 
 ## D-2026-10-05-e  PIA as primary employment denominator, PEA as robustness
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg)
+Status: closed (pre-rebuild; script 02 at tag pre-reorg); reopened by D-2026-10-07-i (PEA as denominator)
 Scope: script 02 (employment block, lines 365-697), emp_pia_rate_*, pea
 Context: formal employment counts need a population denominator; the census
          gives working-age population (PIA) and economically active population
@@ -79,7 +79,7 @@ Supersedes: none
 
 ## D-2026-10-05-f  PIA interpolated linearly between the 2000, 2010 and 2022 censuses
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg); storage of anchors reopened by Task 1.7
+Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-census.R); storage of anchors reopened by Task 1.7; the "extrapolated flat" wording is corrected by D-2026-10-07-f
 Scope: script 02 (lines 217-334), raw/ibge/data-censo{2000,2010,2022}-pia.xlsx
 Context: PIA exists only at census years; the panel is annual.
 Reason: linear interpolation between anchors, extrapolated flat outside them,
@@ -174,7 +174,7 @@ Supersedes: none
 
 ## D-2026-10-05-l  Mojuí dos Campos dropped from the panel
 
-Status: closed (pre-rebuild; script 05 at tag pre-reorg)
+Status: closed (pre-rebuild; script 05 at tag pre-reorg); the statement that the parent's series are not adjusted holds for PIA, population and deforestation only, see D-2026-10-07-d
 Scope: script 05 (line 63), N_MUNIC_EXPECTED = 502 in the reference
 Context: Mojuí dos Campos (1504752) was installed in 2013 by emancipation from
          Santarém; it has no series before 2013 and its parent's series are
@@ -367,7 +367,7 @@ Supersedes: none
 
 ## D-2026-10-06-h  2010 PEA anchor not reproducible from the re-acquired census tables
 
-Status: open (resolved at the phase 1 script 02 session)
+Status: closed (phase 1, script 02, 2026-10-07: D-2026-10-07-b builds the 2010 anchor from Tabela 616 PEA 15+; drift quantified in the script 02 commit message)
 Scope: script 02 (PEA interpolation), pea, bf_transfers_pea_brl_2024; raw/ibge/sidra/
 Context: the lost pea-2000/2010/2022.xlsx extracts were re-acquired from the
          SIDRA API on 2026-10-06. The 2000 anchor is PEA aged 15 and over from
@@ -387,4 +387,205 @@ Reason: the author decided (2026-10-06) not to chase the lost 2010 source:
         drift, not as a refactor error.
 Evidence: scratch comparison 2026-10-06 (to be reproduced in _audit/census.qmd)
 Affects: pea (all years, through interpolation), bf_transfers_pea_brl_2024
+Supersedes: none
+
+## D-2026-10-07-a  PIA = resident population aged 14 and over, summed from the census age groups
+
+Status: closed (phase 1, script 02)
+Scope: 02-social-census.R (PIA_AGE_GROUPS_*); pia (interim), emp_pia_rate_*
+Context: the lost script read three hand-tidied PIA tables (id, total,
+         state); the recovered workbooks are the SIDRA exports behind them
+         (2000 Dados do Universo, Tabela 1378, Tabela 9514), each listing a
+         "Total" row and the age groups from 14 upward.
+Reason: the "Total" is the population of all ages (it equals the panel's
+        2010 population), so the PIA the lost tables held is the sum of the
+        14-and-over groups: nineteen five-year groups in 2000 and 2022,
+        thirteen in 2010. The rebuilt tidy step reproduces the twelve emp_*
+        panel columns exactly (compare_outputs, 0 differing cells at 1e-8,
+        502 x 2000-2020), which pins the definition.
+Evidence: _audit/census.qmd, Q1; compare_outputs report in the phase 1
+          script 02 commit message
+Affects: pia, emp_pia_rate_total/agric/low/mid/high
+Supersedes: none
+
+## D-2026-10-07-b  PEA anchors from SIDRA Tabela 616 (15+) for 2000 and 2010 and Tabela 6580 (14+) for 2022
+
+Status: closed (phase 1, script 02); closes D-2026-10-06-h
+Scope: 02-social-census.R; pea, bf_transfers_pea_brl_2024
+Context: the lost pea-YYYY.xlsx extracts were re-acquired from the SIDRA
+         API (D-2026-10-06-h); the candidate cuts differ by a few percent.
+Reason: PEA 10+ minus PEA 10-14 from Tabela 616 reproduces the recovered
+        2000 anchors to within one person for 460 of 502 sample
+        municipalities (208 exact; API cell rounding and the Mojuí
+        allocation explain the rest) and the Tabela 6580 labour force 14+
+        reproduces 2022 exactly. No cut of the 2010 tables reproduces the
+        2010 anchors; the same rule is applied to 2010 and the difference
+        (median 3.4 percent above the reference, 10th-90th percentiles 2.0
+        to 4.9 percent) is registered as re-acquired-source drift, per the
+        author's decision of 2026-10-06 not to chase the lost 2010 source.
+        It propagates to pea in 2001-2021 and to bf_transfers_pea_brl_2024
+        (8,016 cells, max 16.0 BRL).
+Evidence: _audit/census.qmd, Q2; compare_outputs report in the phase 1
+          script 02 commit message
+Affects: pea (2001-2021 drift), bf_transfers_pea_brl_2024 (2004-2019 drift)
+Supersedes: none (closes D-2026-10-06-h)
+
+## D-2026-10-07-c  Informality = share of the occupied population outside the formal categories, stored unrounded
+
+Status: closed (phase 1, script 02)
+Scope: 02-social-census.R (INFORMAL_*_IDS_*, INFORMAL_SCALE); informal
+Context: the lost informality-YYYY.xlsx extracts held a percentage rounded
+         to two decimals; the re-acquired tables are Tabela 2031 (2000,
+         2010: position in occupation, no CNPJ split) and Tabela 10261
+         (2022: with CNPJ split).
+Reason: formal in 2000 and 2010 = employees with a signed card, military
+        and statutory public servants, employers; formal in 2022 = the
+        IBGE set (employees with a signed card in the private, domestic,
+        public non-statutory and state-company categories, military,
+        statutory servants, employers with CNPJ, self-employed with CNPJ);
+        informal = (occupied - formal) / occupied x 100. The 2022 set
+        reproduces the anchor the recovered panel implies for every sample
+        municipality; the 2000 and 2010 sets reproduce the recovered
+        anchors to within 0.01 pp for 296 and 331 of 502 municipalities and
+        within 0.05 pp for all but 19 and 8 (max 0.19 pp), the residue
+        being the two-decimal rounding of the lost extract and cell
+        differences of a few persons between the 2025 web export and the
+        API. The author chose (2026-10-07) to store the unrounded share.
+        Scale stays 0-100 as inherited (task 1.9).
+Evidence: _audit/census.qmd, Q3; compare_outputs report in the phase 1
+          script 02 commit message (informal: 10,532 cells differ, max
+          0.20 pp)
+Affects: informal (all years, through interpolation)
+Supersedes: none
+
+## D-2026-10-07-d  Mojuí dos Campos 2000 and 2010 PEA allocated from Santarém; informality copied
+
+Status: closed (pre-rebuild; script 02 at tag pre-reorg, lines 1521-1612; refactored in phase 1, 02-social-census.R)
+Scope: 02-social-census.R (MOJUI_GEOCODE, SANTAREM_GEOCODE); pea, informal for 1504752 and 1506807
+Context: Mojuí dos Campos was emancipated from Santarém in 2013 and has no
+         2000 or 2010 census row.
+Reason: as inherited, Mojuí's 2000 and 2010 PEA anchors are Santarém's
+        times Mojuí's share of the pair's 2022 labour force (5.76 percent),
+        Santarém's anchors are reduced by the complement, and Mojuí takes
+        Santarém's informality share; both series are then interpolated.
+        The PIA is not adjusted (Mojuí has no PIA before 2022). The
+        recovered panel carries the adjusted Santarém PEA (92,426 against
+        98,076 unadjusted in 2000), so the statement in D-2026-10-05-l that
+        the parent's series are not adjusted holds for PIA, population and
+        deforestation only.
+Evidence: _audit/census.qmd, Q4
+Affects: pea and informal for Santarém (2000-2012) and Mojuí (2000-2022);
+         bf_transfers_pea_brl_2024 for both
+Supersedes: none
+
+## D-2026-10-07-e  SIDRA "..." read as zero in the 2000 anchors of municipalities installed after 2000
+
+Status: closed (phase 1, script 02; reproduces the inherited defect, task 1.6 replaces it)
+Scope: 02-social-census.R (SIDRA_ZERO_SYMBOLS); pea, informal, 2000-2009, 58 municipalities
+Context: SIDRA prints "-" for a true zero and "..." for a value not
+         available; the 58 municipalities installed after the 2000 census
+         (the nine Mato Grosso ones of task 1.6 among them) read "..." in
+         the 2000 tables, and the lost extracts coded them 0.
+Reason: the recovered panel carries pea = 0 and informal = 0 in 2000 for
+        these municipalities, with both series rising linearly to the 2010
+        value; phase 1 reproduces that by reading "..." as zero and
+        setting informal to 0 where the occupied total is 0. Task 1.6
+        changes the rule to NA with no backcasting. The same municipalities
+        have no 2000 PIA; their PIA for 2000-2009 is the inherited backward
+        extrapolation from the 2010-2022 slope (D-2026-10-07-f).
+Evidence: _audit/census.qmd, Q5
+Affects: pea, informal (2000-2009) and pia (2000-2009) of 58
+         municipalities; the five municipalities created after 2010 carry
+         NA before 2022
+Supersedes: none
+
+## D-2026-10-07-f  PIA extrapolated to 1999 and 2023-2024 with the slope of the adjacent census decade
+
+Status: closed (pre-rebuild; script 02 at tag pre-reorg, lines 272-299; refactored in phase 1, 02-social-census.R)
+Scope: 02-social-census.R (PIA_YEARS; utils/interpolate_census.R); pia outside 2000-2022
+Context: D-2026-10-05-f describes the fill outside the anchors as flat;
+         the surviving code extends the series linearly with the slope of
+         the first (1999) and last (2023-2024) anchor pair, and applies the
+         same rule backward to municipalities without a 2000 anchor.
+Reason: reproduce the code, not the summary: the panel window is
+        2000-2020, so only the backward extrapolation of post-2000
+        municipalities touches the reference, and it is reproduced on
+        purpose (task 1.6). The wording of D-2026-10-05-f is corrected
+        here rather than edited there.
+Evidence: _audit/census.qmd, Q5 and Q6
+Affects: pia in 1999 and 2023-2024 (outside the panel) and in 2000-2009
+         for municipalities without a 2000 anchor
+Supersedes: the "extrapolated flat" wording of D-2026-10-05-f
+
+## D-2026-10-07-g  Municipal quota per year from the four period columns of the LAI workbook
+
+Status: closed (phase 1, script 02)
+Scope: 02-social-bf.R (BF_QUOTA_PERIOD_YEARS); bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024
+Context: the lost bf-quotas.xlsx was a hand-tidied derivative (7-digit
+         geocode, quota_YYYY columns) of the SENARC LAI response, which
+         carries four estimates of poor families per municipality: until
+         2005, 2006-2008, 2009-2011, 2012 onward.
+Reason: the recovered panel's quota is constant within those periods and
+        equal in 2004 and 2005, so the periods map to 2004-2005, 2006-2008,
+        2009-2011 and 2012-2019. The rebuilt step reproduces bf_quota and
+        the two quota ratios exactly (0 differing cells). The fourteen
+        Mato Grosso outliers of task 1.4 are in the source values.
+Evidence: _audit/bf.qmd, Q4; compare_outputs report in the phase 1 script
+          02 commit message
+Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024
+Supersedes: none
+
+## D-2026-10-07-h  MDS six-digit codes mapped to seven-digit geocodes through the IBGE lookup
+
+Status: closed (phase 1, script 02)
+Scope: 02-social-bf.R (geocode_map); geocode of bf_panel
+Context: the MDS monthly files identify municipalities by the six-digit
+         code (no check digit); the lost script took the seven-digit code
+         from its join with the quota table.
+Reason: the seventh IBGE digit is a check digit, so the six-digit prefix is
+        unique in raw/ibge/ibge_munic_id.xlsx (5,571 of 5,571) and every
+        MDS code matches one; mapping through the lookup removes the
+        dependence of the key on the quota source. The bf_* columns
+        reproduce the reference exactly (bf_families_n and bf_quota with 0
+        differing cells; the deflated transfers within 4e-9).
+Evidence: _audit/bf.qmd, Q5; compare_outputs report in the phase 1 script
+          02 commit message
+Affects: geocode of every bf_* row
+Supersedes: none
+
+## D-2026-10-07-i  PEA-normalised and agricultural-by-wage employment rates not rebuilt; PIA-only denominator pending
+
+Status: open (author's intent recorded 2026-10-07; settled at the storage audit, task 2.2, or by a docs/decisions memo)
+Scope: 02-social-rais.R; interim rais_employment columns; D-2026-10-05-e
+Context: the lost script also built emp_rate_*_pea (eight rates over PEA)
+         and emp_rate_agri_{low,mid,high}_pia; none reached the panel, and
+         script 04 kept the PIA rates and the shares only.
+Reason: the author stated (2026-10-07) that PIA is the intended sole
+        denominator: it is demographic and predetermined with respect to
+        the treatment, whereas PEA is behavioral and could become an
+        endogenous, price-responsive denominator baked into the variable.
+        The interim file therefore carries the PIA rates and the shares
+        only. pea and bf_transfers_pea_brl_2024 are still built because the
+        reference panel carries them; whether they stay is decided when the
+        intent becomes a decision.
+Evidence: author's answer at the phase 1 script 02 planning step
+Affects: interim rais_employment (fewer columns than the lost
+         outcome_employment); no panel column
+Supersedes: none (reopens D-2026-10-05-e)
+
+## D-2026-10-07-j  Task 1.10 at script 02: no character-to-numeric coercion needed at source
+
+Status: closed (phase 1, script 02)
+Scope: 02-social-census.R, 02-social-rais.R, 02-social-bf.R; bf_*, emp_*, pea, informal
+Context: task 1.10 expected NA strings or decimal commas upstream behind
+         the character columns of final_dataset_6.csv.
+Reason: every numeric input of script 02 parses clean with explicit column
+        types (the only non-numeric cells are the SIDRA symbols handled by
+        D-2026-10-07-e and the "-" zero of the workbooks); the interim
+        outputs set geocode as character, year and bf_ref_month as integer,
+        counts as integer and the rest as double. The character storage in
+        the reference CSV is therefore a write-side artefact of the lost
+        scripts, to be confirmed at the phase 1 gate.
+Evidence: raw-state and output assertions of the three scripts
+Affects: none (types of the interim outputs)
 Supersedes: none

@@ -1,0 +1,350 @@
+---
+title: "Audit: Census anchors (PIA, PEA, informality)"
+date: 2026-10-07
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: IBGE Censos Demográficos 2000, 2010 and 2022. Population by age
+group from three recovered SIDRA workbooks (`_data/raw/ibge/data-censo{2000,
+2010,2022}-pia.xlsx`: Dados do Universo 2000, Tabela 1378, Tabela 9514);
+economically active population and position in occupation from the SIDRA
+agregados API v3, queried 2026-10-06 (`_data/raw/ibge/sidra/*.json`:
+Tabelas 616, 2953, 1572, 6580, 2031, 10261).
+Pipeline script: `_scripts/02-social-census.R`.
+Interim outputs: `_data/interim/census_pia_1999_2024.rds`,
+`_data/interim/census_pea_informal_2000_2022.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 02 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+source("_scripts/utils/read_sidra.R")
+source("_scripts/utils/interpolate_census.R")
+sidra_dir <- "_data/raw/ibge/sidra"
+sidra <- function(pattern) {
+  map_dfr(list.files(sidra_dir, pattern = pattern, full.names = TRUE), read_sidra_json)
+}
+is_geocode <- function(x) !is.na(x) & str_detect(x, "^[0-9]{7}$")
+
+pia_2000_raw <- read_excel("_data/raw/ibge/data-censo2000-pia.xlsx", sheet = "Tabela",
+                           col_types = "text")
+pia_2010_raw <- read_excel("_data/raw/ibge/data-censo2010-pia.xlsx", sheet = "Tabela",
+                           col_types = "text", col_names = FALSE, .name_repair = "minimal")
+pia_2022_raw <- read_excel("_data/raw/ibge/data-censo2022-pia.xlsx", sheet = "Tabela",
+                           col_types = "text", col_names = FALSE, .name_repair = "minimal")
+census_pia <- read_rds("_data/interim/census_pia_1999_2024.rds")
+census_pea_informal <- read_rds("_data/interim/census_pea_informal_2000_2022.rds")
+sample_geo <- c("1100015", "1506807", "1504752", "5103254")
+```
+
+## Q1. What do the three PIA workbooks contain, and which rows form the PIA?
+
+What is checked: the sheet layout of each vintage, the age groups each one
+reports, whether the "Total" row is the population of all ages or the sum
+of the groups listed, the symbols used, and the number of municipalities
+per vintage.
+
+```{r q1-layout}
+map(c("_data/raw/ibge/data-censo2000-pia.xlsx", "_data/raw/ibge/data-censo2010-pia.xlsx",
+      "_data/raw/ibge/data-censo2022-pia.xlsx"), excel_sheets)
+names(pia_2000_raw)
+pia_2010_raw[1:7, ]
+pia_2022_raw[1:7, 1:8]
+```
+
+```{r q1-tidy}
+pia_2000_long <- pia_2000_raw %>%
+  fill(Estado, `Cód.`, `Brasil e Município`) %>%
+  filter(is_geocode(`Cód.`)) %>%
+  transmute(geocode = `Cód.`, age_group = `Grupo de idade`, value_chr = Populacao,
+            value = sidra_value(Populacao, "-"))
+pia_2010_long <- pia_2010_raw %>%
+  set_names(c("geocode", "municipality", "age_group", "condition", "value_chr")) %>%
+  fill(geocode, municipality) %>%
+  filter(is_geocode(geocode) | geocode == "1") %>%
+  mutate(value = sidra_value(value_chr, "-"))
+age_header_2022 <- unlist(pia_2022_raw[6, ])
+pia_2022_long <- pia_2022_raw %>%
+  set_names(c("geocode", "municipality", "declaration", age_header_2022[-(1:3)])) %>%
+  filter(is_geocode(geocode) | geocode == "1") %>%
+  pivot_longer(-c(geocode, municipality, declaration), names_to = "age_group",
+               values_to = "value_chr") %>%
+  mutate(value = sidra_value(value_chr, "-"))
+
+tibble(vintage = c(2000, 2010, 2022),
+       municipalities = c(n_distinct(pia_2000_long$geocode),
+                          sum(is_geocode(unique(pia_2010_long$geocode))),
+                          sum(is_geocode(unique(pia_2022_long$geocode)))),
+       age_groups = c(n_distinct(pia_2000_long$age_group) - 1,
+                      n_distinct(pia_2010_long$age_group) - 1,
+                      n_distinct(pia_2022_long$age_group) - 1),
+       dash_cells = c(sum(pia_2000_long$value_chr == "-"), sum(pia_2010_long$value_chr == "-"),
+                      sum(pia_2022_long$value_chr == "-")),
+       other_symbols = c(sum(is.na(pia_2000_long$value)), sum(is.na(pia_2010_long$value)),
+                         sum(is.na(pia_2022_long$value))))
+list(`2000` = unique(pia_2000_long$age_group), `2010` = unique(pia_2010_long$age_group),
+     `2022` = unique(pia_2022_long$age_group))
+```
+
+```{r q1-total}
+total_vs_sum <- function(long, label) {
+  long %>%
+    filter(geocode %in% c("1", "1100015")) %>%
+    group_by(geocode) %>%
+    summarise(total_row = value[age_group == "Total"],
+              sum_14_plus = sum(value[age_group != "Total"]), .groups = "drop") %>%
+    mutate(vintage = label, .before = 1)
+}
+bind_rows(total_vs_sum(pia_2000_long, 2000), total_vs_sum(pia_2010_long, 2010),
+          total_vs_sum(pia_2022_long, 2022))
+```
+
+**Finding.** Each workbook lists, per municipality, a "Total" row (or
+column) followed by the age groups from 14 upward: nineteen five-year
+groups in 2000 and 2022 (14; 15-19; ...; 100 and over) and thirteen in
+2010 (14; 15-17; 18-19; 20-24; ...; 60-69; 70 and over). The "Total" is the
+resident population of all ages (190.8 million for Brazil in 2010), not
+the sum of the groups shown, so the working-age population is the sum of
+the 14-and-over groups. The only non-numeric cell is "-", SIDRA's zero,
+confined to the oldest groups of small municipalities. The vintages cover
+5,507, 5,565 and 5,570 municipalities.
+**Decision.** D-2026-10-07-a: `pia` = sum of the 14-and-over age groups.
+**Assertion.** `02-social-census.R`, raw-state block (column names, age
+sets, municipality counts, no NA after the zero rule).
+
+## Q2. Which SIDRA cut gives each PEA anchor?
+
+What is checked: the candidate API cuts for the lost `pea-YYYY.xlsx`
+extracts. For 2000 and 2010: Tabela 616 (PEA, 10 and over; and the 10-14
+group, so that 10+ minus 10-14 is PEA 15+), Tabela 2953 (PEA 10+, 2000
+only) and Tabela 1572 (PEA 14+, 2010 only). For 2022: Tabela 6580, labour
+force 14 and over.
+
+```{r q2-cuts}
+pea10 <- sidra("^sidra_616_pea10_2000_2010") %>% select(geocode, year, pea10 = value)
+pea10to14 <- sidra("^sidra_616_pea10to14") %>% select(geocode, year, pea10to14 = value)
+pea2953 <- sidra("^sidra_2953_pea_2000") %>% select(geocode, year, pea2953 = value)
+pea14_1572 <- sidra("^sidra_1572_pea14_2010") %>% select(geocode, year, pea14_1572 = value)
+lf14 <- sidra("^sidra_6580_labourforce14_2022") %>% select(geocode, year, lf14 = value)
+cuts <- pea10 %>%
+  full_join(pea10to14, by = c("geocode", "year")) %>%
+  full_join(pea2953, by = c("geocode", "year")) %>%
+  full_join(pea14_1572, by = c("geocode", "year")) %>%
+  mutate(across(pea10:pea14_1572, ~ sidra_value(.x, c("-", "...")))) %>%
+  mutate(pea15 = pea10 - pea10to14)
+cuts %>% filter(geocode %in% sample_geo) %>% arrange(geocode, year)
+cuts %>%
+  group_by(year) %>%
+  summarise(municipalities = n(), pea15_over_pea10 = median(pea15 / pea10, na.rm = TRUE),
+            pea14_1572_over_pea15 = median(pea14_1572 / pea15, na.rm = TRUE),
+            pea2953_over_pea10 = median(pea2953 / pea10, na.rm = TRUE))
+lf14 %>% summarise(municipalities = n(), symbols = sum(!str_detect(lf14, "^[0-9]+$")))
+```
+
+**Finding.** The cuts differ by a few percent, so the choice matters:
+PEA 15+ is 97 percent of PEA 10+ in 2000 and 98 percent in 2010, and the
+14+ cut of Tabela 1572 is about one percent above PEA 15+. At the phase 1 check
+(commit message), Tabela 616 PEA 15+ reproduces the recovered 2000
+anchors to within one person for 460 of the 502 sample municipalities
+(API cell rounding; 208 exact) and Tabela 6580 reproduces 2022 exactly,
+while no cut of the 2010 tables reproduces the 2010 anchors, which sit
+2-5 percent below PEA 15+ with a dispersion that rules out a constant
+rescaling.
+**Decision.** D-2026-10-07-b: PEA 15+ from Tabela 616 for 2000 and 2010
+(the 2010 difference is registered as re-acquired-source drift under
+D-2026-10-06-h, not chased), labour force 14+ from Tabela 6580 for 2022.
+**Assertion.** `02-social-census.R`, raw-state block (classification
+strings, years, municipality counts of the three files).
+
+## Q3. How is informality defined from the position-in-occupation tables?
+
+What is checked: the categories each table offers, the set counted as
+formal, and the resulting share by year.
+
+```{r q3-categories}
+pos_2000 <- sidra("^sidra_2031_position_2000")
+pos_2010 <- sidra("^sidra_2031_position_2010")
+pos_2022 <- sidra("^sidra_10261_position_2022")
+formal_2031 <- c("96167", "96168", "96170")
+formal_10261 <- c("31722", "79367", "79369", "79370", "79372", "79375", "45934", "45936")
+bind_rows(pos_2000 %>% mutate(table = "2031 (2000, 2010)"),
+          pos_2022 %>% mutate(table = "10261 (2022)")) %>%
+  distinct(table, category_id, category) %>%
+  mutate(formal = category_id %in% c(formal_2031, formal_10261),
+         total = category_id %in% c("0", "96165")) %>%
+  print(n = 40)
+```
+
+```{r q3-shares}
+informal_anchor <- function(positions, total_id, formal_ids) {
+  positions %>%
+    mutate(value = sidra_value(value, c("-", "..."))) %>%
+    group_by(geocode, year) %>%
+    summarise(occupied = sum(value[category_id == total_id]),
+              formal = sum(value[category_id %in% formal_ids]), .groups = "drop") %>%
+    mutate(informal = if_else(occupied > 0, 100 * (occupied - formal) / occupied, 0))
+}
+anchors <- bind_rows(informal_anchor(pos_2000, "0", formal_2031),
+                     informal_anchor(pos_2010, "0", formal_2031),
+                     informal_anchor(pos_2022, "96165", formal_10261))
+anchors %>% filter(geocode %in% sample_geo) %>% arrange(geocode, year)
+anchors %>%
+  group_by(year) %>%
+  summarise(municipalities = n(), national = 100 * (1 - sum(formal) / sum(occupied)),
+            p10 = quantile(informal, .1), p50 = median(informal), p90 = quantile(informal, .9),
+            zero_occupied = sum(occupied == 0))
+```
+
+**Finding.** Tabela 2031 (2000 and 2010) separates employees with a
+signed card, military and statutory public servants, other employees
+without a card, employers, self-employed, unpaid family workers and own
+consumption; it does not split employers or the self-employed by CNPJ,
+so those three groups are the formal set and the rest is informal.
+Tabela 10261 (2022) does split them, and the formal set is the IBGE one:
+employees with a signed card (private, domestic, public non-statutory,
+state companies), military, statutory servants, employers with CNPJ and
+self-employed with CNPJ. The national informal share falls from 55
+percent in 2000 to 47 in 2010 and 39 in 2022; the municipal median is
+higher (72, 66 and 51 percent). At the
+phase 1 check the 2022 set reproduces the anchor the recovered panel
+implies for every sample municipality, and the 2000 and 2010 sets
+reproduce the recovered anchors to within 0.01 percentage points for
+roughly 300 of 502 municipalities and within 0.05 for all but 27 (max
+0.19); the lost extracts stored percentages rounded to two decimals and
+their counts differ by a few persons from today's API cells.
+**Decision.** D-2026-10-07-c: the category sets above; the share is
+stored unrounded, on the 0-100 scale the lost extract used (task 1.9
+rescales).
+**Assertion.** `02-social-census.R`, raw-state block (category ids
+present, years, "Total" in the other classifications).
+
+## Q4. How are Mojuí dos Campos and Santarém handled before 2013?
+
+What is checked: Mojuí's presence in each table, the 2022 labour-force
+share used to split Santarém, and the adjusted anchors.
+
+```{r q4-mojui}
+tibble(table = c("616 PEA 2000/2010", "6580 LF 2022", "2031 2000/2010", "10261 2022",
+                 "PIA workbook 2000", "PIA workbook 2010", "PIA workbook 2022"),
+       mojui_present = c("1504752" %in% pea10$geocode, "1504752" %in% lf14$geocode,
+                         "1504752" %in% pos_2000$geocode, "1504752" %in% pos_2022$geocode,
+                         "1504752" %in% pia_2000_long$geocode, "1504752" %in% pia_2010_long$geocode,
+                         "1504752" %in% pia_2022_long$geocode))
+pair <- lf14 %>% filter(geocode %in% c("1504752", "1506807")) %>% mutate(lf14 = as.numeric(lf14))
+share <- pair$lf14[pair$geocode == "1504752"] / sum(pair$lf14)
+share
+census_pea_informal %>%
+  filter(geocode %in% c("1504752", "1506807"), year %in% c(2000, 2010, 2013, 2022))
+```
+
+```{r q4-plot}
+#| fig-height: 3.5
+census_pea_informal %>%
+  filter(geocode %in% c("1504752", "1506807")) %>%
+  pivot_longer(c(pea, informal)) %>%
+  ggplot(aes(year, value, colour = geocode)) +
+  geom_line() + geom_point(size = 1) +
+  facet_wrap(~ name, scales = "free_y") +
+  theme_minimal()
+```
+
+**Finding.** Mojuí dos Campos (emancipated from Santarém in 2013) appears
+only in the 2022 tables and workbook. The pipeline gives it 2000 and 2010
+PEA anchors equal to Santarém's times its 2022 share of the pair's labour
+force (5.76 percent), reduces Santarém's anchors by the complement, and
+copies Santarém's informality share. The PIA is not adjusted: Mojuí has
+no PIA before 2022 and Santarém keeps its full population. The recovered
+panel carries the adjusted Santarém PEA (phase 1 check), which corrects
+the wording of D-2026-10-05-l for these two series.
+**Decision.** D-2026-10-07-d.
+**Assertion.** `02-social-census.R`, output block (every municipality of
+the 2010 grid has a complete pea and informal series).
+
+## Q5. Which municipalities are absent from the 2000 census, and what do they carry?
+
+What is checked: "..." (not available) cells in the 2000 API tables,
+municipalities missing from the 2000 workbook, and the values the pipeline
+stores for them (task 1.6).
+
+```{r q5-absent}
+absent_2000 <- pea10 %>% filter(year == 2000, pea10 == "...") %>% pull(geocode)
+absent_2000
+setdiff(unique(pia_2010_long$geocode[is_geocode(pia_2010_long$geocode)]),
+        unique(pia_2000_long$geocode))
+new_2022 <- setdiff(unique(pia_2022_long$geocode), unique(pia_2010_long$geocode))
+new_2022
+census_pea_informal %>% filter(geocode %in% absent_2000, year %in% c(2000, 2005, 2010)) %>%
+  arrange(geocode, year)
+census_pia %>% filter(geocode %in% c(absent_2000[1:3], "1504752"),
+                      year %in% c(1999, 2000, 2005, 2010, 2022)) %>%
+  pivot_wider(names_from = geocode, values_from = pia)
+```
+
+**Finding.** Fifty-eight municipalities installed after the 2000 census
+(the nine Mato Grosso ones of task 1.6 among them) read "..." in the 2000
+API tables and are missing from the 2000 workbook. As inherited, their
+2000 PEA and informality anchors are 0, so both series rise linearly
+from zero to the 2010 value, and their PIA is back-extrapolated to 2000
+from the 2010-2022 slope. The five municipalities created after 2010
+have no PIA before 2022; the four other than Mojuí dos Campos have no PEA
+or informality before 2022 either.
+**Decision.** D-2026-10-07-e (reproduced on purpose; task 1.6 replaces
+the zeros with NA and the back-extrapolation with official estimates).
+**Assertion.** `02-social-census.R`, output block (no NA for the 2010
+grid; NA only for post-2010 municipalities before 2022).
+
+## Q6. Do the interpolated series stay plausible?
+
+What is checked: negatives, extremes and the national totals of the
+stored series; the 1999 and 2023-2024 PIA extrapolation.
+
+```{r q6-summary}
+census_pia %>%
+  group_by(year) %>%
+  summarise(n = n(), na = sum(is.na(pia)), negative = sum(pia < 0, na.rm = TRUE),
+            total_millions = sum(pia, na.rm = TRUE) / 1e6, min = min(pia, na.rm = TRUE),
+            max = max(pia, na.rm = TRUE)) %>%
+  filter(year %in% c(1999, 2000, 2001, 2010, 2020, 2022, 2023, 2024))
+census_pea_informal %>%
+  group_by(year) %>%
+  summarise(n = n(), na = sum(is.na(pea)), pea_negative = sum(pea < 0, na.rm = TRUE),
+            pea_total_millions = sum(pea, na.rm = TRUE) / 1e6,
+            informal_min = min(informal, na.rm = TRUE), informal_max = max(informal, na.rm = TRUE),
+            informal_p50 = median(informal, na.rm = TRUE)) %>%
+  filter(year %in% c(2000, 2005, 2010, 2015, 2020, 2022))
+```
+
+```{r q6-plot}
+#| fig-height: 3.5
+census_pia %>% filter(geocode %in% sample_geo) %>%
+  ggplot(aes(year, pia, colour = geocode)) +
+  geom_line() + geom_vline(xintercept = c(2000, 2010, 2022), linetype = 3) +
+  theme_minimal()
+```
+
+**Finding.** No series turns negative. The PIA totals move smoothly across
+the anchors and the 1999 and 2023-2024 values extend the adjacent decade's
+slope, which is the inherited rule (the "flat" wording of D-2026-10-05-f
+is wrong). The informality share stays within 0-100 everywhere; its
+municipal median declines across the three censuses.
+**Decision.** D-2026-10-07-f (linear extrapolation of the PIA ends).
+**Assertion.** `02-social-census.R`, output block (non-negative, informal
+within 0-100, row counts).

@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "5/6 — phase 1 script 01 refactored 2026-10-06 (branch phase1-script01); next: stage 5 re-acquisition (author; MDS files needed for script 02) and stage 6 phase 1, script 02"
-updated: 2026-10-06
+current_stage: "5/6 — phase 1 scripts 01 and 02 refactored (02 on 2026-10-07, branch phase1-script02); next: stage 5 re-acquisition (author; TSE, PAM/PPM, PIB, prices, Atlas feed scripts 03-04) and stage 6 phase 1, script 03"
+updated: 2026-10-07
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -69,7 +69,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 6 — Phase 1: refactor (Claude Code, six sessions + gate)
 
 - [x] Script 01 refactored to template; provisional acceptance (assertions + audit notebook); commit. Done 2026-10-06, split into `01-env-deforestation.R` and `01-env-ppcdam.R`; notebooks `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`; D-2026-10-06-a…g; the 7 environmental and PPCDAm panel columns reproduce the reference exactly (`compare_outputs` PASS, 502 × 2000-2020).
-- [ ] Script 02 — same.
+- [x] Script 02 — same. Done 2026-10-07, split by source into `02-social-census.R`, `02-social-rais.R` and `02-social-bf.R` (utils `read_sidra.R`, `interpolate_census.R`); notebooks `_audit/census.qmd`, `rais.qmd`, `bf.qmd`; D-2026-10-07-a…j; `compare_outputs` on the 21 social columns of the reference: the 12 `emp_*` and the 5 quota/transfer `bf_*` columns exact, `pea` and `bf_transfers_pea_brl_2024` drift from the 2010 PEA anchor (D-2026-10-06-h closed by D-2026-10-07-b), `informal` within 0.2 pp (D-2026-10-07-c).
 - [ ] Script 03 — same.
 - [ ] Script 04 — same.
 - [ ] Script 05 — same.

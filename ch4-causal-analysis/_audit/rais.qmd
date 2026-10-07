@@ -1,0 +1,169 @@
+---
+title: "Audit: RAIS formal employment aggregate"
+date: 2026-10-07
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: own BigQuery extraction from Base dos Dados RAIS
+(`basedosdados.br_me_rais.microdados_vinculos`, update 2025-08-26); Query 2
+output, table `social_employment_1.export_table_v4` (created 2025-11-25),
+exported 2026-10-06 (`_scripts/sql/2026-10-06-export-table-v4.sql`).
+Raw file: `_data/raw/rais/export_table_v4.csv`.
+Pipeline script: `_scripts/02-social-rais.R`.
+Interim output: `_data/interim/rais_employment_1999_2024.rds`.
+The brief's questions on CBO codes around the agricultural cutoff and on
+public administration need the vínculo-level table and belong to the RAIS
+track (`rebuild/upstream-reform-rais.md`), not to this aggregate.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages(library(tidyverse))
+options(width = 110)
+```
+
+```{r read}
+rais_raw <- read_csv("_data/raw/rais/export_table_v4.csv",
+                     col_types = cols(geocode = col_character(), .default = col_integer()))
+rais <- read_rds("_data/interim/rais_employment_1999_2024.rds")
+biome_amz <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
+                        col_types = cols(.default = col_character()),
+                        locale = locale(encoding = "UTF-8"), show_col_types = FALSE) %>%
+  filter(str_detect(Geocódigo, "^[0-9]{7}$"), `Bioma predominante` == "Amazônia")
+```
+
+## Q1. What does the export contain, and how is it distributed?
+
+What is checked: rows, years, municipalities per year, the wage-code and
+agricultural splits, and the national totals by year.
+
+```{r q1-shape}
+tibble(rows = nrow(rais_raw), years = paste(range(rais_raw$year), collapse = "-"),
+       municipalities = n_distinct(rais_raw$geocode),
+       duplicate_keys = anyDuplicated(rais_raw[, c("year", "geocode", "workers_agricultural",
+                                                   "wage_code")]),
+       zero_counts = sum(rais_raw$workers_total == 0))
+rais_raw %>%
+  group_by(year) %>%
+  summarise(municipalities = n_distinct(geocode), workers_millions = sum(workers_total) / 1e6,
+            agri_share = sum(workers_total[workers_agricultural == 1]) / sum(workers_total),
+            low_share = sum(workers_total[wage_code == 1]) / sum(workers_total),
+            high_share = sum(workers_total[wage_code >= 5]) / sum(workers_total)) %>%
+  print(n = 26)
+rais_raw %>% count(wage_code, wt = workers_total, name = "workers") %>%
+  mutate(share = workers / sum(workers))
+```
+
+**Finding.** The export holds 174,062 rows for 808 municipalities of the
+nine Legal Amazon states, 1999-2024, with no zero counts and no duplicate
+keys. Formal employment grows from 1.6 million bonds in 1999 to over 4
+million from 2013; the agricultural (CBO group 6) share stays around 4-5
+percent after 2003, while the share in the lowest bracket falls from 48
+percent to under 15 percent. This is the aggregate the lost
+`_data/data_employment_rais` held, re-materialised from the surviving
+BigQuery table.
+**Decision.** none required (D-2026-10-05-d governs the brackets).
+**Assertion.** `02-social-rais.R`, raw-state block (row count, years,
+municipalities, codes, no duplicates).
+
+## Q2. Which municipality-years have no RAIS rows?
+
+What is checked: the 808 × 26 grid against the rows present, and the
+missing municipality-years of the Amazon-biome sample in 2000-2020, which
+the panel carries as NA employment.
+
+```{r q2-missing}
+grid <- expand_grid(geocode = unique(rais_raw$geocode), year = 1999:2024)
+missing <- grid %>% anti_join(rais, by = c("geocode", "year"))
+nrow(missing)
+missing %>% count(year) %>% print(n = 30)
+missing %>% filter(geocode %in% biome_amz$Geocódigo, year %in% 2000:2020) %>%
+  count(geocode, name = "years_missing") %>% arrange(desc(years_missing)) %>% print(n = 30)
+missing %>% filter(geocode %in% biome_amz$Geocódigo, year %in% 2000:2020) %>% nrow()
+```
+
+**Finding.** The gaps concentrate in the early years and in municipalities
+installed after 2000 (which have no bonds before installation) and in a
+few small municipalities with no active bond in a year. Within the
+Amazon-biome sample and the 2000-2020 window, 64 municipality-years are
+absent: 13 are Mojuí dos Campos before 2013 (dropped downstream), and
+the remaining 51 are the rows the recovered panel shows as NA in every
+`emp_*` column (phase 1 check). The script does not fill them: a missing
+municipality-year is not a zero.
+**Decision.** none required; task 1.8 (NA versus zero) documents the rule.
+**Assertion.** none in script 02 (the grid is completed in script 04).
+
+## Q3. Where do the agricultural wage-group counts and the shares turn NA?
+
+What is checked: the inherited `replace_na()` defect, which filled the
+all-worker wage-group counts with 0 but left the agricultural ones NA
+where a municipality-year has no bond at all in that wage group, and the
+0 / 0 shares (task 1.8).
+
+```{r q3-na}
+rais %>%
+  summarise(across(c(workers_low, workers_mid, workers_high), ~ sum(is.na(.x)),
+                   .names = "na_{.col}"),
+            across(c(workers_agri_low, workers_agri_mid, workers_agri_high), ~ sum(is.na(.x)),
+                   .names = "na_{.col}"),
+            zero_workers_agric = sum(workers_agric == 0))
+rais %>%
+  summarise(across(starts_with("emp_share_agri_"), ~ sum(is.na(.x)), .names = "na_{.col}"),
+            rows = n())
+rais %>%
+  mutate(agri_zero = workers_agric == 0, high_na = is.na(workers_agri_high)) %>%
+  count(agri_zero, high_na)
+```
+
+**Finding.** The all-worker counts are never NA, while the agricultural
+counts are NA wherever the municipality-year has no bond in that bracket
+at all (most often the high bracket of small municipalities); the lost
+script's `replace_na()` named the wrong columns. The agricultural shares
+are NA both there and where no agricultural bond exists (0 / 0). The
+pipeline reproduces the pattern and stores 0 / 0 as NA rather than NaN.
+**Decision.** open (task 1.8: keep NA, add the denominator count so that
+"no agricultural employment" can be told from "missing"; the
+`replace_na()` defect is fixed in the same step).
+**Assertion.** `02-social-rais.R`, output block (shares within 0-1 or
+NA; the three all-worker shares sum to one).
+
+## Q4. How are the rates and shares distributed?
+
+What is checked: quantiles by year of the PIA rates and the wage shares,
+and the municipality-years with a rate above one.
+
+```{r q4-dist}
+rais %>%
+  filter(year %in% c(2000, 2005, 2010, 2015, 2020, 2024)) %>%
+  group_by(year) %>%
+  summarise(across(c(emp_pia_rate_total, emp_share_low_workers, emp_share_agri_workers),
+                   list(p10 = ~ quantile(.x, .1, na.rm = TRUE), p50 = ~ median(.x, na.rm = TRUE),
+                        p90 = ~ quantile(.x, .9, na.rm = TRUE)))) %>%
+  pivot_longer(-year) %>% pivot_wider(names_from = year, values_from = value)
+rais %>% filter(emp_pia_rate_total > 1) %>% select(geocode, year, workers_total, pia)
+```
+
+```{r q4-plot}
+#| fig-height: 3.5
+rais %>%
+  ggplot(aes(year, emp_pia_rate_total, group = geocode)) +
+  geom_line(alpha = 0.08) + theme_minimal()
+```
+
+**Finding.** The median municipality has formal employment near 3
+percent of its working-age population in 2000 and about 10 percent by
+the mid-2010s; the median low-wage share of bonds falls from 75 to 13
+percent. Three municipality-years exceed a rate of one (5107800 in
+2000-2001, 1720259 in 2007), where the bonds counted outnumber the
+interpolated PIA; kept as inherited.
+**Decision.** none required.
+**Assertion.** `02-social-rais.R`, output block (counts add up; shares
+within 0-1).
