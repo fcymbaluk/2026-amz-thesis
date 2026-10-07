@@ -364,3 +364,27 @@ Reason: Lista is the sheet the surviving script read (first sheet);
 Evidence: _audit/ppcdam.qmd, Q1 and Q5
 Affects: ppcdam_list for Grajaú 2024 (outside the current panel)
 Supersedes: none
+
+## D-2026-10-06-h  2010 PEA anchor not reproducible from the re-acquired census tables
+
+Status: open (resolved at the phase 1 script 02 session)
+Scope: script 02 (PEA interpolation), pea, bf_transfers_pea_brl_2024; raw/ibge/sidra/
+Context: the lost pea-2000/2010/2022.xlsx extracts were re-acquired from the
+         SIDRA API on 2026-10-06. The 2000 anchor is PEA aged 15 and over from
+         Tabela 616 (450 of 493 municipalities within one person of the
+         reference, the rest SIDRA cell rounding plus the Mojuí allocation at
+         Santarém); the 2022 anchor is the labour force aged 14 and over from
+         Tabela 6580 (exact for all 502). No cut of the 2010 tables (616, 1572:
+         ages 10+, 14+, 15+, 16+, 18+, occupied only) reproduces the reference
+         2010 values, which sit 2-7 percent below PEA 15+ with a dispersion
+         that rules out a constant rescaling.
+Reason: the author decided (2026-10-06) not to chase the lost 2010 source:
+        PIA is the primary denominator (D-2026-10-05-e) and PEA is retained
+        only for robustness. The inconsistency is registered here; script 02
+        will build the 2010 anchor from Tabela 616 under the same rule as 2000
+        (PEA 15+) and the phase 1 gate will report the resulting drift in pea
+        and bf_transfers_pea_brl_2024 for 2001-2021 as re-acquired-source
+        drift, not as a refactor error.
+Evidence: scratch comparison 2026-10-06 (to be reproduced in _audit/census.qmd)
+Affects: pea (all years, through interpolation), bf_transfers_pea_brl_2024
+Supersedes: none
