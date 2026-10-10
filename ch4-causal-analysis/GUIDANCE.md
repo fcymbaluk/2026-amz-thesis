@@ -2,8 +2,8 @@
 chapter: 4
 title: Descriptive analysis and causal inference
 stage: revising # dataset rebuild specified (rebuild/), execution pending; identification strategy re-opened"
-updated: 2026-10-07
-current_focus: "Rebuild phase 1 under way: scripts 01 (2026-10-06) and 02 (2026-10-07, branch phase1-script02) refactored. Script 02 is now 02-social-census.R, 02-social-rais.R and 02-social-bf.R with notebooks census, rais, bf and D-2026-10-07-a..j; the 12 employment and 5 quota/transfer columns reproduce the reference exactly, pea and informal drift as re-acquired sources. Next: script 03 (controls), one script per session; stage 5 re-acquisition continues in parallel (TSE, PAM/PPM, PIB, prices, Atlas)"
+updated: 2026-10-10
+current_focus: "Rebuild phase 1 under way: scripts 01 (2026-10-06) and 02 (2026-10-07) refactored; the 12 employment and 5 quota/transfer columns reproduce the reference exactly, pea and informal drift as re-acquired sources. Stage 5 re-acquisition for script 03 (branch stage5-controls-data, open): sessions A and B done 2026-10-09 (SIDRA PPM, PAM, PIB incl. value added, population estimates, areas 2025; TSE mayoral results 2000-2024 via BigQuery, cross-checked against the Dahis et al. 2026 file); cattle, crop areas, areas and elections reproduce the reference, GDP within rounding. Session C (Pink Sheet, mirror, merge) scheduled 2026-10-11. Then script 03 (controls), one script per session"
 next_milestone: "Phase 1 gate passed: pipeline reproduces the recovered final panel on recovered inputs, with drift documented for re-acquired sources"
 ---
 
