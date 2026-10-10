@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "5/6 — phase 1 scripts 01 and 02 refactored (02 on 2026-10-07, branch phase1-script02); next: stage 5 re-acquisition (author; TSE, PAM/PPM, PIB, prices, Atlas feed scripts 03-04) and stage 6 phase 1, script 03"
-updated: 2026-10-07
+current_stage: "5/6 — phase 1 scripts 01 and 02 refactored; stage 5 sessions A, B and C done 2026-10-09/10 (SIDRA PPM, PAM, PIB incl. value added, population estimates; areas 2025; TSE mayoral results via BigQuery; Pink Sheet of 2026-09-02): every input of scripts 03-04 is in the raw layer; Atlas Brasil (script 07) still open; next: stage 6 phase 1, script 03"
+updated: 2026-10-10
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -60,10 +60,13 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 5 — Re-acquisition (author; parallel with stage 6)
 
 - [x] MDS Bolsa Família monthly files through 2024 + municipal quotas (front-load: feeds script 02 and task 1.2). Done 2026-10-06: 22 yearly files 2004-2021 and 2023-2026 downloaded from the MI Social service (no 2022 resource exists) and the LAI quota workbook placed in `_data/raw/mds/`; 23 provenance rows.
-- [ ] TSE electoral data (front-load: feeds script 03).
+- [x] TSE electoral data (front-load: feeds script 03). Done 2026-10-09: Base dos Dados `resultados_candidato_municipio_zona`, prefeito, nine Legal Amazon states, elections 2000-2024, summed over zona (17,374 rows), via `bq` with dry run 676 MB and the 100 GB cap; SQL in `_scripts/sql/2026-10-09-tse-mayoral-results.sql`; placed in `_data/raw/tse/`. elec_n_candidates and elec_enc reproduce the reference on 2,990 of 3,007 municipality-elections; the rest trace to 36 duplicate ballot-number rows in 2000-2004 that the legacy double-counted (script 03 audit). Cross-checked against the Dahis et al. (2026) replication file (`_data/raw/dahis-2026/`, class external cross-check): identical on the Legal Amazon 2000-2020.
 - [x] PEA and informality census anchors (not on the original list): 33 SIDRA API extracts (tables 616, 1572, 2953, 6580, 2031, 10261) placed in `_data/raw/ibge/sidra/` 2026-10-06. 2000 and 2022 PEA and all three informality anchors reproduce the reference; the 2010 PEA anchor does not (D-2026-10-06-h, registered, not chased: PIA is the primary denominator).
-- [ ] PAM/PPM; IBGE PIB dos Municípios incl. value added by activity (task 4.1); Pink Sheet prices; Atlas Brasil.
-- [ ] One provenance row per download, at download time.
+- [x] PAM/PPM and IBGE PIB dos Municípios incl. value added by activity (task 4.1): 154 SIDRA API extracts in 3-year chunks (tables 3939 bovino 1974-2025; 5457 four crops 1988-2025; 5938 seven variables 2002-2023; plus 6579 annual population estimates 2001-2026 for fix 1.6) placed in `_data/raw/ibge/sidra/` 2026-10-09 (branch stage5-controls-data). cattle_heads and the four crop areas reproduce the reference exactly; gdp_brl within R$ 1,000 (API serves integer mil reais; drift decision at the script 03 session).
+- [x] IBGE áreas territoriais 2025 (`AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls`) placed in `_data/raw/ibge/` 2026-10-09; 501/501 reference areas reproduced; Santa Cruz do Arari (1506401) missing from the reference, for the script 03 audit.
+- [x] Pink Sheet prices (session C of the stage 5 plan). Done 2026-10-10: `CMO-Historical-Data-Annual.xlsx` (header "Updated on September 02, 2026"; real 2010 USD; 1960-2025) placed in `_data/raw/worldbank/` under the provider's filename. The five legacy series are present in the legacy layout; the beef index recovered from the reference `price_index_cattle` (ratio to its 2000 value) is reproduced within 0.15% on every year 2000-2020 (MUV re-deflation drift, accepted in D-2026-10-10-a, open until script 03). 1100015 `price_index_cattle` 2000 = 33.769 confirmed in the reference (task 1.3). Stage 5 plan and session records promoted to `ch4-causal-analysis/rebuild/05-reacquisition-controls.md`; GDP rounding and the TSE candidate key logged as D-2026-10-10-b and -c.
+- [ ] Atlas Brasil (feeds 07, descriptive tasks 4.2-4.3; not needed by 03-04).
+- [x] One provenance row per download, at download time. Every file placed in stage 5 (MDS, TSE, Dahis cross-check, SIDRA extracts, areas, Pink Sheet) has its row in `_data/aux/provenance.csv` (226 rows as of 2026-10-10); Atlas Brasil will follow the same rule.
 - [ ] Done when every script's inputs exist before its phase 1 session.
 
 ## Stage 6 — Phase 1: refactor (Claude Code, six sessions + gate)
