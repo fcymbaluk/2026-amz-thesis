@@ -584,3 +584,77 @@ Reason: every numeric input of script 02 parses clean with explicit column
 Evidence: raw-state and output assertions of the three scripts
 Affects: none (types of the interim outputs)
 Supersedes: none
+
+## D-2026-10-10-a  Pink Sheet input is the September 2026 release; MUV re-deflation drift accepted
+
+Status: open (stage 5 session C; to be closed at the phase 1 script 03 commit)
+Scope: script 03 (price index section, lines 1081-1210 at tag pre-reorg); price_index_crop, price_index_cattle, price_index_crop_lag1, the _z variants of script 06; raw/worldbank/
+Context: the lost raw-prices-world bank-pink sheet.xlsx was re-acquired on
+         2026-10-10 as CMO-Historical-Data-Annual.xlsx, header "Updated on
+         September 02, 2026". Script 03 reads the real series (2010 US
+         dollars), which the World Bank recomputes over the whole history at
+         every revision of the MUV deflator; the nominal series do not move.
+         Normalising to 2000 = 1 does not cancel the revision.
+Reason: the author accepts the current release as the input (rebuild/05-reacquisition-controls.md section
+        2.4, 2026-10-09). The beef index recovered from the reference
+        price_index_cattle (ratio to its 2000 value) is reproduced within
+        0.15 percent on every year 2000-2020 (mean +0.03 percent); the lost
+        release is not reconstructed, and the phase 1 gate reports the
+        resulting differences in the price indices as re-acquired-source
+        drift, not as a refactor error.
+Evidence: scratch/staging/worldbank/check_pink_sheet_vs_reference.R
+          (2026-10-10; to be reproduced in the script 03 audit notebook);
+          provenance row raw/worldbank/CMO-Historical-Data-Annual.xlsx
+Affects: price_index_crop, price_index_cattle, price_index_crop_lag1 (all
+         years); downstream price_index_*_z
+Supersedes: none
+
+## D-2026-10-10-b  Municipal GDP from the SIDRA API in integer thousands of reais
+
+Status: open (stage 5 session A, logged 2026-10-10; to be closed at the phase 1 script 03 commit)
+Scope: script 03 (PIB section; legacy input _data/raw_ibge_pib/pib_munic.csv); gdp_brl, gdp_per_capita, gdp_per_capita_log, gdp_brl_2024, gdp_per_capita_2024, gdp_per_capita_2024_log; raw/ibge/sidra/sidra_5938_*
+Context: the lost PIB export carried decimals in the "mil reais" column; the
+         SIDRA agregados API (and apisidra) serve Tabela 5938 variable 37 as
+         integers. Re-acquired 2026-10-09 as 68 JSON extracts (seven
+         variables, 2002-2023).
+Reason: the author chose the API route over the FTP release workbook (rebuild/05-reacquisition-controls.md
+        section 4, decision 2, 2026-10-09). gdp_brl reproduces the reference
+        within R$ 1,000 on 9,521 of 9,532 cells; the 11 remaining cells are
+        Santarém 2002-2012, the legacy Mojuí dos Campos split (D-2026-10-05
+        seed entry). The rounding difference is accepted as a source
+        version change and is not corrected; the gate reports it as drift.
+Evidence: scratch/staging/ibge_sidra/check_controls_vs_reference.R
+          (2026-10-09; to be reproduced in _audit/ibge_pib.qmd);
+          provenance rows raw/ibge/sidra/sidra_5938_*
+Affects: gdp_brl and the five derived GDP columns (all years)
+Supersedes: none
+
+## D-2026-10-10-c  Mayoral candidates keyed on sequencial_candidato; id_candidato_bd abandoned
+
+Status: open (stage 5 session B, author decision 2026-10-09, logged 2026-10-10; to be closed at the phase 1 script 03 commit)
+Scope: script 03 (electoral section, legacy input _data/raw-tse-results-2.csv, line 409 at tag pre-reorg); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_winner_party, elec_winner_id, elec_competitive, elec_uncontested, election_year and the _gov lags; raw/tse/
+Context: the lost TSE file carried id_candidato_bd, the Base dos Dados
+         cross-election person identifier, which the legacy script used as
+         the candidate key and as elec_winner_id. Base dos Dados has since
+         dropped the column from resultados_candidato_municipio_zona; the
+         re-acquired pull (2026-10-09) carries sequencial_candidato (the TSE
+         per-election candidate number) and numero_candidato.
+Reason: the author confirmed (2026-10-09) that a cross-election person id
+        is not needed by the analysis. Candidates are therefore keyed on
+        sequencial_candidato within municipality, election year and turno;
+        elec_winner_id changes meaning to a per-election identifier. Note
+        for the audit: the source has 36 duplicate rows in 2000 and 2004
+        (same municipality and ballot number, two sequencial_candidato,
+        identical votes) that the legacy pipeline double-counted; phase 1
+        reproduces the legacy count and phase 2 opens a separate entry to
+        dedupe. 9 residual 2004 cells carry one candidate fewer than the
+        reference (rows since removed upstream; the Dahis et al. 2026 file
+        of mid-2024 agrees with the 2026 pull).
+Evidence: provenance rows raw/tse/tse_mayoral_results_2000_2024.csv and
+          raw/dahis-2026/bq_resultados_candidato_municipio_v2024.csv;
+          _scripts/sql/2026-10-09-tse-mayoral-results.sql; spot-check 2,990
+          of 3,007 municipality-elections reproduced as served, 2,998 when
+          votes are summed by numero_candidato
+Affects: elec_winner_id (definition); the other elec_* columns only through
+         the duplicate rows (phase 2)
+Supersedes: none
