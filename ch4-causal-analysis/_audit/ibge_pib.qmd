@@ -1,0 +1,218 @@
+---
+title: "Audit: IBGE municipal GDP and census population"
+date: 2026-10-10
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: IBGE PIB dos Municípios, SIDRA Tabela 5938, variable 37 (PIB a
+preços correntes, mil reais), SIDRA agregados API v3, queried 2026-10-09
+(`_data/raw/ibge/sidra/sidra_5938_pib_*.json`); IBGE censuses 1970-2010
+and 2022, resident population (`_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx`,
+`Ibge_pop_2022 (Censo - Sidra).xlsx`); IBGE annual population estimates,
+SIDRA Tabela 6579 (`sidra_6579_pop_estimate_*.json`, inspected here, not read
+by the pipeline); IPCA deflator (`_data/aux/deflator_ipca_2024.csv`).
+Pipeline script: `_scripts/03-controls-gdp.R`.
+Interim output: `_data/interim/ibge_pib_gdp_2002_2022.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 03 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+source("_scripts/utils/read_sidra.R")
+source("_scripts/utils/interpolate_census.R")
+sidra_dir <- "_data/raw/ibge/sidra"
+sidra <- function(pattern) {
+  map_dfr(list.files(sidra_dir, pattern = pattern, full.names = TRUE), read_sidra_json)
+}
+pib_raw <- sidra("^sidra_5938_pib_")
+est_raw <- sidra("^sidra_6579_pop_estimate_")
+pop_0010_raw <- read_excel("_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx", sheet = "Tabela",
+                           col_types = "text")
+pop_2022_raw <- read_excel("_data/raw/ibge/Ibge_pop_2022 (Censo - Sidra).xlsx", sheet = "Tabela",
+                           col_types = "text", col_names = FALSE, .name_repair = "minimal")
+gdp <- read_rds("_data/interim/ibge_pib_gdp_2002_2022.rds")
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+is_geocode <- function(x) !is.na(x) & str_detect(x, "^[0-9]{7}$")
+```
+
+## Q1. What do the GDP extracts contain?
+
+What is checked: files, series count, year span, unit, symbols, and the
+sample cells without a value.
+
+```{r q1-shape}
+list.files(sidra_dir, pattern = "^sidra_5938_pib_")
+pib_raw %>%
+  summarise(series = n_distinct(geocode), years = paste(range(year), collapse = "-"),
+            cells = n(), dots = sum(value == "..."), negative = sum(str_detect(value, "^-")),
+            other = sum(!str_detect(value, "^-?[0-9]+$") & value != "..."))
+pib_raw %>% filter(str_detect(value, "^-"))
+pib_raw %>%
+  filter(geocode %in% sample_geo$geocode, value == "...") %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(geocode, municipality.y, state_abbreviation) %>%
+  summarise(years = paste(range(year), collapse = "-"), n = n(), .groups = "drop")
+```
+
+**Finding.** Eight files cover 2002-2023 for the 5,570 municipalities, in
+integer thousands of reais (the lost CSV export carried decimals,
+D-2026-10-10-b). The only symbol is "..."; one cell is negative (Guamaré,
+RN, 2012, as published by IBGE, outside the sample). In the sample the
+missing cells are Ipiranga do Norte and Itanhangá (MT) for 2002-2004, the
+years before their installation, and Mojuí dos Campos (PA) for 2002-2012,
+which the pipeline fills by the Santarém split (Q3).
+**Decision.** D-2026-10-10-b; D-2026-10-10-g.
+**Assertion.** `03-controls-gdp.R`, raw-state block (no classification,
+5,570 series, symbols, one negative value).
+
+## Q2. What do the population workbooks contain?
+
+```{r q2-layout}
+names(pop_0010_raw)
+nrow(pop_0010_raw)
+pop_0010_raw %>% summarise(across(c(`2000`, `2010`), ~ sum(.x == "...")))
+pop_0010_raw %>% filter(`2010` == "...")
+as.data.frame(pop_2022_raw[1:6, ])
+geo_2022 <- pop_2022_raw[[2]][is_geocode(pop_2022_raw[[2]])]
+length(geo_2022)
+setdiff(geo_2022, pop_0010_raw$munic_id)
+```
+
+```{r q2-sample-2000}
+pop_0010_raw %>%
+  filter(munic_id %in% sample_geo$geocode, `2000` == "...") %>%
+  select(munic_id, munic, `2000`, `2010`)
+```
+
+**Finding.** The 1970-2010 workbook has one row per municipality of the
+2010 grid plus Cococi (CE), an extinct municipality with no value; "..."
+marks the censuses before a municipality existed, 59 cells in 2000. The
+2022 workbook (Tabela 4709) has four header rows, a Brasil row, 5,570
+municipal rows and a source footer; five municipalities installed in 2013
+appear only there, Mojuí dos Campos among them. In the sample the nine
+Mato Grosso municipalities of task 1.6 have no 2000 value.
+**Decision.** D-2026-10-05-f (interpolation between the anchors);
+D-2026-10-05-k (consequence for the nine); D-2026-10-10-g.
+**Assertion.** `03-controls-gdp.R`, raw-state block (column names, 5,566
+rows, 2022 header cells, 5,570 municipalities in 2022, anchors positive).
+
+## Q3. Do Santarém and Mojuí dos Campos recover the combined pre-2013 total?
+
+```{r q3-pair}
+pair <- gdp %>%
+  filter(geocode %in% c("1506807", "1504752"), year %in% c(2002, 2010:2014, 2022)) %>%
+  select(geocode, year, population, gdp_brl)
+pair %>% pivot_wider(names_from = geocode, values_from = c(population, gdp_brl))
+santarem_raw <- pib_raw %>%
+  filter(geocode == "1506807", year %in% c(2002, 2010:2014, 2022)) %>%
+  transmute(year, santarem_served = as.numeric(value) * 1000)
+pair %>%
+  group_by(year) %>%
+  summarise(pair_gdp = sum(gdp_brl), .groups = "drop") %>%
+  inner_join(santarem_raw, by = "year") %>%
+  mutate(diff = pair_gdp - santarem_served)
+```
+
+**Finding.** Before 2013 the two series sum exactly to Santarém's served
+GDP (and the same holds for population, asserted in the script); from 2013
+each municipality has its own series, so the pair's total exceeds
+Santarém's. Mojuí receives about 5.6 percent of the pair's GDP and 6.6
+percent of its population, the 2022 shares.
+**Decision.** D-2026-10-10-e.
+**Assertion.** `03-controls-gdp.R`, output block (pair sums equal the
+served values before 2013).
+
+## Q4. Which municipalities lack GDP per capita before 2010, and what do the official estimates say?
+
+What is checked: the sample municipalities with NA population in the GDP
+years, and the Tabela 6579 estimates for the same municipality-years.
+
+```{r q4-missing}
+gdp %>%
+  filter(geocode %in% sample_geo$geocode, is.na(population)) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(geocode, municipality, state_abbreviation) %>%
+  summarise(years = paste(range(year), collapse = "-"), n = n(),
+            gdp_present = sum(!is.na(gdp_brl)), .groups = "drop")
+```
+
+```{r q4-estimates}
+list.files(sidra_dir, pattern = "^sidra_6579_")
+est <- est_raw %>% transmute(geocode, year, estimate = sidra_value(value, character(0)))
+gdp %>%
+  filter(geocode == "5103254", year <= 2012) %>%
+  select(year, population, gdp_brl) %>%
+  left_join(est %>% filter(geocode == "5103254") %>% select(year, estimate), by = "year")
+```
+
+**Finding.** The nine Mato Grosso municipalities installed after 2000 have
+GDP from 2002 (seven of them) or 2005 (Ipiranga do Norte, Itanhangá) but no
+population before 2010, so their GDP per capita is NA for 2002-2009; this
+is why Colniza drops from every covariate-adjusted specification
+(D-2026-10-05-k). Tabela 6579 carries official estimates for 2001-2006,
+2008-2009, 2011-2021 and 2024 onward (2007 was a population count, 2010
+and 2022 censuses, 2023 is not served) for every one of them from their
+installation, the input task 1.6 will splice in.
+**Decision.** D-2026-10-05-k (closed, consequence); task 1.6 open; the
+estimates are not used in phase 1.
+**Assertion.** `03-controls-gdp.R`, output block (population missing only
+before a municipality's first census, Mojuí excepted).
+
+## Q5. How far is the interpolated population from the official estimates?
+
+```{r q5-deviation}
+gdp %>%
+  filter(geocode %in% sample_geo$geocode, !is.na(population)) %>%
+  inner_join(est, by = c("geocode", "year")) %>%
+  filter(!is.na(estimate)) %>%
+  mutate(rel = population / estimate - 1) %>%
+  group_by(year) %>%
+  summarise(n = n(), median_rel = median(rel), p10 = quantile(rel, 0.10),
+            p90 = quantile(rel, 0.90), .groups = "drop")
+```
+
+**Finding.** Through 2009 the median deviation stays within one percent,
+with the 10-90 range widening to about -17/+26 percent in the middle of
+the decade, where a straight line between censuses departs most from the
+estimated path. From 2011 the median drifts to -6.7 percent by 2021: the
+line toward the 2022 census, which came in below the projected estimates,
+runs under them, and the range reaches -26/+11 percent. The deviation is
+the cost of D-2026-10-05-f, to be weighed in tasks 1.6 and 1.7.
+**Decision.** none in phase 1 (tasks 1.6, 1.7).
+
+## Q6. For which years is population stored?
+
+```{r q6-years}
+gdp %>% filter(geocode %in% sample_geo$geocode) %>%
+  group_by(year) %>%
+  summarise(n = n(), population_na = sum(is.na(population)), gdp_na = sum(is.na(gdp_brl)),
+            .groups = "drop") %>%
+  filter(year <= 2004 | year >= 2020)
+```
+
+**Finding.** The output starts in 2002 with the GDP series and ends in
+2022 with the last census, so the panel has no population for 2000 and
+2001 although the 2000 census anchor exists. The 2023 GDP release is read
+and dropped by the year cap.
+**Decision.** D-2026-10-10-k (open).
+**Assertion.** `03-controls-gdp.R`, output block (row count 5,570 x 21
+years).

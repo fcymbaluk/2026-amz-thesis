@@ -177,7 +177,7 @@ In the reference panel `population` is NA for all 502 municipalities in
 1.6, through 2009). The stored series was trimmed to the GDP years rather
 than anchored on the 2000 census point. Record in `_audit/ibge_pib.qmd`
 (or the population notebook) and open a decision entry when script 03 is
-refactored; do not fix in phase 1.
+refactored; do not fix in phase 1. Done 2026-10-10: D-2026-10-10-k (open), `_audit/ibge_pib.qmd` Q6.
 
 ## 6. Session A record (2026-10-09, branch `stage5-controls-data`)
 

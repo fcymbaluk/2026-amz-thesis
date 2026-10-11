@@ -7,28 +7,51 @@
 #          classification, categories (chr, every classification's category
 #          pasted with " | "), value (chr, as
 #          served: digits, "-" for zero, "..." for not available, "X" for
-#          omitted). sidra_value(): the numeric reading of `value` under an
+#          omitted). A table served without a classification (5938, 6579)
+#          carries NA in category_id, category and categories.
+#          sidra_value(): the numeric reading of `value` under an
 #          explicit symbol rule. Definitions only; sourced by scripts.
-# Status   Phase 1, script 02 (2026-10-07).
+# Status   Phase 1, script 02 (2026-10-07); no-classification guard and
+#          vectorised series loop (same output) at script 03 (2026-10-10).
 
 read_sidra_json <- function(path) {
   json <- jsonlite::fromJSON(path, simplifyVector = FALSE)
   stopifnot(length(json) == 1L)
   purrr::map_dfr(json[[1]]$resultados, function(result) {
-    names_all <- purrr::map_chr(result$classificacoes,
-                                function(k) unlist(k$categoria)[[1]])
-    first_id <- names(result$classificacoes[[1]]$categoria)[[1]]
-    purrr::map_dfr(result$series, function(s) {
-      tibble::tibble(
-        geocode      = s$localidade$id,
-        municipality = s$localidade$nome,
-        year         = as.integer(names(s$serie)),
-        category_id  = first_id,
-        category     = names_all[[1]],
-        categories   = paste(names_all, collapse = " | "),
-        value        = unlist(s$serie, use.names = FALSE)
-      )
-    })
+    has_class <- length(result$classificacoes) > 0L
+    names_all <- if (has_class) {
+      purrr::map_chr(result$classificacoes,
+                     function(k) unlist(k$categoria)[[1]])
+    } else {
+      NA_character_
+    }
+    first_id <- if (has_class) {
+      names(result$classificacoes[[1]]$categoria)[[1]]
+    } else {
+      NA_character_
+    }
+    categories <- if (has_class) {
+      paste(names_all, collapse = " | ")
+    } else {
+      NA_character_
+    }
+    n_years <- purrr::map_int(result$series, function(s) length(s$serie))
+    tibble::tibble(
+      geocode      = rep(purrr::map_chr(result$series,
+                                        function(s) s$localidade$id),
+                         n_years),
+      municipality = rep(purrr::map_chr(result$series,
+                                        function(s) s$localidade$nome),
+                         n_years),
+      year         = as.integer(unlist(purrr::map(result$series,
+                                                  function(s) names(s$serie)),
+                                       use.names = FALSE)),
+      category_id  = first_id,
+      category     = names_all[[1]],
+      categories   = categories,
+      value        = unlist(purrr::map(result$series, "serie"),
+                            use.names = FALSE)
+    )
   })
 }
 
