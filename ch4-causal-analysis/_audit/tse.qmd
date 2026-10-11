@@ -1,0 +1,187 @@
+---
+title: "Audit: TSE mayoral results (Base dos Dados)"
+date: 2026-10-10
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: TSE election results via Base dos Dados
+(`br_tse_eleicoes.resultados_candidato_municipio_zona`), mayors, nine
+Legal Amazon states, elections 2000-2024, queried on BigQuery 2026-10-09
+(`_data/raw/tse/tse_mayoral_results_2000_2024.csv`; SQL in
+`_scripts/sql/2026-10-09-tse-mayoral-results.sql`). The Dahis, de las Heras
+and Saavedra (2026) replication file in `_data/raw/dahis-2026/` is an
+external cross-check (identical votes on the Legal Amazon, ordinary
+elections, 2000-2020, see `rebuild/05-reacquisition-controls.md` section 7)
+and is not read here.
+Pipeline script: `_scripts/03-controls-elections.R`.
+Interim output: `_data/interim/tse_elections_2000_2020.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 03 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+options(width = 110)
+```
+
+```{r read}
+tse_raw <- read_csv("_data/raw/tse/tse_mayoral_results_2000_2024.csv",
+                    col_types = cols(.default = col_character()), na = character())
+tse <- read_rds("_data/interim/tse_elections_2000_2020.rds")
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+```
+
+## Q1. What does the file contain?
+
+What is checked: columns, elections and rounds, election types,
+municipalities per election, empty codes, vote values.
+
+```{r q1-shape}
+names(tse_raw)
+tse_raw %>% count(ano, turno) %>% pivot_wider(names_from = turno, values_from = n, names_prefix = "turno_")
+tse_raw %>% mutate(ordinary = tipo_eleicao == "eleicao ordinaria") %>% count(ordinary)
+tse_raw %>% filter(tipo_eleicao != "eleicao ordinaria") %>% count(ano, name = "supplementary_rows")
+tse_raw %>% filter(tipo_eleicao == "eleicao ordinaria", turno == "1") %>%
+  group_by(ano) %>% summarise(municipalities = n_distinct(id_municipio), rows = n(), .groups = "drop")
+tse_raw %>% filter(!str_detect(id_municipio, "^[0-9]{7}$")) %>%
+  select(ano, sigla_uf, id_municipio, id_municipio_tse, numero_candidato, votos)
+tse_raw %>% summarise(votes_non_digit = sum(!str_detect(votos, "^[0-9]+$")),
+                      numero_differs_from_party = sum(numero_candidato != numero_partido))
+```
+
+**Finding.** 17,374 rows, one per candidate x municipality x election x
+round, summed over zones; all mayors; seven elections 2000-2024, second
+rounds in a few large municipalities, 224 rows of supplementary elections
+with free-text type labels. First-round ordinary elections cover 802-808
+municipalities per year (the nine states, so the Legal Amazon extension of
+task 1.1 is already in the file). The only empty municipality codes are
+two 2024 rows of TSE code 73709 (MT), outside the window. Votes are
+digits throughout; in 30 rows the ballot number differs from the party
+number.
+**Decision.** D-2026-10-10-d (first round, ordinary elections, 2000-2020
+as constants).
+**Assertion.** `03-controls-elections.R`, raw-state block (schema, office,
+elections, rounds, states, digits, geocodes in the window).
+
+## Q2. Which candidate key reproduces the inherited aggregation?
+
+What is checked: the duplicate rows within municipality x election x
+ballot number, and what summing over them does.
+
+```{r q2-duplicates}
+first_round <- tse_raw %>%
+  filter(turno == "1", tipo_eleicao == "eleicao ordinaria", as.integer(ano) <= 2020)
+dups <- first_round %>%
+  group_by(ano, id_municipio, numero_candidato) %>%
+  filter(n() > 1) %>%
+  ungroup() %>%
+  arrange(ano, id_municipio, numero_candidato)
+dups %>% count(ano, sigla_uf)
+dups %>% select(ano, sigla_uf, id_municipio, sequencial_candidato, numero_candidato, sigla_partido,
+                resultado, votos) %>% head(12)
+dups %>% group_by(ano, id_municipio, numero_candidato) %>%
+  summarise(same_votes = n_distinct(votos) == 1, same_party = n_distinct(sigla_partido) == 1,
+            .groups = "drop") %>% count(same_votes, same_party)
+```
+
+**Finding.** Thirty-six municipality-elections of 2000 and 2004 carry two
+rows for one ballot number, with two `sequencial_candidato` values and
+identical votes and party: a Base dos Dados artefact. The lost script
+grouped by `id_candidato_bd` and ballot number and summed, which doubled
+these votes; summing by ballot number reproduces that count, and the
+recovered panel's `elec_n_candidates` and `elec_enc` are reproduced on
+every cell at the script 03 acceptance (commit message). The pipeline
+keeps the sum and takes the smaller `sequencial_candidato` as the
+winner's id.
+**Decision.** D-2026-10-10-c (closed); the dedupe is a phase 2 entry.
+**Assertion.** none (the duplicates are summed as inherited; KNOWN DEFECTS
+block).
+
+## Q3. Are uncontested elections coded as intended?
+
+```{r q3-uncontested}
+election_rows <- tse %>% filter(election_year == 1L, !is.na(elec_enc))
+election_rows %>%
+  group_by(year) %>%
+  summarise(municipalities = n(), uncontested = sum(elec_uncontested),
+            mov_na = sum(is.na(elec_mov)), competitive_na = sum(is.na(elec_competitive)),
+            .groups = "drop")
+tse %>% filter(geocode == "1100031", year %in% 2008:2015) %>%
+  select(year, election_year, elec_n_candidates, elec_enc, elec_mov, elec_competitive, elec_uncontested)
+```
+
+**Finding.** Uncontested races (7 to 29 per election) have ENC 1 and NA
+margin and competitive flag in the election row, as intended. The stored
+panel then carries them forward with `fill()`, which replaces the NA
+margin and flag of an uncontested race with the previous election's
+values (Cabixi, RO, 2012-2015 above): a code defect of the inherited
+storage, reproduced on purpose and fixed with task 1.5.
+**Decision.** D-2026-10-10-d (definition); task 1.5 (storage).
+**Assertion.** `03-controls-elections.R`, output block, on the election
+rows (margin NA exactly when uncontested, ENC 1 when uncontested).
+
+## Q4. Is the election year mapped to the governing period correctly?
+
+```{r q4-timing}
+tse %>% filter(geocode == "1100015", year %in% 2003:2009) %>%
+  select(year, election_year, elec_n_candidates, elec_enc, elec_winner_party)
+```
+
+**Finding.** The values change in the election year itself (the October
+2004 result is stored from 2004), so a listing year such as 2008 carries
+the result of the election held that October, while the mayor in office
+was elected in 2004. This is the off-by-one of task 1.5.
+**Decision.** D-2026-10-05-o (open, phase 2 step 2.3).
+**Assertion.** none in phase 1 (KNOWN DEFECTS block).
+
+## Q5. How are the competitiveness measures distributed in the sample?
+
+```{r q5-dist}
+election_rows %>%
+  filter(geocode %in% sample_geo$geocode) %>%
+  group_by(year) %>%
+  summarise(n = n(), mean_candidates = mean(elec_n_candidates), mean_enc = mean(elec_enc),
+            median_mov = median(elec_mov, na.rm = TRUE),
+            share_competitive = mean(elec_competitive, na.rm = TRUE),
+            share_uncontested = mean(elec_uncontested), .groups = "drop")
+```
+
+**Finding.** Three candidates and 2.3 to 2.5 effective candidates on
+average, a median margin of 10 to 12 points, and 43 to 49 percent of the
+races below the ten-point threshold; the measures move little across
+elections, with a rise in candidacies in 2020.
+**Decision.** none required.
+
+## Q6. Are there zero-vote candidates or first-place ties?
+
+```{r q6-edge}
+candidates <- first_round %>%
+  group_by(geocode = id_municipio, year = as.integer(ano), numero_candidato, sigla_partido) %>%
+  summarise(votes = sum(as.integer(votos)), .groups = "drop")
+candidates %>% filter(votes == 0) %>% count(year)
+candidates %>%
+  group_by(geocode, year) %>%
+  filter(n() > 1) %>%
+  arrange(desc(votes), .by_group = TRUE) %>%
+  summarise(tie = votes[1] == votes[2], .groups = "drop") %>%
+  count(tie)
+```
+
+**Finding.** Fifty-six candidates with zero votes, almost all in 2012
+(candidacies refused after the ballot was printed); they enter the ENC and
+the candidate count as inherited. No first-place tie, so the winner's
+party and id are unambiguous.
+**Decision.** none in phase 1; the zero-vote rows are for task 1.8.

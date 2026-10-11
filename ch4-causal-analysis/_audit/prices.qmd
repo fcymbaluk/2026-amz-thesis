@@ -1,0 +1,159 @@
+---
+title: "Audit: World Bank Pink Sheet and the municipal price indices"
+date: 2026-10-10
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: World Bank Commodity Markets Outlook, Commodity Price Data (The
+Pink Sheet), `CMO-Historical-Data-Annual.xlsx`, release of 2026-09-02,
+downloaded 2026-10-10 (`_data/raw/worldbank/`), sheet Annual Prices (Real),
+2010 US dollars deflated by the MUV index.
+Pipeline script: `_scripts/03-controls-prices.R` (weights from
+`03-controls-agro.R`).
+Interim outputs: `_data/interim/prices_real_normalized_2000_2020.rds`,
+`prices_index_2000_2020.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 03 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+pink_raw <- read_excel("_data/raw/worldbank/CMO-Historical-Data-Annual.xlsx",
+                       sheet = "Annual Prices (Real)", col_names = FALSE, col_types = "text",
+                       .name_repair = "minimal")
+prices_norm <- read_rds("_data/interim/prices_real_normalized_2000_2020.rds")
+prices_index <- read_rds("_data/interim/prices_index_2000_2020.rds")
+weights <- read_rds("_data/interim/pam_ppm_weights_base_2000_2002.rds")
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+```
+
+## Q1. What is the layout and the release of the workbook?
+
+```{r q1-layout}
+excel_sheets("_data/raw/worldbank/CMO-Historical-Data-Annual.xlsx")
+pink_raw[1:4, 1]
+series <- c("Soybeans", "Maize", "Rice, Thai 5%", "Cotton, A Index", "Beef")
+idx <- match(series, str_trim(unlist(pink_raw[7, ])))
+tibble(series, column = idx, unit = str_trim(unlist(pink_raw[8, idx])),
+       first_year = pink_raw[[1]][9], last_year = pink_raw[[1]][nrow(pink_raw)])
+```
+
+**Finding.** The sheet keeps the legacy layout: commodity names on row 7,
+units on row 8, data from row 9 (1960) to 2025, year in the first column.
+The release header reads "Updated on September 02, 2026". The five series
+are present under their legacy names, soy, maize and rice in dollars per
+tonne, cotton and beef per kilogram.
+**Decision.** D-2026-10-10-a (release accepted; the real series are
+recomputed at each MUV revision, so the indices drift from the lost
+release by a fraction of a percent).
+**Assertion.** `03-controls-prices.R`, raw-state block (names, units,
+first year, complete 2000-2020).
+
+## Q2. How do the normalised real series move over 2000-2020?
+
+```{r q2-plot}
+#| fig-height: 4
+prices_norm %>%
+  pivot_longer(-year, names_to = "commodity", values_to = "index") %>%
+  ggplot(aes(year, index, colour = commodity)) +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey60") +
+  labs(x = NULL, y = "Real price, 2000 = 1", colour = NULL) +
+  theme_minimal()
+prices_norm %>% filter(year %in% c(2000, 2004, 2008, 2012, 2016, 2020))
+```
+
+**Finding.** All five series equal 1 in 2000 by construction; rice peaks
+at 2.5 in 2008, maize at 2.4 and soy at 2.0 in 2012, cotton at 1.8 in
+2011 before returning to its base, and beef climbs steadily to twice its
+2000 level by 2019-2020.
+**Decision.** D-2026-10-10-h.
+**Assertion.** `03-controls-prices.R`, output block (2000 values equal 1,
+positive series).
+
+## Q3. Is the index anchored to 1 in 2000 for both crop and cattle?
+
+```{r q3-anchor}
+prices_index %>%
+  filter(geocode %in% sample_geo$geocode, year == 2000) %>%
+  summarise(across(c(price_index_crop, price_index_cattle),
+                   list(n_na = ~ sum(is.na(.x)), min = ~ min(.x, na.rm = TRUE),
+                        p50 = ~ median(.x, na.rm = TRUE), max = ~ max(.x, na.rm = TRUE)))) %>%
+  pivot_longer(everything(), names_to = c("index", "stat"),
+               names_pattern = "(price_index_[a-z]+)_(n_na|min|p50|max)$") %>%
+  pivot_wider(names_from = stat, values_from = value)
+prices_index %>% filter(geocode == "1100015", year %in% 2000:2002) %>%
+  left_join(weights, by = "geocode") %>%
+  select(year, price_index_crop, price_index_cattle, cattle_weight)
+```
+
+**Finding.** Neither index is 1 in 2000. The crop index in 2000 equals the
+municipality's total base-window crop share (a few hundredths for most of
+the sample) and the cattle index equals its base-window density (tens of
+heads per km2), because the weights do not sum to one and normalisation
+ran before the join.
+**Decision.** D-2026-10-05-p (open, phase 2 step 2.4; task 1.3). Reproduced
+on purpose.
+**Assertion.** none in phase 1 (KNOWN DEFECTS block).
+
+## Q4. Are the scales comparable?
+
+```{r q4-scales}
+prices_index %>%
+  filter(geocode %in% sample_geo$geocode) %>%
+  pivot_longer(starts_with("price_index"), names_to = "index", values_to = "value") %>%
+  group_by(index) %>%
+  summarise(n_na = sum(is.na(value)), min = min(value, na.rm = TRUE), p50 = median(value, na.rm = TRUE),
+            max = max(value, na.rm = TRUE), sd = sd(value, na.rm = TRUE), .groups = "drop")
+```
+
+**Finding.** The cattle index is three orders of magnitude larger than the
+crop index and both carry the cross-sectional scale of the weights, so a
+pooled coefficient is not interpretable; script 04 standardises them and
+phase 2 re-anchors them.
+**Decision.** D-2026-10-05-p (open).
+
+## Q5. Which municipalities have a zero or missing index, and why?
+
+```{r q5-missing}
+prices_index %>%
+  filter(geocode %in% sample_geo$geocode, year == 2000,
+         is.na(price_index_crop) | price_index_crop == 0 | is.na(price_index_cattle)) %>%
+  left_join(weights, by = "geocode") %>%
+  left_join(sample_geo, by = "geocode") %>%
+  select(geocode, municipality, state_abbreviation, price_index_crop, price_index_cattle,
+         starts_with("crop_w_"), cattle_weight)
+```
+
+**Finding.** Nine sample municipalities have a zero or missing index in
+2000. Five (Barcelos, Santa Isabel do Rio Negro and Uarini in Amazonas,
+Belém and Marituba in Pará) planted none of the four crops in 2000-2002,
+so their crop index is a true zero. Ipiranga do Norte, Itanhangá and Mojuí
+dos Campos have a crop index of 0 because their four weights are NA (no
+PAM value in the window) and the weighted sum drops NA terms, and no
+cattle index, their density weight being NA. Santa Cruz do Arari has no
+crop index, having no PAM series, and keeps its cattle index through the
+full join of the two indices.
+**Decision.** D-2026-10-10-h (zero for an all-NA window, inherited);
+D-2026-10-10-i (Santa Cruz do Arari); task 1.8 for the coding of absence.
+**Assertion.** `03-controls-prices.R`, output block (crop index NA exactly
+for municipalities without a PAM series; lag NA in 2000 or where the index
+is NA).

@@ -1,0 +1,235 @@
+---
+title: "Audit: PAM crop areas, PPM cattle and municipal areas (IBGE)"
+date: 2026-10-10
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: IBGE Produção Agrícola Municipal (SIDRA Tabela 5457, variable 8331,
+área plantada ou destinada à colheita, four crops) and Pesquisa da Pecuária
+Municipal (SIDRA Tabela 3939, variable 105, efetivo bovino), SIDRA agregados
+API v3, queried 2026-10-09 (`_data/raw/ibge/sidra/sidra_5457_*.json`,
+`sidra_3939_*.json`); IBGE Áreas Territoriais 2025
+(`_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls`, sheet AR_BR_MUN_2025).
+Pipeline script: `_scripts/03-controls-agro.R`.
+Interim outputs: `_data/interim/pam_ppm_munic_area_2025.rds`,
+`pam_ppm_crop_areas_1988_2025.rds`, `pam_ppm_cattle_1974_2025.rds`,
+`pam_ppm_weights_base_2000_2002.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 03 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+source("_scripts/utils/read_sidra.R")
+sidra_dir <- "_data/raw/ibge/sidra"
+sidra <- function(pattern) {
+  map_dfr(list.files(sidra_dir, pattern = pattern, full.names = TRUE), read_sidra_json)
+}
+pam_raw <- map_dfr(c(soy = "soja", corn = "milho", rice = "arroz", cotton = "algodao"),
+                   ~ sidra(paste0("^sidra_5457_areaplanted_", .x, "_")), .id = "crop")
+ppm_raw <- sidra("^sidra_3939_bovino_")
+areas_raw <- read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls",
+                        sheet = "AR_BR_MUN_2025", col_types = "text")
+munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2025.rds")
+crop_areas <- read_rds("_data/interim/pam_ppm_crop_areas_1988_2025.rds")
+cattle <- read_rds("_data/interim/pam_ppm_cattle_1974_2025.rds")
+weights <- read_rds("_data/interim/pam_ppm_weights_base_2000_2002.rds")
+# Biome sample of script 01 (503 municipalities, Mojuí dos Campos included).
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+```
+
+## Q1. What do the PAM extracts contain, and which municipalities are missing?
+
+What is checked: files per crop, the category id behind each crop, the year
+span, the number of series, the symbols served, and the municipalities of
+Brazil (and of the biome sample) without a Tabela 5457 series.
+
+```{r q1-shape}
+pam_raw %>%
+  group_by(crop, category_id, category) %>%
+  summarise(series = n_distinct(geocode), years = paste(range(year), collapse = "-"),
+            cells = n(), dash = sum(value == "-"), dots = sum(value == "..."),
+            other = sum(!str_detect(value, "^[0-9]+$") & !value %in% c("-", "...")),
+            .groups = "drop")
+```
+
+```{r q1-missing}
+all_munic <- sidra("^sidra_5938_pib_2023_N6") %>% distinct(geocode, municipality)
+all_munic %>% filter(!geocode %in% pam_raw$geocode)
+```
+
+```{r q1-dots-sample}
+pam_raw %>%
+  filter(geocode %in% sample_geo$geocode, value == "...", year %in% 2000:2020) %>%
+  group_by(geocode, year) %>%
+  summarise(crops = n(), .groups = "drop") %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(geocode, municipality, state_abbreviation) %>%
+  summarise(years = paste(range(year), collapse = "-"), n_years = n(),
+            all_four_crops = all(crops == 4), .groups = "drop")
+```
+
+**Finding.** Each crop has one series per municipality for 1988-2025, in
+hectares, for 5,564 of the 5,570 municipalities; the categories are
+40099 (algodão herbáceo), 40102 (arroz), 40122 (milho) and 40124 (soja).
+The only symbols are "-" (the SIDRA zero) and "..." (not available). Seven
+municipalities have no series at all: Santa Cruz do Arari (PA), in the biome
+sample, and six urban municipalities of Rio de Janeiro and São Paulo. In the
+sample, "..." always covers the four crops of a municipality-year at once:
+the nine Mato Grosso municipalities installed after 2000 before their first
+survey year (task 1.6), Mojuí dos Campos before 2013, one Mato Grosso
+municipality in 2002, and six Pará municipalities (Belém and Marituba among
+them) in scattered years between 2002 and 2020, where the survey did not
+report them.
+**Decision.** D-2026-10-10-g (symbol rule); D-2026-10-10-i (Santa Cruz do
+Arari).
+**Assertion.** `03-controls-agro.R`, raw-state block (category ids, year
+set, 5,564 series, symbols, Santa Cruz do Arari absent).
+
+## Q2. What do the PPM extracts contain?
+
+```{r q2-shape}
+ppm_raw %>%
+  group_by(category_id, category) %>%
+  summarise(series = n_distinct(geocode), years = paste(range(year), collapse = "-"),
+            cells = n(), dash = sum(value == "-"), dots = sum(value == "..."),
+            other = sum(!str_detect(value, "^[0-9]+$") & !value %in% c("-", "...")),
+            .groups = "drop")
+all_munic %>% filter(!geocode %in% ppm_raw$geocode)
+ppm_raw %>%
+  filter(geocode %in% sample_geo$geocode, value == "...", year %in% 2000:2020) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(geocode, municipality.y, state_abbreviation) %>%
+  summarise(years = paste(range(year), collapse = "-"), n = n(), .groups = "drop")
+```
+
+**Finding.** One bovine herd series per municipality for 1974-2025, in
+heads, for 5,568 municipalities (three urban municipalities of RJ and SP
+are absent; Santa Cruz do Arari is present). Symbols as in PAM. In the
+sample, "..." occurs for the nine post-2000 Mato Grosso municipalities in
+2000-2004 only.
+**Decision.** D-2026-10-10-g.
+**Assertion.** `03-controls-agro.R`, raw-state block (category 2670, year
+set, 5,568 series, symbols).
+
+## Q3. What does the 2025 areas workbook contain?
+
+What is checked: the column names IBGE ships, the rows that are not
+municipalities, the grid vintage, and the area of Santa Cruz do Arari.
+
+```{r q3-layout}
+names(areas_raw)
+nrow(areas_raw)
+areas_raw %>% filter(!str_detect(CD_MUN, "^[0-9]{7}$") %in% TRUE)
+areas_raw %>% filter(str_detect(CD_MUN, "^[0-9]{7}$") %in% TRUE, !CD_MUN %in% all_munic$geocode)
+areas_raw %>% filter(CD_MUN == "1506401")
+```
+
+```{r q3-sample}
+munic_area %>%
+  inner_join(sample_geo, by = "geocode") %>%
+  summarise(n = n(), min_km2 = min(munic_area_km2), median_km2 = median(munic_area_km2),
+            max_km2 = max(munic_area_km2))
+```
+
+**Finding.** The workbook carries IBGE's own column names (`CD_MUN`,
+`AR_MUN_2025`), not the hand-renamed `geocode` and `Area km2` of the lost
+file, 5,573 coded rows and two trailing note rows. The coded rows are the
+2025 municipal grid: the 5,570 municipalities of the 2022 census, Boa
+Esperança do Norte (MT, installed 2025), and the two operational areas of
+Lagoa dos Patos and Lagoa Mirim, which are not municipalities. Santa Cruz
+do Arari has 1076.652 km2. Because the pipeline uses this single vintage
+for every year, the parents of Boa Esperança do Norte carry post-split
+areas throughout.
+**Decision.** D-2026-10-10-i (the area is stored for every municipality of
+the grid, independently of PAM); D-2026-10-10-f (2025 area in all years;
+the 2025 split is flagged for task 1.8).
+**Assertion.** `03-controls-agro.R`, raw-state block (column names, 5,573
+coded rows plus two, Santa Cruz do Arari present) and output block (5,571
+municipalities).
+
+## Q4. Are the shares, densities and base-window weights plausible in the sample?
+
+What is checked: distributions in the sample for 2000-2020, shares above 1
+(successive crops), and the municipalities whose 2000-2002 window has no
+observed value.
+
+```{r q4-dist}
+crop_areas %>%
+  filter(geocode %in% sample_geo$geocode, year %in% 2000:2020) %>%
+  pivot_longer(starts_with("crop_"), names_to = "variable", values_to = "value") %>%
+  group_by(variable) %>%
+  summarise(n_na = sum(is.na(value)), p50 = median(value, na.rm = TRUE),
+            p99 = quantile(value, 0.99, na.rm = TRUE), max = max(value, na.rm = TRUE),
+            above_1 = sum(value > 1, na.rm = TRUE), .groups = "drop")
+cattle %>%
+  filter(geocode %in% sample_geo$geocode, year %in% 2000:2020) %>%
+  summarise(n_na = sum(is.na(cattle_heads)), p50_heads = median(cattle_heads, na.rm = TRUE),
+            max_heads = max(cattle_heads, na.rm = TRUE),
+            p50_density = median(cattle_per_km2, na.rm = TRUE),
+            max_density = max(cattle_per_km2, na.rm = TRUE))
+```
+
+```{r q4-weights}
+weights %>%
+  inner_join(sample_geo, by = "geocode") %>%
+  filter(if_any(c(starts_with("crop_w_"), cattle_weight), is.na)) %>%
+  select(geocode, municipality, state_abbreviation, starts_with("crop_w_"), cattle_weight)
+weights %>%
+  filter(geocode %in% sample_geo$geocode) %>%
+  summarise(across(c(starts_with("crop_w_"), cattle_weight),
+                   list(zero = ~ sum(.x == 0, na.rm = TRUE), p50 = ~ median(.x, na.rm = TRUE),
+                        max = ~ max(.x, na.rm = TRUE)))) %>%
+  pivot_longer(everything(), names_to = c("weight", "stat"), names_pattern = "(.*)_(zero|p50|max)$") %>%
+  pivot_wider(names_from = stat, values_from = value)
+```
+
+**Finding.** Shares are small for most municipalities; where they exceed
+1 it is the double-cropping signature IBGE documents (successive crops
+are counted twice). Cattle densities reach a few hundred heads per km2.
+The base window is empty for the municipalities installed after 2002
+(Ipiranga do Norte and Itanhangá, MT: crop and cattle weights NA), for
+Mojuí dos Campos (installed 2013) and for Santa Cruz do Arari (crop
+weights NA, no PAM series; cattle weight present); the other post-2000 MT
+municipalities have a window value because PAM and PPM report them from
+2001.
+**Decision.** D-2026-10-10-f (window 2000-2002, NA for an empty window).
+**Assertion.** `03-controls-agro.R`, output block (shares and densities
+non-negative, weights never NaN).
+
+## Q5. What does the pipeline carry for Santa Cruz do Arari?
+
+```{r q5-arari}
+munic_area %>% filter(geocode == "1506401")
+crop_areas %>% filter(geocode == "1506401") %>% nrow()
+cattle %>% filter(geocode == "1506401", year %in% c(2000:2002, 2020))
+weights %>% filter(geocode == "1506401")
+```
+
+**Finding.** The municipality has its area and its herd series, and no
+crop series. The recovered panel had NA in every one of its area, crop
+and price columns because the legacy script attached the area through the
+PAM table and the cattle index through the crop index; the rebuilt scripts
+store the area on its own and join the two indices in full, so the area
+and the cattle index are restored while the crop columns stay NA.
+**Decision.** D-2026-10-10-i.
+**Assertion.** `03-controls-agro.R`, raw-state block (absent from PAM,
+present in PPM and in the areas workbook).

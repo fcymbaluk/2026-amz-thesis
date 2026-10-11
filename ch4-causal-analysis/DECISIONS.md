@@ -587,7 +587,7 @@ Supersedes: none
 
 ## D-2026-10-10-a  Pink Sheet input is the September 2026 release; MUV re-deflation drift accepted
 
-Status: open (stage 5 session C; to be closed at the phase 1 script 03 commit)
+Status: closed (phase 1, script 03, 03-controls-prices.R). Drift at the script 03 acceptance: price_index_crop 9,144 cells (483 municipalities) within -0.15/+0.19 percent of the reference, price_index_cattle 9,941 cells (497) within ±0.15 percent, the lag accordingly; no refactor error
 Scope: script 03 (price index section, lines 1081-1210 at tag pre-reorg); price_index_crop, price_index_cattle, price_index_crop_lag1, the _z variants of script 06; raw/worldbank/
 Context: the lost raw-prices-world bank-pink sheet.xlsx was re-acquired on
          2026-10-10 as CMO-Historical-Data-Annual.xlsx, header "Updated on
@@ -611,7 +611,7 @@ Supersedes: none
 
 ## D-2026-10-10-b  Municipal GDP from the SIDRA API in integer thousands of reais
 
-Status: open (stage 5 session A, logged 2026-10-10; to be closed at the phase 1 script 03 commit)
+Status: closed (phase 1, script 03, 03-controls-gdp.R). At the script 03 acceptance gdp_brl differs on 9,434 of the 9,534 non-missing cells, every difference at most R$ 500 (half the integer unit); the Santarém and Mojuí cells reproduce once the split (D-2026-10-10-e) runs on the same source; the derived columns follow
 Scope: script 03 (PIB section; legacy input _data/raw_ibge_pib/pib_munic.csv); gdp_brl, gdp_per_capita, gdp_per_capita_log, gdp_brl_2024, gdp_per_capita_2024, gdp_per_capita_2024_log; raw/ibge/sidra/sidra_5938_*
 Context: the lost PIB export carried decimals in the "mil reais" column; the
          SIDRA agregados API (and apisidra) serve Tabela 5938 variable 37 as
@@ -631,7 +631,7 @@ Supersedes: none
 
 ## D-2026-10-10-c  Mayoral candidates keyed on sequencial_candidato; id_candidato_bd abandoned
 
-Status: open (stage 5 session B, author decision 2026-10-09, logged 2026-10-10; to be closed at the phase 1 script 03 commit)
+Status: closed (phase 1, script 03, 03-controls-elections.R; author decision 2026-10-10 on the key). Implementation: votes are summed by ballot number (numero_candidato) and party within municipality, year and round, the legacy aggregation less the lost id, and elec_winner_id is the winner's smallest sequencial_candidato. The eight other elec_* columns and election_year reproduce the reference on all 10,542 cells, so the "9 residual cells" of the stage 5 spot-check were an artefact of that check; elec_winner_id differs on every cell by definition (60 reference NAs are now filled)
 Scope: script 03 (electoral section, legacy input _data/raw-tse-results-2.csv, line 409 at tag pre-reorg); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_winner_party, elec_winner_id, elec_competitive, elec_uncontested, election_year and the _gov lags; raw/tse/
 Context: the lost TSE file carried id_candidato_bd, the Base dos Dados
          cross-election person identifier, which the legacy script used as
@@ -657,4 +657,185 @@ Evidence: provenance rows raw/tse/tse_mayoral_results_2000_2024.csv and
           votes are summed by numero_candidato
 Affects: elec_winner_id (definition); the other elec_* columns only through
          the duplicate rows (phase 2)
+Supersedes: none
+
+## D-2026-10-10-d  Electoral competitiveness: first round, ordinary elections, ENC, margin, 10-point threshold, uncontested coding
+
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 487-534 and 583-606; refactored in phase 1, 03-controls-elections.R)
+Scope: 03-controls-elections.R; elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_winner_party, elec_winner_id, elec_competitive, elec_uncontested, election_year
+Context: mayoral results are kept for the first round of ordinary elections
+         only (second rounds and the supplementary elections of the file
+         are dropped); votes are summed to one row per candidate; the
+         effective number of candidates is 1 over the sum of squared vote
+         shares, the margin of victory the first minus the second share,
+         the winner's share and party those of the first; a race is
+         competitive when the margin is below 0.10 and uncontested when it
+         has one candidate, in which case the margin is NA, the ENC is 1
+         and the competitive flag is NA. Values are stored from the
+         election year and carried forward to the next election
+         (D-2026-10-05-o, task 1.5); the carry-forward also overwrites the
+         NA margin and flag of an uncontested race with the previous
+         election's values, as inherited.
+Reason: pre-rebuild definitions, reproduced; the first round keeps the
+        measure comparable across municipalities with and without a
+        second round. The window 2000-2020 is a constant (ELEC_YEARS); the
+        2024 election already in the raw file enters with tasks 1.2 and
+        1.5.
+Evidence: _audit/tse.qmd Q1, Q3, Q4, Q5
+Affects: the elec_* columns and election_year (all years)
+Supersedes: none
+
+## D-2026-10-10-e  Santarém's GDP and population before 2013 split with Mojuí dos Campos by the 2022 shares
+
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 215-315; refactored in phase 1, 03-controls-gdp.R)
+Scope: 03-controls-gdp.R; population, gdp_brl, gdp_brl_2024 and the per-capita columns of 1506807 and 1504752
+Context: Mojuí dos Campos was installed in 2013 and has no GDP or census
+         population before that year. For 2002-2012 the legacy script gives
+         Mojuí a share of Santarém's gdp_brl, gdp_brl_2024 and population,
+         each by the pair's 2022 share of that same variable, and reduces
+         Santarém by the same amount; Mojuí's population gap 2013-2021 is
+         then interpolated linearly between the allocated 2012 value and the
+         2022 census. Santarém's 2013-2021 population keeps the unadjusted
+         2010-2022 interpolation. The same device allocates PEA in script 02
+         (D-2026-10-07-d); script 05 drops Mojuí from the panel
+         (D-2026-10-05-l).
+Reason: pre-rebuild choice, reproduced; the pair's totals are unchanged
+        (assertion in the script).
+Evidence: _audit/ibge_pib.qmd Q3
+Affects: population, gdp_* of 1506807 and 1504752, 2002-2012 (Mojuí's
+         population also 2013-2021)
+Supersedes: none
+
+## D-2026-10-10-f  Crop and cattle exposure weights: 2000-2002 means of the crop share and of the cattle density, over the 2025 municipal area
+
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 866-884 and 974-983; refactored in phase 1, 03-controls-agro.R)
+Scope: 03-controls-agro.R; crop_*_munic_area_share, cattle_per_km2, the interim weights crop_w_* and cattle_weight; through them the price indices
+Context: planted area (ha) is converted to km2 and divided by the municipal
+         area of the 2025 IBGE release, the only vintage in the raw layer,
+         for every year; the share may exceed 1 where successive crops are
+         planted in one year. Cattle density is heads per km2 of the same
+         area. The weights are the 2000-2002 means of the share and of the
+         density; a window with no observed value gives NA (the legacy CSV
+         held NaN). Weights do not sum to one.
+Reason: pre-rebuild choice, reproduced: the window predates the 2004
+        policy period, so the weights are not a response to later prices
+        or enforcement. Flag for phase 2 (task 1.8): the 2025 grid already
+        carries Boa Esperança do Norte (MT, installed 2025), so its parent
+        municipalities' areas are the post-split ones in every year.
+Evidence: _audit/pam_ppm.qmd Q3, Q4
+Affects: crop_*_munic_area_share, cattle_per_km2 (all years); price indices
+Supersedes: none
+
+## D-2026-10-10-g  SIDRA symbols in PAM, PPM and PIB: "-" is zero in the surveys, every other symbol is NA
+
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 752-756, 931-936 and 42-46; refactored in phase 1, 03-controls-agro.R and 03-controls-gdp.R)
+Scope: 03-controls-agro.R, 03-controls-gdp.R; crop_*, cattle_*, gdp_*
+Context: the PAM (5457) and PPM (3939) extracts carry "-" and "..."; the
+         PIB extract (5938) carries "..." and one negative value (Guamaré,
+         RN, 2012, outside the sample). The legacy script read "-" as zero
+         and "...", ".." and "X" as NA in PAM and PPM, and every symbol as
+         NA in the PIB export. Census anchors follow a different rule
+         (D-2026-10-07-e). IBGE's legend (Notas sheet of every SIDRA
+         workbook in raw/ibge/): "-" absolute zero, not from rounding;
+         "0" zero from rounding; "X" value suppressed to protect the
+         informant; ".." not applicable; "..." not available, "the product
+         was not surveyed in the municipality or the municipality did not
+         exist in the survey year".
+Reason: pre-rebuild rule, reproduced; it matches the legend for PAM and
+        PPM (zero kept as zero, suppressed, not-applicable and unavailable
+        as missing). For the PIB export the legacy also read "-" as NA,
+        against the legend, but no PIB cell carries "-" and the raw-state
+        assertion fails if one appears. Whether a "..." means not surveyed
+        or not yet installed, the two cases IBGE's own definition joins, is
+        settled in task 1.8.
+Evidence: IBGE legend in raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx and
+          Ibge_pop_2022 (Censo - Sidra).xlsx, sheet Notas;
+          _audit/pam_ppm.qmd Q1, Q2; _audit/ibge_pib.qmd Q1
+Affects: crop_*_area_planted_km2, crop_*_munic_area_share, cattle_heads,
+         cattle_per_km2, gdp_* (cells with a symbol)
+Supersedes: none
+
+## D-2026-10-10-h  Price indices: base-window weights times real prices relative to 2000; crop index lagged one year
+
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 1033-1189; refactored in phase 1, 03-controls-prices.R)
+Scope: 03-controls-prices.R; price_index_crop, price_index_cattle, price_index_crop_lag1
+Context: the Pink Sheet real series (2010 US dollars) of Soybeans, Maize,
+         Rice Thai 5%, Cotton A Index and Beef are divided by their 2000
+         value; the crop index is the sum over the four crops of the
+         base-window share (D-2026-10-10-f) times the relative price, with
+         NA weights dropped, so a municipality whose four weights are NA
+         reads 0; the cattle index is the base-window density times the
+         relative beef price, NA where the density is NA; the crop lag is
+         the previous year within the municipality. Window 2000-2020
+         (PRICES_YEARS).
+Reason: pre-rebuild construction, reproduced with its scale defect
+        (task 1.3, D-2026-10-05-p).
+Evidence: _audit/prices.qmd Q2, Q3, Q4, Q5
+Affects: the three price columns (all years)
+Supersedes: none
+
+## D-2026-10-10-i  Municipal area stored for every municipality from the 2025 workbook; Santa Cruz do Arari keeps its area and its cattle index
+
+Status: closed (phase 1, script 03)
+Scope: 03-controls-agro.R (pam_ppm_munic_area_2025), 03-controls-prices.R (full join of the indices), script 04 (area join); munic_area_km2 and price_index_cattle of 1506401
+Context: the reference has NA munic_area_km2, crop columns and both price
+         indices for Santa Cruz do Arari (PA) in every year, although the
+         areas workbook carries 1076.652 km2 and PPM carries its herd.
+         Stage 5 read this as a join loss; the audit shows the cause: the
+         municipality has no PAM Tabela 5457 series (5,564 of the 5,570
+         municipalities have one; the other six are urban municipalities of
+         RJ and SP), and the legacy panel took the area through the PAM
+         table and the cattle index through a join on the crop index.
+Reason: author decision 2026-10-10 (restore the value; phase 1 spec, case
+        c: a reference value without derivation from raw). The area is
+        read from the workbook for the 5,571 municipalities of the 2025
+        grid and stored on its own; the price panel is a full join of the
+        two indices. In the panel: munic_area_km2 = 1076.652 (21 cells, was
+        NA) and price_index_cattle = 33.8178 x beef index (21 cells, was
+        NA); the crop columns and crop index stay NA (no PAM series; the
+        coding of absence is task 1.8).
+Evidence: _audit/pam_ppm.qmd Q1, Q3, Q5; _audit/prices.qmd Q5;
+          compare_outputs at the script 03 acceptance (munic_area_km2 21
+          cells, price_index_cattle 21 reference-NA cells)
+Affects: munic_area_km2, price_index_cattle of 1506401 (all years);
+         cattle_per_km2 unchanged (the legacy density joined the area
+         directly)
+Supersedes: none
+
+## D-2026-10-10-j  Task 1.10 at script 03: typed outputs; no coercion needed at source
+
+Status: closed (phase 1, script 03)
+Scope: 03-controls-agro.R, 03-controls-elections.R, 03-controls-gdp.R, 03-controls-prices.R; the 30 panel columns of script 03
+Context: as for script 02 (D-2026-10-07-j), every numeric input parses
+         clean: SIDRA symbols under D-2026-10-10-g, the Pink Sheet units
+         row skipped by position, TSE votes as digits. The interim outputs
+         set geocode, elec_winner_party and elec_winner_id as character;
+         year, elec_n_candidates, elec_total_votes, elec_competitive,
+         elec_uncontested and election_year as integer; the rest as double.
+         All-NA base windows are stored as NA where the legacy CSV held
+         NaN (same missingness).
+Reason: the character storage of the reference is a write-side artefact,
+        as found for scripts 01 and 02.
+Evidence: output assertions of the four scripts; compare_outputs at the
+          script 03 acceptance, no type mismatch on 30 columns
+Affects: none (types of the interim outputs)
+Supersedes: none
+
+## D-2026-10-10-k  Population stored only for the GDP years 2002-2022
+
+Status: open (tasks 1.6 and 1.7; phase 2 steps 2.5 and 2.6)
+Scope: 03-controls-gdp.R; population
+Context: the population series is interpolated on 2000-2022 from the three
+         census anchors, joined onto the GDP rows (2002 onward) and capped
+         at the last census, so the panel carries population NA in 2000 and
+         2001 for every municipality although the 2000 anchor exists
+         (stage 5 finding, rebuild/05-reacquisition-controls.md section 5).
+         The nine post-2000 MT municipalities are NA through 2009
+         (D-2026-10-05-k).
+Reason: inherited storage, reproduced in phase 1; phase 2 stores
+        population for 2000-2024 (official estimates per task 1.6, anchors
+        per task 1.7) independently of the GDP years.
+Evidence: _audit/ibge_pib.qmd Q4, Q6
+Affects: population 2000-2001 (all municipalities); bf per-capita columns
+         of script 04 in those years
 Supersedes: none
