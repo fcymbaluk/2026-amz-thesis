@@ -1,0 +1,365 @@
+---
+title: "Audit: sample definition (script 05)"
+date: 2026-10-12
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: none. This notebook audits the sample-definition stage: the drop of
+Mojuí dos Campos, the 2000-2003 baseline summaries, the forest-availability
+floor and the two at-risk gates, the window-consistent PPCDAm treatment
+flags and the cross-sectional pressure scores, with the positivity and
+balance diagnostics that the legacy script printed to the console.
+Pipeline script: `_scripts/05-sample-definition.R`.
+Interim outputs: `_data/interim/panel_amz_2000_2020_sample.rds` and
+`_data/interim/panel_amz_baseline.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 05 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+options(width = 110)
+```
+
+```{r read}
+panel_in <- read_rds("_data/interim/panel_amz_2000_2020.rds")
+panel <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds")
+muni <- read_rds("_data/interim/panel_amz_baseline.rds")
+BASE_YEARS <- 2000:2003
+WINDOWS <- tibble(window = c("main", "robust"), treat = c("ppcdam_main",
+                  "ppcdam_robust"), start = 2004L, end = c(2010L, 2012L))
+```
+
+## Q1. What does the drop of Mojuí dos Campos remove, and is every remaining municipality observed over the baseline window?
+
+What is checked: the rows the drop removes, Mojuí's non-missing
+baseline-window cells in the columns the sample rule reads, and the count of
+baseline years per remaining municipality for the deforestation area.
+
+```{r q1-mojui}
+panel_in %>%
+  filter(geocode == "1504752", year %in% BASE_YEARS) %>%
+  summarise(rows = n(),
+            across(c(deforestation_area_km2, forest_area_km2, munic_area_km2,
+                     cattle_per_km2, crop_soy_munic_area_share, ppcdam_list),
+                   ~ sum(!is.na(.x))))
+```
+
+```{r q1-baseline-years}
+panel %>%
+  filter(year %in% BASE_YEARS) %>%
+  group_by(geocode) %>%
+  summarise(years = sum(!is.na(deforestation_area_km2)), .groups = "drop") %>%
+  count(years)
+```
+
+**Finding.** The drop removes Mojuí's 21 rows (503 to 502 municipalities).
+Over 2000-2003 the municipality carries deforestation, forest, area and the
+PPCDAm indicator (never listed) but no cattle or crop values, so its
+baseline clearing would exist while its agricultural pressure would not;
+the substantive reason for the drop is the absence of every social and
+economic series before 2013 (`_audit/panel.qmd` Q7). Every remaining
+municipality has four baseline years of deforestation area.
+**Decision.** D-2026-10-05-l (provisional; issue #8).
+**Assertion.** `05-sample-definition.R`, raw-state block (Mojuí present
+in the input, no NA in the deforestation, forest and area columns) and
+output block (502 municipalities, Mojuí absent).
+
+## Q2. Which municipalities lack a baseline covariate, and how are the baselines distributed?
+
+What is checked: NA counts in the municipality file; the municipalities with
+a missing baseline; quantiles of the five baseline measures.
+
+```{r q2-na}
+muni %>%
+  summarise(across(c(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
+                     forest_share_2000, pressure_defor, pressure_agri,
+                     pressure_score, avail_ok, at_risk_broad, at_risk_narrow),
+                   ~ sum(is.na(.x)))) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "na_munic") %>%
+  filter(na_munic > 0)
+```
+
+```{r q2-which}
+muni %>%
+  filter(is.na(cattle_dens_b) | is.na(crop_share_b)) %>%
+  select(geocode, municipality, state_abbreviation, defor_area_b,
+         cattle_dens_b, crop_share_b, forest_share_2000, avail_ok,
+         at_risk_narrow, ppcdam_robust)
+```
+
+```{r q2-quantiles}
+muni %>%
+  select(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
+         forest_share_2000) %>%
+  pivot_longer(everything(), names_to = "baseline") %>%
+  group_by(baseline) %>%
+  summarise(min = min(value, na.rm = TRUE),
+            p10 = quantile(value, 0.10, na.rm = TRUE),
+            median = median(value, na.rm = TRUE),
+            p90 = quantile(value, 0.90, na.rm = TRUE),
+            max = max(value, na.rm = TRUE), .groups = "drop") %>%
+  mutate(across(-baseline, ~ round(.x, 3)))
+```
+
+**Finding.** Three municipalities have no agricultural baseline: Ipiranga
+do Norte and Itanhangá (MT) have no PAM or PPM rows before their first
+survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop
+series at all (D-2026-10-10-i). Their `pressure_agri` and
+`pressure_score` are NA; their flags are defined because the flags read
+only clearing and forest share. The baselines are right-skewed, which is
+why the pressure scores log them first. The 2000 forest share exceeds 1
+for one municipality, Nova Ubiratã (1.18), the mesh-vintage mismatch of
+`_audit/panel.qmd` Q3 (task 1.8); it passes the floor either way.
+**Decision.** D-2026-10-12-a (NA, never NaN, where a source has no baseline
+value).
+**Assertion.** `05-sample-definition.R`, output block
+(`N_AGRI_NA_EXPECTED` = 3, no NA in clearing and forest share, flags never
+NA).
+
+## Q3. Which municipalities count as treated under each analysis window?
+
+What is checked: listed municipalities by year, first-listing cohorts, exits
+within the robust window, and the treated counts under the main (2004-2010),
+robust (2004-2012) and full-panel definitions.
+
+```{r q3-cohorts}
+panel %>%
+  filter(ppcdam_list == 1L) %>%
+  group_by(geocode) %>%
+  summarise(first = min(year), last = max(year), .groups = "drop") %>%
+  count(first, name = "cohort_size")
+```
+
+```{r q3-exits}
+panel %>%
+  filter(year >= 2004, year <= 2012) %>%
+  group_by(geocode) %>%
+  summarise(listed_years = sum(ppcdam_list),
+            exited = any(ppcdam_list == 1L) &&
+              ppcdam_list[year == 2012] == 0L, .groups = "drop") %>%
+  filter(exited) %>%
+  left_join(select(muni, geocode, municipality, state_abbreviation),
+            by = "geocode")
+```
+
+```{r q3-counts}
+muni %>%
+  summarise(main = sum(ppcdam_main), robust = sum(ppcdam_robust),
+            ever_full = sum(ppcdam_ever_full))
+```
+
+**Finding.** Listing starts in 2008 (36 municipalities) with a second
+cohort in 2009 (7), so the main window holds 43 treated municipalities and
+no exit; 2011 and 2012 add 8, so the robust window holds 51, and six of
+its treated municipalities (four in Pará, two in Mato Grosso) have left
+the list by 2012. Later cohorts (2017, 2018) bring the full-panel count to
+61. A municipality first listed after a window's end is a control in that
+design.
+**Decision.** D-2026-10-12-b.
+**Assertion.** `05-sample-definition.R`, output block (43, 51, 61; main
+within robust within ever).
+
+## Q4. Does the at-risk restriction remove treated municipalities?
+
+What is checked: for each window, the number of municipalities, treated and
+control, in the full sample and under the broad and narrow gates.
+
+```{r q4-retention}
+retention <- function(d, treat) {
+  tibble(
+    sample  = c("full", "avail", "broad", "narrow"),
+    n       = c(nrow(d), sum(d$avail_ok), sum(d$at_risk_broad),
+                sum(d$at_risk_narrow)),
+    treated = c(sum(d[[treat]]), sum(d[[treat]] & d$avail_ok),
+                sum(d[[treat]] & d$at_risk_broad),
+                sum(d[[treat]] & d$at_risk_narrow))
+  ) %>%
+    mutate(control = n - treated)
+}
+map_dfr(set_names(WINDOWS$treat, WINDOWS$window), ~ retention(muni, .x),
+        .id = "window")
+```
+
+**Finding.** Under both windows every treated municipality survives the
+floor and both gates; the restriction removes controls only, from 459 to
+425 (broad) and 365 (narrow) in the main window and from 451 to 417 and
+357 in the robust window. The floor alone removes two never-listed
+Tocantins municipalities (Arapoema and Bernardo Sayão, forest share
+below 0.09).
+**Decision.** D-2026-10-05-h (gates as inherited).
+**Assertion.** `05-sample-definition.R`, output block (500, 468, 408;
+every robust-window treated municipality in the narrow sample).
+
+## Q5. Which baseline covariates differ between treated and control municipalities?
+
+What is checked: treated and control means and the standardized mean
+difference (difference over the pooled within-group standard deviation) for
+five baseline covariates, by window and sample. The restriction is not
+expected to balance covariates; the table names what matching or weighting
+inside the at-risk sample must condition on (absolute values above about
+0.1).
+
+```{r q5-smd}
+bal_covs <- c("forest_share_2000", "defor_area_b", "defor_rate_b",
+              "cattle_dens_b", "crop_share_b")
+smd_tab <- function(d, treat, label) {
+  t <- d[d[[treat]] == 1L, ]
+  c <- d[d[[treat]] == 0L, ]
+  tibble(
+    sample = label, covariate = bal_covs,
+    mean_treated = map_dbl(bal_covs, ~ mean(t[[.x]], na.rm = TRUE)),
+    mean_control = map_dbl(bal_covs, ~ mean(c[[.x]], na.rm = TRUE)),
+    smd = map_dbl(bal_covs, function(v) {
+      s <- sqrt((var(t[[v]], na.rm = TRUE) + var(c[[v]], na.rm = TRUE)) / 2)
+      (mean(t[[v]], na.rm = TRUE) - mean(c[[v]], na.rm = TRUE)) / s
+    })
+  )
+}
+smd_by_window <- function(treat) {
+  bind_rows(smd_tab(muni, treat, "full"),
+            smd_tab(filter(muni, at_risk_broad), treat, "broad"),
+            smd_tab(filter(muni, at_risk_narrow), treat, "narrow")) %>%
+    mutate(across(c(mean_treated, mean_control, smd), ~ round(.x, 3)))
+}
+smd_by_window("ppcdam_main") %>% print(n = 15)
+smd_by_window("ppcdam_robust") %>% print(n = 15)
+```
+
+**Finding.** Listed municipalities have far higher baseline clearing area
+(smd about 1.5 in the main window, 1.4 in the robust one), are more
+forested (0.7 to 0.9) and have lower clearing rate and cattle density
+(about -0.4 to -0.6); the imbalance does not shrink as the sample narrows.
+Crop share is balanced in the main window and tilts towards the treated
+group (0.14 to 0.19) in the robust window, whose 2011-2012 cohorts are more
+crop-oriented. These are the covariates the estimator conditions on.
+**Decision.** none required; evidence for the chapter's methods section.
+**Assertion.** none.
+
+## Q6. Do treated and control municipalities share a region of common support?
+
+What is checked: a logistic model of listing on the 2000 forest share and
+the logged baseline clearing, cattle density and crop share; the overlap of
+the two groups' propensity ranges; the units outside it, by window and
+sample. Municipalities with a missing covariate are dropped from the model.
+
+```{r q6-overlap}
+ps_covs <- c("forest_share_2000", "log_defor_area_b", "log_cattle_dens_b",
+             "log_crop_share_b")
+ps_overlap <- function(d, treat, label) {
+  cc <- d[complete.cases(d[ps_covs]), ]
+  m <- glm(reformulate(ps_covs, response = treat), data = cc,
+           family = binomial)
+  cc$ps <- predict(m, type = "response")
+  tr <- cc$ps[cc[[treat]] == 1L]
+  co <- cc$ps[cc[[treat]] == 0L]
+  lo <- max(min(tr), min(co))
+  hi <- min(max(tr), max(co))
+  tibble(sample = label, n = nrow(cc), treated = length(tr),
+         support_lo = round(lo, 3), support_hi = round(hi, 3),
+         off_support_treated = sum(tr < lo | tr > hi),
+         off_support_control = sum(co < lo | co > hi),
+         treated_median_ps = round(median(tr), 3),
+         control_median_ps = round(median(co), 3))
+}
+overlap_by_window <- function(treat) {
+  bind_rows(ps_overlap(muni, treat, "full"),
+            ps_overlap(filter(muni, at_risk_broad), treat, "broad"),
+            ps_overlap(filter(muni, at_risk_narrow), treat, "narrow"))
+}
+overlap_by_window("ppcdam_main")
+overlap_by_window("ppcdam_robust")
+```
+
+**Finding.** The groups separate sharply: the median listed municipality
+has a propensity near 0.7 against near zero for controls. Most controls in
+the full sample lie below the treated range; the gates cut that off-support
+mass (main window: 410 to 377 to 317; robust: 357 to 324 to 264) while
+keeping every treated municipality. A residual block of listed
+municipalities (14 main, 12 robust) sits above the control range: extreme
+frontier units with no close control, to be reported with that caveat.
+Three municipalities leave the model for missing covariates (Q2).
+**Decision.** none required; evidence for the chapter's methods section.
+**Assertion.** none.
+
+## Q7. Are the pressure scores standardized, and how much do they depend on the sample?
+
+What is checked: the moments of the three scores over the 502
+municipalities, and the scores recomputed with the standardization run on
+the broad at-risk sample only, as the governing rule for derived variables
+would require if the scores were built in an analysis script.
+
+```{r q7-moments}
+muni %>%
+  summarise(across(c(pressure_defor, pressure_agri, pressure_score),
+                   list(mean = ~ mean(.x, na.rm = TRUE),
+                        sd = ~ sd(.x, na.rm = TRUE)))) %>%
+  pivot_longer(everything(), names_to = c("score", "stat"),
+               names_pattern = "(.*)_(mean|sd)$") %>%
+  pivot_wider(names_from = stat, values_from = value) %>%
+  mutate(across(c(mean, sd), ~ round(.x, 4)))
+```
+
+```{r q7-sample-dependence}
+z <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+muni %>%
+  filter(at_risk_broad) %>%
+  mutate(defor_broad = z(log_defor_area_b),
+         agri_broad = 0.5 * z(log_cattle_dens_b) +
+           0.5 * z(log_crop_share_b),
+         score_broad = z(defor_broad + agri_broad)) %>%
+  summarise(max_shift_defor = max(abs(defor_broad - pressure_defor)),
+            max_shift_agri = max(abs(agri_broad - pressure_agri),
+                                 na.rm = TRUE),
+            max_shift_score = max(abs(score_broad - pressure_score),
+                                  na.rm = TRUE)) %>%
+  mutate(across(everything(), ~ round(.x, 3)))
+```
+
+**Finding.** `pressure_defor` and `pressure_score` have mean 0 and sd 1
+over the 502 municipalities; `pressure_agri` is a half-half mix of two
+z-scores and has sd below 1 by construction. Restandardizing on the broad
+at-risk sample moves the scores by up to 0.4 standard deviations, which
+is the sample dependence the governing rule for derived variables
+excludes from the panel.
+**Decision.** D-2026-10-12-c (reproduced as inherited; flagged for the
+storage audit, task 2.2).
+**Assertion.** `05-sample-definition.R`, output block (moments of
+`pressure_defor` and `pressure_score` within `Z_TOL`).
+
+## Q8. Why does Santa Cruz do Arari's availability flag differ from the recovered panel?
+
+What is checked: the municipality's baseline row. The recovered panel
+carries no municipal area for it (D-2026-10-10-i), so its forest share
+could not be computed there, and its availability flag reads FALSE; the
+rebuilt panel has the area restored.
+
+```{r q8-santa-cruz}
+muni %>%
+  filter(geocode == "1506401") %>%
+  select(municipality, defor_area_b, cattle_dens_b, crop_share_b,
+         forest_km2_2000, forest_share_2000, avail_ok, at_risk_broad,
+         at_risk_narrow, pressure_defor, pressure_agri)
+```
+
+**Finding.** With the restored area the municipality's 2000 forest share
+is 0.94 and it passes the floor; with zero baseline clearing it stays
+outside both gates, as in the recovered panel, so the change touches
+`avail_ok` only (21 cells). The recovered FALSE has no derivation from a
+missing share (`NA >= 0.10` is NA, not FALSE), so the reference value is
+treated as a legacy artefact and the rebuilt value accepted.
+**Decision.** D-2026-10-12-d.
+**Assertion.** `05-sample-definition.R`, output block
+(`N_AVAIL_EXPECTED` = 500).

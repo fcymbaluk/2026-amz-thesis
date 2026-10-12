@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "6 — phase 1 scripts 01-04 refactored (04 on 2026-10-11: panel assembly); stage 5 complete for scripts 03-04, Atlas Brasil (script 07) still open; next: stage 6 phase 1, script 05"
-updated: 2026-10-11
+current_stage: "6 — phase 1 scripts 01-05 refactored (05 on 2026-10-12: sample definition); stage 5 complete for scripts 03-05, Atlas Brasil (script 07) still open; next: stage 6 phase 1, script 06"
+updated: 2026-10-12
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -75,7 +75,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [x] Script 02 — same. Done 2026-10-07, split by source into `02-social-census.R`, `02-social-rais.R` and `02-social-bf.R` (utils `read_sidra.R`, `interpolate_census.R`); notebooks `_audit/census.qmd`, `rais.qmd`, `bf.qmd`; D-2026-10-07-a…j; `compare_outputs` on the 21 social columns of the reference: the 12 `emp_*` and the 5 quota/transfer `bf_*` columns exact, `pea` and `bf_transfers_pea_brl_2024` drift from the 2010 PEA anchor (D-2026-10-06-h closed by D-2026-10-07-b), `informal` within 0.2 pp (D-2026-10-07-c).
 - [x] Script 03 — same. Done 2026-10-10, split by source into `03-controls-agro.R`, `03-controls-elections.R`, `03-controls-gdp.R` and `03-controls-prices.R` (utils `read_sidra.R` guarded for tables without a classification and vectorised); notebooks `_audit/pam_ppm.qmd`, `tse.qmd`, `ibge_pib.qmd`, `prices.qmd`; D-2026-10-10-d…k (k open), D-2026-10-10-a…c closed; `compare_outputs` on the 30 control columns of the reference (502 × 2000-2020): population, the eight `elec_*` measures, `election_year`, `munic_area_km2`, the eight `crop_*` and the two `cattle_*` columns exact; `gdp_*` within R$ 500 (integer API source); `price_index_*` within 0.19 percent (Pink Sheet release); `elec_winner_id` redefined; Santa Cruz do Arari's area and cattle index restored (21 cells each).
 - [x] Script 04 — same. Done 2026-10-11 as `04-panel-assemble.R` (left joins of the eleven interim inputs onto the 503-municipality MapBiomas sample, 2000-2020; pooled price z-scores, `_gov` lags and per-capita transfers as inherited); notebook `_audit/panel.qmd`; D-2026-10-11-a…h; `compare_outputs` on the 73 panel columns of the reference: 52 of the 71 value columns exact (areas, PPCDAm, the five quota/transfer `bf_*`, the 12 `emp_*`, population, the electoral block and its seven numeric `_gov` lags, crops, cattle, `bf_transfers_pc_brl_2024`); the 19 that differ all inherit upstream drift (`gdp_*`, `price_index_*` and their z-scores, `pea`, `informal`, `bf_transfers_pea_brl_2024`, `elec_winner_id` and its lag); 21 rows only in the new file, Mojuí dos Campos.
-- [ ] Script 05 — same.
+- [x] Script 05 — same. Done 2026-10-12 as `05-sample-definition.R` (Mojuí dos Campos dropped, 2000-2003 baseline summaries, availability floor and the broad and narrow at-risk gates, window-consistent treatment flags, cross-sectional pressure scores; outputs `panel_amz_2000_2020_sample` and the municipality store `panel_amz_baseline`); notebook `_audit/panel-sample.qmd` with the retention, balance and overlap diagnostics; D-2026-10-12-a…e; `compare_outputs` on the 82 columns of the sample panel (502 × 2000-2020): the three `pressure_*`, the two `at_risk_*` and the three `ppcdam_*` flags exact; `avail_ok` differs for Santa Cruz do Arari only (restored area, D-2026-10-12-d); the 19 upstream-drift columns unchanged from script 04.
 - [ ] Script 06 — same.
 - [ ] Phase 1 gate: full pipeline run; compare against the recovered panel (exact match for recovered-input columns; drift quantified and logged for re-acquired sources); phase 1 panel becomes the working reference; Drive mirror refreshed.
 
@@ -100,7 +100,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 10 — Rerun + Phase 3: documentation
 
 - [ ] Analysis scripts rerun (`08-data-analysis-2WFE-CS.R` at minimum); new stratum ATTs known.
-- [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here).
+- [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here). The sample section waits on task 5.2 (gate rationale and main sample).
 - [ ] Codebook §6 and provenance §7 rendered; chapter README written.
 - [ ] Done when `panel_amz_2000_2024` exists and is fully documented.
 
@@ -112,6 +112,9 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 - [ ] Candidate designs as separate scripts in `_scripts/models/`, per the methodological standards; trade-offs presented across designs.
 - [ ] Task 5.1: persistence framed as the sharper test of mechanism A; the disconfirmation condition stated before estimation.
+- [ ] Task 5.3 (any time after the phase 1 gate): survey of sampling rules in comparable studies (Imazon, arc of deforestation, replication files); memo in `docs/decisions/`.
+- [ ] Task 5.2 (after 5.3, before the stage 10 annex): the at-risk gate re-examined against the smallest treated baseline clearing (71.3 km² main, 38.9 km² robust, against cuts of 1 and 5); main and robustness samples stated; any gate change as a decision entry in `05-sample-definition.R`.
+- [ ] Task 5.4: municipal area or forest stock in the covariate set; trimming to common support decided and the estimand (untrimmed versus trimmed ATT) stated before estimation, both reported.
 - [ ] Results into the chapter.
 
 ## Parallel writing tracks (interleave with pipeline sessions throughout)

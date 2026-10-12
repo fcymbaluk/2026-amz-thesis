@@ -174,7 +174,7 @@ Supersedes: none
 
 ## D-2026-10-05-l  Mojuí dos Campos dropped from the panel
 
-Status: closed (pre-rebuild; script 05 at tag pre-reorg); the statement that the parent's series are not adjusted holds for PIA, population and deforestation only, see D-2026-10-07-d
+Status: closed (pre-rebuild; script 05 at tag pre-reorg; refactored in phase 1, 05-sample-definition.R, MOJUI_GEOCODE); the statement that the parent's series are not adjusted holds for PIA, population and deforestation only, see D-2026-10-07-d
 Scope: script 05 (line 63), N_MUNIC_EXPECTED = 502 in the reference
 Context: Mojuí dos Campos (1504752) was installed in 2013 by emancipation from
          Santarém; it has no series before 2013 and its parent's series are
@@ -981,4 +981,123 @@ Reason: the type contract of rebuild/04-codebook-and-decisions.md; the
         comparator reports no type mismatch on the 71 compared columns.
 Evidence: compare_outputs at the script 04 acceptance
 Affects: column classes of the interim panel; no value
+Supersedes: none
+
+## D-2026-10-12-a  Baseline summaries over 2000-2003; NA, never NaN, where a source has no baseline value
+
+Status: closed (pre-rebuild; script 05 at tag pre-reorg, lines 68-86; refactored in phase 1, 05-sample-definition.R)
+Scope: 05-sample-definition.R (SAMPLE_BASE_YEARS); panel_amz_baseline: defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b, forest_share_2000, forest_km2_2000
+Context: the legacy script averaged clearing area, clearing rate, cattle
+         density and the summed share of the four crops over 2000-2003 per
+         municipality (na.rm) and took the 2000 forest share (forest over
+         the municipal area) and forest area, as the pre-treatment
+         characteristics the sample rule and the pressure scores read.
+         Every row of the municipality file is pre-PPCDAm by
+         construction. The legacy mean of an all-NA window returned NaN,
+         which the csv writer rendered as NA.
+Reason: inherited; the window predates the plan (2004) and the list
+        (2008). The refactor returns NA explicitly for an all-NA window so
+        the typed file carries no NaN; the csv is unchanged. Three
+        municipalities have no agricultural baseline: Ipiranga do Norte
+        and Itanhangá (MT) have no PAM/PPM rows before their first survey
+        year (D-2026-10-10-g) and Santa Cruz do Arari (PA) has no crop
+        series (D-2026-10-10-i). Nova Ubiratã's forest share and cattle
+        density are computed on the post-split 2025 area (task 1.8).
+        The municipality file is the store task 1.7 names muni_baseline;
+        the census anchors join it at phase 2 step 2.6.
+Evidence: _audit/panel-sample.qmd Q1, Q2
+Affects: the six baseline columns of panel_amz_baseline (502 rows);
+         through them every column of D-2026-10-12-b…d
+Supersedes: none
+
+## D-2026-10-12-b  Treatment flags defined on the analysis window: main 2004-2010, robust 2004-2012, ever over the full panel
+
+Status: closed (pre-rebuild; script 05 at tag pre-reorg, lines 90-104; refactored in phase 1, 05-sample-definition.R); flagged for task 2.2
+Scope: 05-sample-definition.R (PPCDAM_WINDOW_START, PPCDAM_WINDOW_END_MAIN, PPCDAM_WINDOW_END_ROBUST); ppcdam_main, ppcdam_robust, ppcdam_ever_full
+Context: a municipality counts as treated in a design if it was listed in
+         any year of that design's window; one first listed after the
+         window is a not-yet-treated control there. The main window
+         (2004-2010) holds the 2008 and 2009 cohorts (36 + 7 = 43) with
+         no exit; the robust window adds the 2011-2012 cohorts (51) and
+         the first exits; 61 municipalities are ever listed over
+         2000-2020.
+Reason: inherited; positivity diagnostics and the stratified estimates
+        must use the same treated set as the design they serve. The three
+        flags are stored as integers 0/1 (the legacy ppcdam_ever_full was
+        a double). The window is a design parameter varied in robustness
+        checks, so whether the flags stay in the panel or move to the
+        analysis scripts is decided at the storage audit (task 2.2).
+Evidence: _audit/panel-sample.qmd Q3
+Affects: ppcdam_main, ppcdam_robust, ppcdam_ever_full (constant within
+         municipality)
+Supersedes: none
+
+## D-2026-10-12-c  Pressure scores: logged baselines z-scored across the 502 municipalities; pressure_agri a half-half mix, not re-standardised
+
+Status: closed (pre-rebuild; script 05 at tag pre-reorg, lines 106-122; refactored in phase 1, 05-sample-definition.R); flagged for task 2.2
+Scope: 05-sample-definition.R; pressure_defor, pressure_agri, pressure_score
+Context: pressure_defor = z(log1p(defor_area_b)); pressure_agri =
+         0.5 z(log1p(cattle_dens_b)) + 0.5 z(log1p(crop_share_b));
+         pressure_score = z(pressure_defor + pressure_agri), each z over
+         the 502 municipalities (na.rm). pressure_agri and
+         pressure_score are NA for the three municipalities without an
+         agricultural baseline (D-2026-10-12-a).
+Reason: inherited; reproduced for equivalence (exact against the
+        reference). A cross-sectional standardisation is sample-dependent
+        and therefore fails the governing rule for derived variables
+        (restandardising on the broad at-risk sample moves the scores by
+        up to several tenths of a standard deviation); removal from the
+        panel is decided at the storage audit (task 2.2), with
+        D-2026-10-11-d.
+Evidence: _audit/panel-sample.qmd Q7
+Affects: the three pressure columns (constant within municipality)
+Supersedes: none
+
+## D-2026-10-12-d  Santa Cruz do Arari passes the availability floor with its restored area
+
+Status: closed (phase 1, script 05)
+Scope: 05-sample-definition.R (N_AVAIL_EXPECTED = 500); avail_ok of 1506401
+Context: the recovered panel has no municipal area for Santa Cruz do Arari
+         (restored at script 03, D-2026-10-10-i), so its 2000 forest share
+         could not be computed there; the reference nonetheless carries
+         avail_ok = FALSE for it, a value with no derivation from a missing
+         share (NA >= 0.10 is NA). With the restored area the share is
+         0.94 and the flag is TRUE; with zero baseline clearing the
+         municipality stays outside both at-risk gates, as in the
+         reference.
+Reason: triage class (c) of rebuild/00-rebuild-phases.md: the reference
+        value has no derivation from raw; the rebuilt value is accepted
+        with this entry and the comparator report.
+Evidence: _audit/panel-sample.qmd Q8; compare_outputs at the script 05
+          acceptance (21 cells of avail_ok, one municipality)
+Affects: avail_ok (500 TRUE against the reference's 499); no at-risk
+         flag, no pressure score
+Supersedes: none
+
+## D-2026-10-12-e  Task 1.10 at script 05: typed output; the diagnostics leave the pipeline; the municipality lookup moves to _data/interim/
+
+Status: closed (phase 1, script 05)
+Scope: 05-sample-definition.R (SAMPLE_LGL_COLS, SAMPLE_INT_COLS, MUNI_COLS); panel_amz_2000_2020_sample, panel_amz_baseline
+Context: the legacy script wrote final_dataset_5.csv untyped, and two
+         tables under _output/: at_risk_indicator.csv (the municipality
+         lookup) and at_risk_balance.csv (the balance table of the main
+         window); it printed the retention, balance and overlap
+         diagnostics for both windows to the console with the appendix
+         prose in comments.
+Reason: the type contract of rebuild/04-codebook-and-decisions.md: the
+        three sample flags are logical, the three treatment flags
+        integer, the pressure scores double, asserted before writing.
+        The diagnostics are evidence, not data, so they live in the
+        rendered audit notebook (_audit/panel-sample.qmd Q4-Q6) and
+        the pipeline writes no table under output/. The municipality
+        lookup is an interim dataset (panel_amz_baseline, the task
+        1.7 store) and carries forest_share_2000 and defor_area_b, which
+        the legacy panel carried and legacy script 06 dropped; the panel
+        output holds the 73 script 04 columns plus the nine the reference
+        carries from this script, so script 06 has nothing to drop. The
+        prose is parked in _annex/parked/05-sample-definition-prose.md.
+Evidence: compare_outputs at the script 05 acceptance (no type mismatch
+          on the 80 compared columns)
+Affects: column classes and the file layout of the script 05 outputs; no
+         value
 Supersedes: none
