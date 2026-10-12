@@ -8,7 +8,7 @@ The notebook answers the question "how do I know?" for every assertion in the pi
 
 ## Rules
 
-1. One notebook per source, named by the source token of `docs/repo-conventions.md` (the same token names the interim files): `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`, `_audit/rais.qmd`, `_audit/bf.qmd`, `_audit/ibge_pib.qmd`, `_audit/tse.qmd`, `_audit/pam_ppm.qmd`, `_audit/prices.qmd`, `_audit/census.qmd`, `_audit/atlas.qmd` (added when the Atlas urban/rural and poverty variables enter). Token naming decided 2026-10-06, phase 1 script 01.
+1. One notebook per source, named by the source token of `docs/repo-conventions.md` (the same token names the interim files): `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`, `_audit/rais.qmd`, `_audit/bf.qmd`, `_audit/ibge_pib.qmd`, `_audit/tse.qmd`, `_audit/pam_ppm.qmd`, `_audit/prices.qmd`, `_audit/census.qmd`, `_audit/atlas.qmd` (added when the Atlas urban/rural and poverty variables enter). Token naming decided 2026-10-06, phase 1 script 01. The join stages have no source: their notebooks are named by content, `_audit/panel.qmd` for script 04 (added 2026-10-11, phase 1 script 04); scripts 05 and 06 follow the same rule if they need one.
 2. Every section is a question. Every section ends with a **Finding** and a **Decision** line. The decision line carries a decision ID or the word `open`.
 3. The notebook reads from `_data/raw/` or `_data/interim/`, never from `_data/reference/`, and writes nothing to `_data/`.
 4. Code is shown and evaluated. Output tables and figures are the evidence, so they stay in the rendered file.
