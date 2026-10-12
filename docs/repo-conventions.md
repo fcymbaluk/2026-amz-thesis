@@ -1,6 +1,6 @@
 ---
 role: repo-conventions
-updated: 2026-09-26
+updated: 2026-10-11
 ---
 
 # Repository conventions: folders and file names
@@ -20,7 +20,7 @@ Chapter folders carry their chapter number (`ch1-theoretical` ... `ch4-causal-an
 - **Sequenced files** use zero-padded two-digit prefixes: pipeline scripts `01-` to `06-`, analysis scripts `07-` onward, the rebuild docs `00-` to `04-`. Folders use single digits (small fixed sets); files use two digits (sets that can grow).
 - **Raw data files keep the provider's original filename, always.** The source is carried by the provider subfolder (`_data/raw/mds_bolsa_familia/`), and the original name is provenance: it must match the provenance table.
 - **Interim datasets are source-first**, snake_case: `<source>_<content>[_<scope>][_<years>].rds`. The source token comes from the audit-notebook vocabulary, so file, notebook and provenance table share one dictionary: `mapbiomas`, `ibge_biome`, `ppcdam`, `rais`, `bf`, `ibge_pib`, `tse`, `pam_ppm`, `prices`, `census`, `atlas`. Examples: `bf_panel.rds`, `mapbiomas_deforestation_municipal.rds`, `rais_wage_distribution_2006_2024.rds`.
-- **Final datasets are content-first**, because they have no single source: `panel_<scope>_<years>` — the analysis panel is `panel_amz_2000_2024.rds` / `.csv`. Script-numbered names (`final_dataset_6.csv`) are retired.
+- **Final datasets are content-first**, because they have no single source: `panel_<scope>_<years>` — the analysis panel is `panel_amz_2000_2024.rds` / `.csv`. Script-numbered names (`final_dataset_6.csv`) are retired. An interim dataset that joins several sources (the output of script 04 onward) takes the same content-first form, `_data/interim/panel_amz_2000_2020.rds`, since no source token names it (clarified 2026-10-11).
 - **Auxiliary files are content-first**: `deflator_ipca_2024.csv`, `codebook.csv`, `crosswalk.csv`.
 - **Output files** use Quarto's cross-reference prefixes so file names and `@fig-`/`@tbl-` labels align: `fig-<slug>.png`, `tab-<slug>.csv`.
 - **Documents** follow their local convention: `GUIDANCE.md` per chapter, numbered specs in `rebuild/`, dated memos in `docs/decisions/` (`YYYY-MM-DD-slug.md`), audit notebooks named by source token (`bf.qmd`).

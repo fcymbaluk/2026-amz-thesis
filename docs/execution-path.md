@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "6 — phase 1 scripts 01-03 refactored (03 on 2026-10-10: agro, elections, gdp, prices); stage 5 complete for scripts 03-04, Atlas Brasil (script 07) still open; next: stage 6 phase 1, script 04"
-updated: 2026-10-10
+current_stage: "6 — phase 1 scripts 01-04 refactored (04 on 2026-10-11: panel assembly); stage 5 complete for scripts 03-04, Atlas Brasil (script 07) still open; next: stage 6 phase 1, script 05"
+updated: 2026-10-11
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -74,7 +74,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [x] Script 01 refactored to template; provisional acceptance (assertions + audit notebook); commit. Done 2026-10-06, split into `01-env-deforestation.R` and `01-env-ppcdam.R`; notebooks `_audit/mapbiomas.qmd`, `_audit/ibge_biome.qmd`, `_audit/ppcdam.qmd`; D-2026-10-06-a…g; the 7 environmental and PPCDAm panel columns reproduce the reference exactly (`compare_outputs` PASS, 502 × 2000-2020).
 - [x] Script 02 — same. Done 2026-10-07, split by source into `02-social-census.R`, `02-social-rais.R` and `02-social-bf.R` (utils `read_sidra.R`, `interpolate_census.R`); notebooks `_audit/census.qmd`, `rais.qmd`, `bf.qmd`; D-2026-10-07-a…j; `compare_outputs` on the 21 social columns of the reference: the 12 `emp_*` and the 5 quota/transfer `bf_*` columns exact, `pea` and `bf_transfers_pea_brl_2024` drift from the 2010 PEA anchor (D-2026-10-06-h closed by D-2026-10-07-b), `informal` within 0.2 pp (D-2026-10-07-c).
 - [x] Script 03 — same. Done 2026-10-10, split by source into `03-controls-agro.R`, `03-controls-elections.R`, `03-controls-gdp.R` and `03-controls-prices.R` (utils `read_sidra.R` guarded for tables without a classification and vectorised); notebooks `_audit/pam_ppm.qmd`, `tse.qmd`, `ibge_pib.qmd`, `prices.qmd`; D-2026-10-10-d…k (k open), D-2026-10-10-a…c closed; `compare_outputs` on the 30 control columns of the reference (502 × 2000-2020): population, the eight `elec_*` measures, `election_year`, `munic_area_km2`, the eight `crop_*` and the two `cattle_*` columns exact; `gdp_*` within R$ 500 (integer API source); `price_index_*` within 0.19 percent (Pink Sheet release); `elec_winner_id` redefined; Santa Cruz do Arari's area and cattle index restored (21 cells each).
-- [ ] Script 04 — same.
+- [x] Script 04 — same. Done 2026-10-11 as `04-panel-assemble.R` (left joins of the eleven interim inputs onto the 503-municipality MapBiomas sample, 2000-2020; pooled price z-scores, `_gov` lags and per-capita transfers as inherited); notebook `_audit/panel.qmd`; D-2026-10-11-a…h; `compare_outputs` on the 73 panel columns of the reference: 52 of the 71 value columns exact (areas, PPCDAm, the five quota/transfer `bf_*`, the 12 `emp_*`, population, the electoral block and its seven numeric `_gov` lags, crops, cattle, `bf_transfers_pc_brl_2024`); the 19 that differ all inherit upstream drift (`gdp_*`, `price_index_*` and their z-scores, `pea`, `informal`, `bf_transfers_pea_brl_2024`, `elec_winner_id` and its lag); 21 rows only in the new file, Mojuí dos Campos.
 - [ ] Script 05 — same.
 - [ ] Script 06 — same.
 - [ ] Phase 1 gate: full pipeline run; compare against the recovered panel (exact match for recovered-input columns; drift quantified and logged for re-acquired sources); phase 1 panel becomes the working reference; Drive mirror refreshed.

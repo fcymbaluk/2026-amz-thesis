@@ -839,3 +839,146 @@ Evidence: _audit/ibge_pib.qmd Q4, Q6
 Affects: population 2000-2001 (all municipalities); bf per-capita columns
          of script 04 in those years
 Supersedes: none
+
+## D-2026-10-11-a  Panel assembled by left joins onto the MapBiomas biome sample, 2000-2020
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 170-204; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R; every panel column; N_MUNIC_EXPECTED = 503
+Context: the legacy script joined the per-source outputs onto the
+         deforestation table with left joins on geocode and year (the
+         municipal area on geocode only) and kept 2000-2020. Municipalities
+         absent from a source carry NA in that source's columns; sources
+         with municipalities outside the biome sample lose them at the join.
+Reason: the MapBiomas sample (D-2026-10-06-c) defines the panel's rows;
+        the outcome must exist for every row, the covariates need not. The
+        panel keeps Mojuí dos Campos (503 rows per year); script 05 drops it
+        (D-2026-10-05-l), so the reference has 502.
+Evidence: _audit/panel.qmd Q1, Q7
+Affects: all columns; row count 503 x 21 = 10,563 (reference 10,542)
+Supersedes: none
+
+## D-2026-10-11-b  ppcdam_list 0 where the list does not cover the municipality-year; listed municipalities outside the biome sample leave the panel
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 261-269; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R; ppcdam_list
+Context: the list file (01-env-ppcdam.R) carries the 92 ever-listed
+         municipalities for 2004-2024. After the left join, 2000-2003 and
+         every never-listed municipality are NA; the legacy script recoded
+         NA to 0. Four listed municipalities are not in the biome sample
+         and leave the panel: Grajaú (MA, listed from 2011) and Comodoro,
+         Paranatinga and Ribeirão Cascalheira (MT, listed 2023-2024 only).
+Reason: a municipality-year the list does not name is not listed; the
+        indicator must be 0/1 for every row. Grajaú returns with the Legal
+        Amazon extension (task 1.1).
+Evidence: _audit/panel.qmd Q2
+Affects: ppcdam_list (0 for 2000-2007 and for all never-listed rows)
+Supersedes: none
+
+## D-2026-10-11-c  Forest and deforestation areas converted from hectares to km2 at the join
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 41-63; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R (HA_PER_KM2); forest_area_km2, deforestation_area_km2
+Context: 01-env-deforestation.R stores the MapBiomas aggregates in
+         hectares as exported; every other area in the panel (municipal
+         area, crop areas, cattle density) is in km2.
+Reason: one unit for every area column. Inherited placement: the
+        conversion belongs upstream with the unit pattern (task 1.9).
+        Nova Ubiratã (MT) 2000-2003 has a converted forest area above its
+        2025 municipal area (up to 18 percent): MapBiomas Collection 9
+        maps the pre-split municipality (12,461 km2) while the 2025 area
+        (8,721 km2) excludes Boa Esperança do Norte, the mesh-vintage
+        mismatch of D-2026-10-10-f; quantified in task 1.8.
+Evidence: _audit/panel.qmd Q3
+Affects: forest_area_km2, deforestation_area_km2 (all rows)
+Supersedes: none
+
+## D-2026-10-11-d  Price indices z-scored on the pooled panel; level and lag share one centre and spread; the cattle lag is built from the z-score
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 457-491; refactored in phase 1, 04-panel-assemble.R); flagged for task 2.2
+Scope: 04-panel-assemble.R; price_index_crop_z, price_index_crop_lag1_z, price_index_cattle_z, price_index_cattle_lag1_z
+Context: the crop and cattle indices sit three orders of magnitude apart
+         (D-2026-10-05-p). The legacy script standardised each over all
+         municipality-years of the 503-municipality panel (na.rm), scaled
+         the crop lag with the level's mean and sd, and built the cattle
+         lag as the within-municipality lag of the cattle z-score.
+Reason: inherited; reproduced for equivalence. The pooled standardisation
+        is sample-dependent and therefore fails the governing rule for
+        derived variables; its removal from the panel is decided at the
+        storage audit (task 2.2), not in phase 1. Phase 1 drift: the Pink
+        Sheet release (D-2026-10-10-a) passes through, and Santa Cruz do
+        Arari's restored cattle index (D-2026-10-10-i) enters the pool
+        and shifts every cattle z-score by at most about 0.004 sd.
+Evidence: _audit/panel.qmd Q4; compare_outputs at the script 04 acceptance
+Affects: the four z-score columns (all rows)
+Supersedes: none
+
+## D-2026-10-11-e  Electoral block lagged one year within municipality (_gov); election_year not lagged
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 495-517; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R (ELEC_GOV_VARS, ELEC_GOV_LAG); the eight elec_*_gov columns
+Context: the stored elec_* columns change in the election year
+         (D-2026-10-05-o, open). The legacy script added a one-year lag of
+         the eight measures with the _gov suffix so each calendar year
+         carries the result of the mayor in office; 2000 is NA (the 1996
+         election is outside the data). election_year flags when an
+         election happened and is not lagged.
+Reason: inherited; the lag compensates for the storage defect of task 1.5.
+        When step 2.3 moves the storage to the governing period, the _gov
+        block becomes redundant and its fate is decided there.
+Evidence: _audit/panel.qmd Q5
+Affects: elec_enc_gov, elec_mov_gov, elec_winner_share_gov,
+         elec_n_candidates_gov, elec_winner_party_gov, elec_winner_id_gov,
+         elec_competitive_gov, elec_uncontested_gov
+Supersedes: none
+
+## D-2026-10-11-f  bf_transfers_pc_brl_2024 = transfers / population, NA where population is missing or zero
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 529-536; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R; bf_transfers_pc_brl_2024
+Context: the methodology sets total population (or the quota) as the
+         primary transfer-intensity denominator (D-2026-10-05-e); script 02
+         builds the PEA- and quota-normalised versions, and the per-capita
+         version needs the population series of script 03, so it is built
+         at the join.
+Reason: the variable needs an upstream join and is sample-independent, so
+        it is stored. NA where transfers (before 2004, after 2019) or
+        population (2000-2001; the nine post-2000 MT municipalities through
+        2009, D-2026-10-05-k) are missing.
+Evidence: _audit/panel.qmd Q6
+Affects: bf_transfers_pc_brl_2024 (2004-2019)
+Supersedes: none
+
+## D-2026-10-11-g  Columns not carried into the panel at the join
+
+Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 22-30 and 342-356; refactored in phase 1, 04-panel-assemble.R)
+Scope: 04-panel-assemble.R; interim columns absent from the panel
+Context: the interim files carry columns the legacy join dropped:
+         bf_ref_month (the February rows and the month marker,
+         D-2026-10-05-a), biome, deforestation_mean, deforestation_sd and
+         deforestation_z (D-2026-10-06-e), the eight workers_* counts and
+         pia (02-social-rais.R), elec_total_votes (03-controls-elections.R),
+         and the base-window weights file (D-2026-10-10-f) in full.
+Reason: inherited selection; the panel is the reference's 73 columns.
+        Whether the counts and anchors enter the panel is decided by tasks
+        1.7 and 1.8 and by the storage audit (task 2.2); D-2026-10-07-i
+        records the author's intent on the PEA-normalised rates.
+Evidence: _audit/panel.qmd Q1
+Affects: no panel column; interim files unchanged
+Supersedes: none
+
+## D-2026-10-11-h  Task 1.10 at script 04: typed output; the xlsx copy retired
+
+Status: closed (phase 1, script 04)
+Scope: 04-panel-assemble.R (PANEL_INT_COLS, PANEL_CHR_COLS); every panel column
+Context: the legacy script wrote csv, rds and xlsx without setting types;
+         the reference csv therefore carries integers and doubles as the
+         writer rendered them. The refactored script fixes nine integer
+         columns (year, ppcdam_list, four electoral flags and counts and
+         their three _gov lags), eight character columns (keys, names,
+         party and candidate ids and their lags) and doubles for the rest,
+         and asserts them before writing. The xlsx copy is not produced.
+Reason: the type contract of rebuild/04-codebook-and-decisions.md; the
+        comparator reports no type mismatch on the 71 compared columns.
+Evidence: compare_outputs at the script 04 acceptance
+Affects: column classes of the interim panel; no value
+Supersedes: none

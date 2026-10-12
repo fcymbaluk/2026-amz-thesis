@@ -1,0 +1,334 @@
+---
+title: "Audit: panel assembly (scripts 01-03 joined)"
+date: 2026-10-11
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: none. This notebook audits the join of the interim outputs of
+scripts 01-03 into the municipality-year panel of the Amazon-biome sample
+(503 municipalities, 2000-2020) and the three derived blocks added at the
+join (pooled z-scores of the price indices, the electoral block lagged to
+the governing year, per-capita Bolsa Família transfers).
+Pipeline script: `_scripts/04-panel-assemble.R`.
+Interim output: `_data/interim/panel_amz_2000_2020.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 04 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+options(width = 110)
+```
+
+```{r read}
+panel <- read_rds("_data/interim/panel_amz_2000_2020.rds")
+mapbiomas <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds")
+ppcdam <- read_rds("_data/interim/ppcdam_list_2004_2024.rds")
+munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2025.rds")
+sample_geocodes <- unique(mapbiomas$geocode)
+```
+
+## Q1. Which sources cover which municipality-years of the 503 × 21 panel?
+
+What is checked: for one representative column per source block, the
+number of non-missing cells by year. A left join from the MapBiomas sample
+leaves NA wherever a source has no row, and the sources have different
+windows (Bolsa Família 2004-2019, GDP and population 2002 onward, prices
+2000-2020 with the crop lag from 2001).
+
+```{r q1-coverage}
+blocks <- c(mapbiomas = "forest_area_km2", ppcdam = "ppcdam_list",
+            bf = "bf_families_n", rais = "emp_pia_rate_total",
+            census = "informal", ibge_pib = "population",
+            tse = "elec_enc", area = "munic_area_km2",
+            pam = "crop_soy_area_planted_km2", ppm = "cattle_heads",
+            prices = "price_index_crop")
+panel %>%
+  select(year, all_of(unname(blocks))) %>%
+  group_by(year) %>%
+  summarise(across(everything(), ~ sum(!is.na(.x))), .groups = "drop") %>%
+  rename(!!!set_names(unname(blocks), names(blocks))) %>%
+  print(n = 21)
+```
+
+```{r q1-municipalities}
+panel %>%
+  summarise(across(all_of(unname(blocks)),
+                   ~ n_distinct(geocode[!is.na(.x)]))) %>%
+  rename(!!!set_names(unname(blocks), names(blocks))) %>%
+  pivot_longer(everything(), names_to = "block",
+               values_to = "municipalities_with_data")
+```
+
+```{r q1-na-cells}
+panel %>%
+  select(geocode, all_of(unname(blocks))) %>%
+  pivot_longer(-geocode, names_to = "column") %>%
+  filter(is.na(value)) %>%
+  group_by(column) %>%
+  summarise(na_cells = n(), municipalities = n_distinct(geocode),
+            .groups = "drop")
+```
+
+**Finding.** All 503 municipalities have rows in every block except RAIS
+(Mojuí dos Campos has none) and the PAM crop block with the crop index
+(Santa Cruz do Arari has no series, D-2026-10-10-i). Within the sources'
+windows the gaps are: Bolsa Família 2004-2019 only; population and GDP
+from 2002, with the nine Mato Grosso municipalities absent from the 2000
+census NA through 2009 (72 cells, D-2026-10-05-k); RAIS 72
+municipality-years (Mojuí's 21 and 51 early years of small municipalities,
+`_audit/rais.qmd` Q2, task 1.8); elections 28 cells (Mojuí 2000-2011 and
+four municipalities installed in 2001 for 2000-2003); cattle 30 cells and
+crop areas 112 cells (Mojuí before 2013, the post-2000 Mato Grosso
+municipalities before their first survey year, D-2026-10-10-g, Santa Cruz
+do Arari, and scattered years of six Pará municipalities of the Belém
+metropolitan area and the Marajó). Everything else is complete over
+2000-2020.
+**Decision.** D-2026-10-11-a (left joins onto the MapBiomas sample, 503
+municipalities including Mojuí dos Campos); D-2026-10-11-g (columns not
+carried into the panel).
+**Assertion.** `04-panel-assemble.R`, raw-state block (unique keys, 503
+geocodes, every sample municipality in the areas file) and output block
+(503 × 21 rows, unique keys).
+
+## Q2. Which PPCDAm municipalities fall outside the biome sample, and how is the indicator coded where the list is silent?
+
+What is checked: the listed municipalities absent from the 503, and the
+count of listed municipality-years by year after NA is recoded to 0.
+
+```{r q2-outside}
+ppcdam %>%
+  filter(!geocode %in% sample_geocodes) %>%
+  group_by(geocode, municipality) %>%
+  summarise(listed_years = paste(year[ppcdam_list == 1L], collapse = ", "),
+            .groups = "drop")
+```
+
+```{r q2-listed}
+panel %>%
+  group_by(year) %>%
+  summarise(listed = sum(ppcdam_list), .groups = "drop") %>%
+  pivot_wider(names_from = year, values_from = listed)
+```
+
+**Finding.** Four listed municipalities are not in the IBGE Amazônia
+predominant-biome list and leave the panel at the join: Grajaú (MA,
+listed from 2011) and three Mato Grosso municipalities listed only in
+2023-2024 (Comodoro, Paranatinga, Ribeirão Cascalheira). Grajaú is the one
+ever-listed municipality that the Legal Amazon extension (task 1.1) adds
+within the 2004-2020 window. The list file carries 0 for 2004-2007 and the
+join leaves NA for 2000-2003 and for every never-listed municipality; both
+are recoded to 0, so the indicator is never NA and is 0 before 2008.
+**Decision.** D-2026-10-11-b.
+**Assertion.** `04-panel-assemble.R`, raw-state block (four outside
+geocodes, values in {0, 1}) and output block (no NA, zero before 2008).
+
+## Q3. Are the areas on one unit after the hectare-to-km² conversion?
+
+What is checked: the MapBiomas forest area, converted from hectares, as a
+share of the 2025 IBGE municipal area; any share above 1 is a unit or
+boundary problem. The second chunk compares the total area MapBiomas
+Collection 9 maps for each municipality (all transition classes summed,
+constant across years) with the 2025 IBGE area, to separate the two.
+
+```{r q3-share}
+share <- panel %>%
+  transmute(geocode, municipality, state_abbreviation, year,
+            forest_share = forest_area_km2 / munic_area_km2,
+            total_share = (forest_area_km2 + deforestation_area_km2) /
+              munic_area_km2)
+summary(share$forest_share)
+share %>% filter(forest_share > 1)
+```
+
+```{r q3-mesh}
+mapbiomas_raw <- readxl::read_xlsx("_data/raw/mapbiomas/mapbiomas_munic.xlsx",
+                                   sheet = "DEF_SECVEG")
+mapped_total <- mapbiomas_raw %>%
+  mutate(geocode = as.character(geocode)) %>%
+  filter(geocode %in% sample_geocodes) %>%
+  group_by(geocode) %>%
+  summarise(mapped_total_km2_2000 = sum(`2000`) / 100,
+            mapped_total_km2_2023 = sum(`2023`) / 100, .groups = "drop")
+mesh <- mapped_total %>%
+  left_join(munic_area, by = "geocode") %>%
+  left_join(distinct(mapbiomas, geocode, municipality, state_abbreviation),
+            by = "geocode") %>%
+  mutate(ratio = mapped_total_km2_2023 / munic_area_km2)
+c(max_year_change_km2 = max(abs(mesh$mapped_total_km2_2000 -
+                                  mesh$mapped_total_km2_2023)),
+  n_within_1pct = sum(abs(mesh$ratio - 1) <= 0.01),
+  n_over_2pct = sum(abs(mesh$ratio - 1) > 0.02))
+mesh %>%
+  filter(abs(ratio - 1) > 0.02) %>%
+  arrange(desc(abs(ratio - 1))) %>%
+  transmute(geocode, municipality, state_abbreviation,
+            mapped_total_km2 = round(mapped_total_km2_2023, 1),
+            munic_area_km2 = round(munic_area_km2, 1),
+            ratio = round(ratio, 3))
+readxl::read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls",
+                   sheet = "AR_BR_MUN_2025", col_types = "text") %>%
+  filter(CD_MUN %in% c("5101837", "5106240", "5107925")) %>%
+  transmute(geocode = CD_MUN, municipality = NM_MUN,
+            munic_area_km2_2025 = round(as.numeric(AR_MUN_2025), 1),
+            in_mapbiomas = geocode %in% as.character(mapbiomas_raw$geocode))
+```
+
+**Finding.** The forest share of the municipal area lies between 0.06 and
+1.0 in every municipality-year but four: Nova Ubiratã (MT) in 2000-2003,
+where the converted forest area exceeds the 2025 municipal area by up to
+18 percent. It is a mesh-vintage mismatch, not a unit error: MapBiomas
+Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against
+8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT,
+geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã
+(3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small
+parts of Vera and Paranatinga; the new municipality is in the 2025 table
+and absent from MapBiomas and from the biome list (D-2026-10-10-f). Every
+2000-2020 variable of Nova Ubiratã refers to the pre-split territory
+while `munic_area_km2` is the post-split one, so its cattle density and
+crop shares are inflated by 43 percent in every year (the 2000 forest
+share is 0.83 of the mapped total). The mapped total and the 2025 area
+agree within 1 percent for 459 of the 503 municipalities; 20 differ by
+more than 2 percent, the largest after Nova Ubiratã being the
+Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85
+and 1.10) and Benjamin Constant, Caapiranga and Ipixuna (AM, 3-4 percent).
+The fall of Nova Ubiratã's forest plus deforestation from 10,480 km² in
+2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land
+cleared in year t is "Antrópico" from t+1, so it leaves both classes.
+**Decision.** D-2026-10-11-c (conversion at the join; moves upstream with
+task 1.9). The area vintage is task 1.8 (D-2026-10-10-f), where this
+quantification is recorded.
+**Assertion.** `04-panel-assemble.R`, output block
+(`N_FOREST_OVER_AREA_EXPECTED` = 4).
+
+## Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari's restored cattle index move them?
+
+What is checked: the moments of the four z-scores, and the cattle z-score
+recomputed with the municipality's 21 restored cells (D-2026-10-10-i) left
+out of the pool.
+
+```{r q4-moments}
+panel %>%
+  summarise(across(ends_with("_z"),
+                   list(mean = ~ mean(.x, na.rm = TRUE),
+                        sd = ~ sd(.x, na.rm = TRUE),
+                        na = ~ sum(is.na(.x))))) %>%
+  pivot_longer(everything(), names_to = c("variable", "stat"),
+               names_pattern = "(.*)_(mean|sd|na)$") %>%
+  pivot_wider(names_from = stat, values_from = value)
+```
+
+```{r q4-santa-cruz}
+x <- panel$price_index_cattle
+pool_without <- if_else(panel$geocode == "1506401", NA_real_, x)
+z_with <- (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+z_without <- (x - mean(pool_without, na.rm = TRUE)) /
+  sd(pool_without, na.rm = TRUE)
+tibble(max_abs_shift = max(abs(z_with - z_without), na.rm = TRUE),
+       cells_shifted = sum(abs(z_with - z_without) > 1e-8, na.rm = TRUE))
+```
+
+**Finding.** Every z-score has mean 0 and sd 1 to numerical precision;
+the crop z-score is NA where the crop index is NA (Santa Cruz do Arari)
+and the lags are NA in 2000. Adding Santa Cruz do Arari's restored index
+to the pool shifts the cattle z-score of every cell by at most about four
+thousandths of a standard deviation; the rest of the drift reported by the
+comparator for the z-scores is the Pink Sheet release (D-2026-10-10-a)
+passed through the standardisation.
+**Decision.** D-2026-10-11-d; the pooled standardisation is
+sample-dependent and is flagged for the storage audit (task 2.2).
+**Assertion.** `04-panel-assemble.R`, output block (moments within
+`Z_TOL`, cattle lag NA in 2000).
+
+## Q5. Does the `_gov` lag place each election's values on the governing years?
+
+What is checked: one municipality's effective number of candidates as
+stored (changes in the election year) and as lagged (changes the year
+after), across the 2004 and 2008 elections; NA counts of the lagged block
+by year.
+
+```{r q5-alignment}
+panel %>%
+  filter(geocode == "1100015", year %in% 2003:2010) %>%
+  select(year, election_year, elec_enc, elec_enc_gov,
+         elec_winner_party, elec_winner_party_gov)
+```
+
+```{r q5-na}
+panel %>%
+  group_by(year) %>%
+  summarise(na_gov = sum(is.na(elec_enc_gov)),
+            na_stored = sum(is.na(elec_enc)), .groups = "drop") %>%
+  filter(na_gov > 0 | na_stored > 0)
+```
+
+**Finding.** The stored block changes in the election year (2004, 2008),
+the lagged block one year later (2005, 2009), which is the governing-period
+rule; 2000 is NA in every `_gov` column because the 1996 election is
+outside the data. The stored block's timing is the defect of task 1.5.
+**Decision.** D-2026-10-11-e (lag kept as inherited); D-2026-10-05-o
+(open, phase 2 step 2.3).
+**Assertion.** `04-panel-assemble.R`, output block (`_gov` NA in 2000).
+
+## Q6. Where are per-capita transfers missing, and why?
+
+What is checked: non-missing cells of `bf_transfers_pc_brl_2024` by year
+against the transfers and the population it divides.
+
+```{r q6-coverage}
+panel %>%
+  group_by(year) %>%
+  summarise(transfers = sum(!is.na(bf_transfers_total_brl_2024)),
+            population = sum(!is.na(population)),
+            per_capita = sum(!is.na(bf_transfers_pc_brl_2024)),
+            .groups = "drop") %>%
+  filter(transfers > 0)
+```
+
+**Finding.** Per-capita transfers exist exactly where both inputs do:
+2004-2019, less the nine Mato Grosso municipalities without population
+through 2009 (D-2026-10-05-k). No municipality-year has a zero population.
+**Decision.** D-2026-10-11-f; D-2026-10-10-k (open, population storage).
+**Assertion.** `04-panel-assemble.R`, output block (NA pattern equals the
+union of the inputs' NA).
+
+## Q7. What does the panel hold for Mojuí dos Campos?
+
+What is checked: the non-missing years of each block for geocode 1504752,
+kept in this panel and dropped in script 05 (D-2026-10-05-l), as evidence
+for the author's review of that drop (GitHub issue #8).
+
+```{r q7-mojui}
+panel %>%
+  filter(geocode == "1504752") %>%
+  select(year, all_of(unname(blocks)), bf_transfers_pc_brl_2024) %>%
+  rename(!!!set_names(unname(blocks), names(blocks))) %>%
+  summarise(across(-year, ~ if (any(!is.na(.x))) {
+    paste(range(year[!is.na(.x)]), collapse = "-")
+  } else {
+    "none"
+  })) %>%
+  pivot_longer(everything(), names_to = "block", values_to = "years_with_data")
+```
+
+**Finding.** Mojuí dos Campos carries deforestation, area, PPCDAm (never
+listed), the census block and the split GDP and population for every year;
+PAM and PPM series from 2013; elections from the 2012 election; Bolsa
+Família from 2014. The crop index reads 0 throughout because its
+base-window weights are NA (D-2026-10-10-h) and the cattle index is NA. It
+has no RAIS row at all. The RAIS gap and the agricultural series before
+2013 are what re-inclusion would have to solve (task 1.6).
+**Decision.** D-2026-10-05-l (provisional; issue #8).
+**Assertion.** none; the row count assertion counts it among the 503.
