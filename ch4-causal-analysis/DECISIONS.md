@@ -1173,3 +1173,77 @@ Evidence: compare_outputs at the script 06 acceptance (same column order
           as the reference; no type mismatch on the 83 compared columns)
 Affects: column classes and the file layout of the final panel; no value
 Supersedes: none
+
+## D-2026-10-12-i  Phase 1 gate passed: the rebuilt pipeline reproduces the recovered panel on every recovered-raw column; re-acquired drift closed under version entries; the phase 1 panel is the working reference
+
+Status: closed (phase 1 gate, 2026-10-12)
+Scope: scripts 01-06 (12 files); _data/final/panel_amz_2000_2020_final; _data/reference/panel_amz_2000_2020_final_phase1
+Context: rebuild/00-rebuild-phases.md, phase 1 acceptance, second tier:
+         after script 06 the full pipeline runs and the final panel is
+         compared with compare_outputs.R against the recovered
+         dataset_final_v6, read by column class.
+Reason: the run. The 12 scripts (01-env-deforestation, 01-env-ppcdam,
+        02-social-census, 02-social-rais, 02-social-bf, 03-controls-agro,
+        03-controls-elections, 03-controls-gdp, 03-controls-prices,
+        04-panel-assemble, 05-sample-definition, 06-normalized-outcome)
+        ran in order from the repository root (Rscript, renv, R 4.6.1,
+        dplyr 1.2.1, readr 2.2.0, tidyr 1.3.2, purrr 1.2.2, readxl
+        1.5.0.1, jsonlite 2.0.0), every exit 0, 51 seconds; the 36
+        interim and final files are byte-identical (md5) to the outputs of
+        the per-script sessions of 2026-10-06 to 2026-10-12.
+        The comparison. 85 columns, 10,542 joined rows, same column order,
+        no row only in one file, no type mismatch on the 83 compared
+        columns (tol 1e-8).
+          Recovered-original raw, 19 columns, all exact: municipality,
+          state, state_abbreviation (IBGE biome list); forest_area_km2,
+          deforestation_area_km2, deforestation_forest_rate (MapBiomas
+          Collection 9); ppcdam_list (MMA ordinances); the 12 emp_*
+          (RAIS BigQuery export with the recovered census PIA).
+          Re-acquired sources, 52 columns, 33 exact: the seven bf_*
+          quota, transfer and per-capita columns (MDS, D-2026-10-06
+          series), population, the ten crop_* and cattle_* (PAM/PPM), the
+          15 elec_* and election_year other than the winner id (TSE).
+          Nineteen drift, each under a closed version entry:
+            census (D-2026-10-07-b, D-2026-10-07-c): pea 10,334 cells,
+              502 municipalities, max 26,600 persons (the 2010 anchor);
+              informal 10,532 cells, max 0.20 on the 0-100 scale;
+              bf_transfers_pea_brl_2024 8,016 cells, max R$ 16 (pea
+              denominator).
+            ibge_pib (D-2026-10-10-b): gdp_brl and five derived, 9,301 to
+              9,434 cells, 502 municipalities, gdp_brl within R$ 500
+              (integer API unit), gdp_brl_2024 within R$ 1,740, the logs
+              within 6.2e-5.
+            prices (D-2026-10-10-a): price_index_crop, _lag1 within
+              1.1e-3 (0.19 percent); price_index_cattle within 0.27 (0.15
+              percent); the four z-scores within 1.8e-2; 8,672 to 10,521
+              cells, 483 to 501 municipalities.
+            tse (D-2026-10-10-c): elec_winner_id and _gov redefined on
+              sequencial_candidato, 10,526 and 10,024 cells, not a
+              numeric drift.
+            ibge_areas (D-2026-10-10-i): munic_area_km2 of Santa Cruz do
+              Arari restored, 21 cells (reference NA).
+          Derived, 12 columns, 11 exact: pressure_defor/agri/score,
+          at_risk_broad/narrow, ppcdam_main/robust/ever_full,
+          defor_norm_ref0003/0007, log_forest_exposure. avail_ok differs
+          on the 21 cells of Santa Cruz do Arari, triage class (c): the
+          reference carries FALSE with no derivation from raw
+          (D-2026-10-12-d).
+        The verdict. No recovered-raw column differs, so no triage of
+        class (a) or (b) arises; the one class (c) discrepancy has its
+        notebook evidence and entry; every drifting source has its
+        version entry. The gate passes. Known defects carried into phase
+        2 under KNOWN DEFECTS: tasks 1.3 (prices, script 06), 1.4 (quota,
+        02-social-bf), 1.5 (electoral timing, 03-controls-elections), 1.6
+        (post-2000 municipalities), 1.8 (NA versus zero, area vintage),
+        1.9 (units) and 2.2 (storage audit flags).
+        The working reference. The phase 1 panel
+        _data/final/panel_amz_2000_2020_final (.csv sha256 16a40cae…76a1,
+        10,840,692 bytes; .rds sha256 0f427112…0dde, 7,050,897 bytes) is
+        frozen by the author in _data/reference/ as
+        panel_amz_2000_2020_final_phase1.csv/.rds (provenance rows added);
+        phase 2 fixes compare against it, never against dataset_final_v6,
+        which stays as the pre-rebuild oracle.
+Evidence: scratch gate report (compare_outputs by column class) in this
+          entry and the gate commit; _audit/*.qmd for each source
+Affects: none (acceptance record)
+Supersedes: none
