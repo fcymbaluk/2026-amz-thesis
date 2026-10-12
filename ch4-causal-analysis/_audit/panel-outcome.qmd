@@ -1,0 +1,264 @@
+---
+title: "Audit: normalized outcome (script 06)"
+date: 2026-10-12
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: none. This notebook audits the outcome stage: the within-municipality
+normalized deforestation increment on its two pre-treatment reference windows
+and the exposure offset for the Poisson specifications, with the diagnostics
+the legacy script printed to the console.
+Pipeline script: `_scripts/06-normalized-outcome.R`.
+Final output: `_data/final/panel_amz_2000_2020_final.rds`.
+Equivalence with the recovered panel is not checked here (the notebook never
+reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
+script 06 commit message and in the decision entries it cites.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
+options(width = 110)
+```
+
+```{r read}
+panel_in <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds")
+panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
+REF_SHORT <- 2000:2003
+REF_MAIN  <- 2000:2007
+SD_FLOOR  <- 1e-9
+SAMPLES <- c("all", "avail_ok", "at_risk_broad", "at_risk_narrow")
+in_sample <- function(d, s) if (s == "all") d else filter(d, .data[[s]])
+```
+
+## Q1. Is the sample panel complete, and are the two input series fit for the construction?
+
+The construction needs a gapless, non-negative deforestation series and a
+strictly positive forest area (the offset is a log).
+
+```{r q1}
+tibble(
+  municipalities = n_distinct(panel_in$geocode),
+  rows = nrow(panel_in),
+  columns = ncol(panel_in),
+  years = paste(range(panel_in$year), collapse = "-"),
+  defor_na = sum(is.na(panel_in$deforestation_area_km2)),
+  defor_min = min(panel_in$deforestation_area_km2),
+  defor_zero_cells = sum(panel_in$deforestation_area_km2 == 0),
+  forest_na = sum(is.na(panel_in$forest_area_km2)),
+  forest_min = round(min(panel_in$forest_area_km2), 1)
+)
+panel_in %>%
+  filter(deforestation_area_km2 == 0) %>%
+  count(municipality, state_abbreviation, name = "zero_years") %>%
+  arrange(desc(zero_years)) %>%
+  head(10)
+```
+
+**Finding.** 502 municipalities over 2000-2020, 82 columns; neither series
+has a gap, clearing is never negative and the smallest forest area is about
+35 km², so the log offset is defined everywhere a lag exists. Zero clearing
+occurs in 38 municipality-years in six municipalities of the Marajó
+archipelago, Amapá and the upper Rio Negro; Santa Cruz do Arari records zero
+in every year.
+
+**Decision.** D-2026-10-12-f, D-2026-10-12-g.
+
+**Assertion.** `06-normalized-outcome.R`, raw-state block (dimensions,
+types, no NA, non-negative clearing, positive forest area).
+
+## Q2. Which municipalities have a degenerate or near-degenerate reference, and are any of them at risk?
+
+A municipality whose clearing does not vary over the reference window has a
+zero reference sd and cannot be normalized; the script sets its outcome to
+NA. Municipalities with a small but non-zero sd are normalized, and a small
+denominator inflates their values.
+
+```{r q2}
+ref_sd <- panel_in %>%
+  group_by(geocode, municipality, state_abbreviation,
+           avail_ok, at_risk_broad, at_risk_narrow) %>%
+  summarise(
+    mean_short = mean(deforestation_area_km2[year %in% REF_SHORT]),
+    sd_short   = sd(deforestation_area_km2[year %in% REF_SHORT]),
+    mean_main  = mean(deforestation_area_km2[year %in% REF_MAIN]),
+    sd_main    = sd(deforestation_area_km2[year %in% REF_MAIN]),
+    .groups = "drop"
+  )
+ref_sd %>%
+  filter(sd_short <= SD_FLOOR | sd_main <= SD_FLOOR) %>%
+  select(municipality, state_abbreviation, avail_ok, at_risk_broad,
+         mean_short, sd_short, mean_main, sd_main)
+ref_sd %>%
+  filter(sd_main < 0.1) %>%
+  arrange(sd_main) %>%
+  select(municipality, state_abbreviation, avail_ok, at_risk_broad,
+         mean_main, sd_main)
+tibble(
+  degenerate_short = sum(ref_sd$sd_short <= SD_FLOOR),
+  degenerate_main = sum(ref_sd$sd_main <= SD_FLOOR),
+  sd_main_below_0_1 = sum(ref_sd$sd_main < 0.1),
+  of_which_at_risk_broad = sum(ref_sd$sd_main < 0.1 & ref_sd$at_risk_broad),
+  na_cells_short = sum(is.na(panel$defor_norm_ref0003)),
+  na_cells_main = sum(is.na(panel$defor_norm_ref0007))
+)
+```
+
+**Finding.** Two municipalities are degenerate on the short window, Afuá
+(PA) and Santa Cruz do Arari (PA), and one on the main window, Santa Cruz do
+Arari, which records no clearing at all over 2000-2007. Their outcome is NA
+over all 21 years (42 and 21 cells). Fourteen municipalities have a main
+window sd below 0.1 km², all in the Marajó archipelago, Amapá and the upper
+Amazonas; none of them, and neither degenerate municipality, is in the broad
+at-risk sample, so the rule costs no estimation observation.
+
+**Decision.** D-2026-10-12-f.
+
+**Assertion.** `06-normalized-outcome.R`, output block (2 and 1 degenerate
+municipalities, 21 NA cells each, none at risk).
+
+## Q3. How is the normalized outcome distributed in the full panel and inside the estimation samples?
+
+The parked prose claims heavy tails in the full panel from the
+near-degenerate municipalities, and a well-behaved outcome within the
+at-risk sample, with the bulk between about minus three and plus six on the
+main reference.
+
+```{r q3}
+q_tbl <- function(x) {
+  tibble(min = min(x, na.rm = TRUE),
+         p01 = quantile(x, .01, na.rm = TRUE),
+         p05 = quantile(x, .05, na.rm = TRUE),
+         med = median(x, na.rm = TRUE),
+         p95 = quantile(x, .95, na.rm = TRUE),
+         p99 = quantile(x, .99, na.rm = TRUE),
+         max = max(x, na.rm = TRUE),
+         n_na = sum(is.na(x)))
+}
+map_dfr(SAMPLES, function(s) {
+  d <- in_sample(panel, s)
+  bind_rows(
+    q_tbl(d$defor_norm_ref0003) %>% mutate(outcome = "ref0003"),
+    q_tbl(d$defor_norm_ref0007) %>% mutate(outcome = "ref0007")
+  ) %>% mutate(sample = s, n = nrow(d))
+}) %>%
+  select(sample, outcome, n, everything()) %>%
+  mutate(across(where(is.double), ~ round(.x, 2)))
+panel %>%
+  filter(at_risk_narrow) %>%
+  arrange(desc(defor_norm_ref0007)) %>%
+  select(municipality, state_abbreviation, year, deforestation_area_km2,
+         defor_norm_ref0007) %>%
+  head(8)
+panel %>%
+  arrange(desc(defor_norm_ref0007)) %>%
+  select(municipality, state_abbreviation, year, at_risk_broad,
+         deforestation_area_km2, defor_norm_ref0007) %>%
+  head(8)
+```
+
+**Finding.** In the full panel the main-reference outcome reaches 250
+(Chaves, PA, 2011, on 1.7 km² cleared) and 176 (São Gabriel da Cachoeira,
+AM, 2020): the near-degenerate municipalities of Q2, all outside the
+at-risk samples. Inside the narrow sample the central 98 percent of the
+main-reference outcome lies between about minus three and plus four and a
+half, so the parked claim holds with room; the maximum is 42 (Feijó, AC,
+2019), and the top of the distribution is the 2019-2020 clearing surge in
+Acre and southern Amazonas (Feijó, Humaitá, Assis Brasil, Manoel Urbano).
+The short-reference outcome has the wider tails on both sides, as its
+four-year sd is smaller.
+
+**Decision.** D-2026-10-05-h (estimation on the at-risk sample); any
+winsorising is a modelling decision, not a pipeline one.
+
+**Assertion.** None beyond finiteness; the tails are a property of the
+estimation sample, documented here.
+
+## Q4. How much do the two reference windows disagree on each municipality's scale, and does the centring matter?
+
+The two windows differ in the sd that sets each municipality's scale. Under
+municipality fixed effects only that sd enters the estimate, since the
+subtracted mean is absorbed; the second table checks that identity
+numerically.
+
+```{r q4}
+ratio <- ref_sd %>%
+  filter(sd_short > SD_FLOOR, sd_main > SD_FLOOR) %>%
+  mutate(sd_ratio = sd_main / sd_short)
+map_dfr(SAMPLES, function(s) {
+  d <- in_sample(ratio, s)
+  tibble(sample = s, n = nrow(d),
+         p05 = quantile(d$sd_ratio, .05), p25 = quantile(d$sd_ratio, .25),
+         med = median(d$sd_ratio), p75 = quantile(d$sd_ratio, .75),
+         p95 = quantile(d$sd_ratio, .95),
+         cor_outcomes = cor(in_sample(panel, s)$defor_norm_ref0003,
+                            in_sample(panel, s)$defor_norm_ref0007,
+                            use = "complete.obs"))
+}) %>% mutate(across(where(is.double), ~ round(.x, 3)))
+demeaned <- panel %>%
+  filter(!is.na(defor_norm_ref0007)) %>%
+  left_join(select(ref_sd, geocode, sd_main), by = "geocode") %>%
+  group_by(geocode) %>%
+  mutate(y_ref = defor_norm_ref0007 - mean(defor_norm_ref0007),
+         y_alt = deforestation_area_km2 / sd_main -
+           mean(deforestation_area_km2 / sd_main)) %>%
+  ungroup()
+tibble(max_abs_gap = max(abs(demeaned$y_ref - demeaned$y_alt)))
+```
+
+**Finding.** The main-window sd is larger than the short-window sd for
+most municipalities (median ratio 1.1, upper quartile 1.5, top five
+percent above 2.8), as 2004-2007 adds the mid-2000s peak to the reference.
+The two outcomes correlate at about 0.8 within the at-risk samples and only
+0.4 in the full panel, where the near-degenerate municipalities dominate.
+The within-municipality demeaned outcome is numerically identical whether
+the increment is centred on the reference mean or not centred at all, which
+is the property the parked prose states: the window fixes the scale, not
+the centre.
+
+**Decision.** D-2026-10-12-f (main 2000-2007, short 2000-2003 as the
+robustness alternative; flagged for the storage audit, task 2.2, because
+the window is a robustness parameter).
+
+**Assertion.** `06-normalized-outcome.R`, constants block (the column
+names are generated from the window constants and tied by assertion).
+
+## Q5. Is the exposure offset defined where the Poisson specification needs it?
+
+```{r q5}
+panel %>%
+  group_by(year) %>%
+  summarise(na_offset = sum(is.na(log_forest_exposure)),
+            min_offset = round(min(log_forest_exposure), 2),
+            max_offset = round(max(log_forest_exposure), 2),
+            .groups = "drop") %>%
+  filter(year <= 2002 | year == max(year))
+panel %>%
+  filter(year > min(year)) %>%
+  group_by(geocode) %>%
+  summarise(lag_ok = all(abs(exp(log_forest_exposure) -
+                               lag(forest_area_km2, default = NA)) < 1e-6,
+                         na.rm = TRUE), .groups = "drop") %>%
+  count(lag_ok)
+```
+
+**Finding.** The offset is missing in 2000 only (502 cells) and finite
+everywhere else, between about 3.6 and 12 (35 km² to 160,000 km² of
+standing forest); exponentiating it returns the previous year's forest area
+exactly. The Poisson specifications therefore lose one year per
+municipality and no municipality.
+
+**Decision.** D-2026-10-12-g.
+
+**Assertion.** `06-normalized-outcome.R`, output block (NA in the first
+year only, finite elsewhere).

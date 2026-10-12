@@ -111,7 +111,7 @@ Note: 08-data-analysis-2WFE-CS.R currently averages the moderator over
 
 ## D-2026-10-05-h  Outcome `defor_norm_ref0007`; estimation on the at-risk narrow sample
 
-Status: closed (pre-rebuild; scripts 05, 06 at tag pre-reorg)
+Status: closed (pre-rebuild; scripts 05, 06 at tag pre-reorg; refactored in phase 1, 05-sample-definition.R and 06-normalized-outcome.R, DEFOR_REF_MAIN_YEARS)
 Scope: script 06 (lines 36-66), script 05 (lines 122-132), 08 (SAMPLE_FLAG)
 Context: deforestation levels are heteroskedastic across municipalities, and
          municipalities with no forest or no pre-period clearing cannot carry
@@ -1100,4 +1100,76 @@ Evidence: compare_outputs at the script 05 acceptance (no type mismatch
           on the 80 compared columns)
 Affects: column classes and the file layout of the script 05 outputs; no
          value
+Supersedes: none
+
+## D-2026-10-12-f  Normalized outcome: within-municipality z on a pre-treatment reference, main 2000-2007 and short 2000-2003; a degenerate reference sd gives NA
+
+Status: closed (phase 1, script 06); flagged for task 2.2
+Scope: 06-normalized-outcome.R (DEFOR_REF_MAIN_YEARS, DEFOR_REF_SHORT_YEARS, DEFOR_SD_FLOOR); defor_norm_ref0007, defor_norm_ref0003
+Context: the annual clearing increment varies across municipalities by
+         orders of magnitude; the legacy script centred and scaled it on
+         each municipality's own mean and sd over 2000-2007 (eight years
+         before the first listing) and, as the short alternative, over
+         2000-2003 (before PPCDAm), and set the outcome to NA where the
+         reference sd was at or below 1e-9.
+Reason: inherited as is (phase 1 reproduces). The scale is set on
+        pre-policy years so that it carries no effect of the policy whose
+        effect is estimated; the centre is immaterial under municipality
+        fixed effects (_audit/panel-outcome.qmd Q4, numerical identity).
+        A municipality without reference variation cannot be normalised:
+        Santa Cruz do Arari (PA, no clearing over 2000-2007) under both
+        windows and Afuá (PA) under the short one, 21 cells each per
+        window, both outside the at-risk samples. The column names are
+        generated from the window constants and tied by assertion. The
+        reference window is a robustness parameter, like the treatment
+        windows (D-2026-10-12-b): the storage audit (task 2.2) decides
+        whether both columns stay in the panel.
+Evidence: _audit/panel-outcome.qmd Q2-Q4; compare_outputs at the script 06
+          acceptance (defor_norm_ref0003 and defor_norm_ref0007 exact, max
+          abs diff 4.6e-13)
+Affects: defor_norm_ref0003 (42 NA cells), defor_norm_ref0007 (21 NA
+         cells); no value changed
+Supersedes: none (detail of D-2026-10-05-h)
+
+## D-2026-10-12-g  Exposure offset: log of the previous year's forest area, NA in the first panel year
+
+Status: closed (phase 1, script 06)
+Scope: 06-normalized-outcome.R; log_forest_exposure
+Context: the Poisson specifications take the clearing area in levels and
+         need the stock at risk as an offset; the legacy script used the
+         forest standing at the start of the year, the lag of
+         forest_area_km2, logged.
+Reason: inherited as is. Forest area is positive in every cell (minimum
+        about 35 km²), so the log is defined wherever the lag exists; the
+        first panel year has no lag and is NA (502 cells), which drops one
+        year per municipality from the Poisson sample and no municipality.
+Evidence: _audit/panel-outcome.qmd Q1, Q5; compare_outputs at the script 06
+          acceptance (exact, max abs diff 5.3e-15)
+Affects: log_forest_exposure
+Supersedes: none
+
+## D-2026-10-12-h  Task 1.10 at script 06: typed final output; the diagnostics leave the pipeline; helper columns never stored
+
+Status: closed (phase 1, script 06)
+Scope: 06-normalized-outcome.R (OUTCOME_COLS); _data/final/panel_amz_2000_2020_final
+Context: the legacy script read final_dataset_5.csv, wrote
+         final_dataset_6.csv untyped, printed the degenerate-sd count and
+         a quantile table on the broad sample to the console, and dropped
+         its helper columns together with deforestation_z,
+         forest_share_2000 and defor_area_b, which script 05 no longer
+         carries on the panel (D-2026-10-12-e).
+Reason: the three outcome columns are double, asserted before writing;
+        the final panel is written to _data/final/ under the content-first
+        name of docs/repo-conventions.md with the _final token (author's
+        choice, 2026-10-12), in the reference's column order (the 82
+        sample-panel columns followed by defor_norm_ref0003,
+        defor_norm_ref0007 and log_forest_exposure). The diagnostics live
+        in _audit/panel-outcome.qmd; the helper mean and sd columns are
+        computed inside a function and never join the panel. The prose is
+        parked in _annex/parked/06-normalized-outcome-prose.md. The price
+        re-anchoring that D-2026-10-05-p assigns to this script is a phase
+        2 fix and is listed under KNOWN DEFECTS until then.
+Evidence: compare_outputs at the script 06 acceptance (same column order
+          as the reference; no type mismatch on the 83 compared columns)
+Affects: column classes and the file layout of the final panel; no value
 Supersedes: none

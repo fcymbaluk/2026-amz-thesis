@@ -14,7 +14,7 @@ All BF variables are 100% missing in 2020-2024 (PRODES, RAIS and prices are pres
 
 ### 1.3 Fix price index normalization
 
-`price_index_crop` (~0.014-0.03) and `price_index_cattle` (~26-51) are on incompatible scales and neither equals 1 in 2000, contradicting the documented Pink Sheet spec (MUV-deflated, 2000 = 1). Cause: normalization ran before the final panel join. The normalization step moves to a script devoted to normalized variables (script 06). Phase 1 evidence (2026-10-10, `_audit/prices.qmd` Q3-Q4): reproduced in `03-controls-prices.R` (KNOWN DEFECTS); in 2000 the crop index equals the municipality's base-window crop share and the cattle index its base-window density (D-2026-10-10-h).
+`price_index_crop` (~0.014-0.03) and `price_index_cattle` (~26-51) are on incompatible scales and neither equals 1 in 2000, contradicting the documented Pink Sheet spec (MUV-deflated, 2000 = 1). Cause: normalization ran before the final panel join. The normalization step moves to a script devoted to normalized variables (script 06). Phase 1 evidence (2026-10-10, `_audit/prices.qmd` Q3-Q4): reproduced in `03-controls-prices.R` (KNOWN DEFECTS); in 2000 the crop index equals the municipality's base-window crop share and the cattle index its base-window density (D-2026-10-10-h). Phase 1 (2026-10-12, script 06): `06-normalized-outcome.R` exists as the template script and lists this fix under KNOWN DEFECTS; the indices reach the final panel on the script 03 scales until step 2.4 lands here.
 
 ### 1.4 Check MT quota outliers
 
