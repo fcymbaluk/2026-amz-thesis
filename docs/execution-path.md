@@ -100,7 +100,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 10 — Rerun + Phase 3: documentation
 
 - [ ] Analysis scripts rerun (`08-data-analysis-2WFE-CS.R` at minimum); new stratum ATTs known.
-- [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here).
+- [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here). The sample section waits on task 5.2 (gate rationale and main sample).
 - [ ] Codebook §6 and provenance §7 rendered; chapter README written.
 - [ ] Done when `panel_amz_2000_2024` exists and is fully documented.
 
@@ -112,6 +112,9 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 - [ ] Candidate designs as separate scripts in `_scripts/models/`, per the methodological standards; trade-offs presented across designs.
 - [ ] Task 5.1: persistence framed as the sharper test of mechanism A; the disconfirmation condition stated before estimation.
+- [ ] Task 5.3 (any time after the phase 1 gate): survey of sampling rules in comparable studies (Imazon, arc of deforestation, replication files); memo in `docs/decisions/`.
+- [ ] Task 5.2 (after 5.3, before the stage 10 annex): the at-risk gate re-examined against the smallest treated baseline clearing (71.3 km² main, 38.9 km² robust, against cuts of 1 and 5); main and robustness samples stated; any gate change as a decision entry in `05-sample-definition.R`.
+- [ ] Task 5.4: municipal area or forest stock in the covariate set; trimming to common support decided and the estimand (untrimmed versus trimmed ATT) stated before estimation, both reported.
 - [ ] Results into the chapter.
 
 ## Parallel writing tracks (interleave with pipeline sessions throughout)
