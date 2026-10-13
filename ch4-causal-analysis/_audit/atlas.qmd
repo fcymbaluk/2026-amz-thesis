@@ -1,0 +1,184 @@
+---
+title: "Audit: Atlas Brasil (Censo Demográfico 1991, 2000 e 2010)"
+date: 2026-10-13
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: Atlas do Desenvolvimento Humano no Brasil (PNUD, Ipea, FJP),
+site Acervo > Bases de dados, card "Censo Demográfico (1991, 2000 e
+2010)", file `censo_total_1991_2010.xlsx`, downloaded 2026-10-13
+(`_data/raw/atlas/`). Indicator set of the 2013 Atlas edition on the
+three census vintages. Dictionary in the sheet `Siglas`.
+Consumer: the descriptive sprint script `_scripts/09-descriptive-data.R`
+(tasks 4.2, 4.3); promoted to the pipeline under task 4.8.
+The lost legacy input was a Consulta export without geocodes, matched on
+municipality names with an alias table (`07-data-analysis-EDA-poverty.R`).
+This file carries the seven-digit IBGE code, so the join is exact.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(readxl)
+})
+options(width = 110)
+```
+
+```{r read}
+f <- "_data/raw/atlas/censo_total_1991_2010.xlsx"
+siglas <- read_excel(f, sheet = "Siglas")
+mun <- read_excel(f, sheet = "MUN 91-00-10") %>%
+  mutate(geocode = as.integer(Codmun7), year = as.integer(ANO))
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation) %>%
+  mutate(geocode = as.integer(geocode))
+biome <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
+                    show_col_types = FALSE) %>%
+  rename(geocode = 1, nome = 2, uf = 3, bioma = 4) %>%
+  mutate(geocode = as.integer(geocode)) %>%
+  filter(str_detect(bioma, "Amaz"))
+```
+
+## Q1. What is the layout and the release of the workbook?
+
+```{r q1-layout}
+excel_sheets(f)
+tibble(sheet = c("Siglas", "MUN 91-00-10"), rows = c(nrow(siglas), nrow(mun)),
+       cols = c(ncol(siglas), ncol(mun)))
+mun %>% count(year)
+siglas %>% filter(SIGLA %in% c("PIND", "PMPOB", "PPOB", "GINI", "RDPC", "IDHM",
+                               "pesourb", "pesoRUR", "pesotot", "POP")) %>%
+  select(SIGLA, `NOME CURTO`, `DEFINIÇÃO`) %>% mutate(`DEFINIÇÃO` = str_trunc(`DEFINIÇÃO`, 110))
+```
+
+**Finding.** One municipal sheet, 5,565 municipalities in each of 1991,
+2000 and 2010, 237 columns, identified by `Codmun7`; a 237-row dictionary
+travels with the file. The indicators the chapter needs are present:
+`PIND`, `PMPOB`, `PPOB` (extreme poverty, poverty, vulnerability),
+`GINI`, `RDPC`, `IDHM`, and the urban and rural population counts
+`pesourb` and `pesoRUR`.
+**Decision.** none required; provenance row written 2026-10-13.
+
+## Q2. Do all three vintages join completely on geocode?
+
+```{r q2-join}
+join <- mun %>% filter(geocode %in% sample_geo$geocode) %>% count(year, name = "sample_rows")
+join
+missing_sample <- setdiff(sample_geo$geocode, mun$geocode)
+missing_biome <- setdiff(biome$geocode, mun$geocode)
+dup <- mun %>% count(geocode, year) %>% filter(n > 1)
+tibble(sample_missing = length(missing_sample), biome_list_missing = length(missing_biome),
+       duplicate_keys = nrow(dup))
+biome %>% filter(geocode %in% missing_biome) %>% select(geocode, nome, uf)
+```
+
+**Finding.** Every one of the 502 sample municipalities is present in the
+three vintages, with no duplicate geocode-year key. The one absentee,
+from the 503-municipality MapBiomas extract and from the biome list
+alike, is Mojuí dos Campos (installed 2013, after the last census;
+dropped from the sample in script 05, D-2026-10-05-l), so the Atlas
+carries nothing for it in any vintage, which is consistent with its
+parent rule in task 1.6.
+**Decision.** none required; join on `Codmun7`, the legacy name match
+and its alias table are retired.
+**Assertion.** `09-descriptive-data.R`, Atlas block: 502 x 3 rows after
+the join.
+
+## Q3. Do the names agree with the panel, as a check on the code join?
+
+```{r q3-names}
+norm <- function(x) x %>% str_to_lower() %>% stringi::stri_trans_general("Latin-ASCII") %>%
+  str_replace_all("[^a-z ]", "") %>% str_squish()
+names_chk <- mun %>% filter(year == 2010, geocode %in% sample_geo$geocode) %>%
+  select(geocode, atlas_name = `Município`) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  filter(norm(atlas_name) != norm(municipality))
+nrow(names_chk)
+names_chk %>% select(geocode, atlas_name, municipality, state_abbreviation)
+```
+
+**Finding.** Two names differ, both spelling variants of the same place
+(Eldorado dos/do Carajás, Santa Isabel/Izabel do Pará), the kind of case
+the legacy alias table had to patch by hand. Neither signals a wrong
+code.
+**Decision.** none required.
+
+## Q4. Are the poverty shares on a 0-100 scale and nested?
+
+```{r q4-scale}
+pov <- mun %>% filter(geocode %in% sample_geo$geocode) %>%
+  select(year, PIND, PMPOB, PPOB, GINI)
+pov %>% group_by(year) %>%
+  summarise(across(c(PIND, PMPOB, PPOB, GINI),
+                   list(min = min, median = median, max = max), .names = "{.col}_{.fn}"),
+            .groups = "drop") %>%
+  pivot_longer(-year) %>% separate(name, c("var", "stat"), sep = "_(?=[a-z]+$)") %>%
+  pivot_wider(names_from = stat, values_from = value)
+pov %>% summarise(nested = all(PIND <= PMPOB & PMPOB <= PPOB), any_na = any(is.na(PMPOB)))
+```
+
+**Finding.** The three shares run from 0 to 100 and nest as the
+definitions require (extreme poverty within poverty within vulnerability)
+in every sample row; the Gini sits on 0-1. The sample median of the
+poverty share falls from 68 percent in 1991 to 57 in 2000 and 40 in
+2010, with the extreme-poverty median from 37 to 21.
+**Decision.** open: script 09 stores the shares divided by 100, so the
+Atlas columns sit on the same 0-1 scale as the panel's other shares
+(naming per the convention grammar); logged as a D-ID when the script
+lands.
+
+## Q5. Do the urban and rural counts add up, and is the urban share plausible?
+
+```{r q5-urban}
+urb <- mun %>% filter(geocode %in% sample_geo$geocode) %>%
+  mutate(sum_ok = abs(pesourb + pesoRUR - pesotot) <= 1,
+         urban_share = pesourb / pesotot)
+urb %>% group_by(year) %>%
+  summarise(sum_ok = mean(sum_ok), pop_vs_pesotot = median(POP / pesotot),
+            urban_min = min(urban_share), urban_q1 = quantile(urban_share, .25),
+            urban_median = median(urban_share), urban_q3 = quantile(urban_share, .75),
+            urban_max = max(urban_share), .groups = "drop")
+urb %>% filter(year == 2010) %>% left_join(sample_geo, by = "geocode") %>%
+  count(state_abbreviation, rural_majority = urban_share < 0.5) %>%
+  pivot_wider(names_from = rural_majority, values_from = n, values_fill = 0,
+              names_prefix = "rural_majority_")
+```
+
+**Finding.** Urban plus rural equals the total population in every row.
+`POP` (population in permanent private households) runs about one
+percent below `pesotot`, as expected. The sample's median urban share
+rises from 0.34 in 1991 to 0.53 in 2010, and in 2010 some 215 of the 502
+municipalities (43 percent) still have a rural majority, most of them in
+Pará, Maranhão and Amazonas, which gives task 4.2 a real split to work
+with.
+**Decision.** open: `pesourb / pesotot` is the urban share for task 4.2;
+`pesotot` is the Atlas population, not a substitute for the census
+anchors already in the panel.
+
+## Q6. What is the price base of the income variable?
+
+```{r q6-income}
+cat(strwrap(siglas$`DEFINIÇÃO`[siglas$SIGLA == "RDPC"], 90), sep = "\n")
+cat(strwrap(siglas$`DEFINIÇÃO`[siglas$SIGLA == "PMPOB"], 90), sep = "\n")
+mun %>% filter(geocode %in% sample_geo$geocode) %>% group_by(year) %>%
+  summarise(rdpc_median = median(RDPC), rdpc_max = max(RDPC), .groups = "drop")
+```
+
+**Finding.** The dictionary states the base: reais of 1 August 2010 for
+the income per capita, and the poverty lines (R$ 140 a month for
+poverty) are expressed in the same reais, so the three vintages are
+directly comparable.
+**Decision.** open: script 09 deflates `RDPC` to 2024 reais with the
+panel's IPCA deflator (`_data/aux/deflator_ipca_2024.csv`) from the 2010
+base, so the Atlas income sits beside `gdp_per_capita_2024`; the exact
+monthly anchor is checked against the deflator table when the script
+lands.
