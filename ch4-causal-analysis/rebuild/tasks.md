@@ -92,6 +92,14 @@ Added 2026-10-13. Two-way fixed-effects regressions (`fixest`, municipality and 
 
 Added 2026-10-13. After phase 2 step 2.9, the SICONFI, Atlas Brasil and value-added series joined by script 09 move into script 02 (new source blocks with audit notebooks and D-IDs) so that scripts 09-11 and the chapter read panel columns rather than sprint interim files. The rename (phase 2R) must migrate scripts 09-11 and `manuscript/ch4-causal-analysis.qmd` together with 07-08.
 
+### 4.9 Rural-urban classification: 2022 census and a non-administrative check
+
+Added 2026-10-13 (author decision). The Atlas base gives the urban population share for 1991, 2000 and 2010 under the census definition of urban, which is administrative: municipalities draw their own urban perimeters, so the share can overstate urbanization. Two extensions. (a) Census 2022 population by situação do domicílio from SIDRA, joined by geocode, so the split reaches past the panel's end and the 2010-2022 change is available; pulled during the sprint on 2026-10-15 if it fits the data day, otherwise here. (b) A non-administrative robustness classification: IBGE's 2017 typology "Classificação e caracterização dos espaços rurais e urbanos do Brasil" (five classes, one spreadsheet with geocodes), preferred over the GHSL Degree of Urbanisation (keyed to GADM boundaries, matching cost) and over the MapBiomas urbanized-area class (a built-up footprint, not a residence measure; its value would be as an annual trajectory variable, listed below). Until (b) lands, the chapter states the administrative-definition limitation in one sentence.
+
+### 4.10 Annual urbanization trajectory from MapBiomas (optional)
+
+Added 2026-10-13. MapBiomas Collection 9 land-cover statistics by municipality carry the urbanized-area class annually from 1985. As a share of municipal area it is minuscule in the Amazon and not comparable with a population share, so it would enter only as an indexed trajectory (task 4.3 style), not as a classification. New raw source (full municipal land-cover workbook) with its own audit notebook. Low priority; take up only if the trajectories section needs a physical urbanization series.
+
 ## 5. Causal stage
 
 ### 5.1 Persistence as the sharper test of mechanism A

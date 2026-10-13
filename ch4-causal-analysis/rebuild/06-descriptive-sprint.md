@@ -123,6 +123,10 @@ In priority order.
    poverty, extreme poverty, income per capita, Gini, urban population
    share, IDHM, joined by the seven-digit geocode (the legacy script
    matched on names with an alias table; that route is retired).
+   Done 2026-10-13: `_data/raw/atlas/censo_total_1991_2010.xlsx`, merged to
+   `main`, audited in `_audit/atlas.qmd`. Follow-ups on the rural-urban
+   split (Census 2022, IBGE 2017 typology, MapBiomas urbanized area) are
+   tasks 4.9 and 4.10.
 3. **Value added by activity** (already in `_data/raw/ibge/sidra/`,
    SIDRA 5938 extracts): task 4.1 needs no download.
 
@@ -178,7 +182,7 @@ within estimates lean on little.
 |---|---|---|
 | Tue 13 | branch, `.gitignore` and `literature/`, this plan, decision memo, task board 4.5-4.8, chapter text in the qmd | setup and text |
 | Wed 14 | scripts 07/08 on the phase 1 panel; the eleven outputs regenerated; text numbers re-checked; first HTML and docx render | reproduction |
-| Thu 15 | SICONFI pulls, provenance, script 09, `_audit/siconfi.qmd`; Atlas joined if in hand | data |
+| Thu 15 | SICONFI pulls, provenance, script 09, `_audit/siconfi.qmd`; Atlas joined (in hand since 2026-10-13); Census 2022 urban/rural from SIDRA if the day allows (task 4.9) | data |
 | Fri 16 | script 10, displays D1-D6; new opening subsections drafted under `docs/writing-rules.md` | descriptives |
 | Sat 17 | script 11, correlation table and paragraph; full render; cross-reference and bibliography check | correlations and text |
 | Sun 18 | buffer; final docx; tag, merge proposal, frontmatter and decision updates | ship |
