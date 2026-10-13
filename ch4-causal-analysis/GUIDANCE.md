@@ -1,10 +1,10 @@
 ---
 chapter: 4
 title: Descriptive analysis and causal inference
-stage: revising # dataset rebuild under way: phase 1 (refactor) complete and gated 2026-10-12, phase 2 (fixes) pending; identification strategy re-opened
-updated: 2026-10-12
-current_focus: "Rebuild phase 1 complete and gated (2026-10-12, D-2026-10-12-i): scripts 01-06 refactored to the template with audit notebooks and decision entries; the full pipeline runs end-to-end and reproduces the recovered panel exactly on every column built from recovered raw, with the drift of re-acquired sources quantified under closed version entries and one class (c) discrepancy (avail_ok of Santa Cruz do Arari). The phase 1 panel _data/final/panel_amz_2000_2020_final is the working reference for phase 2 (frozen copy panel_amz_2000_2020_final_phase1 in _data/reference/). Stage 5 complete for scripts 03-06; Atlas Brasil (script 07) still open. Next: phase 2, step 2.1 (task 1.4, quota source errors; verify upstream first), one fix per session"
-next_milestone: "Phase 2 fixes 2.1-2.9 applied, each with its diff report against the phase 1 panel; audit notebooks re-rendered on the extended sample after 2.9"
+stage: revising # dataset rebuild under way: phase 1 (refactor) complete and gated 2026-10-12, phase 2 (fixes) pending; identification strategy re-opened; descriptive sprint 2026-10-13 to 2026-10-18 for the supervisor's deadline
+updated: 2026-10-13
+current_focus: "Descriptive sprint (branch ch4-descriptive-sprint, plan rebuild/06-descriptive-sprint.md, decision 2026-10-13): the August chapter reproduced in manuscript/ch4-causal-analysis.qmd on the phase 1 panel (scripts 07-08, figures regenerated), then the new descriptive opening the supervisor asked for (tasks 4.5-4.7: social expenditure by function from SICONFI for municipalities and states, trajectories of deforestation against the social and income series 2004-2020, a conditional-correlation exercise) in scripts 09-11. Pipeline 01-06 untouched. Phase 1 panel _data/final/panel_amz_2000_2020_final remains the working reference (frozen copy in _data/reference/). Atlas Brasil re-acquired by the author on stage5-atlas-data during the sprint"
+next_milestone: "Chapter 4 docx delivered 2026-10-18 (tag ch4-descriptive-2026-10-18, copy in docs/submitted/), sprint merged; then phase 2 fixes 2.1-2.9 in their original order, each with its diff report against the phase 1 panel"
 ---
 
 # Chapter 4 — Descriptive analysis and causal inference: working guidance

@@ -76,6 +76,22 @@ Small-multiple time series, indexed to a base year and split by groups: populati
 
 Choose the palette and the shared `ggplot2` theme for the chapter's figures before the descriptive outputs are produced, so every `fig-` file reads as one system: a categorical palette for groups (biome versus Legal Amazon, coverage strata, listing cohorts), a sequential palette for maps, consistent axis and legend styling. The convention lives in `_scripts/utils/` as a sourced theme and is recorded in the chapter README (issue #15).
 
+### 4.5 Social expenditure by function, municipalities and states
+
+Added 2026-10-13 for the descriptive sprint (`06-descriptive-sprint.md`; supervisor request). Municipal and state-government expenditure by function (health, education, social assistance, social security, environmental management, total) from FINBRA/SICONFI via Base dos Dados, 2000-2024, stage "Despesas Empenhadas" (the only stage reported before 2013 and continuous across the FINBRA-to-SICONFI break), deflated to 2024 R$ and per capita. Municipal revenue accounts for the federal transfers that fund it: FPM and the conditioned transfers (SUS, FUNDEB and other FNDE, FNAS) in the classification of Alcaraz (2024). Reporting gaps (municipalities absent in a year) are shown, never imputed. Audit notebook `_audit/siconfi.qmd`. Joined in the analysis layer (script 09) during the sprint; promoted to the pipeline under task 4.8.
+
+### 4.6 Trajectories of deforestation against social policy, municipalities versus states
+
+Added 2026-10-13. The descriptive program D1-D6 of the sprint plan: sample-level co-movement 2004-2020 of deforestation with BF coverage, transfers, formal employment, GDP per capita and social expenditure (natural units and indexed to 2004); for each state, state-government against municipal-aggregate social spending per capita and state deforestation; grouped trajectories (ever-listed versus never; baseline spending, poverty and land-dependence terciles); long differences 2004-07 to 2017-20; summary tables by period and group with the within/between decomposition extended to expenditure. Script 10.
+
+### 4.7 Correlational exercise: deforestation and social policy
+
+Added 2026-10-13. Two-way fixed-effects regressions (`fixest`, municipality and year effects, standard errors clustered by municipality, 2004-2019) of log(1 + cleared km²) on lagged BF coverage, BF transfers per capita, log social expenditure per capita by function and the formal employment rate, with log GDP per capita, lagged price indices, cattle density and listing status as controls; forest rate and normalized outcome as robustness; a long-difference cross section as complement. Reported as conditional correlations, not as a candidate design, which is why script 11 lives in `_scripts/` and not in `_scripts/models/`.
+
+### 4.8 Promote the sprint sources into the pipeline
+
+Added 2026-10-13. After phase 2 step 2.9, the SICONFI, Atlas Brasil and value-added series joined by script 09 move into script 02 (new source blocks with audit notebooks and D-IDs) so that scripts 09-11 and the chapter read panel columns rather than sprint interim files. The rename (phase 2R) must migrate scripts 09-11 and `manuscript/ch4-causal-analysis.qmd` together with 07-08.
+
 ## 5. Causal stage
 
 ### 5.1 Persistence as the sharper test of mechanism A

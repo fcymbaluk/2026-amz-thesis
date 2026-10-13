@@ -66,3 +66,8 @@ ch4-causal-analysis/_data/**
 
 # Better BibTeX per-subcollection exports (only references.bib is the bibliography)
 manuscript/references-*.bib
+
+# Ch4 literature: PDFs read for the chapter (copyrighted; cite via Zotero),
+# contents ignored except the folder skeleton
+ch4-causal-analysis/literature/**
+!ch4-causal-analysis/literature/.gitkeep
