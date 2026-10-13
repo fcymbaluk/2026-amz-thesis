@@ -63,3 +63,6 @@ ch4-causal-analysis/_data/**
 # Accidental renders of root-level markdown (CLAUDE.md, README.md, ...)
 /*.html
 /*_files/
+
+# Better BibTeX per-subcollection exports (only references.bib is the bibliography)
+manuscript/references-*.bib

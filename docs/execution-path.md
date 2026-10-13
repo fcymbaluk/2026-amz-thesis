@@ -122,7 +122,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [ ] **Ch1 (unblocked):** gap-section cluster (checklist items 1/3/4, per the revision instructions), then the epistemological section (item 2), in `manuscript/ch1-theoretical.qmd`.
 - [ ] **Ch3 (unblocked):** protocol decisions, preregistration decision, protocol freeze (work-plan items 1-3); searches once frozen; screening interleaves with stages 6-8.
 - [ ] **Ch2 (unblocked):** Zotero-highlights workflow decided (no ATLAS.ti); codebook (tag vocabulary) → corpus → coding in Zotero → export → matrix → outline → sections, per its work plan.
-- [ ] **Infra, once:** Better BibTeX auto-export re-pointed at `manuscript/references.bib`; `quarto preview manuscript/` verified.
+- [x] **Infra, once:** Better BibTeX auto-export re-pointed at `manuscript/references.bib` (done 2026-10-12: collection 2026_Project AMZ with subcollections, on change, Better BibTeX format, notes, journal abbreviations and per-subcollection files off; 146 entries, all keys `auth.lower + year` pinned in Zotero, `polanyi1944` set by hand on the 2025 edition; library-wide duplicates merged so the collection's copies own the plain keys; guidance citations of Chapters 1 and 2 resolve). Open: `quarto preview manuscript/` still to verify; Torras and Boyce 1998 is duplicated in the collection (`torras1998a`).
 
 ## Standing cadence
 
