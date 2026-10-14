@@ -1,24 +1,16 @@
-# Data analysis - Two Way Fixed Effects - Callaway & Sant'Anna (2021) staggered DiD
+# Purpose: stratified Callaway-Sant'Anna estimation of the priority-list effect by
+#          baseline Bolsa Família coverage (the chapter's moderation test)
+# Inputs:  _data/final/panel_amz_2000_2020_final.csv (phase 1 panel, frozen 2026-10-12)
+# Outputs: output/tables/tab-att-strata.csv, output/figures/fig-event-study-strata.png
+# Status:  legacy script (August 2026) run as-is on the phase 1 panel for the
+#          descriptive sprint; restyle deferred (updated 2026-10-14)
 
-rm(list = ls())
 library(tidyverse)
 library(magrittr)
 library(readxl)
 library(readr)
 library(writexl)
 library(ggplot2)
-
-
-
-df4 <- read_csv("_data/final_dataset_4.csv")
-
-glimpse(df4)
-
-df6 <- read_csv("_data/final_dataset_6.csv")
-
-glimpse(df6)
-
-glimpse(df) 
 
 # ============================================================================
 # moderation-callaway-santanna.R
@@ -43,7 +35,7 @@ glimpse(df)
 # strata on structure. It also measures provision relative to need, which is the
 # theoretical construct, rather than transfer volume, which tracks poverty.
 #
-# Input: _data/final_dataset_6.csv
+# Input: _data/final/panel_amz_2000_2020_final.csv (phase 1 panel)
 # ============================================================================
 
 library(dplyr)
@@ -51,11 +43,7 @@ library(readr)
 library(tidyr)
 library(ggplot2)
 
-install.packages("did")
 library(did)
-version
-
-rm(list = ls())
 
 # ---- Parameters. Change these to run the robustness grid. -------------------
 WINDOW_START <- 2002L            # earlier start = more pre-periods for the PT test
@@ -68,7 +56,7 @@ BASE_YEARS   <- 2002:2007        # pre-blocklist baseline for the moderator
 
 # ---- Load -------------------------------------------------------------------
 # idname must be numeric for `did`. geocode is already integer.
-df <- read_csv(file.path("_data", "final_dataset_6.csv"),
+df <- read_csv(file.path("_data", "final", "panel_amz_2000_2020_final.csv"),
                col_types = cols(geocode = col_integer(), year = col_integer()))
 
 #glimpse(df)
@@ -209,6 +197,7 @@ run_cs <- function(d) {
          bstrap = TRUE, cband = TRUE)
 }
 
+set.seed(2026)   # bootstrap SEs reproducible across runs (sprint 2026-10-14)
 cs_high <- run_cs(filter(samp, stratum == "high"))
 cs_low  <- run_cs(filter(samp, stratum == "low"))
 
@@ -251,7 +240,25 @@ p_es <- ggplot(es, aes(etime, att, color = stratum, fill = stratum)) +
        title = "Blocklist effect by baseline social-protection coverage") +
   theme_minimal(base_size = 12)
 
-# ggsave("fig_cs_event_by_stratum.png", p_es, width = 8, height = 5, dpi = 200)
+ggsave("output/figures/fig-event-study-strata.png", p_es,
+       width = 8, height = 5, dpi = 200)
+
+# ---- Chapter table: stratum ATTs and the moderation difference -------------
+n_treated <- xsec %>% filter(g > 0, !is.na(stratum)) %>% count(stratum)
+att_tab <- tibble(
+  quantity  = c("ATT, high coverage", "ATT, low coverage",
+                "Moderation difference (high - low)"),
+  estimate  = c(att_high$overall.att, att_low$overall.att, diff_att),
+  se        = c(att_high$overall.se,  att_low$overall.se,  se_diff),
+  n_treated = c(n_treated$n[n_treated$stratum == "high"],
+                n_treated$n[n_treated$stratum == "low"], NA_integer_)
+) %>%
+  mutate(z = estimate / se,
+         p = 2 * pnorm(-abs(z)),
+         ci_low  = estimate - 1.96 * se,
+         ci_high = estimate + 1.96 * se)
+write_csv(att_tab, "output/tables/tab-att-strata.csv")
+print(att_tab)
 
 p_es
 # ============================================================================
