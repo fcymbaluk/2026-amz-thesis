@@ -14,6 +14,7 @@ renv/cellar/
 # Quarto
 .quarto/
 /manuscript/_book/
+/manuscript/_freeze/
 **/*.quarto_ipynb
 
 # Rendered manuscript output (frozen copies go in docs/submitted/ deliberately)
