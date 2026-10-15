@@ -1247,3 +1247,154 @@ Evidence: scratch gate report (compare_outputs by column class) in this
           entry and the gate commit; _audit/*.qmd for each source
 Affects: none (acceptance record)
 Supersedes: none
+
+## D-2026-10-15-a  Atlas Brasil vintages joined by geocode: shares rescaled to 0-1, income kept at its 2010 base and also in 2024 reais, urban share from the census counts
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (ATLAS_PCT_TO_SHARE, ATLAS_INCOME_BASE); _data/interim/atlas_indicators_1991_2010; the *_c2000 and *_c2010 columns of _data/final/panel_amz_2000_2020_descriptive
+Context: the sprint plan (rebuild/06-descriptive-sprint.md section 5)
+         re-acquires Atlas Brasil as censo_total_1991_2010.xlsx with the
+         seven-digit code, retiring the legacy name match and alias table
+         of 07-data-analysis-EDA-poverty.R (_audit/atlas.qmd Q2, Q3).
+Reason: PIND, PMPOB and PPOB are served on 0-100 and the naming
+        convention admits shares on 0-1 only, so the three are divided
+        by 100 (poverty_extreme_share, poverty_share,
+        vulnerability_share); RDPC is in reais of 1 August 2010 (Siglas)
+        and is stored as income_pc_brl_2010 and, multiplied by the
+        annual 2010 IPCA factor of deflator_ipca_2024.csv, as
+        income_pc_brl_2024, an approximation of the monthly anchor by the
+        annual factor that the codebook records; urban_share is
+        pesourb / pesotot, under the administrative census definition
+        of urban whose limitation task 4.9 addresses; atlas_population
+        is pesotot, kept beside, never in place of, the panel's census
+        anchors. The panel carries the 2000 and 2010 vintages as
+        time-invariant columns suffixed _c2000 and _c2010 (naming
+        convention section 3.6); 1991 stays in the interim file. Names
+        follow the panel's current (pre-rename) style and migrate with
+        scripts 09-11 at phase 2R.
+Evidence: _audit/atlas.qmd Q4-Q6; script assertions (502 sample
+          municipalities present in all three vintages, shares on 0-1)
+Affects: new columns only; no panel value
+Supersedes: none
+
+## D-2026-10-15-b  Value added by activity from SIDRA 5938: land-based dependence is the agropecuária share, Santarém undivided before 2013
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (VA_VARIABLES, BRL_PER_MIL); _data/interim/ibge_pib_value_added_2002_2023; the va_* columns of the descriptive panel
+Context: task 4.1 asks for the weight of agriculture, livestock, mining
+         and logging in the local economy; the 5938 extracts of
+         2026-10-09 carry value added by four activities (variables 513,
+         517, 6575, 525) and the total (498), integer mil reais.
+Reason: the only activity split IBGE publishes at municipal level puts
+        agriculture, livestock, forestry (logging included) and fishing
+        under agropecuária and mining inside industry, so the
+        land-based measure is va_agro_share = va_agro / va_total, with
+        the mining caveat stated in the chapter; the four shares and the
+        nominal and 2024-reais levels are stored for all 5,570
+        municipalities 2002-2023. Unlike script 03 (D-2026-10-10-e), the
+        Santarém series before 2013 is not split with Mojuí dos Campos:
+        shares are invariant to a proportional split and Mojuí is outside
+        the sample, so Mojuí is NA before 2013 and Santarém covers both.
+        Negative values served by IBGE (one agro cell, 42 industry cells,
+        none in the sample) are kept as served, as for GDP
+        (D-2026-10-10-b).
+Evidence: _audit/ibge_pib.qmd Q1 holds for the value-added files (same
+          symbols, 5,570 series); script assertions (components sum to
+          the total within rounding)
+Affects: new columns only
+Supersedes: none
+
+## D-2026-10-15-c  SICONFI expenditure by function: stage empenhadas, functions from 2002, published total from 2004, absent function in a reporting year is zero, gaps never imputed, state series 2013-2024
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (EXP_STAGE, EXP_FUNCTION_YEARS, EXP_BY_NAME_YEARS, EXP_FUNCTIONS, EXP_TOTAL_NAMES, EXP_UF_YEARS); _data/interim/siconfi_expenditure_munic_2000_2024, siconfi_expenditure_uf_2013_2024; the exp_* columns of the descriptive panel
+Context: task 4.5 (supervisor request of 2026-10-13); extracts of
+         2026-10-15 from basedosdados.br_me_siconfi, SQL in
+         _scripts/sql/2026-10-15-siconfi-extraction.sql.
+Reason: (1) Despesas Empenhadas is the only stage before 2013 and runs
+        through the FINBRA-to-SICONFI break, so it is the stage for every
+        year (liquidadas and pagas exist from 2013 only). (2) 2000-2001
+        use the pre-Portaria-42 classification (Saúde e Saneamento,
+        Educação e Cultura, Assistência e Previdência), which does not
+        map onto health, education, social assistance, social security
+        and environmental management, so the function columns start in
+        2002 and 2000-2001 keep the total only. (3) Function rows are
+        read by the Base dos Dados id 3.FF.000 from 2004 and by name in
+        2002-2003, when no id exists; the total is the published total
+        row from 2004 (Despesas por Função to 2012; the exceto
+        intraorçamentárias total under its three spellings from 2013;
+        the duplicate Total Geral da Despesa por Função of 2010-2012 is
+        not read) and the sum of the 28 function rows in 2002-2003, the
+        function rows summing to the published total within one percent
+        in every later year. (4) A function absent from a
+        municipality-year that has a total is zero, because the SICONFI
+        layout lists non-zero functions only, while a municipality-year
+        without a total is a reporting gap kept as NA: 388 to 500 of the
+        502 sample municipalities report in a given year and nothing is
+        imputed. (5) exp_social is health plus education plus social
+        assistance. (6) Values are deflated with the annual IPCA factor
+        (D-2026-10-05-c) and divided by the interpolated census
+        population of script 03 (2002-2022; NA outside), the state
+        population being the sum of its municipalities. (7) The Base dos
+        Dados state table begins in 2013, so the state series is
+        2013-2024; the FINBRA state files 2000-2012 are an open follow-up
+        under task 4.5. Column names follow the panel's current style
+        (exp_<function>_brl, _brl_2024, _pc_brl_2024) and migrate at
+        phase 2R.
+Evidence: _audit/siconfi.qmd Q1-Q5, Q7
+Affects: new columns only
+Supersedes: none
+
+## D-2026-10-15-d  SICONFI municipal revenue: items read at the parent level of each account plan, FINBRA names to 2012 and Tesouro codes from 2013, gross of deductions, absent item in a reporting year is zero
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (REV_STAGE, REV_RULES, REV_TRANSFER_ITEMS); _data/interim/siconfi_revenue_munic_2000_2024; the rev_* columns of the descriptive panel
+Context: task 4.5 asks for the federal transfers that fund social
+         expenditure (FPM and the conditioned SUS, FUNDEB, FNDE and
+         FNAS transfers, in the classification of Alcaraz 2024); the
+         account names change at 2002, 2004, 2013, 2018, 2019 and 2022,
+         the Base dos Dados id is filled for eight percent of revenue
+         rows, and the same display name recurs within a
+         municipality-year under current and capital transfers.
+Reason: the stage is Receitas Brutas Realizadas (gross, before the
+        FUNDEB and other deductions, which are separate stages). Up to
+        2012 the FINBRA names are unique within a municipality-year and
+        are read directly; from 2013 the Tesouro account code (column
+        portaria) is unique within a municipality-year and the rules
+        name, for each item and period, the parent-level code of the
+        current-revenue branch, so that children never add to a parent
+        (the parents equal the sum of their children wherever both
+        exist, _audit/siconfi.qmd Q6). The rule table is REV_RULES in
+        the script: total (Rec Orçamentária, Total Receitas, TOTAL DAS
+        RECEITAS), current, current transfers, Union transfers, tax;
+        FPM (Cota FPM; 1.7.2.1.01.02-04; the three 1.7.1.8.01 quotas of
+        2018-2021, when no parent row exists; 1.7.1.1.51.0.0); SUS from
+        the Union (SUS União; 1.7.2.1.33; 1.7.1.8.03 plus the 2019-2021
+        investment block 1.7.1.8.04; 1.7.1.3.00.0.0); FUNDEF/FUNDEB
+        including the Union complement (Fundef União and Estado; Transf
+        Multigov FUNDEF/FUNDEB and Comp; 1.7.2.4.01 and .02; 1.7.5.8.01
+        plus 1.7.1.8.09; 1.7.5.1 plus 1.7.1.5); FNDE including
+        salário-educação (FNDE and Cota Salário Educação; 1.7.2.1.35 and
+        .01.30; 1.7.1.8.05; 1.7.1.4); FNAS (FNAS; 1.7.2.1.34;
+        1.7.1.8.04 in 2018 and 1.7.1.8.12 in 2019-2021; 1.7.1.6). An
+        item absent from a municipality-year that has a total row is
+        zero; FNDE and FNAS have no line in the 2000-2001 layout and are
+        NA there. The published totals are net of the FUNDEF/FUNDEB
+        deductions taken from 2002 while the transfer lines are gross,
+        so 120 to 342 municipalities a year in 2002-2012 (and 24 in
+        2024) carry current transfers above the total; the script
+        therefore asserts FPM against current transfers. The 2018 transition layout reports the SUS
+        and FNAS parents for fewer municipalities (zero shares of 15
+        percent that year), shown in the audit and not corrected. The
+        author checked the table against Alcaraz (2024, Quadro 2) on
+        2026-10-15: SUS, FUNDEB with the other FNDE lines and FNAS are
+        its conditioned transfers (TC), FPM is FPM, and its total (RT)
+        is current revenue, carried here as rev_current; its own revenue
+        (AP, current revenue except transfers) is added as rev_own, the
+        difference between the current total and current transfers,
+        negative in 30 municipality-years (28 in 2024) for the same
+        net-versus-gross reason and left as is. Its devolutive (ICMS,
+        IPVA, ITR, royalties) and other transfers are not extracted.
+Evidence: _audit/siconfi.qmd Q1, Q6, Q7
+Affects: new columns only
+Supersedes: none
