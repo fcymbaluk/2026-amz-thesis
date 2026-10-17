@@ -1,0 +1,89 @@
+variable,period,mean,sd,n_obs,n_munic
+Deforestation (km2),2000-2003,52.84,93.13,2008,502
+Deforestation (km2),2004-2007,48.25,91.13,2008,502
+Deforestation (km2),2008-2012,25.07,45.43,2510,502
+Deforestation (km2),2013-2016,28.65,46.34,2008,502
+Deforestation (km2),2017-2020,32.4,68.76,2008,502
+Deforestation (share of remaining forest),2000-2003,3.392,4.068,2008,502
+Deforestation (share of remaining forest),2004-2007,2.633,3.063,2008,502
+Deforestation (share of remaining forest),2008-2012,1.785,2.293,2510,502
+Deforestation (share of remaining forest),2013-2016,1.781,1.941,2008,502
+Deforestation (share of remaining forest),2017-2020,1.714,1.915,2008,502
+BF coverage (families / quota),2004-2007,0.7825,0.884,2004,502
+BF coverage (families / quota),2008-2012,1.118,0.7916,2510,502
+BF coverage (families / quota),2013-2016,1.127,0.6968,2008,502
+BF coverage (families / quota),2017-2020,1.131,0.6225,1506,502
+BF transfers per capita (R$ 2024),2004-2007,12.14,7.302,1972,493
+BF transfers per capita (R$ 2024),2008-2012,26.39,11.39,2492,502
+BF transfers per capita (R$ 2024),2013-2016,41.24,19.19,2008,502
+BF transfers per capita (R$ 2024),2017-2020,39.86,23.28,1506,502
+Formal employment (jobs / working-age pop.),2000-2003,0.05922,0.06075,1962,498
+Formal employment (jobs / working-age pop.),2004-2007,0.08454,0.06927,2003,502
+Formal employment (jobs / working-age pop.),2008-2012,0.1092,0.08082,2510,502
+Formal employment (jobs / working-age pop.),2013-2016,0.1251,0.09246,2008,502
+Formal employment (jobs / working-age pop.),2017-2020,0.1241,0.08473,2008,502
+Share of formal workers at or below 1 MW,2000-2003,0.673,0.2144,1962,498
+Share of formal workers at or below 1 MW,2004-2007,0.5985,0.1996,2003,502
+Share of formal workers at or below 1 MW,2008-2012,0.4065,0.1824,2510,502
+Share of formal workers at or below 1 MW,2013-2016,0.234,0.1365,2008,502
+Share of formal workers at or below 1 MW,2017-2020,0.1651,0.109,2008,502
+GDP per capita (R$ 2024),2000-2003,12130,8999,986,493
+GDP per capita (R$ 2024),2004-2007,13900,10630,1972,493
+GDP per capita (R$ 2024),2008-2012,18980,16800,2492,502
+GDP per capita (R$ 2024),2013-2016,23620,18520,2008,502
+GDP per capita (R$ 2024),2017-2020,26710,28720,2008,502
+Land-based share of value added,2000-2003,0.2839,0.1572,1000,500
+Land-based share of value added,2004-2007,0.2614,0.1515,2006,502
+Land-based share of value added,2008-2012,0.2534,0.1455,2510,502
+Land-based share of value added,2013-2016,0.2651,0.1527,2008,502
+Land-based share of value added,2017-2020,0.2395,0.1593,2008,502
+"Municipal spending per capita, total (R$ 2024)",2000-2003,1855,840.6,903,472
+"Municipal spending per capita, total (R$ 2024)",2004-2007,2288,997.6,1724,483
+"Municipal spending per capita, total (R$ 2024)",2008-2012,3302,1303,2193,492
+"Municipal spending per capita, total (R$ 2024)",2013-2016,3736,1488,1809,488
+"Municipal spending per capita, total (R$ 2024)",2017-2020,4050,1571,1983,500
+Municipal social spending per capita (R$ 2024),2000-2003,993,385.2,903,472
+Municipal social spending per capita (R$ 2024),2004-2007,1287,501.1,1724,483
+Municipal social spending per capita (R$ 2024),2008-2012,1946,657.4,2193,492
+Municipal social spending per capita (R$ 2024),2013-2016,2356,773.2,1809,488
+Municipal social spending per capita (R$ 2024),2017-2020,2549,790.2,1983,500
+  Health,2000-2003,336.5,181.5,903,472
+  Health,2004-2007,461.9,227,1724,483
+  Health,2008-2012,680.8,300.4,2193,492
+  Health,2013-2016,794.7,351.8,1809,488
+  Health,2017-2020,930.9,409.1,1983,500
+  Education,2000-2003,587.1,233.5,903,472
+  Education,2004-2007,745.5,305.2,1724,483
+  Education,2008-2012,1150,425.8,2193,492
+  Education,2013-2016,1424,519.9,1809,488
+  Education,2017-2020,1468,474.7,1983,500
+  Social assistance,2000-2003,69.5,70.66,903,472
+  Social assistance,2004-2007,79.67,64.81,1724,483
+  Social assistance,2008-2012,115.2,87.86,2193,492
+  Social assistance,2013-2016,136.6,101.8,1809,488
+  Social assistance,2017-2020,150.3,100.2,1983,500
+FPM per capita (R$ 2024),2000-2003,653.3,348.9,903,472
+FPM per capita (R$ 2024),2004-2007,788.3,419.9,1731,483
+FPM per capita (R$ 2024),2008-2012,1033,553.7,2193,492
+FPM per capita (R$ 2024),2013-2016,1105,595,1819,489
+FPM per capita (R$ 2024),2017-2020,1090,608.4,1979,500
+SUS transfers per capita (R$ 2024),2000-2003,111.8,86.53,903,472
+SUS transfers per capita (R$ 2024),2004-2007,181.6,102.7,1731,483
+SUS transfers per capita (R$ 2024),2008-2012,284.5,122.6,2193,492
+SUS transfers per capita (R$ 2024),2013-2016,299.7,138.3,1819,489
+SUS transfers per capita (R$ 2024),2017-2020,397.1,197.5,1979,500
+FUNDEB per capita (R$ 2024),2000-2003,333.7,170.3,903,472
+FUNDEB per capita (R$ 2024),2004-2007,452.2,215.6,1731,483
+FUNDEB per capita (R$ 2024),2008-2012,779.8,341.3,2193,492
+FUNDEB per capita (R$ 2024),2013-2016,956.1,388.4,1819,489
+FUNDEB per capita (R$ 2024),2017-2020,1017,420.4,1979,500
+Cattle per km2,2000-2003,27.33,33.59,1993,500
+Cattle per km2,2004-2007,35.91,42.12,2006,502
+Cattle per km2,2008-2012,36.3,41.32,2510,502
+Cattle per km2,2013-2016,38.54,44.28,2008,502
+Cattle per km2,2017-2020,40.56,46.84,2008,502
+Crop price exposure index,2000-2003,0.01497,0.03136,2004,501
+Crop price exposure index,2004-2007,0.0181,0.03814,2004,501
+Crop price exposure index,2008-2012,0.02916,0.05874,2505,501
+Crop price exposure index,2013-2016,0.02404,0.0501,2004,501
+Crop price exposure index,2017-2020,0.02288,0.04668,2004,501

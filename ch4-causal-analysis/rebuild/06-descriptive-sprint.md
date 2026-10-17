@@ -89,9 +89,10 @@ Municípios Verdes), alcaraz2024.
 | Script | Does | Writes |
 |---|---|---|
 | `_scripts/09-descriptive-data.R` | reads the raw SICONFI extracts, Atlas and the SIDRA 5938 value-added series; deflates to 2024 BRL (`aux/deflator_ipca_2024.csv`), per capita; joins onto the panel by geocode and year | `_data/interim/siconfi_expenditure_munic_2000_2024.rds`, `siconfi_expenditure_uf_2000_2024.rds`, `siconfi_revenue_munic_2000_2024.rds`, `atlas_indicators_1991_2010.rds`, `ibge_pib_value_added_2002_2021.rds`, `_data/final/panel_amz_2000_2020_descriptive.rds` |
-| `_scripts/10-descriptive-figures.R` | the descriptive displays D1-D6 | `output/figures/fig-*.png`, `output/tables/tab-*.csv` |
+| `_scripts/10-descriptive-figures.R` | the descriptive displays D1-D6 (done 2026-10-16) | `output/figures/fig-comovement-natural-units.png`, `fig-comovement-indexed.png`, `fig-municipal-revenue-sources.png`, `fig-states-vs-municipalities.png`, `fig-trajectories-listing.png`, `fig-trajectories-terciles.png`, `fig-structure-distributions.png`, `fig-structure-maps.png`, `fig-long-differences.png`; `output/tables/tab-municipal-share-social-spending.csv`, `tab-structure-crosstab.csv`, `tab-long-differences.csv`, `tab-summary-by-period.csv` (and `-long`), `tab-summary-by-group.csv`, `tab-within-between.csv` |
 | `_scripts/11-correlations.R` | the correlational regressions | `output/tables/tab-corr-*.csv` |
-| `_scripts/utils/theme_ch4.R` | task 4.4: shared theme and palettes | sourced by 07, 10, 11 |
+| `_scripts/utils/theme_ch4.R` | task 4.4: shared theme and palettes (done 2026-10-16) | sourced by 10, 11 (07 at its restyle) |
+| `_scripts/utils/screen_siconfi.R` | D-2026-10-16-b: order-of-magnitude screen for SICONFI filings in the wrong unit, applied before every display | sourced by 10, 11 |
 | `_audit/siconfi.qmd` | coverage by year, the 2013 FINBRA-to-SICONFI break, function totals against subfunctions | rendered HTML |
 
 Script 11 stays out of `_scripts/models/` because it is not a candidate

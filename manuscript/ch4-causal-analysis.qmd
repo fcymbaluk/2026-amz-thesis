@@ -106,10 +106,6 @@ The identification strategy for the eco-social question rests on the quota ratio
 
 ## Exploratory data analysis {#sec-ch4-eda}
 
-<!-- Sprint 2026-10-16: the new descriptive subsections (co-movement
-2004-2020, municipalities versus states, grouped trajectories, structure,
-long differences, summary tables) are inserted in this section. -->
-
 The exploratory analysis starts from the problem @fig-policy-timeline announced: the deforestation decline sits in the most crowded policy window of the period. This subsection shows the crowding in the data itself, then turns to the social-policy trajectory that motivates the chapter.
 
 @fig-series-natural-units presents the main series in natural units, as small multiples. Aggregate deforestation across the 502 municipalities peaks near 33,000 km² in 2003 and 2004, falls by roughly two thirds to about 11,000 km² by 2010, stays there through 2012, and partially rebounds afterward. The other panels show what happened around it. Bolsa Família coverage jumps from about a third of the municipal quota in 2004 to above full coverage by 2006 and stays near 1.1 for the rest of the period. Formal employment rises steadily from 5 percent of the working-age population to about 13 percent by 2014. Both price indices climb during the deforestation decline, the crop index sharply from 2007.
@@ -121,6 +117,66 @@ The exploratory analysis starts from the problem @fig-policy-timeline announced:
 ![Candidate explanations against the deforestation curve, indexed series by group](figures/fig-series-indexed-groups.png){#fig-series-indexed-groups}
 
 The joint lesson of the two figures is the one the identification section builds on. Every candidate moved during 2004 to 2012: enforcement, credit policy, supply-chain agreements, prices, transfers, wages, formalization. Aggregate curves cannot separate them. The co-movement motivates the question and rules out answering it at this level, so the analysis moves to municipal variation, where listing arrived in staggered cohorts and coverage differed across places.
+
+### The period in numbers {#sec-ch4-period}
+
+@tbl-summary-by-period gives the periodization in municipal averages. The five windows follow the chapter's reading of the trajectory: the years before the policy turn, the decline, the plateau of the early 2010s, and the two halves of the rise. Deforestation per municipality fell by half between the first and the third window, from about 53 to 25 km² a year, and then climbed back to 32 km² in 2017 to 2020. Measured against the forest that remained, clearing halved as well, from 3.4 percent of the standing forest a year to 1.7 percent, and did not rebound in that metric, because the forest base kept shrinking while the rebound in area was partial.
+
+```{r}
+#| label: tbl-summary-by-period
+#| tbl-cap: "Municipal averages by period, 502 municipalities of the Amazon biome (unweighted means of municipality-years, monetary values in R$ of 2024)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-summary-by-period.csv", check.names = FALSE)
+options(knitr.kable.NA = "")
+knitr::kable(tab, align = c("l", rep("r", 5)))
+```
+
+The social columns move in one direction through the whole period. Bolsa Família coverage goes from 78 percent of the municipal quota in the rollout window to 112 percent in the decline window and stays there. Transfers per capita more than triple between the rollout and the early 2010s and then hold near R\$ 40 a month per resident. Formal employment doubles, from 5.9 to 12.4 jobs per hundred working-age adults, and the share of formal workers earning the 2024 minimum wage or less falls from two thirds to one sixth. GDP per capita more than doubles. Municipal social spending per capita, the sum of the health, education and social assistance functions, goes from R\$ 993 to R\$ 2,549 at 2024 prices, with education the largest function throughout and health the fastest growing after 2016. The transfers that fund this spending grew in step: FPM per capita rose by two thirds, the SUS transfers more than tripled, and FUNDEB tripled. The land-based share of value added, agriculture, livestock, forestry and fishing together, drifted down from 28 to 24 percent.
+
+The last column of the table that matters for the design is not in it but in @tbl-within-between, which splits the variance of each series into its between-municipality and within-municipality parts. The split says what kind of variation each variable offers an estimator. Deforestation, coverage, formal employment, land-based dependence and cattle density are mostly between-municipality characteristics, with 70 to 96 percent of their variance across places rather than over time. Social spending per capita is the opposite: 60 percent of its variance is within municipalities, because every municipality's spending grew, and SUS transfers are 80 percent within for the same reason. A fixed-effects regression on spending therefore leans on the common growth path, while one on coverage leans on a cross-sectional difference that barely moves after 2006. This is the empirical reason the correlational exercise of @sec-ch4-correlations reports spending and coverage separately and reads both as conditional correlations.
+
+```{r}
+#| label: tbl-within-between
+#| tbl-cap: "Between and within shares of the variance of each series, 2002-2020 (percent of the total sum of squares, between on the municipal means around the grand mean, within on the deviations from the own municipal mean)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-within-between.csv", check.names = FALSE)
+knitr::kable(tab, col.names = c("Variable", "Between (%)", "Within (%)", "Observations", "Municipalities"),
+             align = c("l", rep("r", 4)), format.args = list(big.mark = ","))
+```
+
+### Social policy, social spending and deforestation, 2004-2020 {#sec-ch4-comovement}
+
+@fig-comovement-natural-units puts the social series the supervisor asked for next to the deforestation curve, year by year, in natural units. The deforestation panel is the one from @fig-series-natural-units, restricted to the Bolsa Família years. Every other panel rises while it falls. Coverage saturates by 2006. Transfers per capita climb without pause from R\$ 7 in 2004 to R\$ 45 in 2014, then settle near R\$ 40. Formal employment rises from 7.5 to 12.9 jobs per hundred working-age adults by 2014 and softens afterward. GDP per capita grows through the whole window. Municipal social spending per capita grows fastest in the decline years, from R\$ 1,073 in 2004 to R\$ 2,287 in 2012, and then stalls for five years between R\$ 2,300 and R\$ 2,460 before rising again from 2018. The 2020 jump in health spending is the pandemic year.
+
+![Deforestation, social policy and municipal social spending, sample aggregates, 2004-2020](figures/fig-comovement-natural-units.png){#fig-comovement-natural-units}
+
+@fig-comovement-indexed overlays each family of series on the deforestation curve with everything indexed to 2004. Two timings stand out. The first is that the decline ends in 2012, the same year municipal social spending stops growing, and the rebound begins in 2013, when transfers per capita and formal employment reach their peaks and start to erode. The second is the asymmetry between the two halves of the window. During the decline, every social series rose steeply. During the rise, the social series were flat or falling, and the only series still climbing is GDP per capita. The decline coincided with social expansion, and the rise coincided with social stagnation. That is the pattern the chapter's hypothesis predicts, and aggregate curves cannot, on their own, distinguish it from the many other things that changed after 2012.
+
+![Each family of social series against the deforestation curve, indexed to 2004 = 100](figures/fig-comovement-indexed.png){#fig-comovement-indexed}
+
+Who pays for the municipal spending is the question @fig-municipal-revenue-sources answers. Panel A stacks the revenue sources per capita of the average sample municipality. Own revenue is a thin layer at the bottom, 8 percent of current revenue in 2004 and 9 percent in 2020. The rest is federal money: the unconditioned FPM quota, and the conditioned transfers that follow the social functions, the SUS transfers for health, FUNDEB and the other FNDE lines for education, and FNAS for social assistance, in the classification of Alcaraz (2024) <!-- TODO-cite alcaraz2024 -->. Panel B puts the conditioned transfers against the social spending they fund. The two lines move together, and the conditioned transfers cover a growing share of social spending, 53 percent in 2004, 59 percent in 2012 and 62 percent in 2020. FPM, by contrast, stops growing in 2011. The social spending that rose during the decline was, to a large extent, federal spending executed by municipalities, and the municipal fiscal base is as dependent on Brasília as the social protection the chapter studies. This matters for the interpretation of any municipal spending variable: it measures how much federal social policy reached a place, through two channels, not how much the place chose to spend.
+
+![Municipal revenue by source and the transfers that fund social spending, sample means, 2002-2020](figures/fig-municipal-revenue-sources.png){#fig-municipal-revenue-sources}
+
+### States and municipalities {#sec-ch4-states}
+
+The federal structure means social spending reaches the same territory through two subnational governments. @fig-states-vs-municipalities compares them for the nine states of the Legal Amazon: the state government's social spending per capita, the aggregate of all its municipalities per capita, and the deforestation of the sample municipalities in the state. The state series starts in 2013 because the consolidated state accounts in Base dos Dados begin there, so the comparison covers the rise, not the decline. Two configurations appear. In the three small states, Acre, Amapá and Roraima, the state government spends two to three times more per resident than the municipalities together, between R\$ 3,650 and R\$ 3,980 against R\$ 1,560 to R\$ 2,080, and the municipalities execute about 30 percent of subnational social spending (@tbl-municipal-share-social-spending). In Maranhão, Pará and Mato Grosso, the states that hold most of the sample's deforestation, the relation is inverted: the municipalities spend more per resident than the state, and carry 58 to 68 percent of subnational social spending. Amazonas, Rondônia and Tocantins sit between. In all nine states the municipal share rose between 2013 and 2024, by five to twelve points, so the trend toward municipal execution continued through the rise in deforestation.
+
+![Social spending per capita, state government versus municipalities, and deforestation, by state, 2002-2024](figures/fig-states-vs-municipalities.png){#fig-states-vs-municipalities}
+
+```{r}
+#| label: tbl-municipal-share-social-spending
+#| tbl-cap: "Municipal share of subnational social spending and per-capita levels by state, 2013-2024 (health, education and social assistance, shares on spending in R$ of 2024, per-capita means over 2013-2022)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-municipal-share-social-spending.csv", check.names = FALSE)
+knitr::kable(tab, col.names = c("State", "Municipal share 2013", "Municipal share 2024", "Mean share 2013-24", "State gov. per capita", "Municipalities per capita"),
+             align = c("l", rep("r", 5)), format.args = list(big.mark = ","))
+```
+
+The deforestation row of the figure is a reminder of where the outcome lives. Mato Grosso and Pará each cleared 9,000 to 12,000 km² a year in the sample municipalities in 2004, fell to 2,000 to 4,000 by 2010 to 2012, and Pará climbed back above 7,000 in 2019 to 2020. Rondônia followed the same path at a smaller scale. The other six states contribute little to the area totals, and the biome part of Maranhão and Tocantins is small, which is why the sample counts in the panel labels differ from the states' municipal counts. The comparison of state and municipal spending is therefore informative about the fiscal structure, but the within-state co-movement of spending and deforestation is visible only in the three frontier states.
 
 ### The social-policy trajectory in the sample
 
@@ -135,6 +191,74 @@ The two social series deserve a closer look, because their shapes carry design i
 ![Formal employment by real wage group, 2000-2020](figures/fig-wage-brackets.png){#fig-wage-brackets}
 
 Together, the two trajectories are the empirical face of the claim Chapter 2 made historically. Social policy reached the frontier and embedded there. Transfers saturated their quotas within three years, and formal wage growth transformed the composition of employment. Environmental enforcement, arriving in 2008 in selected municipalities, met a frontier where this incorporation was already underway. Whether that mattered for enforcement's effect is the chapter's question, and the next subsections turn from trajectories to the treatment itself: which municipalities were listed, how they compare to the rest, and whether the coverage moderator is credible.
+
+### Land-based dependence and urbanization {#sec-ch4-structure}
+
+Before comparing listed and unlisted municipalities it helps to know what kinds of places the sample contains. Two structural dimensions matter for the argument: how much of the local economy rests on land, and how urban the population is. @fig-structure-distributions shows both. Panel A gives the share of agriculture, livestock, forestry and fishing in municipal value added, averaged over 2004 to 2007 and over 2017 to 2020. The median municipality drew 26 percent of its value added from land in the first window and 21 percent in the second, and the whole distribution shifted left, so the frontier became less land-dependent over the period in its own accounts, even where clearing rebounded. Panel B gives the urban population share of the 2000 and 2010 censuses. The median rose from 46 to 53 percent, and the count of municipalities with a rural majority fell from 289 to 215, while those between half and three quarters urban rose from 143 to 208. The census definition of urban is administrative, since municipalities draw their own urban perimeters, so these shares can overstate urbanization and the chapter treats them as a coarse classification.[^ch4-urban] Panel C plots the two dimensions against each other: they are negatively related but far from collinear, and the listed municipalities sit in the middle of the cloud rather than at its land-dependent, rural corner.
+
+[^ch4-urban]: A classification that does not depend on municipal perimeters, IBGE's 2017 typology of rural and urban spaces, is scheduled as a robustness check.
+
+![Land-based dependence and urbanization in the sample: distributions and their joint position](figures/fig-structure-distributions.png){#fig-structure-distributions}
+
+@fig-structure-maps places the two dimensions on the map. Land-based dependence concentrates in the arc of deforestation, from Rondônia through northern Mato Grosso to southern and eastern Pará, and in the Maranhão and Tocantins fringe, while the municipalities of the central and western Amazon, large, forested and sparsely populated, draw little of their value added from land. Urbanization has no such arc: the most urban municipalities are the state capitals and the mid-sized towns of the Belém-Brasília and Cuiabá-Santarém axes, with rural majorities spread across the interior of every state.
+
+![Land-based share of value added (2004-07) and urban population share (2010), 502 municipalities](figures/fig-structure-maps.png){#fig-structure-maps}
+
+@tbl-structure-crosstab crosses the two classifications. The largest cell, 108 municipalities, is land-dependent and rural, and the smallest, 7 municipalities, is land-dependent and urban, so the correlation is real. But listing did not pick the land-dependent rural corner: the 61 listed municipalities spread over seven of the nine cells, with the largest counts in the intermediate urban class, 14 in the middle land tercile and 11 in the low tercile. Poverty in 2010 falls monotonically with urbanization within every land tercile, from about half of the population in the rural cells to between 14 and 32 percent in the urban cells, and baseline social spending per capita is highest in the land-dependent cells. The places with the most land in their economy were, at the start of the enforcement period, also the places with the most municipal social spending per resident.
+
+```{r}
+#| label: tbl-structure-crosstab
+#| tbl-cap: "Municipalities by land-based dependence tercile (2004-07) and urban class (2010 census), with the count ever listed, the 2010 poverty rate and baseline social spending per capita (R$ of 2024)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-structure-crosstab.csv", check.names = FALSE)
+knitr::kable(tab, col.names = c("Land-based tercile", "Urban class", "Municipalities", "Ever listed", "Poverty 2010", "Social spending p.c. 2004-07"),
+             align = c("l", "l", rep("r", 4)), format.args = list(big.mark = ","))
+```
+
+### Trajectories by group {#sec-ch4-groups}
+
+@tbl-summary-by-group compares the listed and never-listed municipalities on the baseline window 2004 to 2007, before the first cohort entered the list. The listed municipalities were the frontier: they cleared 208 km² a year on average against 26 for the rest, eight times more, although as a share of their remaining forest they cleared at the same rate, 2.6 percent, because they also had more forest. They were richer and more formalized, with GDP per capita of R\$ 20,165 against R\$ 13,036 and 13 formal jobs per hundred working-age adults against 8, and their formal wages were higher, with 49 percent of workers at or below the 2024 minimum against 61 percent. Bolsa Família reached them differently: coverage relative to the quota was slightly higher, 0.84 against 0.77, while transfers per capita were lower, R\$ 8 against R\$ 13, because transfers follow poverty and the listed municipalities were less poor. Municipal social spending per capita was similar, R\$ 1,377 against R\$ 1,274. Cattle density was lower in the listed group, 24 against 38 head per km², which reflects the size of the listed municipalities rather than the size of their herds.
+
+```{r}
+#| label: tbl-summary-by-group
+#| tbl-cap: "Baseline means, 2004-2007, by listing status (ever listed on the priority list versus never listed, monetary values in R$ of 2024)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-summary-by-group.csv", check.names = FALSE)
+knitr::kable(tab, align = c("l", rep("r", 3)))
+```
+
+@fig-trajectories-listing follows the two groups from 2004, with each series indexed to its own 2004 value. The listed municipalities cut deforestation faster and further: their index reaches 28 in 2010 while the never-listed group bottoms at 43, and the gap holds through 2014. By 2019 the two groups are back at the same point, around 60 percent of their 2004 clearing, so the rebound erased the listed group's extra decline. The social series tell a different story. Formal employment grew by 48 percent in the listed group at its 2014 peak and by 79 percent in the rest. Social spending per capita grew less in the listed group, 111 percent by 2019 against 147 percent. Coverage of Bolsa Família in the listed municipalities drifts down from 1.21 in 2010 to 1.00 in 2019, while it holds near 1.18 elsewhere. Transfers per capita, by contrast, grew more in the listed group, as their poorer residents entered the program. The listed municipalities, in short, received the enforcement shock while their social incorporation ran behind the rest of the sample on employment, spending and coverage, and the social series flattened in both groups after 2014, in the years the listed group's deforestation advantage disappeared.
+
+![Trajectories of listed and never-listed municipalities, indexed to 2004 = 100](figures/fig-trajectories-listing.png){#fig-trajectories-listing}
+
+@fig-trajectories-terciles repeats the exercise for three baseline characteristics, splitting the sample into terciles of social spending per capita in 2004 to 2007, of the 2000 poverty rate, and of land-based dependence in 2004 to 2007. The first column carries the sharpest contrast in the figure. Municipalities in the top spending tercile cut deforestation to a quarter of its 2004 level by 2010 and were still at 35 percent in 2020, while the bottom tercile fell only to 44 percent by 2012 and rebounded to 78 percent by 2019. The spending series itself converged: the low tercile tripled its spending per capita by 2020 while the high tercile roughly doubled, so the places that spent least at the start caught up in spending and rebounded most in clearing. The poverty column shows the mirror image. The poorest tercile barely reduced deforestation at all, hovering between 60 and 100 percent of its 2004 level, but it was also the tercile with the least clearing to begin with, concentrated in Maranhão and the eastern fringe. The least poor tercile, where the frontier municipalities sit, fell to a quarter of its 2004 level and rebounded to 45 percent. Coverage of Bolsa Família falls in the least poor tercile after 2010, as its residents leave the program, and formal employment grew most in the poorest tercile, from a low base. The land-based column shows little difference during the decline and a smaller rebound for the most land-dependent tercile, which ends the period at 45 percent against 68 for the least dependent.
+
+![Trajectories by baseline terciles of social spending, poverty and land-based dependence, indexed to 2004 = 100](figures/fig-trajectories-terciles.png){#fig-trajectories-terciles}
+
+Two readings of the spending column are possible and the descriptive evidence cannot separate them. One is that higher social spending made the enforcement period more effective, which is the chapter's hypothesis. The other is that the high-spending tercile is where the frontier municipalities with the most clearing to lose were concentrated, so their deeper decline is the enforcement effect itself, and the subsequent catch-up in spending elsewhere is the federal transfer system reaching the poorer interior. The baseline table above shows that the listed municipalities were not, on average, higher spenders, which weakens the second reading but does not dispose of it. Separating the two is the job of the identification section.
+
+### Long differences {#sec-ch4-long-differences}
+
+A last descriptive step collapses the panel into one change per municipality. @fig-long-differences plots, in panel A, the change in municipal social spending per capita between 2004 to 2007 and 2017 to 2020 against the change in the logarithm of annual clearing between the same windows, for the 470 municipalities with at least two reported years in both windows. The relation is negative: municipalities where social spending per capita grew more saw larger declines in clearing, with a slope of −0.17 log points per thousand reais of additional spending per capita (standard error 0.05) and a correlation of −0.14 (@tbl-long-differences). Panel B relates the change in the poverty rate between the 2000 and 2010 censuses to the change in clearing between the windows around them, and finds nothing: the slope is zero to three decimals and the correlation 0.01. Poverty fell everywhere, by 16 points on average, with no relation to how much clearing changed. The two panels make the same point as the group trajectories. The municipalities whose deforestation fell are distinguished by how much social spending reached them, and poverty reduction does not distinguish them. The long difference is a cross-sectional association, and the fixed-effects exercise of @sec-ch4-correlations takes it up with controls.
+
+![Long differences: change in social spending per capita and in the poverty rate against the change in deforestation](figures/fig-long-differences.png){#fig-long-differences}
+
+```{r}
+#| label: tbl-long-differences
+#| tbl-cap: "Long-difference regressions, one observation per municipality (OLS slope, standard error and correlation)"
+#| echo: false
+#| message: false
+tab <- read.csv("tables/tab-long-differences.csv", check.names = FALSE)
+knitr::kable(tab, col.names = c("Relation", "N", "Slope", "SE", "Correlation"), align = c("l", rep("r", 4)))
+```
+
+## Correlational exercise {#sec-ch4-correlations}
+
+<!-- Sprint day 5 (2026-10-17): script 11, the two-way fixed-effects
+conditional correlations (rebuild/06-descriptive-sprint.md, section 7),
+the table tab-corr-*.csv and the paragraph go here. -->
 
 ## Identification strategy {#sec-ch4-identification}
 

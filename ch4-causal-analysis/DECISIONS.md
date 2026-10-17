@@ -1398,3 +1398,70 @@ Reason: the stage is Receitas Brutas Realizadas (gross, before the
 Evidence: _audit/siconfi.qmd Q1, Q6, Q7
 Affects: new columns only
 Supersedes: none
+
+## D-2026-10-16-a  Descriptive groups: listing status, baseline terciles on the 2004-07 window, and urban classes at 0.5 and 0.75 of the 2010 urban share
+
+Status: closed (descriptive sprint, day 4)
+Scope: 10-descriptive-figures.R (BASELINE_YEARS, END_YEARS, DECADE_START, DECADE_END, MIN_BASELINE_REPORTS, URBAN_BREAKS, tercile()); displays D3-D6 and the chapter's grouped tables; script 11 reuses the groups
+Context: the sprint's grouped trajectories, structure cross-tab and
+         long differences need municipal groups that are fixed before
+         the enforcement period and do not depend on the outcome.
+Reason: listing status is ever-listed (any ppcdam_list == 1 in
+        2000-2020, 61 municipalities) against never listed (441).
+        Terciles are cut on the full sample at the 1/3 and 2/3
+        quantiles of three baseline characteristics: municipal social
+        spending per capita (health, education and social assistance,
+        2024 reais) averaged over 2004-2007, the pre-listing window of
+        the moderator; the 2000 census poverty rate (Atlas Brasil,
+        poverty_share_c2000); and the agropecuária share of value
+        added averaged over 2004-2007. The spending tercile requires
+        at least two reported SICONFI years in the window, which
+        leaves 471 municipalities; the other two cover all 502. The
+        long-difference end window is 2017-2020 under the same
+        two-year rule (470 municipalities for the spending change);
+        the poverty change uses 2000-2002 and 2010-2012 clearing
+        windows around the two censuses. Urban classes are cut on
+        the 2010 census urban share at 0.5 (rural majority) and 0.75
+        (urban), the two round thresholds that split the sample into
+        215, 208 and 79 municipalities; the census definition is
+        administrative and the robustness classification is task 4.9.
+Evidence: output/tables/tab-structure-crosstab.csv, tab-summary-by-group.csv; fig-trajectories-*.png
+Affects: analysis-layer groups only; no panel column
+Supersedes: none
+
+## D-2026-10-16-b  SICONFI filing screen in the analysis layer: a municipality-year whose per-capita total is more than ten times or less than a tenth of the municipality's own median is a reporting gap
+
+Status: closed (descriptive sprint, day 4)
+Scope: _scripts/utils/screen_siconfi.R (siconfi_flags, siconfi_screen, SICONFI_SCREEN_FACTOR = 10); applied by 10-descriptive-figures.R to the exp_* columns of _data/interim/siconfi_expenditure_munic_2000_2024 and to the exp_* and rev_* columns of the descriptive panel; script 11 applies the same screen. The interim files of script 09 and the raw extracts are unchanged.
+Context: the day-4 displays showed a 2011 spike in every municipal
+         spending series. Manoel Urbano (AC, 1200344) reports R$ 1.45
+         billion of expenditure in 2011 against R$ 13.7 million in 2010,
+         a per-capita total of R$ 365,474 at 2024 prices, 127 times its
+         own median, on the revenue side as well (R$ 342,650 per
+         capita): a filing in the wrong unit. Scanning the 808
+         municipalities for the same pattern found a second kind of
+         error, totals filed at a few reais or less per capita (ratios
+         to the own median below 1e-7), concentrated in Maranhão in
+         2013.
+Reason: an order-of-magnitude screen on the municipality's own
+        series, symmetric at a factor of ten, catches both kinds and
+        nothing else: the 99.9th percentile of the ratio across all
+        808 municipalities is 3.0. Flags are computed on the
+        expenditure total per capita and, separately, on current
+        revenue per capita; a flagged municipality-year has every
+        column of that side set to NA, the same treatment as a year
+        the municipality did not file (D-2026-10-15-c), and is never
+        corrected. Counts, asserted in script 10: 16 expenditure and 26
+        revenue municipality-years among the 808 municipalities, 16
+        distinct municipality-years in the sample (11 expenditure, 11
+        revenue, 6 on both sides), out of 8,628 reported sample cells.
+        The screen removed the 2011 spike from the state panel (AC),
+        the tercile panels and the sample means, and changed the
+        within/between decomposition of every spending variable
+        (social spending per capita from 9 to 40 percent between),
+        which is why it is a logged decision and not a display choice.
+        Promotion to the pipeline (task 4.8) carries the screen into
+        script 02 as an assertion with a listed exception table.
+Evidence: _scripts/utils/screen_siconfi.R; the flag list printed by script 10 (message at run); _audit/siconfi.qmd Q8 to be added at promotion
+Affects: 16 sample municipality-years on the exp_*/rev_* columns of the descriptive panel, analysis layer only
+Supersedes: none
