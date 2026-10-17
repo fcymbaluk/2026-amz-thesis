@@ -1465,3 +1465,55 @@ Reason: an order-of-magnitude screen on the municipality's own
 Evidence: _scripts/utils/screen_siconfi.R; the flag list printed by script 10 (message at run); _audit/siconfi.qmd Q8 to be added at promotion
 Affects: 16 sample municipality-years on the exp_*/rev_* columns of the descriptive panel, analysis layer only
 Supersedes: none
+
+## D-2026-10-17-a  Correlational exercise: outcome years 2004-2019, regressors lagged one year within municipality, log(1 + x) for per-capita spending, transfers in hundreds of reais and employment in ten-point units, one common complete-case sample
+
+Status: closed (descriptive sprint, day 5)
+Scope: 11-correlations.R (CORR_YEARS, CORR_LAG, TRANSFERS_SCALE, EMP_SCALE, BF_END_YEARS, reg_main, ld_main); output/tables/tab-corr-twfe-main.csv, -full.csv, -robustness.csv, tab-corr-long-difference.csv; manuscript section sec-ch4-correlations
+Context: the sprint plan (rebuild/06-descriptive-sprint.md, section 7)
+         fixes the estimator (fixest two-way fixed effects, municipality
+         and year, clustered by municipality), the outcome (log of one
+         plus cleared km2), the regressor list and the window
+         (2004-2019, Bolsa Família ending in 2019, D-2026-10-05-b), but
+         not the lag mechanics, the treatment of zero spending, the
+         scaling or the sample rule.
+Reason: the outcome years are 2004-2019 and every regressor except
+        listing status is the previous year's value, built as the
+        positional lag within municipality on the balanced 2000-2020
+        panel (asserted). Listing status is contemporaneous because it
+        is the enforcement regime of the outcome year, not a social
+        condition. The price indices enter through the pipeline's own
+        one-year lags (price_index_*_lag1_z, D-2026-10-11-d) and are not
+        lagged again. A function absent from a reporting year is a zero
+        (D-2026-10-15-c), 63 health, 45 education and 86 social
+        assistance municipality-years in 2003-2019, so spending per
+        capita enters as log(1 + x), never log(x). BF transfers per
+        capita enter in hundreds of 2024 reais and the formal employment
+        rate in units of ten points, so that the coefficients read at
+        the scale the variables move on. The main table is estimated on
+        one common complete-case sample, so that the separate and the
+        joint specifications are read on the same municipality-years:
+        6,679 municipality-years and 499 municipalities, outcome years
+        2005-2019. The 2004 outcome drops because Bolsa Família has no
+        2003 value; Santa Cruz do Arari (PA), Ipiranga do Norte and
+        Itanhangá (MT) drop because they carry no price index in any
+        year; the rest of the 851 missing cells out of 7,530 are
+        SICONFI reporting gaps (after the filing screen,
+        D-2026-10-16-b, applied as in script 10) and a few GDP or
+        employment cells. The robustness outcomes (forest rate,
+        normalized outcome) use their own complete cases, which turn
+        out to be the same 6,679 cells. The long difference uses the
+        windows of D-2026-10-16-a (2004-07 to 2017-20, two reported
+        SICONFI years in each window), the end window 2017-2019 for the
+        Bolsa Família variables, window means, log(1 + x) for the
+        clearing and spending changes, heteroskedasticity-robust
+        standard errors (HC1), and one common complete-case cross
+        section of 469 municipalities (the 470 of the spending change
+        less Santa Cruz do Arari, which has no price change). Nothing is
+        weighted: the average municipality is the unit, as in script 10.
+        The exercise is a conditional-correlation description and not a
+        candidate identification design, which is why the script lives
+        in _scripts/ and not in _scripts/models/.
+Evidence: output/tables/tab-corr-twfe-full.csv (years, counts and every coefficient per specification); the message printed by script 11 at run
+Affects: analysis-layer estimation samples only; no panel column
+Supersedes: none

@@ -1,0 +1,14 @@
+specification,regressor,coefficient,se,n_obs,n_munic,r2_within
+"Separate, with controls",BF coverage (families / quota),-0.015,0.019,6679,499,0.008
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),0.179,0.109,6679,499,0.009
+"Separate, with controls",log(1 + health spending per capita),-0.008,0.013,6679,499,0.008
+"Separate, with controls",log(1 + education spending per capita),-0.006,0.014,6679,499,0.008
+"Separate, with controls",log(1 + social assistance spending per capita),-0.01,0.01,6679,499,0.008
+"Separate, with controls",Formal employment rate (ten points),-0.025,0.023,6679,499,0.008
+"Separate, with controls",log(1 + social spending per capita),-0.011,0.018,6679,499,0.008
+"Joint, with controls",BF coverage (families / quota),-0.026,0.02,6679,499,0.01
+"Joint, with controls",BF transfers per capita (hundred R$ 2024),0.199,0.115,6679,499,0.01
+"Joint, with controls",log(1 + health spending per capita),-0.003,0.014,6679,499,0.01
+"Joint, with controls",log(1 + education spending per capita),-0.002,0.015,6679,499,0.01
+"Joint, with controls",log(1 + social assistance spending per capita),-0.008,0.011,6679,499,0.01
+"Joint, with controls",Formal employment rate (ten points),-0.018,0.022,6679,499,0.01
