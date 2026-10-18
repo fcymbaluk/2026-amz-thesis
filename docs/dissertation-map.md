@@ -1,7 +1,7 @@
 ---
 role: dissertation-map
 status: canonical
-updated: 2026-10-01
+updated: 2026-10-17
 ---
 
 # Dissertation map — the cross-chapter argument chain
@@ -19,7 +19,14 @@ This file is the single authoritative statement of how the four chapters connect
 
 ## The chain in one paragraph
 
-Chapter 1 reviews the traditions in environmental politics and policy
+The Introduction opens with two puzzles. The theoretical one: how
+environmental concerns interact with social well-being, once well-being is
+taken as a policy domain with institutions of its own and not only as
+income. The empirical one: how Amazon deforestation fell between 2004 and
+2012 while the region grew and social inclusion expanded, and why the
+trend reversed. The two meet at the frontier, where well-being and
+conservation do not align by default and where the institutional
+configuration the eco-social literature assumes does not hold. Chapter 1 reviews the traditions in environmental politics and policy
 (economic, political economy, and institutional lenses), shows that they
 treat environmental and social policy as separate domains, presents the
 Eco-Social State literature as the integrating move, identifies its two
@@ -38,6 +45,28 @@ Chapter 4 then tests, descriptively and causally, whether and under what
 conditions social policy shapes deforestation directly or by conditioning
 the effectiveness of environmental enforcement, positioned against the
 gaps Chapter 3 identifies.
+
+## The introduction's framing (produced there, absorbed by every chapter)
+
+- **Two puzzles and a hinge.** The theoretical puzzle (well-being as a
+  policy domain in the environmental debate) and the Amazon puzzle (the
+  decline of 2004-2012 and its reversal), joined at the frontier.
+- **Two kinds of dependence** (added 2026-10-17; to be absorbed by Ch1, Ch2
+  and Ch4 as they develop). Livelihood dependence: households and local
+  economies live from a degrading activity. Institutional dependence: the
+  state's protective institutions are financed and legitimated by the
+  growth that activity feeds. In Europe the two coincide (growth-dependent
+  welfare), so environmental policy threatens livelihoods and the welfare
+  state's own base at once. On the frontier, livelihood dependence is high
+  and institutional dependence is low: the protection that reached it is
+  non-contributory and federally financed, and municipal budgets rest on
+  federal transfers (Ch4's revenue evidence). This gives mechanism A a
+  structural possibility Europe lacks, while the separation of arenas lets
+  mechanism B operate by default. Which prevails is Ch4's question; the
+  introduction poses it and does not answer it. Institutional dependence
+  varies by level of government (states on ICMS from agriculture and
+  cattle, municipalities on transfers), which is the two-arenas contrast
+  restated in fiscal terms.
 
 ## The three operationalizable dimensions (derived in Ch1, applied in Ch2, operationalized in Ch4)
 
@@ -109,6 +138,11 @@ what has already been tried — not a prior commitment.
 
 | From | To | What is handed off |
 |---|---|---|
+| Intro | Ch1 | The theoretical puzzle and the dependence distinction, to be placed among the traditions reviewed (growth-dependent welfare; Latin American welfare typologies) |
+| Intro | Ch2 | The institutional question (which configuration holds on the frontier) and the fiscal reading of the two-arenas contrast |
+| Intro | Ch3 | The characterization of the Amazon literature (market incentives and federal command-and-control; social policy and subnational governments absent), to be substantiated or corrected by the review |
+| Intro | Ch4 | The Amazon puzzle and the A-versus-B question as the empirical object |
+| Ch4 | Intro | Descriptive evidence on municipal revenue sources, grounding the low-institutional-dependence claim |
 | Ch1 | Ch2 | The three dimensions, as questions applied to every historical period |
 | Ch1 | Ch3 | The analytical lenses (economic, political economy, institutional) used to classify the reviewed studies |
 | Ch1 | Ch4 | The causal framing: social conditions moderate the local response to enforcement |
