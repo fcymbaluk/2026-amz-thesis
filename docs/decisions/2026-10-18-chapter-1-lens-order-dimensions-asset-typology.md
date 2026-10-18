@@ -32,8 +32,9 @@ the same evidence would have coded to two dimensions.
    epistemological section keeps it), and it borrows from political
    economy the distributive content the perspective lacks: an asset
    typology, the author's construction on Colgan, Green and Hale (2021),
-   with the paper's axis (degradation-forcing versus forest-dependent
-   assets) and a second axis of the author's (rent assets versus
+   with the paper's axis (degradation-forcing versus conservation-aligned
+   assets; "forest-dependent" was dropped the same day because
+   "dependent" names the livelihood relation in the dissertation) and a second axis of the author's (rent assets versus
    livelihood assets, by whether the loss is marginal or existential for
    the holder). The livelihood row covers the whole population whose
    well-being depends, directly or indirectly, on the degrading activity.
@@ -66,7 +67,7 @@ needs theory by theory. The author's third asset was not named
 exposure to climate change, not the holder's social condition; the
 two-by-two with the paper's axis kept was preferred to three ad hoc
 categories because it answers why these three and shows the fourth cell
-(forest-dependent rent assets) exists in the Amazon too. The dimensions
+(conservation-aligned rent assets) exists in the Amazon too. The dimensions
 were repartitioned so that codes are exclusive; the renaming of dimension
 2 changes no downstream hand-off in substance, since welfare provision
 stays inside it.

@@ -32,7 +32,7 @@ shows that they treat environmental and social policy as separate
 domains, presents the Eco-Social State literature as the integrating
 move, defends the eco-social perspective on the review's three threads
 and gives it distributive content through the asset typology (rent and
-livelihood holders of degradation-forcing and forest-dependent assets),
+livelihood holders of degradation-forcing and conservation-aligned assets),
 identifies its two gaps (no "worlds of the eco-social state" typology;
 near-exclusive focus on advanced capitalist democracies), and derives a
 framework of three operationalizable dimensions (distributive conflict,
@@ -93,7 +93,7 @@ the line between a rule and its enforcement.
 1. **Distributive conflict.** Who captures the rents of degradation and
    who bears the costs of conservation on the frontier, and how the
    conflict is politically organized. Operationalized through Chapter 1's
-   asset typology: who holds degradation-forcing and forest-dependent
+   asset typology: who holds degradation-forcing and conservation-aligned
    assets, as rent or as livelihood (the livelihood row covers the whole
    population whose well-being depends, directly or indirectly, on the
    degrading activity).
@@ -183,6 +183,6 @@ what has already been tried — not a prior commitment.
 
 | Chapter 1 dimension | Chapter 2 concepts | Historical manifestation |
 |---|---|---|
-| Distributive conflict | Commodification of land and labor; the asset typology (rent and livelihood holders of degradation-forcing and forest-dependent assets) | Who captures rents from land and resource use; who resists regulation and why; concentrated local costs of enforcement; the population dependent on the degrading activity |
+| Distributive conflict | Commodification of land and labor; the asset typology (rent and livelihood holders of degradation-forcing and conservation-aligned assets) | Who captures rents from land and resource use; who resists regulation and why; concentrated local costs of enforcement; the population dependent on the degrading activity |
 | Institutional configuration | Regulated exclusion, then incorporation of outsiders; state-manufactured rents; partial decommodification of nature | Labor regimes outside the citizenship regime; late, non-contributory welfare expansion reaching the frontier; SUDAM incentives and credit; protected areas and extractive reserves; the fiscal base of each level of government |
 | Multilevel governance | Two-arenas contrast; forbearance | Federal role reversal (promoter to regulator); opposite territorial logics of social and environmental implementation; subnational non-enforcement as a political choice |
