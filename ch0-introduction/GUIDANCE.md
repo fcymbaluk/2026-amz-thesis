@@ -2,7 +2,7 @@
 chapter: 0
 title: Introduction
 stage: drafting # conception | drafting | full draft | under review | revising | final
-updated: 2026-10-17
+updated: 2026-10-18
 current_focus: "Author's first draft of the puzzle sections in manuscript/introduction.qmd (2026-10-17), revised the same day on the author's verdicts over the nine development notes (1-6 and 8 applied, 7 deferred to Chapter 1, 9 kept as a plan); four passages marked TODO-develop with proposed content below; three paragraphs still marked DRAFT-UNREVISED pending a writing pass"
 next_milestone: "The four TODO-develop passages drafted by the author; the term for the Latin American welfare model adopted from Chapter 1; the closing sections drafted from the plan in this file"
 ---
@@ -19,6 +19,8 @@ The introduction is written last in substance and first in position. Its claims 
 
 ## The two puzzles
 
+**Two layers of the theoretical puzzle** (recorded 2026-10-18). The basic puzzle: how do environmental issues interact with economic growth and well-being concerns? The specific puzzle: how does environmental action interact with well-being institutions? The first is the theoretical puzzle as drafted below; the second is the institutional layer, and Chapter 1 answers it. The Amazon puzzle is unchanged.
+
 **The theoretical puzzle.** Environmental and climate issues are bound up with economic development and social well-being, and that much is agreed. How environmental concerns interact with the other priorities of a life, income, security, well-being, is not settled. The explanations run from the tragedy of the commons and the free rider to the normative program of a human existence within a safe and just space, and they do not converge. Twentieth-century research on the environment concentrated on one other dimension, economic growth, and asked how far conservation could be reconciled with income. Social well-being entered that research as a cause of degradation (the poverty-environment nexus) or as its victim (the distribution of harms), but not as a policy domain with institutions of its own. Bringing social well-being in as a domain sharpens the puzzle: the cases where conservation and well-being do not align, where livelihoods depend on degrading activities and no alternative is at hand, are the hard cases, and they are the cases the eco-social literature has studied least.
 
 **The institutional layer.** How institutions mediate the interaction of environmental, economic and social problems is the second layer of the theoretical puzzle, and the one that Chapters 1 and 2 answer. In Europe, social institutions were built in step with growth and depend on it, which is why environmental policy there is so often socially regressive. In Brazil and Latin America, social policy followed a different path: regulated citizenship and an authoritarian legacy, then a recent incorporation of outsiders. On the Amazon frontier the configuration is different again: livelihoods came to depend on deforestation-linked activities, but the protective institutions that reached the frontier do not rest on those activities.
@@ -29,7 +31,7 @@ The introduction is written last in substance and first in position. Its claims 
 
 ## The dependence argument (the introduction's own idea)
 
-This is the idea the author added in October 2026; it is stated here so that the chapters can absorb it, and it is revised as they do.
+This is the idea the author added in October 2026; it is stated here so that the chapters can absorb it, and it is revised as they do. Chapter 1's guidance absorbed it on 2026-10-18, restated through its asset typology (livelihood dependence as holding a degradation-forcing livelihood asset with no exit; institutional dependence as the state holding such assets); see Chapter 1, "The defense of the eco-social perspective". Chapters 2 and 4 pending.
 
 Two kinds of dependence have to be told apart. *Livelihood dependence*: households and local economies live from an activity that degrades the environment. *Institutional dependence*: the state's protective institutions are financed and legitimated by the growth that the degrading activity feeds. In Europe the two coincide. Welfare is financed by contributions and taxes drawn from a carbon-intensive formal economy, so a policy that restricts the activity threatens both the livelihoods and the welfare state's own base, and resistance runs through the welfare institutions themselves (the literature on growth-dependent welfare states; the social regressivity of carbon pricing). On the Amazon frontier, livelihood dependence is high and institutional dependence is low: the protection that reached the frontier is non-contributory and federally financed (Bolsa Família, BPC, SUS and FUNDEB transfers), and municipal budgets rest on federal transfers rather than on local activity (Chapter 4's descriptive evidence puts own revenue below a tenth of municipal current revenue). The frontier therefore has a structural possibility that Europe lacks: social protection can compensate the costs of enforcement without undermining its own fiscal base, which is Chapter 2's mechanism A. But the same decoupling means protection carries no conservation stake, since the two arenas were never integrated, and forbearance can operate by default, which is mechanism B. Which prevails is Chapter 4's question. The introduction poses it; it does not answer it.
 
@@ -61,7 +63,7 @@ A refinement worth one sentence: institutional dependence varies by level of gov
 
 The full chain is canonical in `docs/dissertation-map.md`. In brief:
 
-- **To Chapter 1:** the theoretical puzzle and the dependence distinction, which the review must place among the traditions it covers (growth-dependent welfare in the eco-social literature; the Latin American welfare typologies).
+- **To Chapter 1:** the theoretical puzzle in its specific layer and the dependence distinction, which the review must place among the traditions it covers (growth-dependent welfare in the eco-social literature; the Latin American welfare typologies). Done at the guidance level on 2026-10-18; the Latin American typologies wait on Chapter 1's checklist item 3.
 - **To Chapter 2:** the institutional question (which configuration holds on the frontier) and the fiscal reading of the two-arenas contrast.
 - **To Chapter 3:** the characterization of the Amazon literature, to be substantiated or corrected by the systematic review.
 - **To Chapter 4:** the Amazon puzzle and the A-versus-B question as the empirical object.
