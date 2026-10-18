@@ -1,7 +1,14 @@
 # Eco-Social Policy and Environmental Governance in the Brazilian Amazon
 # PhD dissertation in Political Science, University of São Paulo (USP).
 
-PhD dissertation research compendium. Four main chapters:
+PhD dissertation research compendium. An introduction and four main
+chapters:
+
+0. **Introduction.** The two puzzles, theoretical (how environmental
+   concerns interact with social well-being, beyond income) and empirical
+   (the Amazon decline of 2004-2012 and its reversal), joined at the
+   frontier; the dependence argument (livelihood versus institutional
+   dependence).
 
 1. **Chapter 1 — Theoretical review.** Narrative review of environmental
    politics and policy traditions, the Eco-Social State literature and its
@@ -29,6 +36,7 @@ docs/
   writing-rules.md         Anti-AI writing rules (always applied to final text)
   decisions/               Dated decision memos, incl. significant abandonments
   submitted/               Frozen copies of rendered versions actually sent
+ch0-introduction/          GUIDANCE.md + notes/
 ch1-theoretical/           GUIDANCE.md + notes/
 ch2-historical/            GUIDANCE.md + notes/ + evidence/
 ch3-systematic-review/     GUIDANCE.md + PRISMA pipeline (numbered stages):

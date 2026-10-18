@@ -1,0 +1,72 @@
+# Introduction {#sec-introduction .unnumbered}
+
+<!-- Author's first draft, migrated 2026-10-17 (branch intro-puzzle-framing)
+and revised the same day on the author's verdicts over the nine development
+notes in ch0-introduction/GUIDANCE.md: notes 1-6 and 8 applied to the text,
+note 7 deferred to Chapter 1, note 9 kept as a plan. The rewritten
+paragraphs follow docs/writing-rules.md; the paragraphs left as drafted
+(marked DRAFT-UNREVISED) await the author's request for a writing pass.
+Each passage the author marked for development is a TODO-develop comment
+pointing to the guidance section that holds proposed content. References
+without a key in references.bib carry a TODO-cite comment and are listed
+in the guidance under "Sources". -->
+
+Environmental and climate issues are not isolated dimensions of public life. They are tied to economic development and to social well-being. In climate negotiations, countries defend their room for productive growth. In domestic debates over environmental regulation, resistance to conservation measures comes from the groups that bear their costs, and these groups are not always wealthy elites. In the coal regions of Europe and the United States, workers and their unions have defended the mines and plants on which their jobs, pensions and towns depend, and the debate on a just transition exists because that defense carries political weight. In France, the Yellow Vests of 2018 rose against a fuel tax that fell on households that need the car to reach work, a cost on consumption rather than on jobs. The two cases differ in where the cost lands, on production or on consumption. They share the point that matters here: environmental policy imposes costs on people whose well-being is already precarious, and those people resist.
+
+<!-- TODO-cite: just transition in coal regions (author to choose in
+Zotero, e.g. Abraham 2017 on the Ruhr and Appalachia, Stevis and Felli
+2015); Yellow Vests: Douenne and Fabre 2022. -->
+
+It is clear, then, that environmental and climate issues are multidimensional. How environmental concerns interact with the other priorities of a life, earning an income, security, well-being, is a puzzle far from solved. The explanations on offer are diverse, and they diverge. At one end is the premise that we live a tragedy, in which the pursuit of individual gain on an open-access resource undermines every effort to preserve the commons [@hardin1968], and its collective-action twin, the free rider who lets others pay for a public good he enjoys [@olson2003]. At the other end is the normative program of a human existence within a safe and just space, above a social foundation that no one falls below and inside planetary boundaries that no one pushes past (Rockström et al. 2009; Raworth 2017). How to counter free riding, or how to bring humanity inside that space, remains an open question.
+
+<!-- TODO-cite: Rockström et al. 2009 (planetary boundaries), Raworth 2017
+(Doughnut Economics). -->
+
+Twentieth-century research on the environment did not treat it as one problem among many. It concentrated on one other dimension, economic growth, and asked how far conservation could be reconciled with the generation of income by individuals, firms and nations. The answers varied as much as the proposals for reconciling the two. Social well-being was not absent from that research, but it entered in two restricted forms. It entered as a cause of degradation, in the poverty-environment nexus that the Brundtland report made official (WCED 1987). And it entered as a victim of degradation, in the environmental justice literature on who bears the harms, in the inequality-environment nexus [@boyce1994], and in the environmentalism of the poor (Martinez-Alier 2002). What it did not enter as was a policy domain in its own right, with institutions that protect people from poverty and open opportunities to them, and that might shape whether individuals and groups choose to preserve nature. Well-being is understood here as the satisfaction of human needs, in the sense that needs theory gives the term and that the eco-social literature has adopted (Doyal and Gough 1991; Gough 2017). Social protection is the set of institutions that take that satisfaction out of the market, decommodification in Polanyi's sense [@polanyi1944].
+
+<!-- TODO-cite: WCED 1987 (Our Common Future), Martinez-Alier 2002, Doyal
+and Gough 1991, Gough 2017. -->
+
+<!-- DRAFT-UNREVISED (writing pass pending; "interplay" is banned
+vocabulary) -->
+Highlighting the dimension of social well-being brings the environmental puzzle we face into sharper focus. The challenge lies in understanding the interplay between environmental interests and social well-being—beyond the mere generation of income. It is easy to envision these two interests aligning positively; consider, for instance, communities that rely on natural resources, for whom preserving nature is synonymous with maintaining a fulfilling life. Conversely, it is less obvious—and perhaps more unsettling—to imagine scenarios where nature conservation and the assurance of human well-being do not go hand in hand. This may be the case for groups whose livelihoods depend on activities that cause environmental degradation, and for whom no easy alternatives exist.
+
+<!-- TODO-develop 1: two kinds of dependence, livelihood and
+institutional. Proposed content: ch0-introduction/GUIDANCE.md, "The
+dependence argument". -->
+
+<!-- DRAFT-UNREVISED -->
+To such wicked problems, we should add a second layer, that is, the institutional one. How do institutions interact with environmental, economic, and social problems?
+
+<!-- TODO-develop 2: the three lenses answer differently; the eco-social
+answer puts the explanation in the institutional configuration, so the
+question becomes which configuration holds here, and the one theorized is
+European. Proposed content: GUIDANCE.md, "The two puzzles: the
+institutional layer". -->
+
+<!-- DRAFT-UNREVISED -->
+Argument regarding social institutions: In Europe, social institutions were built in tandem with economic growth—they are, in fact, "growth-dependent" (see literature on "eco-welfare"). Consequently, environmental policies often prove regressive from a social perspective.
+
+<!-- TODO-review (note 7, deferred): "conservative model" waits for the
+Latin American welfare typology that Chapter 1 develops (checklist item
+3); the introduction adopts the term Chapter 1 settles on. -->
+In Brazil and Latin America, by contrast, there exists a conservative model of social policy characterized by "regulated citizenship" and an authoritarian legacy, alongside a more recent "inclusion of outsiders." The Amazon frontier adds a configuration of its own. The state was present there, but for capital. It manufactured land as a source of rent through fiscal incentives, subsidized credit and directed colonization, while frontier labor stayed outside the citizenship regime and outside any social policy. Livelihoods came to depend on activities linked to deforestation. The protective institutions that later reached the frontier, non-contributory and financed by the federal budget, do not rest on those activities. Whether that protection cushions the costs of conservation for the people who bear them, or instead gives local governments a reason not to impose those costs at all, is the question this dissertation asks.
+
+<!-- TODO-develop 3: the dependence argument in full, the structural
+possibility the frontier has and Europe lacks, forbearance by default,
+the level-of-government refinement. Proposed content: GUIDANCE.md, "The
+dependence argument". -->
+
+Moving on to the "Amazon puzzle": how was it possible to reduce deforestation while simultaneously generating economic growth and social inclusion? And why has this trend reversed?
+
+The explanations on offer rest on two sets of causes. The first is market incentives: the commodity prices and the rural credit that make clearing pay, or not. The second is federal command-and-control: the monitoring, fines and embargoes of the environmental agencies, with supply-chain agreements and protected areas as further instruments. Social policy does not appear among the causes studied, and governments below the federal level appear, when they appear at all, as targets of federal pressure. Chapter 3 establishes this characterization through a systematic review and corrects it where the literature proves broader. Is it plausible that the other policies of the period, and the other levels of government, had no part?
+
+<!-- TODO-develop 4: the 2004-2012 decline with growth and inclusion, the
+reversal from 2013 and the dismantling of 2019-2022 (Chapter 2's
+asymmetric drift), before the two paragraphs above. Proposed content:
+GUIDANCE.md, "The two puzzles: the Amazon puzzle". -->
+
+<!-- PLAN, not drafted now (author's decision 2026-10-17): the closing
+sections, research question, the argument in one paragraph, design,
+contribution, chapter roadmap. Plan in GUIDANCE.md, "Structure of the
+chapter", items 7-11. -->

@@ -4,7 +4,9 @@
 
 PhD dissertation on eco-social policy and environmental governance in the
 Brazilian Amazon. Author: Fernando, political science / climate policy
-researcher. Four chapters: (1) narrative literature review; (2)
+researcher. An introduction (the two puzzles, theoretical and
+empirical, and the dependence argument) and four chapters: (1) narrative
+literature review; (2)
 institutional-historical analysis; (3) PRISMA systematic review of causal
 research on the causes of Amazon deforestation, with DAG construction;
 (4) descriptive analysis and causal inference on the interaction of social
@@ -22,7 +24,8 @@ addressed) as work progresses.
 Each chapter has its own top-level folder holding its guidance and its
 working materials; shared documents live at the root and in `docs/`.
 
-- `ch1-theoretical/`, `ch2-historical/` — guidance plus notes.
+- `ch0-introduction/`, `ch1-theoretical/`, `ch2-historical/` — guidance
+  plus notes.
 - `ch3-systematic-review/` — the PRISMA pipeline, numbered in stage
   order: `1-protocol/`, `2-search/raw/` (immutable exports),
   `3-screening/`, `4-extraction/`, `5-analysis/`, `6-output/`.
