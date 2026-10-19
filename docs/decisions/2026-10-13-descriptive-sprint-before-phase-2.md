@@ -49,3 +49,5 @@ committed as the deliverable. A gitignored `ch4-causal-analysis/
 literature/` holds the PDFs read for the chapter. After the merge, the
 rename (phase 2R) must also migrate scripts 09-11 and the chapter qmd,
 which read panel columns by their current names.
+
+Delivered 2026-10-18: docx rendered from the sprint branch (tag `ch4-descriptive-2026-10-18`) after `main` was merged in; the sprint sources stay in the analysis layer until task 4.8; phase 2 resumes at step 2.1.

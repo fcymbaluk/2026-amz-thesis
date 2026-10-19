@@ -37,7 +37,13 @@ foreseen; 4.5-4.7 were added for this sprint.
    `docs/submitted/`, tag `ch4-descriptive-2026-10-18`, merge the sprint
    into `main`, delete the branch, resume phase 2 at step 2.1. Follow-up
    registered as task 4.8: promote the SICONFI and Atlas builds into the
-   pipeline as script 02 sources after step 2.9.
+   pipeline as script 02 sources after step 2.9. Done 2026-10-18: `main`
+   merged into the branch first (Chapter 1 and 2 guidance work), docx
+   rendered from the repository root with no unresolved references;
+   carried to the author: the two CHECK comments in the qmd (sample 499
+   versus 500; script 08 cohorts 2008-2012 versus the text's 2008/09)
+   and the nine citation keys still absent from `references.bib`
+   (plain author-year in the text, TODO-cite comments).
 
 ## 3. Chapter reproduction
 

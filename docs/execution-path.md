@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "7, paused for a descriptive sprint 2026-10-13 to 2026-10-18 (branch ch4-descriptive-sprint; stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired on branch stage5-atlas-data during the sprint; after the sprint merge: stage 7 phase 2, step 2.1 (quota source, verify upstream first)"
-updated: 2026-10-13
+current_stage: "7, phase 2, step 2.1 (quota source, verify upstream first). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired; descriptive sprint 2026-10-13 to 2026-10-18 delivered (stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13; tag ch4-descriptive-2026-10-18); its sources join the pipeline under task 4.8 after step 2.9"
+updated: 2026-10-18
 ---
 
 # Execution path — from blank machine to defended empirical chapter
