@@ -1,10 +1,10 @@
 ---
 chapter: 4
 title: Descriptive analysis and causal inference
-stage: revising # dataset rebuild under way: phase 1 (refactor) complete and gated 2026-10-12, phase 2 (fixes) pending; identification strategy re-opened
-updated: 2026-10-12
-current_focus: "Rebuild phase 1 complete and gated (2026-10-12, D-2026-10-12-i): scripts 01-06 refactored to the template with audit notebooks and decision entries; the full pipeline runs end-to-end and reproduces the recovered panel exactly on every column built from recovered raw, with the drift of re-acquired sources quantified under closed version entries and one class (c) discrepancy (avail_ok of Santa Cruz do Arari). The phase 1 panel _data/final/panel_amz_2000_2020_final is the working reference for phase 2 (frozen copy panel_amz_2000_2020_final_phase1 in _data/reference/). Stage 5 complete for scripts 03-06; Atlas Brasil (script 07) still open. Next: phase 2, step 2.1 (task 1.4, quota source errors; verify upstream first), one fix per session"
-next_milestone: "Phase 2 fixes 2.1-2.9 applied, each with its diff report against the phase 1 panel; audit notebooks re-rendered on the extended sample after 2.9"
+stage: revising # dataset rebuild under way: phase 1 (refactor) complete and gated 2026-10-12, phase 2 (fixes) pending; identification strategy re-opened; descriptive sprint 2026-10-13 to 2026-10-18 delivered
+updated: 2026-10-18
+current_focus: "Descriptive sprint delivered 2026-10-18 (branch ch4-descriptive-sprint, plan rebuild/06-descriptive-sprint.md, decision 2026-10-13, GitHub #21): the August chapter reproduced on the phase 1 panel (scripts 07-08), SICONFI/FINBRA and Atlas joined in the analysis layer (script 09, _audit/siconfi.qmd), displays D1-D6 (script 10, utils/theme_ch4.R, utils/screen_siconfi.R), the correlational exercise (script 11), six EDA subsections and sec-ch4-correlations in manuscript/ch4-causal-analysis.qmd, D-2026-10-15-a to D-2026-10-17-a; docx rendered from the repository root on 2026-10-18 with no unresolved references, tag ch4-descriptive-2026-10-18. Open for the author: the two CHECK comments in the qmd (sample 499 versus 500; script 08 cohorts 2008-2012 versus the text 2008/09), the nine citation keys absent from references.bib (TODO-cite), Census 2022 urban/rural (task 4.9a, SIDRA pull outside the sandbox), FINBRA state files 2000-2012 from the Tesouro site. Pipeline 01-06 untouched; the phase 1 panel remains the working reference (frozen copy in _data/reference/). Next: phase 2, step 2.1 (task 1.4, quota source errors; verify upstream first), one fix per session"
+next_milestone: "Phase 2 fixes 2.1-2.9 applied in their original order, each with its diff report against the phase 1 panel; audit notebooks re-rendered on the extended sample after 2.9; then task 4.8 (promote the SICONFI, Atlas and value-added sources into script 02)"
 ---
 
 # Chapter 4 — Descriptive analysis and causal inference: working guidance

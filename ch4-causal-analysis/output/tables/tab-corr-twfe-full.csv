@@ -1,0 +1,54 @@
+specification,block,outcome,regressor,coefficient,se,p_value,n_obs,n_munic,years,r2_within
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),BF coverage (families / quota),-0.0147,0.0193,0.4453,6679,499,2005-2019,0.0082
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),log GDP per capita,0.0341,0.045,0.4486,6679,499,2005-2019,0.0082
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0399,0.0423,0.3455,6679,499,2005-2019,0.0082
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1701,0.0584,0.0037,6679,499,2005-2019,0.0082
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),Cattle per km2,-5e-4,0.0012,0.6914,6679,499,2005-2019,0.0082
+"Separate, with controls",BF coverage (families / quota),log(1 + cleared km2),On the priority list (0/1),-0.0991,0.051,0.0524,6679,499,2005-2019,0.0082
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),BF transfers per capita (hundred R$ 2024),0.1785,0.1091,0.1024,6679,499,2005-2019,0.0093
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),log GDP per capita,0.0366,0.0444,0.4099,6679,499,2005-2019,0.0093
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0385,0.0423,0.3638,6679,499,2005-2019,0.0093
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1311,0.0633,0.0388,6679,499,2005-2019,0.0093
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),Cattle per km2,-3e-4,0.0012,0.8167,6679,499,2005-2019,0.0093
+"Separate, with controls",BF transfers per capita (hundred R$ 2024),log(1 + cleared km2),On the priority list (0/1),-0.0961,0.051,0.0599,6679,499,2005-2019,0.0093
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),log(1 + health spending per capita),-0.0079,0.0127,0.5345,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),log GDP per capita,0.0383,0.0449,0.3949,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0395,0.0422,0.3496,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1645,0.0581,0.0048,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),Cattle per km2,-4e-4,0.0012,0.7172,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + health spending per capita),log(1 + cleared km2),On the priority list (0/1),-0.1007,0.051,0.0491,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),log(1 + education spending per capita),-0.0064,0.0143,0.6543,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),log GDP per capita,0.0377,0.045,0.4021,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0399,0.0423,0.3466,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1654,0.0581,0.0046,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),Cattle per km2,-4e-4,0.0012,0.706,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + education spending per capita),log(1 + cleared km2),On the priority list (0/1),-0.1007,0.0511,0.0495,6679,499,2005-2019,0.0081
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),log(1 + social assistance spending per capita),-0.0101,0.0105,0.3351,6679,499,2005-2019,0.0083
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),log GDP per capita,0.0396,0.0448,0.3772,6679,499,2005-2019,0.0083
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0396,0.0424,0.3507,6679,499,2005-2019,0.0083
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1638,0.058,0.0049,6679,499,2005-2019,0.0083
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),Cattle per km2,-4e-4,0.0011,0.7369,6679,499,2005-2019,0.0083
+"Separate, with controls",log(1 + social assistance spending per capita),log(1 + cleared km2),On the priority list (0/1),-0.1005,0.051,0.0494,6679,499,2005-2019,0.0083
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),Formal employment rate (ten points),-0.0252,0.0226,0.2651,6679,499,2005-2019,0.0084
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),log GDP per capita,0.0492,0.0458,0.2834,6679,499,2005-2019,0.0084
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),"Crop price index (z, lagged)",-0.0392,0.0428,0.3609,6679,499,2005-2019,0.0084
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1602,0.0584,0.0063,6679,499,2005-2019,0.0084
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),Cattle per km2,-4e-4,0.0011,0.7166,6679,499,2005-2019,0.0084
+"Separate, with controls",Formal employment rate (ten points),log(1 + cleared km2),On the priority list (0/1),-0.099,0.0511,0.0534,6679,499,2005-2019,0.0084
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),log(1 + social spending per capita),-0.0111,0.0175,0.525,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),log GDP per capita,0.0392,0.045,0.3842,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),"Crop price index (z, lagged)",-0.04,0.0423,0.3452,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1649,0.058,0.0047,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),Cattle per km2,-4e-4,0.0012,0.7081,6679,499,2005-2019,0.0082
+"Separate, with controls",log(1 + social spending per capita),log(1 + cleared km2),On the priority list (0/1),-0.1005,0.051,0.0495,6679,499,2005-2019,0.0082
+"Joint, with controls",Joint,log(1 + cleared km2),BF coverage (families / quota),-0.0258,0.0204,0.206,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),BF transfers per capita (hundred R$ 2024),0.1989,0.115,0.0844,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),log(1 + health spending per capita),-0.0025,0.0139,0.8559,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),log(1 + education spending per capita),-0.0022,0.0154,0.8872,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),log(1 + social assistance spending per capita),-0.0078,0.0108,0.4704,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),Formal employment rate (ten points),-0.0175,0.0223,0.4332,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),log GDP per capita,0.0472,0.0457,0.3025,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),"Crop price index (z, lagged)",-0.0385,0.0428,0.36870000000000003,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),"Cattle price index (z, lagged)",-0.1312,0.0636,0.0396,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),Cattle per km2,-3e-4,0.0011,0.7863,6679,499,2005-2019,0.0103
+"Joint, with controls",Joint,log(1 + cleared km2),On the priority list (0/1),-0.0929,0.0507,0.0676,6679,499,2005-2019,0.0103

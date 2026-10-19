@@ -1247,3 +1247,273 @@ Evidence: scratch gate report (compare_outputs by column class) in this
           entry and the gate commit; _audit/*.qmd for each source
 Affects: none (acceptance record)
 Supersedes: none
+
+## D-2026-10-15-a  Atlas Brasil vintages joined by geocode: shares rescaled to 0-1, income kept at its 2010 base and also in 2024 reais, urban share from the census counts
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (ATLAS_PCT_TO_SHARE, ATLAS_INCOME_BASE); _data/interim/atlas_indicators_1991_2010; the *_c2000 and *_c2010 columns of _data/final/panel_amz_2000_2020_descriptive
+Context: the sprint plan (rebuild/06-descriptive-sprint.md section 5)
+         re-acquires Atlas Brasil as censo_total_1991_2010.xlsx with the
+         seven-digit code, retiring the legacy name match and alias table
+         of 07-data-analysis-EDA-poverty.R (_audit/atlas.qmd Q2, Q3).
+Reason: PIND, PMPOB and PPOB are served on 0-100 and the naming
+        convention admits shares on 0-1 only, so the three are divided
+        by 100 (poverty_extreme_share, poverty_share,
+        vulnerability_share); RDPC is in reais of 1 August 2010 (Siglas)
+        and is stored as income_pc_brl_2010 and, multiplied by the
+        annual 2010 IPCA factor of deflator_ipca_2024.csv, as
+        income_pc_brl_2024, an approximation of the monthly anchor by the
+        annual factor that the codebook records; urban_share is
+        pesourb / pesotot, under the administrative census definition
+        of urban whose limitation task 4.9 addresses; atlas_population
+        is pesotot, kept beside, never in place of, the panel's census
+        anchors. The panel carries the 2000 and 2010 vintages as
+        time-invariant columns suffixed _c2000 and _c2010 (naming
+        convention section 3.6); 1991 stays in the interim file. Names
+        follow the panel's current (pre-rename) style and migrate with
+        scripts 09-11 at phase 2R.
+Evidence: _audit/atlas.qmd Q4-Q6; script assertions (502 sample
+          municipalities present in all three vintages, shares on 0-1)
+Affects: new columns only; no panel value
+Supersedes: none
+
+## D-2026-10-15-b  Value added by activity from SIDRA 5938: land-based dependence is the agropecuária share, Santarém undivided before 2013
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (VA_VARIABLES, BRL_PER_MIL); _data/interim/ibge_pib_value_added_2002_2023; the va_* columns of the descriptive panel
+Context: task 4.1 asks for the weight of agriculture, livestock, mining
+         and logging in the local economy; the 5938 extracts of
+         2026-10-09 carry value added by four activities (variables 513,
+         517, 6575, 525) and the total (498), integer mil reais.
+Reason: the only activity split IBGE publishes at municipal level puts
+        agriculture, livestock, forestry (logging included) and fishing
+        under agropecuária and mining inside industry, so the
+        land-based measure is va_agro_share = va_agro / va_total, with
+        the mining caveat stated in the chapter; the four shares and the
+        nominal and 2024-reais levels are stored for all 5,570
+        municipalities 2002-2023. Unlike script 03 (D-2026-10-10-e), the
+        Santarém series before 2013 is not split with Mojuí dos Campos:
+        shares are invariant to a proportional split and Mojuí is outside
+        the sample, so Mojuí is NA before 2013 and Santarém covers both.
+        Negative values served by IBGE (one agro cell, 42 industry cells,
+        none in the sample) are kept as served, as for GDP
+        (D-2026-10-10-b).
+Evidence: _audit/ibge_pib.qmd Q1 holds for the value-added files (same
+          symbols, 5,570 series); script assertions (components sum to
+          the total within rounding)
+Affects: new columns only
+Supersedes: none
+
+## D-2026-10-15-c  SICONFI expenditure by function: stage empenhadas, functions from 2002, published total from 2004, absent function in a reporting year is zero, gaps never imputed, state series 2013-2024
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (EXP_STAGE, EXP_FUNCTION_YEARS, EXP_BY_NAME_YEARS, EXP_FUNCTIONS, EXP_TOTAL_NAMES, EXP_UF_YEARS); _data/interim/siconfi_expenditure_munic_2000_2024, siconfi_expenditure_uf_2013_2024; the exp_* columns of the descriptive panel
+Context: task 4.5 (supervisor request of 2026-10-13); extracts of
+         2026-10-15 from basedosdados.br_me_siconfi, SQL in
+         _scripts/sql/2026-10-15-siconfi-extraction.sql.
+Reason: (1) Despesas Empenhadas is the only stage before 2013 and runs
+        through the FINBRA-to-SICONFI break, so it is the stage for every
+        year (liquidadas and pagas exist from 2013 only). (2) 2000-2001
+        use the pre-Portaria-42 classification (Saúde e Saneamento,
+        Educação e Cultura, Assistência e Previdência), which does not
+        map onto health, education, social assistance, social security
+        and environmental management, so the function columns start in
+        2002 and 2000-2001 keep the total only. (3) Function rows are
+        read by the Base dos Dados id 3.FF.000 from 2004 and by name in
+        2002-2003, when no id exists; the total is the published total
+        row from 2004 (Despesas por Função to 2012; the exceto
+        intraorçamentárias total under its three spellings from 2013;
+        the duplicate Total Geral da Despesa por Função of 2010-2012 is
+        not read) and the sum of the 28 function rows in 2002-2003, the
+        function rows summing to the published total within one percent
+        in every later year. (4) A function absent from a
+        municipality-year that has a total is zero, because the SICONFI
+        layout lists non-zero functions only, while a municipality-year
+        without a total is a reporting gap kept as NA: 388 to 500 of the
+        502 sample municipalities report in a given year and nothing is
+        imputed. (5) exp_social is health plus education plus social
+        assistance. (6) Values are deflated with the annual IPCA factor
+        (D-2026-10-05-c) and divided by the interpolated census
+        population of script 03 (2002-2022; NA outside), the state
+        population being the sum of its municipalities. (7) The Base dos
+        Dados state table begins in 2013, so the state series is
+        2013-2024; the FINBRA state files 2000-2012 are an open follow-up
+        under task 4.5. Column names follow the panel's current style
+        (exp_<function>_brl, _brl_2024, _pc_brl_2024) and migrate at
+        phase 2R.
+Evidence: _audit/siconfi.qmd Q1-Q5, Q7
+Affects: new columns only
+Supersedes: none
+
+## D-2026-10-15-d  SICONFI municipal revenue: items read at the parent level of each account plan, FINBRA names to 2012 and Tesouro codes from 2013, gross of deductions, absent item in a reporting year is zero
+
+Status: closed (descriptive sprint, day 3)
+Scope: 09-descriptive-data.R (REV_STAGE, REV_RULES, REV_TRANSFER_ITEMS); _data/interim/siconfi_revenue_munic_2000_2024; the rev_* columns of the descriptive panel
+Context: task 4.5 asks for the federal transfers that fund social
+         expenditure (FPM and the conditioned SUS, FUNDEB, FNDE and
+         FNAS transfers, in the classification of Alcaraz 2024); the
+         account names change at 2002, 2004, 2013, 2018, 2019 and 2022,
+         the Base dos Dados id is filled for eight percent of revenue
+         rows, and the same display name recurs within a
+         municipality-year under current and capital transfers.
+Reason: the stage is Receitas Brutas Realizadas (gross, before the
+        FUNDEB and other deductions, which are separate stages). Up to
+        2012 the FINBRA names are unique within a municipality-year and
+        are read directly; from 2013 the Tesouro account code (column
+        portaria) is unique within a municipality-year and the rules
+        name, for each item and period, the parent-level code of the
+        current-revenue branch, so that children never add to a parent
+        (the parents equal the sum of their children wherever both
+        exist, _audit/siconfi.qmd Q6). The rule table is REV_RULES in
+        the script: total (Rec Orçamentária, Total Receitas, TOTAL DAS
+        RECEITAS), current, current transfers, Union transfers, tax;
+        FPM (Cota FPM; 1.7.2.1.01.02-04; the three 1.7.1.8.01 quotas of
+        2018-2021, when no parent row exists; 1.7.1.1.51.0.0); SUS from
+        the Union (SUS União; 1.7.2.1.33; 1.7.1.8.03 plus the 2019-2021
+        investment block 1.7.1.8.04; 1.7.1.3.00.0.0); FUNDEF/FUNDEB
+        including the Union complement (Fundef União and Estado; Transf
+        Multigov FUNDEF/FUNDEB and Comp; 1.7.2.4.01 and .02; 1.7.5.8.01
+        plus 1.7.1.8.09; 1.7.5.1 plus 1.7.1.5); FNDE including
+        salário-educação (FNDE and Cota Salário Educação; 1.7.2.1.35 and
+        .01.30; 1.7.1.8.05; 1.7.1.4); FNAS (FNAS; 1.7.2.1.34;
+        1.7.1.8.04 in 2018 and 1.7.1.8.12 in 2019-2021; 1.7.1.6). An
+        item absent from a municipality-year that has a total row is
+        zero; FNDE and FNAS have no line in the 2000-2001 layout and are
+        NA there. The published totals are net of the FUNDEF/FUNDEB
+        deductions taken from 2002 while the transfer lines are gross,
+        so 120 to 342 municipalities a year in 2002-2012 (and 24 in
+        2024) carry current transfers above the total; the script
+        therefore asserts FPM against current transfers. The 2018 transition layout reports the SUS
+        and FNAS parents for fewer municipalities (zero shares of 15
+        percent that year), shown in the audit and not corrected. The
+        author checked the table against Alcaraz (2024, Quadro 2) on
+        2026-10-15: SUS, FUNDEB with the other FNDE lines and FNAS are
+        its conditioned transfers (TC), FPM is FPM, and its total (RT)
+        is current revenue, carried here as rev_current; its own revenue
+        (AP, current revenue except transfers) is added as rev_own, the
+        difference between the current total and current transfers,
+        negative in 30 municipality-years (28 in 2024) for the same
+        net-versus-gross reason and left as is. Its devolutive (ICMS,
+        IPVA, ITR, royalties) and other transfers are not extracted.
+Evidence: _audit/siconfi.qmd Q1, Q6, Q7
+Affects: new columns only
+Supersedes: none
+
+## D-2026-10-16-a  Descriptive groups: listing status, baseline terciles on the 2004-07 window, and urban classes at 0.5 and 0.75 of the 2010 urban share
+
+Status: closed (descriptive sprint, day 4)
+Scope: 10-descriptive-figures.R (BASELINE_YEARS, END_YEARS, DECADE_START, DECADE_END, MIN_BASELINE_REPORTS, URBAN_BREAKS, tercile()); displays D3-D6 and the chapter's grouped tables; script 11 reuses the groups
+Context: the sprint's grouped trajectories, structure cross-tab and
+         long differences need municipal groups that are fixed before
+         the enforcement period and do not depend on the outcome.
+Reason: listing status is ever-listed (any ppcdam_list == 1 in
+        2000-2020, 61 municipalities) against never listed (441).
+        Terciles are cut on the full sample at the 1/3 and 2/3
+        quantiles of three baseline characteristics: municipal social
+        spending per capita (health, education and social assistance,
+        2024 reais) averaged over 2004-2007, the pre-listing window of
+        the moderator; the 2000 census poverty rate (Atlas Brasil,
+        poverty_share_c2000); and the agropecuária share of value
+        added averaged over 2004-2007. The spending tercile requires
+        at least two reported SICONFI years in the window, which
+        leaves 471 municipalities; the other two cover all 502. The
+        long-difference end window is 2017-2020 under the same
+        two-year rule (470 municipalities for the spending change);
+        the poverty change uses 2000-2002 and 2010-2012 clearing
+        windows around the two censuses. Urban classes are cut on
+        the 2010 census urban share at 0.5 (rural majority) and 0.75
+        (urban), the two round thresholds that split the sample into
+        215, 208 and 79 municipalities; the census definition is
+        administrative and the robustness classification is task 4.9.
+Evidence: output/tables/tab-structure-crosstab.csv, tab-summary-by-group.csv; fig-trajectories-*.png
+Affects: analysis-layer groups only; no panel column
+Supersedes: none
+
+## D-2026-10-16-b  SICONFI filing screen in the analysis layer: a municipality-year whose per-capita total is more than ten times or less than a tenth of the municipality's own median is a reporting gap
+
+Status: closed (descriptive sprint, day 4)
+Scope: _scripts/utils/screen_siconfi.R (siconfi_flags, siconfi_screen, SICONFI_SCREEN_FACTOR = 10); applied by 10-descriptive-figures.R to the exp_* columns of _data/interim/siconfi_expenditure_munic_2000_2024 and to the exp_* and rev_* columns of the descriptive panel; script 11 applies the same screen. The interim files of script 09 and the raw extracts are unchanged.
+Context: the day-4 displays showed a 2011 spike in every municipal
+         spending series. Manoel Urbano (AC, 1200344) reports R$ 1.45
+         billion of expenditure in 2011 against R$ 13.7 million in 2010,
+         a per-capita total of R$ 365,474 at 2024 prices, 127 times its
+         own median, on the revenue side as well (R$ 342,650 per
+         capita): a filing in the wrong unit. Scanning the 808
+         municipalities for the same pattern found a second kind of
+         error, totals filed at a few reais or less per capita (ratios
+         to the own median below 1e-7), concentrated in Maranhão in
+         2013.
+Reason: an order-of-magnitude screen on the municipality's own
+        series, symmetric at a factor of ten, catches both kinds and
+        nothing else: the 99.9th percentile of the ratio across all
+        808 municipalities is 3.0. Flags are computed on the
+        expenditure total per capita and, separately, on current
+        revenue per capita; a flagged municipality-year has every
+        column of that side set to NA, the same treatment as a year
+        the municipality did not file (D-2026-10-15-c), and is never
+        corrected. Counts, asserted in script 10: 16 expenditure and 26
+        revenue municipality-years among the 808 municipalities, 16
+        distinct municipality-years in the sample (11 expenditure, 11
+        revenue, 6 on both sides), out of 8,628 reported sample cells.
+        The screen removed the 2011 spike from the state panel (AC),
+        the tercile panels and the sample means, and changed the
+        within/between decomposition of every spending variable
+        (social spending per capita from 9 to 40 percent between),
+        which is why it is a logged decision and not a display choice.
+        Promotion to the pipeline (task 4.8) carries the screen into
+        script 02 as an assertion with a listed exception table.
+Evidence: _scripts/utils/screen_siconfi.R; the flag list printed by script 10 (message at run); _audit/siconfi.qmd Q8 to be added at promotion
+Affects: 16 sample municipality-years on the exp_*/rev_* columns of the descriptive panel, analysis layer only
+Supersedes: none
+
+## D-2026-10-17-a  Correlational exercise: outcome years 2004-2019, regressors lagged one year within municipality, log(1 + x) for per-capita spending, transfers in hundreds of reais and employment in ten-point units, one common complete-case sample
+
+Status: closed (descriptive sprint, day 5)
+Scope: 11-correlations.R (CORR_YEARS, CORR_LAG, TRANSFERS_SCALE, EMP_SCALE, BF_END_YEARS, reg_main, ld_main); output/tables/tab-corr-twfe-main.csv, -full.csv, -robustness.csv, tab-corr-long-difference.csv; manuscript section sec-ch4-correlations
+Context: the sprint plan (rebuild/06-descriptive-sprint.md, section 7)
+         fixes the estimator (fixest two-way fixed effects, municipality
+         and year, clustered by municipality), the outcome (log of one
+         plus cleared km2), the regressor list and the window
+         (2004-2019, Bolsa Família ending in 2019, D-2026-10-05-b), but
+         not the lag mechanics, the treatment of zero spending, the
+         scaling or the sample rule.
+Reason: the outcome years are 2004-2019 and every regressor except
+        listing status is the previous year's value, built as the
+        positional lag within municipality on the balanced 2000-2020
+        panel (asserted). Listing status is contemporaneous because it
+        is the enforcement regime of the outcome year, not a social
+        condition. The price indices enter through the pipeline's own
+        one-year lags (price_index_*_lag1_z, D-2026-10-11-d) and are not
+        lagged again. A function absent from a reporting year is a zero
+        (D-2026-10-15-c), 63 health, 45 education and 86 social
+        assistance municipality-years in 2003-2019, so spending per
+        capita enters as log(1 + x), never log(x). BF transfers per
+        capita enter in hundreds of 2024 reais and the formal employment
+        rate in units of ten points, so that the coefficients read at
+        the scale the variables move on. The main table is estimated on
+        one common complete-case sample, so that the separate and the
+        joint specifications are read on the same municipality-years:
+        6,679 municipality-years and 499 municipalities, outcome years
+        2005-2019. The 2004 outcome drops because Bolsa Família has no
+        2003 value; Santa Cruz do Arari (PA), Ipiranga do Norte and
+        Itanhangá (MT) drop because they carry no price index in any
+        year; the rest of the 851 missing cells out of 7,530 are
+        SICONFI reporting gaps (after the filing screen,
+        D-2026-10-16-b, applied as in script 10) and a few GDP or
+        employment cells. The robustness outcomes (forest rate,
+        normalized outcome) use their own complete cases, which turn
+        out to be the same 6,679 cells. The long difference uses the
+        windows of D-2026-10-16-a (2004-07 to 2017-20, two reported
+        SICONFI years in each window), the end window 2017-2019 for the
+        Bolsa Família variables, window means, log(1 + x) for the
+        clearing and spending changes, heteroskedasticity-robust
+        standard errors (HC1), and one common complete-case cross
+        section of 469 municipalities (the 470 of the spending change
+        less Santa Cruz do Arari, which has no price change). Nothing is
+        weighted: the average municipality is the unit, as in script 10.
+        The exercise is a conditional-correlation description and not a
+        candidate identification design, which is why the script lives
+        in _scripts/ and not in _scripts/models/.
+Evidence: output/tables/tab-corr-twfe-full.csv (years, counts and every coefficient per specification); the message printed by script 11 at run
+Affects: analysis-layer estimation samples only; no panel column
+Supersedes: none

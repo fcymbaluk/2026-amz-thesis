@@ -1,0 +1,308 @@
+---
+title: "Audit: FINBRA/SICONFI expenditure by function and municipal revenue (Base dos Dados)"
+date: 2026-10-15
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+Source: Tesouro Nacional, FINBRA (to 2012) and SICONFI (from 2013), as
+served by Base dos Dados (`basedosdados.br_me_siconfi`, tables
+`municipio_despesas_funcao`, `uf_despesas_funcao`,
+`municipio_receitas_orcamentarias`), queried on 2026-10-15 (SQL in
+`_scripts/sql/2026-10-15-siconfi-extraction.sql`). Raw extracts:
+`_data/raw/siconfi/siconfi_*_amz_*.csv`, nine Legal Amazon states.
+Consumer: the descriptive sprint script `_scripts/09-descriptive-data.R`
+(task 4.5); promoted to the pipeline under task 4.8.
+
+```{r setup}
+#| include: false
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+suppressPackageStartupMessages(library(tidyverse))
+options(width = 120)
+```
+
+```{r read}
+raw_dir <- "_data/raw/siconfi"
+ct <- cols(.default = col_character(), ano = col_integer(), valor = col_double())
+exp_m <- bind_rows(
+  read_csv(file.path(raw_dir, "siconfi_municipio_despesas_funcao_amz_2000_2003.csv"), col_types = ct),
+  read_csv(file.path(raw_dir, "siconfi_municipio_despesas_funcao_amz_2004_2024.csv"), col_types = ct))
+exp_u <- read_csv(file.path(raw_dir, "siconfi_uf_despesas_funcao_amz_2000_2024.csv"), col_types = ct)
+rev_m <- read_csv(file.path(raw_dir, "siconfi_municipio_receitas_orcamentarias_amz_2000_2024.csv"), col_types = ct)
+exp_munic <- read_rds("_data/interim/siconfi_expenditure_munic_2000_2024.rds")
+exp_uf <- read_rds("_data/interim/siconfi_expenditure_uf_2013_2024.rds")
+rev_munic <- read_rds("_data/interim/siconfi_revenue_munic_2000_2024.rds")
+panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
+sample_geo <- panel %>% distinct(geocode, state_abbreviation)
+six <- c("Saúde", "Educação", "Assistência Social", "Previdência Social", "Gestão Ambiental")
+totals <- c("Despesas por Função", "Total Geral da Despesa por Função",
+            "Despesas (Exceto Intra-Orçamentárias)", "Despesas (Exceto Intraorçamentárias)",
+            "Despesas Exceto Intraorçamentárias")
+```
+
+## Q1. What do the four extracts contain?
+
+What is checked: rows, years, municipalities or states, stages, and the
+share of rows carrying the Base dos Dados account id (expenditure) or
+the Tesouro account code `portaria` (revenue).
+
+```{r q1-shape}
+bind_rows(
+  exp_m %>% summarise(file = "municipal expenditure", rows = n(), years = paste(range(ano), collapse = "-"),
+                      units = n_distinct(id_municipio), stages = n_distinct(estagio_bd),
+                      id_share = mean(!is.na(id_conta_bd) & id_conta_bd != "")),
+  exp_u %>% summarise(file = "state expenditure", rows = n(), years = paste(range(ano), collapse = "-"),
+                      units = n_distinct(sigla_uf), stages = n_distinct(estagio_bd),
+                      id_share = mean(!is.na(id_conta_bd))),
+  rev_m %>% summarise(file = "municipal revenue", rows = n(), years = paste(range(ano), collapse = "-"),
+                      units = n_distinct(id_municipio), stages = n_distinct(estagio_bd),
+                      id_share = mean(!is.na(portaria))))
+exp_u %>% count(estagio_bd)
+```
+
+**Finding.** The municipal expenditure extract holds the nine states'
+808 municipalities for 2000-2024 under one stage (empenhadas), with the
+function id present from 2004; the state table begins in 2013 (five
+stages, all years to 2024); the revenue extract holds the matched
+accounts 2000-2024, with the Tesouro code filled from 2013 and absent
+before (FINBRA names only) and on the total rows.
+**Decision.** D-2026-10-15-c (expenditure), D-2026-10-15-d (revenue):
+the stage, the periods and the keys named here.
+**Assertion.** `09-descriptive-data.R`, raw-state block (stage, states,
+808 municipalities, years, unique keys).
+
+## Q2. Which rows give a municipality's total and its functions, year by year?
+
+What is checked: the total rows by name and year, the 2010-2012 pair of
+total rows under the same id, the 2013 rows without id, and the sum of
+the function rows against the published total.
+
+```{r q2-totals}
+exp_m %>% filter(conta %in% totals) %>% count(ano, conta) %>%
+  pivot_wider(names_from = ano, values_from = n) %>% select(conta, `2004`, `2009`, `2010`, `2012`, `2013`, `2014`, `2016`, `2017`, `2024`)
+pair <- exp_m %>% filter(ano %in% 2010:2012, conta %in% totals[1:2]) %>%
+  select(id_municipio, ano, conta, valor) %>% pivot_wider(names_from = conta, values_from = valor)
+pair %>% summarise(n = n(), equal = sum(abs(`Despesas por Função` - `Total Geral da Despesa por Função`) < 1),
+                   median_ratio = median(`Total Geral da Despesa por Função` / `Despesas por Função`))
+fun_sum <- exp_m %>%
+  mutate(kind = case_when(conta %in% totals[-2] ~ "total", conta == totals[2] ~ "drop",
+                          str_detect(conta, "^Despesas") ~ "intra", TRUE ~ "function")) %>%
+  filter(kind %in% c("total", "function")) %>%
+  group_by(id_municipio, ano, kind) %>% summarise(v = sum(valor), .groups = "drop") %>%
+  pivot_wider(names_from = kind, values_from = v)
+fun_sum %>% filter(ano >= 2004) %>% group_by(ano) %>%
+  summarise(n = n(), within_1pct = mean(abs(`function` / total - 1) < 0.01), max_ratio = max(`function` / total)) %>%
+  mutate(across(-c(ano, n), ~ round(.x, 3)))
+```
+
+**Finding.** From 2004 every reporting municipality-year has one total
+row (`Despesas por Função` to 2012, the "exceto intraorçamentárias"
+total under three spellings from 2013); 2010-2012 repeat the total under
+`Total Geral da Despesa por Função`, equal in 2,106 of 2,204 cases and
+dropped. The function rows sum to the published total within one
+percent in every year from 2004, so the 2002-2003 totals, which have no
+published row, are taken as the sum of the 28 functions.
+**Decision.** D-2026-10-15-c.
+**Assertion.** `09-descriptive-data.R`, raw-state block (one total row
+per municipality-year from 2004) and output block (function sum never
+above the total).
+
+## Q3. How complete is the municipal reporting, overall and in the sample?
+
+What is checked: municipalities with a total (or any function row before
+2004) by year, the 502 sample municipalities by year and state, and the
+municipalities missing most often.
+
+```{r q3-coverage}
+cov <- exp_munic %>% mutate(in_sample = geocode %in% sample_geo$geocode) %>%
+  group_by(year) %>% summarise(all_9_states = n(), sample = sum(in_sample), .groups = "drop")
+cov %>% pivot_longer(-year) %>% pivot_wider(names_from = year, values_from = value)
+cov %>% filter(year >= 2002) %>%
+  transmute(year, sample_pct = round(100 * sample / nrow(sample_geo)),
+            rest_pct = round(100 * (all_9_states - sample) / (n_distinct(exp_munic$geocode) - nrow(sample_geo)))) %>%
+  pivot_longer(-year) %>% pivot_wider(names_from = year, values_from = value)
+exp_munic %>% semi_join(sample_geo, by = "geocode") %>% filter(year %in% 2004:2020) %>%
+  count(state_abbreviation, year) %>% pivot_wider(names_from = year, values_from = n) %>%
+  left_join(sample_geo %>% count(state_abbreviation, name = "n_sample"), by = "state_abbreviation") %>%
+  relocate(n_sample, .after = state_abbreviation)
+sample_geo %>% left_join(exp_munic %>% filter(year %in% 2004:2020) %>% count(geocode, name = "years_reported"), by = "geocode") %>%
+  mutate(years_reported = replace_na(years_reported, 0L)) %>% count(years_reported) %>% arrange(years_reported) %>% head(8)
+```
+
+**Finding.** Reporting is incomplete in every year: between 388 (2008)
+and 500 (2022) of the 502 sample municipalities have a total, with the
+worst years 2004-2008 and 2012 and the gaps concentrated in Pará,
+Maranhão and Amazonas. The 306 non-sample municipalities of the nine
+states report at nearly the same rate in every year (a few points
+higher before 2017), so the gaps are FINBRA's voluntary reporting, not
+a property of the sample; from 2017, when SICONFI became mandatory,
+coverage is above 98 percent. The gaps are the source's; the descriptive
+displays show them as missing municipality-years and the aggregates are
+computed over reporting municipalities, never imputed.
+**Decision.** D-2026-10-15-c (no imputation).
+**Assertion.** none; the coverage is reported, not asserted.
+
+## Q4. Are the five functions comparable across the 2002 and 2013 breaks?
+
+What is checked: the pre-2002 vocabulary, the share of reporting
+municipalities with each function present (post-2013 files list only
+non-zero functions, so absent means zero), and the sample medians per
+capita by year.
+
+```{r q4-functions}
+exp_m %>% filter(ano %in% 2000:2003) %>% distinct(ano, conta) %>% count(ano, name = "n_functions")
+exp_m %>% filter(ano %in% 2000:2001) %>% distinct(conta) %>% pull(conta) %>% sort()
+present <- exp_m %>% filter(ano >= 2002, conta %in% six) %>% distinct(id_municipio, ano, conta) %>%
+  count(ano, conta) %>% left_join(exp_munic %>% count(year, name = "reporting"), by = c("ano" = "year")) %>%
+  mutate(share = round(n / reporting, 3)) %>% select(ano, conta, share) %>%
+  pivot_wider(names_from = conta, values_from = share)
+present %>% filter(ano %in% c(2002, 2005, 2010, 2012, 2013, 2014, 2017, 2020, 2024))
+exp_munic %>% semi_join(sample_geo, by = "geocode") %>% filter(year %in% 2002:2024) %>%
+  group_by(year) %>%
+  summarise(n = n(), across(c(exp_health_pc_brl_2024, exp_education_pc_brl_2024, exp_social_assistance_pc_brl_2024,
+                              exp_social_security_pc_brl_2024, exp_environment_pc_brl_2024, exp_total_pc_brl_2024),
+                            ~ round(median(.x, na.rm = TRUE)), .names = "{str_remove(str_remove(.col, 'exp_'), '_pc_brl_2024')}"),
+            .groups = "drop")
+```
+
+**Finding.** 2000-2001 use the fifteen-function classification that
+preceded Portaria 42/1999 (`Saúde e Saneamento`, `Educação e Cultura`,
+`Assistência e Previdência`), which does not map onto the five
+functions, so the function series start in 2002 and only the total is
+kept for 2000-2001. Health, education and social assistance are present
+for almost every reporting municipality in every year; social security
+(own pension regimes) and environmental management are present for a
+minority after 2013, which the absent-as-zero rule treats as zero
+spending. The sample medians per capita rise without a visible step at
+2013: health from about R$ 340 in 2004 to R$ 1,060 in 2020, education
+from R$ 590 to R$ 1,390, social assistance from R$ 49 to R$ 138,
+environmental management from zero to R$ 12 (2024 reais; per capita is
+NA in 2000-2001 and 2023-2024, outside the interpolated population).
+**Decision.** D-2026-10-15-c: functions from 2002, absent functions in a
+reporting year are zero.
+**Assertion.** `09-descriptive-data.R`, output block (function columns NA
+only before 2002).
+
+## Q5. What does the state table cover?
+
+What is checked: years and states, the total row by year, the five
+functions, and the state governments' social spending per capita beside
+the municipal aggregate of each state.
+
+```{r q5-states}
+exp_u %>% filter(estagio_bd == "Despesas Empenhadas", conta %in% c(six, totals)) %>%
+  count(conta, ano) %>% pivot_wider(names_from = ano, values_from = n)
+exp_uf %>% filter(year %in% c(2013, 2016, 2020, 2024)) %>%
+  select(state_abbreviation, year, health = exp_health_pc_brl_2024, education = exp_education_pc_brl_2024,
+         assistance = exp_social_assistance_pc_brl_2024, environment = exp_environment_pc_brl_2024) %>%
+  mutate(across(-c(state_abbreviation, year), round)) %>% arrange(year, state_abbreviation) %>% filter(year == 2020)
+munic_agg <- exp_munic %>% filter(year == 2020) %>% group_by(state_abbreviation) %>%
+  summarise(munic_social_pc = round(sum(exp_social_brl_2024, na.rm = TRUE) / sum(population, na.rm = TRUE)), .groups = "drop")
+exp_uf %>% filter(year == 2020) %>% transmute(state_abbreviation, state_social_pc = round(exp_social_pc_brl_2024)) %>%
+  left_join(munic_agg, by = "state_abbreviation") %>%
+  mutate(munic_share = round(munic_social_pc / (munic_social_pc + state_social_pc), 2))
+```
+
+**Finding.** The Base dos Dados state table begins in 2013, so the
+state-government series (nine states, every year to 2024, all five
+functions present) covers 2013-2024 only; the FINBRA state files for
+2000-2012 are not in Base dos Dados and would have to come from the
+Tesouro site. In 2020 the municipal aggregate of health, education and
+social assistance per capita is of the same order as the state
+government's, with the municipal share of subnational social spending
+between 0.29 (Acre, Amapá, where the state government spends most) and
+0.67 (Maranhão), so display D2 can be drawn for 2013-2020.
+**Decision.** D-2026-10-15-c: state series 2013-2024; the 2000-2012
+state gap is an open follow-up (task 4.5).
+**Assertion.** `09-descriptive-data.R`, raw-state and output blocks (nine
+states, 2013-2024, complete function columns).
+
+## Q6. Do the revenue items chain across the three account plans?
+
+What is checked: the family totals by year under the rules of script 09
+(FINBRA names to 2012; Tesouro codes of the 2013-2017, 2018-2021 and
+2022-2024 plans, parent level only), the parent-against-children
+equalities that justify reading the parent, the share of reporting
+municipalities with a zero in each item, and the cases where the total
+is below current transfers.
+
+```{r q6-revenue}
+rev_munic %>% group_by(year) %>%
+  summarise(n = n(), across(c(rev_total_brl_2024, rev_current_brl_2024, rev_transfers_current_brl_2024,
+                              rev_union_transfers_brl_2024, rev_fpm_brl_2024, rev_sus_brl_2024, rev_fundeb_brl_2024,
+                              rev_fnde_brl_2024, rev_fnas_brl_2024),
+                            ~ round(sum(.x, na.rm = TRUE) / 1e9, 2),
+                            .names = "{str_remove(str_remove(.col, 'rev_'), '_brl_2024')}"), .groups = "drop")
+chk <- function(parent, children, years) {
+  p <- rev_m %>% filter(ano %in% years, portaria == parent) %>% group_by(id_municipio, ano) %>% summarise(p = sum(valor), .groups = "drop")
+  k <- rev_m %>% filter(ano %in% years, str_detect(portaria, children)) %>% group_by(id_municipio, ano) %>% summarise(k = sum(valor), .groups = "drop")
+  inner_join(p, k, by = c("id_municipio", "ano")) %>%
+    summarise(parent = parent, years = paste(range(years), collapse = "-"), n = n(), equal = sum(abs(p - k) < 1))
+}
+bind_rows(
+  chk("1.7.1.8.03.0.0", "^1\\.7\\.1\\.8\\.03\\.[1-9]\\.0$", 2019:2021),
+  chk("1.7.1.3.00.0.0", "^1\\.7\\.1\\.3\\.(50|51|99)\\.0\\.0$", 2022:2024),
+  chk("1.7.1.1.51.0.0", "^1\\.7\\.1\\.1\\.51\\.[1-9]\\.0$", 2022:2024),
+  chk("1.7.1.8.05.0.0", "^1\\.7\\.1\\.8\\.05\\.[1-9]\\.0$", 2018:2021),
+  chk("1.7.1.4.00.0.0", "^1\\.7\\.1\\.4\\.(50|51|52|53|99)\\.0\\.0$", 2022:2024),
+  chk("1.7.2.4.00.00.00", "^1\\.7\\.2\\.4\\.(01|02|99)\\.00\\.00$", 2013:2017))
+rev_munic %>% group_by(year) %>%
+  summarise(across(c(rev_fpm_brl, rev_sus_brl, rev_fundeb_brl, rev_fnde_brl, rev_fnas_brl), ~ round(mean(.x == 0, na.rm = TRUE), 3),
+                   .names = "{str_remove(str_remove(.col, 'rev_'), '_brl')}_zero"), .groups = "drop") %>%
+  filter(year %in% c(2002, 2005, 2010, 2013, 2017, 2018, 2019, 2020, 2022, 2024))
+rev_munic %>% filter(rev_transfers_current_brl > rev_total_brl * 1.001 + 1) %>% count(year)
+```
+
+**Finding.** The transfer families run continuously across the 2013,
+2018 and 2022 account-plan changes, with the aggregate levels moving
+smoothly (FPM, FUNDEB and SUS each grow through the period in 2024
+reais, with the 2018 SUS and FNAS dips the sign of the 2018 transition
+layout, when the parent rows were reported by fewer municipalities). The
+parent rows read by the script equal the sum of their children wherever
+both exist, which is why the script reads parents only. Zero shares are
+below five percent for FPM in every year and higher for SUS and FNAS in
+2018-2019; FNDE and FNAS have no line before 2002 and are NA there. Between
+120 and 342 municipalities a year in 2002-2012, and 24 in 2024, carry
+current transfers above the total, because the published totals are net
+of the FUNDEF/FUNDEB deductions (taken from 2002) while the transfer
+lines are gross, so the script asserts FPM against current transfers
+rather than against the total.
+**Decision.** D-2026-10-15-d.
+**Assertion.** `09-descriptive-data.R`, raw-state block (unique code per
+municipality-year from 2013, unique total name) and output block (FPM
+non-negative and within current transfers; FNDE and FNAS NA before 2002).
+
+## Q7. Are the per-capita values plausible in the sample?
+
+What is checked: the distribution of expenditure and transfer per capita
+in the sample municipalities, 2004-2020, and the join onto the panel.
+
+```{r q7-plausibility}
+q <- function(x) c(p1 = quantile(x, .01, na.rm = TRUE), median = median(x, na.rm = TRUE), p99 = quantile(x, .99, na.rm = TRUE), max = max(x, na.rm = TRUE))
+pd <- read_rds("_data/final/panel_amz_2000_2020_descriptive.rds") %>% filter(year %in% 2004:2020)
+pd %>% select(exp_total_pc_brl_2024, exp_health_pc_brl_2024, exp_education_pc_brl_2024, exp_social_assistance_pc_brl_2024,
+              rev_total_pc_brl_2024, rev_fpm_pc_brl_2024, rev_sus_pc_brl_2024, rev_fundeb_pc_brl_2024, rev_fnde_pc_brl_2024, rev_fnas_pc_brl_2024) %>%
+  map_dfr(q, .id = "variable") %>% mutate(across(-variable, round))
+pd %>% summarise(rows = n(), with_expenditure = sum(!is.na(exp_total_brl)), with_revenue = sum(!is.na(rev_total_brl)),
+                 both = sum(!is.na(exp_total_brl) & !is.na(rev_total_brl)))
+pd %>% filter(exp_total_pc_brl_2024 > 15000 | rev_total_pc_brl_2024 > 15000) %>%
+  select(geocode, municipality, state_abbreviation, year, population, exp_total_pc_brl_2024, rev_total_pc_brl_2024) %>%
+  mutate(across(c(exp_total_pc_brl_2024, rev_total_pc_brl_2024), round)) %>% arrange(desc(exp_total_pc_brl_2024)) %>% head(10)
+```
+
+**Finding.** The sample medians sit where small Amazon municipalities
+should (total spending R$ 3,100 per capita in 2024 reais, FPM R$ 890,
+FUNDEB R$ 750, SUS R$ 280), the upper tail belongs to the smallest
+municipalities and to the royalty recipients, and the expenditure and
+revenue series join the panel on the same municipality-years (7,762 of
+the 8,534 sample cells of 2004-2020 carry both).
+**Decision.** none required; the tail is shown, not trimmed.
+**Assertion.** `09-descriptive-data.R`, output block (row count and key
+of the descriptive panel unchanged by the joins).

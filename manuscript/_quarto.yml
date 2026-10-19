@@ -28,7 +28,8 @@ crossref:
   chapters: true
 
 execute:
-  freeze: auto        # cached chapter computations; re-runs only what changed
+  freeze: false       # chunks only read committed CSVs; a cache keyed on the qmd
+                      # would serve stale tables after a script rerun (2026-10-14)
 
 format:
   html:

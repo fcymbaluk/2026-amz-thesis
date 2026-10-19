@@ -1,6 +1,13 @@
-# Data analysis and visualization of the dataset - Exploratory Data Analysis (EDA)
+# Purpose: exploratory data analysis of the Chapter 4 panel (legacy EDA blocks A-E,
+#          BF variation, H2 descriptive TWFE); writes the chapter's descriptive figures
+# Inputs:  _data/final/panel_amz_2000_2020_final.csv (phase 1 panel, frozen 2026-10-12)
+# Outputs: output/figures/fig-variable-availability.png, fig-policy-timeline.png,
+#          fig-series-natural-units.png, fig-wage-brackets.png, fig-bf-components.png,
+#          fig-series-indexed-groups.png, fig-moderator-credibility.png,
+#          fig-cohort-exit-paths.png, fig-bf-coverage-map.png
+# Status:  legacy monolith (August 2026) run as-is on the phase 1 panel for the
+#          descriptive sprint; restyle deferred (updated 2026-10-14)
 
-rm(list = ls())
 library(tidyverse)
 library(magrittr)
 library(readxl)
@@ -13,7 +20,7 @@ library(ggplot2)
 # Block D1: within/between variance decomposition
 # Plus: type verification and missingness-by-year map
 #
-# Input : final_dataset_6.csv
+# Input : _data/final/panel_amz_2000_2020_final.csv
 # Output: output/figures/*.png, output/tables/*.csv
 #
 # Run after scripts 01–06. Assumes the type fix (variables as doubles).
@@ -25,7 +32,7 @@ library(ggplot2)
 library(scales)
 
 # --- paths -------------------------------------------------------------------
-data_path <- "_data/final_dataset_6.csv"   # adjust if needed
+data_path <- "_data/final/panel_amz_2000_2020_final.csv"   # phase 1 panel
 #dir.create("_output/_figures", recursive = TRUE, showWarnings = FALSE)
 #dir.create("_output/_tables",  recursive = TRUE, showWarnings = FALSE)
 
@@ -96,8 +103,8 @@ p_miss <- ggplot(miss_by_year,
   theme_minimal(base_size = 11)
 
 p_miss
-# #ggsave("output/figures/fig00_missingness_map.png", p_miss,
-#        width = 9, height = 4.5, dpi = 300)
+ggsave("output/figures/fig-variable-availability.png", p_miss,
+       width = 9, height = 4.5, dpi = 300)
 
 # =============================================================================
 # A1. Annotated policy timeline over aggregate deforestation
@@ -153,8 +160,8 @@ p_a1 <- ggplot(agg_defor, aes(x = year, y = defor_total_km2)) +
   theme(legend.position = "bottom")
 
 p_a1
-# #ggsave("output/figures/fig01_policy_timeline.png", p_a1,
-#        width = 10, height = 6, dpi = 300)
+ggsave("output/figures/fig-policy-timeline.png", p_a1,
+       width = 10, height = 6, dpi = 300)
 
 # =============================================================================
 # A2. Multi-series trends, small multiples in natural units
@@ -207,8 +214,8 @@ p_a2 <- ggplot(series, aes(x = year, y = value)) +
 
 p_a2
 
-# #ggsave("output/figures/fig02_series_trends.png", p_a2,
-#        width = 10, height = 6.5, dpi = 300)
+ggsave("output/figures/fig-series-natural-units.png", p_a2,
+       width = 10, height = 6.5, dpi = 300)
 
 # =============================================================================
 # D1. Within/between variance decomposition
@@ -296,7 +303,7 @@ library(tidyr)
 library(ggplot2)
 library(scales)
 
-data_path <- "final_dataset_6.csv"
+data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 #dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 df <- read.csv(data_path)
@@ -359,21 +366,20 @@ p3b <- ggplot(shares_long, aes(year, value, fill = bracket)) +
 p3a
 p3b
 
-# 2k if available; otherwise save separately
-# if (requireNamespace("patchwork", quietly = TRUE)) {
-#   library(patchwork)
-#   p3 <- p3a / p3b +
-#     plot_annotation(
-#       title = "Formal employment and the real wage distribution, 2000–2020",
-#       caption = paste0("Unweighted municipal means. Wage brackets are fixed real ",
-#                        "thresholds: multiples of the 2024 minimum wage, wages ",
-#                        "IPCA-deflated to 2024 BRL. Source: RAIS / IBGE Census (PIA)."))
-#   ggsave("output/figures/fig03_wage_brackets.png", p3,
-#          width = 9, height = 7.5, dpi = 300)
-# } else {
-#   ggsave("output/figures/fig03a_pia_rates.png",  p3a, width = 9, height = 4, dpi = 300)
-#   ggsave("output/figures/fig03b_emp_shares.png", p3b, width = 9, height = 4, dpi = 300)
-# }
+# Two panels stacked with cowplot (patchwork is not in renv; sprint 2026-10-14).
+p3_title <- cowplot::ggdraw() +
+  cowplot::draw_label("Formal employment and the real wage distribution, 2000\u20132020",
+                      x = 0.01, hjust = 0, size = 13)
+p3_cap <- cowplot::ggdraw() +
+  cowplot::draw_label(paste(strwrap(paste0(
+    "Unweighted municipal means. Wage brackets are fixed real thresholds: ",
+    "multiples of the 2024 minimum wage, wages IPCA-deflated to 2024 BRL. ",
+    "Source: RAIS / IBGE Census (PIA)."), width = 130), collapse = "\n"),
+    x = 0.01, hjust = 0, size = 7.5)
+p3 <- cowplot::plot_grid(p3_title, p3a, p3b, p3_cap, ncol = 1,
+                         rel_heights = c(0.06, 1, 1, 0.07))
+ggsave("output/figures/fig-wage-brackets.png", p3,
+       width = 9, height = 7.5, dpi = 300)
 
 # =============================================================================
 # Fig 04 — Total vs agricultural formal employment (requests 2.1, 2.2)
@@ -444,15 +450,16 @@ p5 <- ggplot(bf, aes(year, value)) +
   scale_y_continuous(labels = label_comma()) +
   labs(title = "Bolsa Família in the sample, 2004–2019",
        x = NULL, y = NULL,
-       caption = paste0("Total: sample sum. Other panels: unweighted municipal ",
-                        "means. All values IPCA-deflated to 2024 BRL. ",
+       caption = paste0("All panels: the June disbursement of each year (monthly ",
+                        "values). Total: sample sum. Other panels: unweighted ",
+                        "municipal means.\nAll values IPCA-deflated to 2024 BRL. ",
                         "2004–2005 reflect program rollout; 2020 unavailable.")) +
   theme_eda
 
 p5
 
-# ggsave("output/figures/fig05_bolsa_familia.png", p5,
-#        width = 9, height = 7, dpi = 300)
+ggsave("output/figures/fig-bf-components.png", p5,
+       width = 9, height = 7, dpi = 300)
 
 # =============================================================================
 # Fig 06 — Informality and GDP (requests 4.1–4.3)
@@ -627,7 +634,7 @@ library(scales)
 # requires ggrepel for end-of-line labels: install.packages("ggrepel")
 
 # assumes df, theme_eda, output dirs from 07b; otherwise uncomment:
-# df <- read.csv("final_dataset_6.csv")
+# df <- read.csv("_data/final/panel_amz_2000_2020_final.csv")
 # theme_eda <- theme_minimal(base_size = 11) +
 #   theme(plot.caption = element_text(size = 7.5, hjust = 0))
 
@@ -736,7 +743,7 @@ library(tidyr)
 library(ggplot2)
 library(scales)
 
-# df <- read.csv("final_dataset_6.csv")   # uncomment if running standalone
+# df <- read.csv("_data/final/panel_amz_2000_2020_final.csv")   # uncomment if running standalone
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 idx_series <- df |>
@@ -833,7 +840,7 @@ library(tidyr)
 library(ggplot2)
 library(scales)
 
-# # df <- read.csv("final_dataset_6.csv")   # uncomment if running standalone
+# # df <- read.csv("_data/final/panel_amz_2000_2020_final.csv")   # uncomment if running standalone
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 idx_series <- df |>
@@ -918,8 +925,8 @@ p9 <- ggplot() +
         plot.caption = element_text(size = 7.5, hjust = 0)) +
   guides(color = guide_legend(nrow = 2))
 
-# ggsave("output/figures/fig09_defor_vs_groups.png", p9,
-#        width = 10, height = 7.5, dpi = 300)
+ggsave("output/figures/fig-series-indexed-groups.png", p9,
+       width = 10, height = 7.5, dpi = 300)
 
 p9
 
@@ -945,7 +952,7 @@ mod_years     <- 2006:2007       # moderator window: post-rollout, pre-treatment
 post_years    <- 2013:2016       # outcome window for the map
 base_years    <- 2000:2007       # baseline window (matches defor_norm_ref0007)
 
-data_path <- "_data/final_dataset_6.csv"
+data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 df <- read.csv(data_path) |>
@@ -1084,16 +1091,14 @@ p_b2b <- ggplot(scatter_df, aes(base_defor, mod)) +
   theme(plot.caption = element_text(size = 7.5, hjust = 0),
         strip.text = element_text(face = "bold", size = 9))
 
-# if (requireNamespace("patchwork", quietly = TRUE)) {
-#   library(patchwork)
-#   p_b2 <- p_b2a / p_b2b + plot_layout(heights = c(1, 1.3)) +
-#     plot_annotation(title = "Moderator credibility: coverage relative to need")
-#   ggsave("output/figures/fig11_moderator_credibility.png", p_b2,
-#          width = 9, height = 8, dpi = 300)
-# } else {
-#   ggsave("output/figures/fig11a_moderator_dist.png",    p_b2a, width = 8, height = 4, dpi = 300)
-#   ggsave("output/figures/fig11b_moderator_scatter.png", p_b2b, width = 9, height = 4.5, dpi = 300)
-# }
+# Two panels stacked with cowplot (patchwork is not in renv; sprint 2026-10-14).
+p_b2_title <- cowplot::ggdraw() +
+  cowplot::draw_label("Moderator credibility: coverage relative to need",
+                      x = 0.01, hjust = 0, size = 13)
+p_b2 <- cowplot::plot_grid(p_b2_title, p_b2a, p_b2b, ncol = 1,
+                           rel_heights = c(0.06, 1, 1.3))
+ggsave("output/figures/fig-moderator-credibility.png", p_b2,
+       width = 9, height = 8, dpi = 300)
 
 p_b2a
 p_b2b
@@ -1278,7 +1283,7 @@ mod_years <- 2006:2007        # moderator window (matches Block B)
 et_window <- c(-6, 10)        # event-time display window
 y_clip    <- c(-4, 8)         # outcome display clip (~1% of points outside)
 
-# data_path <- "final_dataset_6.csv"
+# data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 # df <- read.csv(data_path)
@@ -1349,8 +1354,8 @@ p_c1 <- ggplot(listed, aes(et, defor_norm_ref0007, group = geocode,
         strip.text = element_text(face = "bold", size = 9),
         plot.caption = element_text(size = 7.5, hjust = 0))
 
-# ggsave("output/figures/fig15_cohort_exit_paths.png", p_c1,
-#        width = 10, height = 7, dpi = 300)
+ggsave("output/figures/fig-cohort-exit-paths.png", p_c1,
+       width = 10, height = 7, dpi = 300)
 
 p_c1
 
@@ -1463,7 +1468,7 @@ base_years <- 2004:2007     # BF-era baseline window for balance table
 d2_years   <- 2004:2019     # BF availability window
 n_bins     <- 20
 
-#data_path <- "final_dataset_6.csv"
+#data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 #dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 #dir.create("output/tables",  recursive = TRUE, showWarnings = FALSE)
 
@@ -1683,7 +1688,7 @@ library(ggplot2)
 library(scales)
 
 snap_year <- 2006          # mid-administration of the pre-listing (2004) election
-# data_path <- "final_dataset_6.csv"
+# data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 # dir.create("output/tables",  recursive = TRUE, showWarnings = FALSE)
 
@@ -1822,7 +1827,7 @@ library(ggplot2)
 library(scales)
 
 mod_years <- 2006:2007
-# data_path <- "final_dataset_6.csv"
+# data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
 df <- read.csv(data_path) |>
@@ -1935,8 +1940,8 @@ p22 <- ggplot(map_sf) +
   theme(legend.position = c(0.15, 0.22),
         plot.caption = element_text(size = 7.5, hjust = 0))
 
-# ggsave("output/figures/fig22_coverage_map.png", p22,
-#        width = 9, height = 8, dpi = 300)
+ggsave("output/figures/fig-bf-coverage-map.png", p22,
+       width = 9, height = 8, dpi = 300)
 
 p22
 
@@ -2081,7 +2086,7 @@ p25
 library(dplyr)
 library(fixest)
 
-# data_path <- "final_dataset_6.csv"
+# data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 
 df <- read.csv(data_path) |>
@@ -2132,8 +2137,7 @@ m <- list(
                      data = nar, cluster = ~geocode)
 )
 
-etable(m, cluster = ~geocode, digits = 3,
-       file = "_output/_tables/tab_h2_direct_twfe.tex", replace = TRUE)
+# .tex export retired 2026-10-14 (the _output/ folder no longer exists); the table prints below.
 print(etable(m, cluster = ~geocode, digits = 3))
 
 # =============================================================================

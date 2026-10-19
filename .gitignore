@@ -14,6 +14,7 @@ renv/cellar/
 # Quarto
 .quarto/
 /manuscript/_book/
+/manuscript/_freeze/
 **/*.quarto_ipynb
 
 # Rendered manuscript output (frozen copies go in docs/submitted/ deliberately)
@@ -66,3 +67,8 @@ ch4-causal-analysis/_data/**
 
 # Better BibTeX per-subcollection exports (only references.bib is the bibliography)
 manuscript/references-*.bib
+
+# Ch4 literature: PDFs read for the chapter (copyrighted; cite via Zotero),
+# contents ignored except the folder skeleton
+ch4-causal-analysis/literature/**
+!ch4-causal-analysis/literature/.gitkeep
