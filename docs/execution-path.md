@@ -120,6 +120,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Parallel writing tracks (interleave with pipeline sessions throughout)
 
+- [ ] **Intro (unblocked, opened 2026-10-17):** the author's puzzle draft in `manuscript/introduction.qmd`; four TODO-develop passages and the closing sections (question, argument, design, contribution, roadmap) per `ch0-introduction/GUIDANCE.md`; the introduction's claims about the chapters are revised against each chapter as it is written.
 - [ ] **Ch1 (unblocked):** gap-section cluster (checklist items 1/3/4, per the revision instructions), then the epistemological section (item 2), in `manuscript/ch1-theoretical.qmd`.
 - [ ] **Ch3 (unblocked):** protocol decisions, preregistration decision, protocol freeze (work-plan items 1-3); searches once frozen; screening interleaves with stages 6-8.
 - [ ] **Ch2 (unblocked):** Zotero-highlights workflow decided (no ATLAS.ti); codebook (tag vocabulary) → corpus → coding in Zotero → export → matrix → outline → sections, per its work plan.

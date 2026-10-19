@@ -13,7 +13,7 @@ One rule set for the whole repository. `CLAUDE.md` points here; chapter-specific
 2. **Infrastructure and taxonomy folders** carry the underscore prefix and plain nouns: `_data`, `_audit`, `_scripts`. Their subfolders (`raw`, `interim`, `final`, `reference`, `aux`; `utils`, `models`, `robustness`, `sql`) are unnumbered nouns, because they are a taxonomy, not a sequence.
 3. **Content folders** are plain nouns: `docs/`, `manuscript/`, `output/`, `rebuild/`, `notes/`.
 
-Chapter folders carry their chapter number (`ch1-theoretical` ... `ch4-causal-analysis`).
+Chapter folders carry their chapter number (`ch0-introduction`, `ch1-theoretical` ... `ch4-causal-analysis`); the introduction is chapter 0, unnumbered in the book.
 
 ## Files
 
