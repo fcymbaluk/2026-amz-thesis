@@ -138,10 +138,14 @@ follow the fuller header in
   sourced by scripts; pipeline scripts 01-06 and analysis scripts 07+
   live in `ch4-causal-analysis/_scripts/`, structure and templates per
   `ch4-causal-analysis/rebuild/`.
-- Chapter 2's qualitative evidence is coded in Zotero (highlights as
-  quotations, tags as codes) and exported as plain text into
-  `ch2-historical/evidence/`; agents never write into Zotero. Rules in
-  `ch2-historical/GUIDANCE.md` (Zotero-highlights workflow).
+- Chapter 2's qualitative evidence is highlighted in Zotero (highlights
+  as quotations, colors as dimensions, comments as claims) and coded in
+  ATLAS.ti (project `2026-amz-ch2`, reached through its local MCP
+  server); codings are exported as dated tables into
+  `ch2-historical/evidence/`. Agents never write into Zotero; in
+  ATLAS.ti they write only on the author's request and mark what they
+  propose. Rules in `ch2-historical/GUIDANCE.md` (Zotero and ATLAS.ti
+  workflow).
 - Dependency management: `renv`. The lockfile is authoritative.
 
 ## BigQuery
