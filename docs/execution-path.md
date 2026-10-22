@@ -81,7 +81,15 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 7 — Phase 2: fixes (Claude Code, nine sessions, order 2.1-2.9)
 
-- [x] 2.1 quota source (verify upstream first; done 2026-10-21, D-2026-10-21-a: Mato Grosso block of the LAI workbook realigned in script 02, 73 sample municipalities move, median split no longer survives, see tasks.md 1.4) · \[ \] 2.2 BF endpoint/extension · \[ \] 2.3 electoral timing · \[ \] 2.4 price normalization · \[ \] 2.5 post-2000 municipalities · \[ \] 2.6 census anchors · \[ \] 2.7 NA-vs-zero · \[ \] 2.8 units · \[ \] 2.9 Legal Amazon extension.
+- [x] 2.1 quota source (verify upstream first; done 2026-10-21, D-2026-10-21-a: Mato Grosso block of the LAI workbook realigned in script 02, 73 sample municipalities move, median split no longer survives, see tasks.md 1.4).
+- [ ] 2.2 BF endpoint/extension.
+- [ ] 2.3 electoral timing.
+- [ ] 2.4 price normalization.
+- [ ] 2.5 post-2000 municipalities.
+- [ ] 2.6 census anchors.
+- [ ] 2.7 NA-vs-zero.
+- [ ] 2.8 units.
+- [ ] 2.9 Legal Amazon extension.
 - [ ] Each: decision entry opened → evidence in notebook → fix as constant/delimited block + assertion → compare vs phase 1 output in the commit → entry closed with hash.
 - [ ] After 2.9: all audit notebooks re-rendered on the extended sample; new municipalities' source problems become new entries. Mirror refreshed.
 
