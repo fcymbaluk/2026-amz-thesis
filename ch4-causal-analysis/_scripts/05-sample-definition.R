@@ -59,7 +59,7 @@ PANEL_YEARS               <- 2000:2020   # D-2026-10-11-a
 MOJUI_GEOCODE             <- "1504752"   # D-2026-10-05-l
 N_MUNIC_IN_EXPECTED       <- 503L        # script 04 output; task 1.1
 N_MUNIC_EXPECTED          <- 502L        # D-2026-10-05-l; task 1.1
-N_PANEL_COLS_EXPECTED     <- 73L
+N_PANEL_COLS_EXPECTED     <- 74L   # 73 + bf_regime (D-2026-10-22-b)
 # panel-sample.qmd Q3-Q4: cohorts 2008-2009 in the main window, 2011-2012
 # added in the robust window; every treated municipality is at risk.
 N_TREATED_MAIN_EXPECTED   <- 43L

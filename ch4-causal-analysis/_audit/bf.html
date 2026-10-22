@@ -2217,6 +2217,7 @@ vertical-align: -.125em;
   <li><a href="#q4.-do-the-municipal-quota-values-look-plausible" id="toc-q4.-do-the-municipal-quota-values-look-plausible" class="nav-link" data-scroll-target="#q4.-do-the-municipal-quota-values-look-plausible">Q4. Do the municipal quota values look plausible?</a></li>
   <li><a href="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" id="toc-q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" class="nav-link" data-scroll-target="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21">Q4b. Why do the Mato Grosso quotas fail, and does realignment repair them? (phase 2, step 2.1, 2026-10-21)</a></li>
   <li><a href="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" id="toc-q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" class="nav-link" data-scroll-target="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear">Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?</a></li>
+  <li><a href="#q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22" id="toc-q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22" class="nav-link" data-scroll-target="#q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22">Q6. What do the 2020-2026 files hold, and how is the series extended to 2024? (phase 2, step 2.2, 2026-10-22)</a></li>
   </ul>
 </nav>
 </div>
@@ -2247,7 +2248,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: MDS (SAGI), MI Social query service behind the dados.gov.br conjunto <em>bolsa-familia</em>, yearly municipal monthly files downloaded 2026-10-06 (<code>_data/raw/mds/bf-YYYY.txt</code>, 2004-2021 and 2023-2026); municipal quota (estimativa de famílias pobres) from the SENARC LAI response of protocol 71003.017363/2022-16 (<code>_data/raw/mds/Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx</code>). Pipeline script: <code>_scripts/02-social-bf.R</code>. Interim output: <code>_data/interim/bf_panel_2004_2019.rds</code>.</p>
+<p>Source: MDS (SAGI), MI Social query service behind the dados.gov.br conjunto <em>bolsa-familia</em>, yearly municipal monthly files downloaded 2026-10-06 (<code>_data/raw/mds/bf-YYYY.txt</code>, 2004-2021 and 2023-2026); municipal quota (estimativa de famílias pobres) from the SENARC LAI response of protocol 71003.017363/2022-16 (<code>_data/raw/mds/Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx</code>). Pipeline script: <code>_scripts/02-social-bf.R</code>. Interim output: <code>_data/interim/bf_panel_2004_2024.rds</code> (2004-2019 until phase 2, step 2.2).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2262,7 +2263,7 @@ vertical-align: -.125em;
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>bf_old <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(old_files, read_old)</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>bf_new <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(new_files, <span class="sc">~</span> <span class="fu">read_csv</span>(.x, <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>()),</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">progress =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">source_file =</span> <span class="fu">basename</span>(.x)))</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/bf_panel_2004_2019.rds&quot;</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/bf_panel_2004_2024.rds&quot;</span>)</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>munic_id <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">&quot;_data/raw/ibge/ibge_munic_id.xlsx&quot;</span>, <span class="at">sheet =</span> <span class="st">&quot;Municípios&quot;</span>,</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                      <span class="at">col_types =</span> <span class="fu">c</span>(<span class="st">&quot;text&quot;</span>, <span class="st">&quot;numeric&quot;</span>, <span class="st">&quot;text&quot;</span>, <span class="st">&quot;text&quot;</span>))</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>quota_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(bf_dir, <span class="st">&quot;Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx&quot;</span>)</span>
@@ -2348,7 +2349,7 @@ vertical-align: -.125em;
 <pre><code>[1] FALSE</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Every file from 2004 to 2021 carries the same 5,571 six-digit codes for twelve months, with no negative values and no duplicate keys. Families are missing in a few dozen municipality-months per year until 2013 and in 11,152 rows of 2021 (the programme’s last months before the Auxílio Brasil substitution). In 2004-2006 the zero cells are rows where both families and transfers are zero (930, 213 and 41 municipality-months; in 2004, 28 municipalities for all twelve months and 55 for eight), which is consistent with municipalities entering the programme during its rollout rather than with reporting gaps; no row of those years has positive families with zero transfers. That pattern appears only in 2020 (269 rows, April to December, 42 in June, the emergency-transfer months). No file exists for 2022, and the 2023-2026 files use a new layout (<code>codigo_ibge</code>, <code>anomes_s</code>, suffixed value columns, an average-benefit column), with 2023 starting in March. <strong>Decision.</strong> D-2026-10-05-b: panel truncated at 2019; the 2020-2026 evidence feeds task 1.2. <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state block (files present, columns, twelve months per year, no duplicates, no negatives).</p>
+<p><strong>Finding.</strong> Every file from 2004 to 2021 carries the same 5,571 six-digit codes for twelve months, with no negative values and no duplicate keys. Families are missing in a few dozen municipality-months per year until 2013 and in 11,152 rows of 2021 (the programme’s last months before the Auxílio Brasil substitution). In 2004-2006 the zero cells are rows where both families and transfers are zero (930, 213 and 41 municipality-months; in 2004, 28 municipalities for all twelve months and 55 for eight), which is consistent with municipalities entering the programme during its rollout rather than with reporting gaps; no row of those years has positive families with zero transfers. That pattern appears only in 2020 (269 rows, April to December, 42 in June, the emergency-transfer months). No file exists for 2022, and the 2023-2026 files use a new layout (<code>codigo_ibge</code>, <code>anomes_s</code>, suffixed value columns, an average-benefit column), with 2023 starting in March. <strong>Decision.</strong> D-2026-10-05-b: panel truncated at 2019; the 2020-2026 evidence feeds task 1.2, settled at Q6 (phase 2, step 2.2, D-2026-10-22-a). <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state block (files present, columns, twelve months per year, no duplicates, no negatives).</p>
 </section>
 <section id="q2.-which-month-represents-the-year" class="level2">
 <h2 class="anchored" data-anchor-id="q2.-which-month-represents-the-year">Q2. Which month represents the year?</h2>
@@ -2447,7 +2448,7 @@ vertical-align: -.125em;
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">16</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 16 × 4
+<pre><code># A tibble: 21 × 4
     year families_millions transfers_bn_brl_2024 per_family_brl_2024
    &lt;int&gt;             &lt;dbl&gt;                 &lt;dbl&gt;               &lt;dbl&gt;
  1  2004              4.10                 0.853                208.
@@ -2465,7 +2466,8 @@ vertical-align: -.125em;
 13  2016             13.8                  3.33                 241.
 14  2017             13.3                  3.45                 260.
 15  2018             13.7                  3.40                 247.
-16  2019             14.1                  3.50                 248.</code></pre>
+16  2019             14.1                  3.50                 248.
+# ℹ 5 more rows</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The nominal transfer per family dips in 2005-2007 and then rises with each benefit revision; the real series (2024 BRL) shows the coverage expansion to 2014 and the stabilisation afterwards, the known trajectory of the programme; the tails stay within a few multiples of the median. <strong>Decision.</strong> none required. <strong>Assertion.</strong> none (distributional).</p>
@@ -2519,11 +2521,11 @@ vertical-align: -.125em;
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> bf_quota)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 16
+<pre><code># A tibble: 1 × 21
   `2004` `2005` `2006` `2007` `2008` `2009` `2010` `2011` `2012` `2013` `2014` `2015` `2016` `2017` `2018`
    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
 1   2595   2595   2033   2033   2033   1853   1853   1853   2583   2583   2583   2583   2583   2583   2583
-# ℹ 1 more variable: `2019` &lt;dbl&gt;</code></pre>
+# ℹ 6 more variables: `2019` &lt;dbl&gt;, `2020` &lt;dbl&gt;, `2021` &lt;dbl&gt;, `2022` &lt;dbl&gt;, `2023` &lt;dbl&gt;, `2024` &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2862,6 +2864,223 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> The seventh IBGE digit is a check digit, so the six-digit prefix identifies every one of the 5,571 municipalities of the lookup, and every MDS code matches one. Mojuí dos Campos carries its own beneficiary counts from 2014 only; Santarém’s earlier counts are not split, as inherited. <strong>Decision.</strong> D-2026-10-07-h. <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state block (unique prefixes, every MDS code matched) and output block (no NA geocode).</p>
+</section>
+<section id="q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22" class="level2">
+<h2 class="anchored" data-anchor-id="q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22">Q6. What do the 2020-2026 files hold, and how is the series extended to 2024? (phase 2, step 2.2, 2026-10-22)</h2>
+<p>What is checked: the monthly transfer per beneficiary family and the family count on the 502 biome municipalities from 2019 to 2026, across the Auxílio Emergencial rounds, the Auxílio Brasil gap and the re-created programme; the LAI workbook’s annual totals for 2019-2021 on the same municipalities as a second accounting of the same years; the new layout’s code coverage, parsing and average-benefit column; and the pipeline output after the extension, by regime and reference month.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>biome <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read_rds</span>(<span class="st">&quot;_data/reference/panel_amz_2000_2020_final_phase1.rds&quot;</span>)<span class="sc">$</span>geocode)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>biome6 <span class="ot">&lt;-</span> <span class="fu">str_sub</span>(biome, <span class="dv">1</span>, <span class="dv">6</span>)</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>bf_new_num <span class="ot">&lt;-</span> bf_new <span class="sc">%&gt;%</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">ibge =</span> codigo_ibge, <span class="at">anomes =</span> <span class="fu">as.integer</span>(anomes_s),</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">qtd_familias_beneficiarias_bolsa_familia =</span> <span class="fu">as.numeric</span>(qtd_familias_beneficiarias_bolsa_familia_s),</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">valor_repassado_bolsa_familia =</span> <span class="fu">as.numeric</span>(valor_repassado_bolsa_familia_s),</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">avg_benefit =</span> <span class="fu">as.numeric</span>(pbf_vlr_medio_benef_f), source_file)</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>monthly <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(bf_old <span class="sc">%&gt;%</span> <span class="fu">filter</span>(anomes <span class="sc">&gt;=</span> <span class="dv">201901</span>), bf_new_num <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>avg_benefit)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ibge <span class="sc">%in%</span> biome6) <span class="sc">%&gt;%</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(anomes) <span class="sc">%&gt;%</span></span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">families =</span> <span class="fu">sum</span>(qtd_familias_beneficiarias_bolsa_familia, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">transfers_nominal =</span> <span class="fu">sum</span>(valor_repassado_bolsa_familia, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_family_nominal =</span> transfers_nominal <span class="sc">/</span> families,</span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_rows =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(qtd_familias_beneficiarias_bolsa_familia)),</span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">families_pos_transfers_zero =</span> <span class="fu">sum</span>(qtd_familias_beneficiarias_bolsa_familia <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span></span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>                                                valor_repassado_bolsa_familia <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>monthly <span class="sc">%&gt;%</span> <span class="fu">filter</span>(anomes <span class="sc">&lt;=</span> <span class="dv">202412</span>) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">60</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 58 × 7
+   anomes     n families transfers_nominal per_family_nominal na_rows families_pos_transfers_zero
+    &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;             &lt;dbl&gt;              &lt;dbl&gt;   &lt;int&gt;                       &lt;int&gt;
+ 1 201901   502  2200474         461378083             210.         0                           0
+ 2 201902   502  2220434         463769350             209.         0                           0
+ 3 201903   502  2245121         467468291             208.         0                           0
+ 4 201904   502  2247698         463245306             206.         0                           0
+ 5 201905   502  2275405         473343027             208.         0                           0
+ 6 201906   502  2240529         463776480             207.         0                           0
+ 7 201907   502  2217462         464912272             210.         0                           0
+ 8 201908   502  2214303         464357369             210.         0                           0
+ 9 201909   502  2177711         458111691             210.         0                           0
+10 201910   502  2171588         458018818             211.         0                           0
+11 201911   502  2123256         450416122             212.         0                           0
+12 201912   502  2120196         451356716             213.         0                           0
+13 202001   502  2123172         449977143             212.         0                           0
+14 202002   502  2122080         449175186             212.         0                           0
+15 202003   502  2107762         448270752             213.         0                           0
+16 202004   502  2232021          16529180               7.41       0                           1
+17 202005   502  2232888          14385834               6.44       0                           1
+18 202006   502  2232963          13795728               6.18       0                           1
+19 202007   502  2232958          15622685               7.00       0                           1
+20 202008   502  2232919          15010184               6.72       0                           1
+21 202009   502  2232293          76971075              34.5        0                           0
+22 202010   502  2232293          83249099              37.3        0                           0
+23 202011   502  2232180          87312154              39.1        0                           0
+24 202012   502  2232213          91766833              41.1        0                           0
+25 202101   502  2227892         467613616             210.         0                           0
+26 202102   502  2217200         457339148             206.         0                           0
+27 202103   502  2224339         458643669             206.         0                           0
+28 202104   502  2229238         221695929              99.4        0                           0
+29 202105   502  2235009         224423584             100.         0                           0
+30 202106   502  2235001         226741468             101.         0                           0
+31 202107   502  2234989         228571484             102.         0                           0
+32 202108   502  2232317         230598870             103.         0                           0
+33 202109   502  2232316         234285423             105.         0                           0
+34 202110   502  2232216         237523963             106.         0                           0
+35 202111   502        0                 0             NaN        502                           0
+36 202112   502        0                 0             NaN        502                           0
+37 202303   502  3169976        2064763633             651.         0                           0
+38 202304   502  3167387        2050686583             647.         0                           0
+39 202305   502  3169574        2060263255             650.         0                           0
+40 202306   502  3165614        2329706749             736.         0                           0
+41 202307   502  3122379        2078634335             666.         0                           0
+42 202308   502  3149318        2105265186             668.         0                           0
+43 202309   502  3195686        2174883932             681.         0                           0
+44 202310   502  3206793        2226980985             694.         0                           0
+45 202311   502  3197761        2190335530             685.         0                           0
+46 202312   502  3187822        2203172731             691.         0                           0
+47 202401   502  3194426        2296325658             719.         0                           0
+48 202402   502  3181277        2291270486             720.         0                           0
+49 202403   502  3161498        2259121615             715.         0                           0
+50 202404   502  3166758        2266729275             716.         0                           0
+51 202405   502  3157454        2264923831             717.         0                           0
+52 202406   502  3166091        2274840791             719.         0                           0
+53 202407   502  3217626        2302065613             715.         0                           0
+54 202408   502  3209048        2290782679             714.         0                           0
+55 202409   502  3204281        2295272312             716.         0                           0
+56 202410   502  3217462        2287415564             711.         0                           0
+57 202411   502  3225871        2300773970             713.         0                           0
+58 202412   502  3241430        2302753926             710.         0                           0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>monthly <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">year =</span> anomes <span class="sc">%/%</span> <span class="dv">100</span>L) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">months =</span> <span class="fu">n</span>(), <span class="at">families_min =</span> <span class="fu">min</span>(families), <span class="at">families_max =</span> <span class="fu">max</span>(families),</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_family_min =</span> <span class="fu">min</span>(per_family_nominal, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_family_max =</span> <span class="fu">max</span>(per_family_nominal, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 6
+   year months families_min families_max per_family_min per_family_max
+  &lt;int&gt;  &lt;int&gt;        &lt;dbl&gt;        &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;
+1  2019     12      2120196      2275405         206.             213.
+2  2020     12      2107762      2232963           6.18           213.
+3  2021     12            0      2235009          99.4            210.
+4  2023     10      3122379      3206793         647.             736.
+5  2024     12      3157454      3241430         710.             720.
+6  2025     12      2971130      3214709         699.             713.
+7  2026      9      2967149      3049935         702.             721.</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Yearly blocks of the LAI workbook: four columns per year (families in</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="co"># December, total R$, coverage, average benefit); 2018 starts at column 69,</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 2019 at 73; 2021 reports January-October.</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>wb_years <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">year =</span> <span class="dv">2019</span><span class="sc">:</span><span class="dv">2021</span>, <span class="at">first_col =</span> <span class="fu">c</span>(<span class="dv">73</span>L, <span class="dv">77</span>L, <span class="dv">81</span>L)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rows =</span> <span class="fu">list</span>(quota_raw[quota_raw<span class="sc">$</span>IBGE <span class="sc">%in%</span> biome, ]),</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">families_dec =</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(rows[[first_col]]), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">total_brl_nominal =</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(rows[[first_col <span class="sc">+</span> <span class="dv">1</span>L]]), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>rows, <span class="sc">-</span>first_col)</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>monthly_year <span class="ot">&lt;-</span> monthly <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">year =</span> anomes <span class="sc">%/%</span> <span class="dv">100</span>L) <span class="sc">%&gt;%</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2019</span><span class="sc">:</span><span class="dv">2021</span>) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">monthly_file_total_nominal =</span> <span class="fu">sum</span>(transfers_nominal))</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>wb_years <span class="sc">%&gt;%</span> <span class="fu">left_join</span>(monthly_year, <span class="at">by =</span> <span class="st">&quot;year&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ratio_file_to_workbook =</span> monthly_file_total_nominal <span class="sc">/</span> total_brl_nominal)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 5
+   year families_dec total_brl_nominal monthly_file_total_nominal ratio_file_to_workbook
+  &lt;int&gt;        &lt;dbl&gt;             &lt;dbl&gt;                      &lt;dbl&gt;                  &lt;dbl&gt;
+1  2019      2120196        5540153525                 5540153525                  1    
+2  2020      2232213        5580805424                 1762065853                  0.316
+3  2021      2232216        4600859277                 2987437154                  0.649</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>old_codes <span class="ot">&lt;-</span> <span class="fu">unique</span>(bf_old<span class="sc">$</span>ibge); new_codes <span class="ot">&lt;-</span> <span class="fu">unique</span>(bf_new_num<span class="sc">$</span>ibge)</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>missing_code <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(old_codes, <span class="fu">unique</span>(bf_new_num<span class="sc">$</span>ibge[bf_new_num<span class="sc">$</span>anomes <span class="sc">&lt;</span> <span class="dv">202511</span>]))</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">old_codes =</span> <span class="fu">length</span>(old_codes), <span class="at">new_codes =</span> <span class="fu">length</span>(new_codes),</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">missing_before_nov_2025 =</span> <span class="fu">paste</span>(missing_code, <span class="at">collapse =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">name =</span> munic_id<span class="sc">$</span>munic[<span class="fu">str_sub</span>(munic_id<span class="sc">$</span>munic_id, <span class="dv">1</span>, <span class="dv">6</span>) <span class="sc">%in%</span> missing_code],</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">parse_na_families =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(bf_new_num<span class="sc">$</span>qtd_familias_beneficiarias_bolsa_familia)),</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">parse_na_transfers =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(bf_new_num<span class="sc">$</span>valor_repassado_bolsa_familia)),</span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">duplicate_keys =</span> <span class="fu">sum</span>(<span class="fu">duplicated</span>(<span class="fu">paste</span>(bf_new_num<span class="sc">$</span>ibge, bf_new_num<span class="sc">$</span>anomes))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+  old_codes new_codes missing_before_nov_2025 name         parse_na_families parse_na_transfers duplicate_keys
+      &lt;int&gt;     &lt;int&gt; &lt;chr&gt;                   &lt;chr&gt;                    &lt;int&gt;              &lt;int&gt;          &lt;int&gt;
+1      5571      5571 510183                  Boa Esperan…                 0                  0              0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>bf_new_num <span class="sc">%&gt;%</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">implied =</span> valor_repassado_bolsa_familia <span class="sc">/</span> qtd_familias_beneficiarias_bolsa_familia,</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">gap =</span> avg_benefit <span class="sc">-</span> implied) <span class="sc">%&gt;%</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">rows =</span> <span class="fu">n</span>(), <span class="at">within_1_brl =</span> <span class="fu">mean</span>(<span class="fu">abs</span>(gap) <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">gap_p99 =</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(gap), <span class="fl">0.99</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">gap_max =</span> <span class="fu">max</span>(<span class="fu">abs</span>(gap), <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+    rows within_1_brl gap_p99 gap_max
+   &lt;int&gt;        &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+1 239521        0.690    44.7    521.</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline output after the extension (bf_panel read at setup).</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(year, bf_ref_month, bf_regime) <span class="sc">%&gt;%</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> bf_ref_month, <span class="at">values_from =</span> bf_regime, <span class="at">names_prefix =</span> <span class="st">&quot;month_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2019</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+   year month_2        month_6          
+  &lt;int&gt; &lt;chr&gt;          &lt;chr&gt;            
+1  2019 pbf            pbf              
+2  2020 pbf            pbf_emergency_aid
+3  2021 pbf            pbf_emergency_aid
+4  2022 auxilio_brasil auxilio_brasil   
+5  2023 auxilio_brasil pbf_2023         
+6  2024 pbf_2023       pbf_2023         </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> biome, year <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(bf_ref_month, year, bf_regime) <span class="sc">%&gt;%</span></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_families =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_families_n)), <span class="at">families =</span> <span class="fu">sum</span>(bf_families_n, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_family_brl_2024 =</span> <span class="fu">sum</span>(bf_transfers_total_brl_2024, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> families,</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_quota =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_quota)), <span class="at">quota_ratio_median =</span> <span class="fu">median</span>(bf_families_quota_ratio, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_pea_ratio =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_transfers_pea_brl_2024)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(bf_ref_month, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 9
+   bf_ref_month  year bf_regime n_families families per_family_brl_2024 n_quota quota_ratio_median n_pea_ratio
+          &lt;int&gt; &lt;int&gt; &lt;chr&gt;          &lt;int&gt;    &lt;dbl&gt;               &lt;dbl&gt;   &lt;int&gt;              &lt;dbl&gt;       &lt;int&gt;
+ 1            2  2019 pbf              502  2220434              278.       502               1.12         502
+ 2            2  2020 pbf              502  2122080              271.       502               1.07         502
+ 3            2  2021 pbf              502  2217200              239.       502               1.14         502
+ 4            2  2022 auxilio_…          0        0              NaN          0              NA              0
+ 5            2  2023 auxilio_…          0        0              NaN          0              NA              0
+ 6            2  2024 pbf_2023         502  3181277              720.         0              NA              0
+ 7            6  2019 pbf              502  2240529              275.       502               1.12         502
+ 8            6  2020 pbf_emer…        502  2232963                7.91     502               1.15         502
+ 9            6  2021 pbf_emer…        502  2235001              118.       502               1.15         502
+10            6  2022 auxilio_…          0        0              NaN          0              NA              0
+11            6  2023 pbf_2023         502  3165614              773.         0              NA              0
+12            6  2024 pbf_2023         502  3166091              719.         0              NA              0</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The 2020 and 2021 files have the 2004-2019 layout and coverage; the 2023-2026 files have a new layout that parses without loss and covers 5,570 codes until October 2025, the missing one being Boa Esperança do Norte (MT, installed 2025, outside the sample); its average-benefit column is the ratio of the two stored columns rounded by the provider and is not carried. On the biome municipalities the beneficiary count is stable from 2019 to October 2021 (2.11 to 2.24 million) while the transfer per family in the monthly files falls from about R$ 212 in January-March 2020 to R$ 6-7 in April-August and R$ 35-41 in September-December, returns to R$ 206-210 in January-March 2021, halves to R$ 99-106 in April-October 2021 and is empty from November 2021 to February 2023 (no file for 2022, 2023 starting in March). These are the two Auxílio Emergencial rounds: families paid the emergency aid were taken off the Bolsa Família payroll, so the monthly service reports the residual disbursement. The LAI workbook, which accounts for the entitlement, shows no fall on the same municipalities (R$ 5.58 bn in 2020 against 5.54 bn in 2019, 4.60 bn for January-October 2021); the monthly files sum to the workbook’s total exactly in 2019, to a third of it in 2020 and to two thirds in January-October 2021. June, the reference month, lies inside the substitution window in both years; February does not. From March 2023 the re-created programme pays about R$ 660-700 per family nominal (2.6-2.8 times 2019 in 2024 BRL) to 41 percent more biome families, with no quota series (the workbook ends in October 2021) and no PEA denominator after 2022. After the extension the interim grid runs 2004-2024 for both months: 2004-2019 values unchanged, 2020-2021 as reported under <code>pbf_emergency_aid</code> (June) and <code>pbf</code> (February), 2022 and February 2023 empty under <code>auxilio_brasil</code>, 2023-2024 under <code>pbf_2023</code> with the quota and PEA ratios NA. <strong>Decision.</strong> D-2026-10-22-a (series to 2024 across both layouts, 2022 empty; supersedes D-2026-10-05-b, closes D-2026-10-05-q), D-2026-10-22-b (substitution months stored as reported, <code>bf_regime</code> added and carried into the panel), D-2026-10-22-c (quota through 2021, NA after). <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state block (both layouts’ columns, no 2022 file, 5,571 and 5,570 codes with the one missing code named, the new layout parsed without NA, deflator through 2024) and output block (grid size, regime sequence by month and year, Auxílio Brasil rows empty, June transfer per family below half of 2019’s in the substitution years and below a tenth in 2020, above twice 2019’s under the 2023 programme, quota NA after 2021).</p>
 </section>
 
 </main>

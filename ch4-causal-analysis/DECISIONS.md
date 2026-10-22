@@ -27,7 +27,7 @@ Supersedes: none
 
 ## D-2026-10-05-b  Bolsa Família panel truncated at 2019
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-bf.R); reopened by D-2026-10-05-q
+Status: superseded by D-2026-10-22-a (phase 2, step 2.2, 2026-10-22)
 Scope: script 02 (lines 876, 1028), bf_* columns 2004-2019
 Context: the MDS series continues past 2019, but 2020 carries the COVID
          emergency transfers and the 2021-2023 Auxílio Brasil substitution.
@@ -243,7 +243,7 @@ Supersedes: none
 
 ## D-2026-10-05-q  Bolsa Família endpoint extended past 2020
 
-Status: open (Task 1.2; phase 2 step 2.2)
+Status: closed (phase 2, step 2.2, 2026-10-22: implemented by D-2026-10-22-a, -b and -c)
 Scope: script 02; bf_* columns 2020-2024
 Context: all bf_* columns are missing for 2020-2024 while PRODES, RAIS and
          prices are present (D-2026-10-05-b).
@@ -1554,3 +1554,91 @@ Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024 for
          downstream the baseline coverage ratio and the median split of
          D-2026-10-05-i (recheck, issue #19)
 Supersedes: D-2026-10-05-n
+
+## D-2026-10-22-a  Bolsa Família series extended to 2024 across two file layouts, 2022 empty
+
+Status: closed (phase 2, step 2.2, branch phase2-2.2-bf-endpoint, 2026-10-22; comparator report in the commit message)
+Scope: 02-social-bf.R (BF_YEARS, BF_FILE_YEARS, BF_NEW_LAYOUT_YEARS, read_bf_new); interim bf_panel_2004_2024; 04-panel-assemble.R input name; all bf_* columns 2020-2024
+Context: D-2026-10-05-q opened the endpoint; the re-acquired MI Social files
+         cover 2020-2021 in the 2004-2019 layout (12 months, 5,571 codes)
+         and 2023-2026 in a new layout (codigo_ibge, anomes_s, suffixed
+         value columns, an average-benefit column; 5,570 codes until
+         October 2025, Boa Esperança do Norte (MT, installed 2025) joining
+         in November; 2023 starts in March, the first month of the
+         re-created programme). No file exists for 2022 and the service
+         returns no values for it (provenance notes, _audit/bf.qmd Q1).
+Reason: the panel's target endpoint is 2024, the deflator base and the last
+        year the IPCA lookup covers; 2025-2026 stay unused. The interim grid
+        is completed over 2004-2024 for both reference months so the regime
+        flag of D-2026-10-22-b is defined in every year: 2022 rows carry NA
+        in every value column, as do February 2023 and the 2023-2024 rows of
+        the municipality absent from the new layout. The average-benefit
+        column of the new layout is not carried (it is the ratio of the two
+        stored columns, rounded by the provider). The 2023-2024 values are
+        the re-created programme's (families on the 502 biome municipalities
+        rise 41 percent from June 2021 to June 2023 and the nominal transfer
+        per family 3.5 times); they enter as reported and are identified by
+        the regime flag, comparability being an analysis decision.
+Evidence: _audit/bf.qmd Q1, Q6
+Affects: bf_* columns 2020-2024 (2020 in the current panel); interim file
+         renamed bf_panel_2004_2024
+Supersedes: D-2026-10-05-b (closed by this entry together with D-2026-10-05-q)
+
+## D-2026-10-22-b  Auxílio Emergencial substitution months stored as reported and flagged by bf_regime
+
+Status: closed (phase 2, step 2.2, branch phase2-2.2-bf-endpoint, 2026-10-22; comparator report in the commit message)
+Scope: 02-social-bf.R (bf_regime, BF_REGIME_*); 04-panel-assemble.R (column carried into the panel); bf_transfers_* 2020-2021
+Context: on the 502 biome municipalities the transfer per beneficiary
+         family in the monthly files falls from R$ 212 (nominal) in
+         January-March 2020 to R$ 6-7 in April-August 2020 and R$ 35-41
+         in September-December, returns to R$ 206-210 in January-March
+         2021, halves to R$ 99-106 in April-October 2021 and is empty from
+         November 2021 (Auxílio Brasil). Beneficiary families are stable
+         throughout (2.11-2.24 million). The LAI workbook's annual totals
+         on the same municipalities show no fall (R$ 5.58 bn in 2020
+         against 5.54 bn in 2019; 4.60 bn for January-October 2021): the
+         monthly service reports what the programme disbursed after
+         families paid the Auxílio Emergencial were taken off the Bolsa
+         Família payroll, the workbook the entitlement. June, the
+         reference month, lies inside the substitution window in both
+         years; February, the alternative month, is a regular month in
+         both.
+Reason: the stored values are what the source reports and are not recoded;
+        a character column bf_regime names the programme regime of each
+        stored month (pbf: regular Bolsa Família; pbf_emergency_aid: April-
+        December 2020 and April-October 2021; auxilio_brasil: November 2021
+        to February 2023; pbf_2023: March 2023 on) so that analysis scripts
+        exclude or model the substitution months and the 2023 programme
+        explicitly instead of hardcoding 2019 as the endpoint. The column
+        is source information, constant across municipalities within a
+        month, and sample-independent, so it is stored in the pipeline
+        (GUIDANCE.md, governing rule for derived variables). The reference
+        month is unchanged (D-2026-10-05-a); the interim file keeps
+        February, which is undistorted in 2020 and 2021, should the author
+        reopen that choice. Coverage variables (bf_families_n,
+        bf_families_quota_ratio) are usable in 2020-2021 as stored; the
+        transfer variables are not.
+Evidence: _audit/bf.qmd Q6
+Affects: new column bf_regime (interim and panel; NA before 2004 in the
+         panel); the June 2020 and June 2021 values of
+         bf_transfers_total_brl_2024, bf_transfers_avg_brl_2024,
+         bf_transfers_pea_brl_2024, bf_transfers_quota_brl_2024 and, in
+         script 04, bf_transfers_pc_brl_2024 are disbursement artifacts
+Supersedes: none
+
+## D-2026-10-22-c  Municipal quota carried to 2021 by the workbook's last period, NA from 2022
+
+Status: closed (phase 2, step 2.2, branch phase2-2.2-bf-endpoint, 2026-10-22; comparator report in the commit message)
+Scope: 02-social-bf.R (BF_QUOTA_PERIOD_YEARS); bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024, 2020-2024
+Context: the LAI workbook's fourth estimate column is headed "de 2012 até o
+         momento" and the workbook runs to October 2021 (D-2026-10-07-g);
+         no later estimate of poor families exists in the re-acquired
+         sources, and the re-created programme of 2023 uses a different
+         eligibility rule.
+Reason: the 2012 estimate applies to 2020-2021 by the source's own
+        statement; from 2022 the quota and the two ratios over it are NA
+        rather than an extrapolation.
+Evidence: _audit/bf.qmd Q4, Q6
+Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024 in
+         2020-2021 (values) and 2022-2024 (NA)
+Supersedes: none
