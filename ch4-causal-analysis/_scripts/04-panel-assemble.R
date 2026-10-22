@@ -9,7 +9,7 @@
 # INPUTS    _data/interim/mapbiomas_deforestation_amz_1987_2023.rds
 #                                                     01-env-deforestation.R
 #           _data/interim/ppcdam_list_2004_2024.rds   01-env-ppcdam.R
-#           _data/interim/bf_panel_2004_2019.rds      02-social-bf.R
+#           _data/interim/bf_panel_2004_2024.rds      02-social-bf.R
 #           _data/interim/rais_employment_1999_2024.rds
 #                                                     02-social-rais.R
 #           _data/interim/census_pea_informal_2000_2022.rds
@@ -44,6 +44,8 @@
 #                   where population is missing or zero.
 #   D-2026-10-11-g  Columns not carried into the panel at the join.
 #   D-2026-10-11-h  Task 1.10: typed output; the xlsx copy retired.
+#   D-2026-10-22-b  bf_regime carried into the panel (phase 2, step 2.2);
+#                   NA before 2004, when the programme did not exist.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 1.3  The z-scores standardise indices whose 2000 value is not 1
@@ -107,7 +109,10 @@ PANEL_COLS <- c(
   "price_index_crop_z", "price_index_crop_lag1_z", "price_index_cattle_z",
   "price_index_cattle_lag1_z",
   paste0(ELEC_GOV_VARS, "_gov"),
-  "bf_transfers_pc_brl_2024"
+  "bf_transfers_pc_brl_2024",
+  # Phase 2, step 2.2 (D-2026-10-22-b): programme regime of the reference
+  # month, appended after the phase 1 columns so their order is unchanged.
+  "bf_regime"
 )
 PANEL_INT_COLS <- c("year", "ppcdam_list", "elec_n_candidates",
                     "elec_competitive", "elec_uncontested", "election_year",
@@ -115,14 +120,15 @@ PANEL_INT_COLS <- c("year", "ppcdam_list", "elec_n_candidates",
                     "elec_uncontested_gov")             # D-2026-10-11-h
 PANEL_CHR_COLS <- c("geocode", "municipality", "state", "state_abbreviation",
                     "elec_winner_party", "elec_winner_id",
-                    "elec_winner_party_gov", "elec_winner_id_gov")
+                    "elec_winner_party_gov", "elec_winner_id_gov",
+                    "bf_regime")
 
 # ---- Read -------------------------------------------------------------------
 interim <- function(name) read_rds(file.path("_data/interim", name))
 
 mapbiomas  <- interim("mapbiomas_deforestation_amz_1987_2023.rds")
 ppcdam     <- interim("ppcdam_list_2004_2024.rds")
-bf         <- interim("bf_panel_2004_2019.rds")
+bf         <- interim("bf_panel_2004_2024.rds")
 rais       <- interim("rais_employment_1999_2024.rds")
 census     <- interim("census_pea_informal_2000_2022.rds")
 gdp        <- interim("ibge_pib_gdp_2002_2022.rds")
@@ -246,6 +252,7 @@ stopifnot(
   all(is.na(panel$bf_transfers_pc_brl_2024) ==
         (is.na(panel$bf_transfers_total_brl_2024) |
            is.na(panel$population) | panel$population <= 0)),
+  identical(is.na(panel$bf_regime), panel$year < min(bf$year)),
   all(map_lgl(panel[PANEL_INT_COLS], is.integer)),
   all(map_lgl(panel[PANEL_CHR_COLS], is.character)),
   all(map_lgl(panel[setdiff(PANEL_COLS, c(PANEL_INT_COLS, PANEL_CHR_COLS))],

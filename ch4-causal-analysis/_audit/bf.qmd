@@ -19,7 +19,7 @@ quota (estimativa de famílias pobres) from the SENARC LAI response of
 protocol 71003.017363/2022-16
 (`_data/raw/mds/Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx`).
 Pipeline script: `_scripts/02-social-bf.R`.
-Interim output: `_data/interim/bf_panel_2004_2019.rds`.
+Interim output: `_data/interim/bf_panel_2004_2024.rds` (2004-2019 until phase 2, step 2.2).
 
 ```{r setup}
 #| include: false
@@ -43,7 +43,7 @@ read_old <- function(f) {
 bf_old <- map_dfr(old_files, read_old)
 bf_new <- map_dfr(new_files, ~ read_csv(.x, col_types = cols(.default = col_character()),
                                         progress = FALSE) %>% mutate(source_file = basename(.x)))
-bf_panel <- read_rds("_data/interim/bf_panel_2004_2019.rds")
+bf_panel <- read_rds("_data/interim/bf_panel_2004_2024.rds")
 munic_id <- read_xlsx("_data/raw/ibge/ibge_munic_id.xlsx", sheet = "Municípios",
                       col_types = c("text", "numeric", "text", "text"))
 quota_file <- file.path(bf_dir, "Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx")
@@ -96,7 +96,7 @@ No file exists for 2022, and the 2023-2026 files use a new layout
 (`codigo_ibge`, `anomes_s`, suffixed value columns, an average-benefit
 column), with 2023 starting in March.
 **Decision.** D-2026-10-05-b: panel truncated at 2019; the 2020-2026
-evidence feeds task 1.2.
+evidence feeds task 1.2, settled at Q6 (phase 2, step 2.2, D-2026-10-22-a).
 **Assertion.** `02-social-bf.R`, raw-state block (files present, columns,
 twelve months per year, no duplicates, no negatives).
 
@@ -397,3 +397,125 @@ inherited.
 **Decision.** D-2026-10-07-h.
 **Assertion.** `02-social-bf.R`, raw-state block (unique prefixes, every
 MDS code matched) and output block (no NA geocode).
+
+## Q6. What do the 2020-2026 files hold, and how is the series extended to 2024? (phase 2, step 2.2, 2026-10-22)
+
+What is checked: the monthly transfer per beneficiary family and the
+family count on the 502 biome municipalities from 2019 to 2026, across
+the Auxílio Emergencial rounds, the Auxílio Brasil gap and the re-created
+programme; the LAI workbook's annual totals for 2019-2021 on the same
+municipalities as a second accounting of the same years; the new layout's
+code coverage, parsing and average-benefit column; and the pipeline
+output after the extension, by regime and reference month.
+
+```{r q6-monthly}
+biome <- unique(read_rds("_data/reference/panel_amz_2000_2020_final_phase1.rds")$geocode)
+biome6 <- str_sub(biome, 1, 6)
+bf_new_num <- bf_new %>%
+  transmute(ibge = codigo_ibge, anomes = as.integer(anomes_s),
+            qtd_familias_beneficiarias_bolsa_familia = as.numeric(qtd_familias_beneficiarias_bolsa_familia_s),
+            valor_repassado_bolsa_familia = as.numeric(valor_repassado_bolsa_familia_s),
+            avg_benefit = as.numeric(pbf_vlr_medio_benef_f), source_file)
+monthly <- bind_rows(bf_old %>% filter(anomes >= 201901), bf_new_num %>% select(-avg_benefit)) %>%
+  filter(ibge %in% biome6) %>%
+  group_by(anomes) %>%
+  summarise(n = n(), families = sum(qtd_familias_beneficiarias_bolsa_familia, na.rm = TRUE),
+            transfers_nominal = sum(valor_repassado_bolsa_familia, na.rm = TRUE),
+            per_family_nominal = transfers_nominal / families,
+            na_rows = sum(is.na(qtd_familias_beneficiarias_bolsa_familia)),
+            families_pos_transfers_zero = sum(qtd_familias_beneficiarias_bolsa_familia > 0 &
+                                                valor_repassado_bolsa_familia == 0, na.rm = TRUE))
+monthly %>% filter(anomes <= 202412) %>% print(n = 60)
+monthly %>% mutate(year = anomes %/% 100L) %>% group_by(year) %>%
+  summarise(months = n(), families_min = min(families), families_max = max(families),
+            per_family_min = min(per_family_nominal, na.rm = TRUE),
+            per_family_max = max(per_family_nominal, na.rm = TRUE))
+```
+
+```{r q6-workbook}
+# Yearly blocks of the LAI workbook: four columns per year (families in
+# December, total R$, coverage, average benefit); 2018 starts at column 69,
+# 2019 at 73; 2021 reports January-October.
+wb_years <- tibble(year = 2019:2021, first_col = c(73L, 77L, 81L)) %>%
+  rowwise() %>%
+  mutate(rows = list(quota_raw[quota_raw$IBGE %in% biome, ]),
+         families_dec = sum(as.numeric(rows[[first_col]]), na.rm = TRUE),
+         total_brl_nominal = sum(as.numeric(rows[[first_col + 1L]]), na.rm = TRUE)) %>%
+  ungroup() %>% select(-rows, -first_col)
+monthly_year <- monthly %>% mutate(year = anomes %/% 100L) %>%
+  filter(year %in% 2019:2021) %>% group_by(year) %>%
+  summarise(monthly_file_total_nominal = sum(transfers_nominal))
+wb_years %>% left_join(monthly_year, by = "year") %>%
+  mutate(ratio_file_to_workbook = monthly_file_total_nominal / total_brl_nominal)
+```
+
+```{r q6-layout}
+old_codes <- unique(bf_old$ibge); new_codes <- unique(bf_new_num$ibge)
+missing_code <- setdiff(old_codes, unique(bf_new_num$ibge[bf_new_num$anomes < 202511]))
+tibble(old_codes = length(old_codes), new_codes = length(new_codes),
+       missing_before_nov_2025 = paste(missing_code, collapse = ","),
+       name = munic_id$munic[str_sub(munic_id$munic_id, 1, 6) %in% missing_code],
+       parse_na_families = sum(is.na(bf_new_num$qtd_familias_beneficiarias_bolsa_familia)),
+       parse_na_transfers = sum(is.na(bf_new_num$valor_repassado_bolsa_familia)),
+       duplicate_keys = sum(duplicated(paste(bf_new_num$ibge, bf_new_num$anomes))))
+bf_new_num %>%
+  mutate(implied = valor_repassado_bolsa_familia / qtd_familias_beneficiarias_bolsa_familia,
+         gap = avg_benefit - implied) %>%
+  summarise(rows = n(), within_1_brl = mean(abs(gap) < 1, na.rm = TRUE),
+            gap_p99 = quantile(abs(gap), 0.99, na.rm = TRUE), gap_max = max(abs(gap), na.rm = TRUE))
+```
+
+```{r q6-output}
+# Pipeline output after the extension (bf_panel read at setup).
+bf_panel %>% distinct(year, bf_ref_month, bf_regime) %>%
+  pivot_wider(names_from = bf_ref_month, values_from = bf_regime, names_prefix = "month_") %>%
+  filter(year >= 2019)
+bf_panel %>%
+  filter(geocode %in% biome, year >= 2019) %>%
+  group_by(bf_ref_month, year, bf_regime) %>%
+  summarise(n_families = sum(!is.na(bf_families_n)), families = sum(bf_families_n, na.rm = TRUE),
+            per_family_brl_2024 = sum(bf_transfers_total_brl_2024, na.rm = TRUE) / families,
+            n_quota = sum(!is.na(bf_quota)), quota_ratio_median = median(bf_families_quota_ratio, na.rm = TRUE),
+            n_pea_ratio = sum(!is.na(bf_transfers_pea_brl_2024)), .groups = "drop") %>%
+  arrange(bf_ref_month, year)
+```
+
+**Finding.** The 2020 and 2021 files have the 2004-2019 layout and
+coverage; the 2023-2026 files have a new layout that parses without loss
+and covers 5,570 codes until October 2025, the missing one being Boa
+Esperança do Norte (MT, installed 2025, outside the sample); its
+average-benefit column is the ratio of the two stored columns rounded by
+the provider and is not carried. On the biome municipalities the
+beneficiary count is stable from 2019 to October 2021 (2.11 to 2.24
+million) while the transfer per family in the monthly files falls from
+about R$ 212 in January-March 2020 to R$ 6-7 in April-August and
+R$ 35-41 in September-December, returns to R$ 206-210 in January-March
+2021, halves to R$ 99-106 in April-October 2021 and is empty from
+November 2021 to February 2023 (no file for 2022, 2023 starting in
+March). These are the two Auxílio Emergencial rounds: families paid the
+emergency aid were taken off the Bolsa Família payroll, so the monthly
+service reports the residual disbursement. The LAI workbook, which
+accounts for the entitlement, shows no fall on the same municipalities
+(R$ 5.58 bn in 2020 against 5.54 bn in 2019, 4.60 bn for January-October
+2021); the monthly files sum to the workbook's total exactly in 2019, to
+a third of it in 2020 and to two thirds in January-October 2021. June, the
+reference month, lies inside the substitution window in both years;
+February does not. From March 2023 the re-created programme pays about
+R$ 660-700 per family nominal (2.6-2.8 times 2019 in 2024 BRL) to 41 percent
+more biome families, with no quota series (the workbook ends in October
+2021) and no PEA denominator after 2022. After the extension the interim
+grid runs 2004-2024 for both months: 2004-2019 values unchanged, 2020-2021
+as reported under `pbf_emergency_aid` (June) and `pbf` (February), 2022
+and February 2023 empty under `auxilio_brasil`, 2023-2024 under
+`pbf_2023` with the quota and PEA ratios NA.
+**Decision.** D-2026-10-22-a (series to 2024 across both layouts, 2022
+empty; supersedes D-2026-10-05-b, closes D-2026-10-05-q), D-2026-10-22-b
+(substitution months stored as reported, `bf_regime` added and carried
+into the panel), D-2026-10-22-c (quota through 2021, NA after).
+**Assertion.** `02-social-bf.R`, raw-state block (both layouts' columns,
+no 2022 file, 5,571 and 5,570 codes with the one missing code named, the
+new layout parsed without NA, deflator through 2024) and output block
+(grid size, regime sequence by month and year, Auxílio Brasil rows empty,
+June transfer per family below half of 2019's in the substitution years
+and below a tenth in 2020, above twice 2019's under the 2023 programme,
+quota NA after 2021).
