@@ -201,7 +201,7 @@ Supersedes: none
 
 ## D-2026-10-05-n  Quota source correction for 14 Mato Grosso municipalities
 
-Status: open (Task 1.4; phase 2 step 2.1)
+Status: superseded by D-2026-10-21-a (phase 2, step 2.1, 2026-10-21)
 Scope: script 02; bf_quota, bf_families_quota_ratio
 Context: 14 MT municipalities show 2006-07 quota ratios above 3 (max 11.9)
          while MT's median is 0.96, which points to a source error for
@@ -1517,3 +1517,40 @@ Reason: the outcome years are 2004-2019 and every regressor except
 Evidence: output/tables/tab-corr-twfe-full.csv (years, counts and every coefficient per specification); the message printed by script 11 at run
 Affects: analysis-layer estimation samples only; no panel column
 Supersedes: none
+
+## D-2026-10-21-a  Mato Grosso estimates of the LAI quota workbook realigned to their municipalities
+
+Status: closed (phase 2, step 2.1, branch phase2-2.1-quota-realign, 2026-10-21; comparator report in the commit message)
+Scope: 02-social-bf.R (realignment block, BF_QUOTA_REALIGN_*); bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024
+Context: task 1.4 flagged 14 Mato Grosso municipalities with 2006-07 quota
+         ratios above 3 (D-2026-10-05-n, verify upstream first). Verified
+         against the re-acquired source (_audit/bf.qmd Q4b): the LAI
+         workbook's Mato Grosso block lists Santa Cruz do Xingu and União do
+         Sul ahead of Acorizal while its four "estimativa de famílias
+         pobres" columns run in strict alphabetical order over all 141
+         rows, so every estimate from Acorizal to the slot of Santa Cruz do
+         Xingu sits two rows above its municipality, the next 21 one row
+         above, the last five in place. Cuiabá's row carries 376 poor
+         families for 2006-2008 and Conquista D'Oeste's 16,882; the
+         workbook's own coverage column reports the same misalignment
+         (Cuiabá at 5,393 percent in 2006). In the other 26 states the
+         stored estimate and the December families correlate at 0.97 or
+         above; in Mato Grosso at 0.12 as stored and 0.994 realigned, and
+         the zero "até 2005" estimates land on Ipiranga do Norte and
+         Itanhangá, created after the 2000 census (task 1.6).
+Reason: the misalignment is structural and exact (shift counts 113, 21, 5),
+        and the realigned block has the ratio distribution of the other
+        states (median absolute log ratio 0.14, 95th percentile 1.3). The
+        correction is applied in the script to the four period columns of
+        the Mato Grosso rows, the raw file untouched, with the row
+        structure asserted before and the families-quota correlation after.
+        The three Mato Grosso do Sul and one Paraná municipalities above 3
+        are consistent with their states and stay as stored. No external
+        quota series is needed; the defect is wider than the 14 cases
+        (136 municipalities move) and not confined to 2006-2007.
+Evidence: _audit/bf.qmd Q4b
+Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024 for
+         136 Mato Grosso municipalities, 2004-2019, both reference months;
+         downstream the baseline coverage ratio and the median split of
+         D-2026-10-05-i (recheck, issue #19)
+Supersedes: D-2026-10-05-n

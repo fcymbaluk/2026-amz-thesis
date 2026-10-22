@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "7, phase 2, step 2.1 (quota source, verify upstream first). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired; descriptive sprint 2026-10-13 to 2026-10-18 delivered (stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13; tag ch4-descriptive-2026-10-18); its sources join the pipeline under task 4.8 after step 2.9"
-updated: 2026-10-18
+current_stage: "7, phase 2, step 2.2 (BF 2020 endpoint). Step 2.1 done 2026-10-21 (D-2026-10-21-a, branch phase2-2.1-quota-realign). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired; descriptive sprint 2026-10-13 to 2026-10-18 delivered (stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13; tag ch4-descriptive-2026-10-18); its sources join the pipeline under task 4.8 after step 2.9"
+updated: 2026-10-21
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -81,7 +81,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 
 ## Stage 7 — Phase 2: fixes (Claude Code, nine sessions, order 2.1-2.9)
 
-- [ ] 2.1 quota source (verify upstream first) · \[ \] 2.2 BF endpoint/extension · \[ \] 2.3 electoral timing · \[ \] 2.4 price normalization · \[ \] 2.5 post-2000 municipalities · \[ \] 2.6 census anchors · \[ \] 2.7 NA-vs-zero · \[ \] 2.8 units · \[ \] 2.9 Legal Amazon extension.
+- [x] 2.1 quota source (verify upstream first; done 2026-10-21, D-2026-10-21-a: Mato Grosso block of the LAI workbook realigned in script 02, 73 sample municipalities move, median split no longer survives, see tasks.md 1.4) · \[ \] 2.2 BF endpoint/extension · \[ \] 2.3 electoral timing · \[ \] 2.4 price normalization · \[ \] 2.5 post-2000 municipalities · \[ \] 2.6 census anchors · \[ \] 2.7 NA-vs-zero · \[ \] 2.8 units · \[ \] 2.9 Legal Amazon extension.
 - [ ] Each: decision entry opened → evidence in notebook → fix as constant/delimited block + assertion → compare vs phase 1 output in the commit → entry closed with hash.
 - [ ] After 2.9: all audit notebooks re-rendered on the extended sample; new municipalities' source problems become new entries. Mirror refreshed.
 
