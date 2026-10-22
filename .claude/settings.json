@@ -37,13 +37,9 @@
       "Bash(chflags*)",
       "Read(.env*)",
       "Read(**/.env*)",
-      "Write(ch4-causal-analysis/_data/raw/**)",
       "Edit(ch4-causal-analysis/_data/raw/**)",
-      "Write(ch4-causal-analysis/_data/reference/**)",
       "Edit(ch4-causal-analysis/_data/reference/**)",
-      "Write(ch3-systematic-review/2-search/raw/**)",
       "Edit(ch3-systematic-review/2-search/raw/**)",
-      "Write(docs/submitted/**)",
       "Edit(docs/submitted/**)"
     ]
   },
