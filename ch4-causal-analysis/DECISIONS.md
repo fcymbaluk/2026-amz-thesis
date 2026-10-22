@@ -1520,7 +1520,7 @@ Supersedes: none
 
 ## D-2026-10-21-a  Mato Grosso estimates of the LAI quota workbook realigned to their municipalities
 
-Status: closed (phase 2, step 2.1, branch phase2-2.1-quota-realign, 2026-10-21; comparator report in the commit message)
+Status: closed (phase 2, step 2.1, branch phase2-2.1-quota-realign, 2026-10-21, commit 69bf5a6; comparator report in the commit message)
 Scope: 02-social-bf.R (realignment block, BF_QUOTA_REALIGN_*); bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024
 Context: task 1.4 flagged 14 Mato Grosso municipalities with 2006-07 quota
          ratios above 3 (D-2026-10-05-n, verify upstream first). Verified
