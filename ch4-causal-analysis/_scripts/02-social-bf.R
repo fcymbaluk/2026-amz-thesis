@@ -31,12 +31,12 @@
 #                   workbook (until 2005, 2006-2008, 2009-2011, 2012 on).
 #   D-2026-10-07-h  Six-digit MDS codes mapped to seven-digit geocodes
 #                   through the IBGE lookup.
+#   D-2026-10-21-a  Mato Grosso estimates of the LAI workbook realigned to
+#                   their municipalities (phase 2, step 2.1; task 1.4).
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 1.2  2020-2024 not built; the raw files exist (2023+ in a new
 #             layout, no 2022 file).
-#   Task 1.4  bf_quota carries the source values for the 14 Mato Grosso
-#             municipalities with 2006-07 ratios above 3.
 #   Task 1.8  bf_families_quota_ratio is 0 where the source reports zero
 #             families against a positive quota (2004-2006).
 # RUN ORDER 02-social-census.R must run first (PEA denominator). Feeds
@@ -65,6 +65,14 @@ DEFLATOR_BASE <- 2024L                                        # D-2026-10-05-c
 N_MUNIC_BR_EXPECTED    <- 5571L   # IBGE lookup and MDS files
 N_MUNIC_QUOTA_EXPECTED <- 5570L
 N_BF_MONTHS_EXPECTED   <- 12L
+# Phase 2, step 2.1 (D-2026-10-21-a): the Mato Grosso block of the LAI
+# workbook lists two municipalities ahead of the alphabetical order while its
+# four estimate columns follow that order; see the realignment block below.
+BF_QUOTA_REALIGN_UF        <- "MT"
+BF_QUOTA_REALIGN_N         <- 141L
+BF_QUOTA_REALIGN_DISPLACED <- c("5107743", "5108303")  # Santa Cruz do Xingu,
+                                                       # União do Sul
+BF_QUOTA_REALIGN_SHIFT     <- c(`-2` = 113L, `-1` = 21L, `0` = 5L)
 
 # ---- Read -------------------------------------------------------------------
 bf_files <- file.path(BF_DIR, sprintf("bf-%d.txt", BF_YEARS))
@@ -142,6 +150,31 @@ stopifnot(
   !anyNA(suppressWarnings(as.numeric(unlist(quota_munic[, quota_period_cols]))))
 )
 
+# ---- Fix: realign the Mato Grosso estimates (D-2026-10-21-a) ----------------
+# _audit/bf.qmd Q4b. In the workbook's Mato Grosso block the municipality
+# rows list Santa Cruz do Xingu and União do Sul first and the other 139 in
+# alphabetical order, while the four estimate columns run in strict
+# alphabetical order over all 141. The estimate on the i-th Mato Grosso row
+# therefore belongs to the i-th Mato Grosso municipality by name: two rows up
+# for the 113 municipalities before Santa Cruz do Xingu's slot, one row up for
+# the 21 before União do Sul's slot, none for the last five. The other 26
+# states are consistent as stored. The raw file is untouched.
+mt_rows  <- which(quota_munic$UF == BF_QUOTA_REALIGN_UF)
+mt_alpha <- mt_rows[order(quota_munic$MUNICÍPIOS[mt_rows], method = "radix")]
+mt_shift <- match(mt_rows, mt_alpha) - seq_along(mt_rows)
+mt_shift_counts <- as.integer(
+  table(factor(mt_shift[-(1:2)], levels = names(BF_QUOTA_REALIGN_SHIFT)))
+)
+stopifnot(
+  length(mt_rows) == BF_QUOTA_REALIGN_N,
+  identical(quota_munic$IBGE[mt_rows[1:2]], BF_QUOTA_REALIGN_DISPLACED),
+  identical(order(quota_munic$MUNICÍPIOS[mt_rows[-(1:2)]], method = "radix"),
+            seq_len(BF_QUOTA_REALIGN_N - 2L)),
+  identical(mt_shift_counts, unname(BF_QUOTA_REALIGN_SHIFT)),
+  all(mt_shift[1:2] > 0)
+)
+quota_munic[mt_alpha, quota_period_cols] <- quota_munic[mt_rows, quota_period_cols]
+
 # ---- Transform --------------------------------------------------------------
 deflator_years <- deflator %>% select(year, ipca_deflator)
 
@@ -203,8 +236,15 @@ bf_panel <- bf_months %>%
   arrange(bf_ref_month, geocode, year)
 
 # ---- Assert: output state ---------------------------------------------------
-# _audit/bf.qmd Q1, Q4.
+# _audit/bf.qmd Q1, Q4, Q4b (the realigned Mato Grosso quota tracks the
+# June 2006 beneficiary count like every other state's).
+mt_check <- bf_panel %>%
+  filter(geocode %in% quota_munic$IBGE[mt_rows], year == 2006L,
+         bf_ref_month == BF_REF_MONTH)
 stopifnot(
+  nrow(mt_check) == BF_QUOTA_REALIGN_N,
+  cor(mt_check$bf_families_n, mt_check$bf_quota) > 0.95,
+  all(mt_check$bf_families_quota_ratio < 3, na.rm = TRUE),
   nrow(bf_panel) == N_MUNIC_BR_EXPECTED * length(BF_YEARS) * 2L,
   !anyDuplicated(paste(bf_panel$geocode, bf_panel$year,
                        bf_panel$bf_ref_month)),

@@ -2215,6 +2215,7 @@ vertical-align: -.125em;
   <li><a href="#q2.-which-month-represents-the-year" id="toc-q2.-which-month-represents-the-year" class="nav-link" data-scroll-target="#q2.-which-month-represents-the-year">Q2. Which month represents the year?</a></li>
   <li><a href="#q3.-is-the-implied-transfer-per-family-plausible-across-years" id="toc-q3.-is-the-implied-transfer-per-family-plausible-across-years" class="nav-link" data-scroll-target="#q3.-is-the-implied-transfer-per-family-plausible-across-years">Q3. Is the implied transfer per family plausible across years?</a></li>
   <li><a href="#q4.-do-the-municipal-quota-values-look-plausible" id="toc-q4.-do-the-municipal-quota-values-look-plausible" class="nav-link" data-scroll-target="#q4.-do-the-municipal-quota-values-look-plausible">Q4. Do the municipal quota values look plausible?</a></li>
+  <li><a href="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" id="toc-q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" class="nav-link" data-scroll-target="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21">Q4b. Why do the Mato Grosso quotas fail, and does realignment repair them? (phase 2, step 2.1, 2026-10-21)</a></li>
   <li><a href="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" id="toc-q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" class="nav-link" data-scroll-target="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear">Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?</a></li>
   </ul>
 </nav>
@@ -2545,7 +2546,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 4
     p50   p99 above_3 above_3_mt
   &lt;dbl&gt; &lt;dbl&gt;   &lt;int&gt;      &lt;int&gt;
-1  1.04  2.06      69         61</code></pre>
+1  1.04  1.53       8          0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2560,20 +2561,20 @@ vertical-align: -.125em;
 <pre><code># A tibble: 14 × 5
    geocode munic                      families quota_2006_08 ratio
    &lt;chr&gt;   &lt;chr&gt;                         &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;
- 1 5104104 Guarantã do Norte              1711           137 12.5 
- 2 5106752 Pontes e Lacerda               2546           221 11.5 
- 3 5100250 Alta Floresta                  3029           279 10.9 
- 4 5107107 São José dos Quatro Marcos     1444           180  8.02
- 5 5105101 Juara                          1313           173  7.59
- 6 5101704 Barra do Bugres                2176           334  6.51
- 7 5106232 Nova Olímpia                    789           169  4.67
- 8 5100805 Apiacás                         496           114  4.35
- 9 5107750 Salto do Céu                    316            79  4   
-10 5107248 Santa Carmem                    106            27  3.93
-11 5108956 Nova Monte Verde                500           139  3.60
-12 5106216 Nova Canaã do Norte             634           185  3.43
-13 5107859 São Félix do Araguaia           869           271  3.21
-14 5103353 Confresa                       1506           482  3.12</code></pre>
+ 1 5107248 Santa Carmem                    106            81 1.31 
+ 2 5100250 Alta Floresta                  3029          2359 1.28 
+ 3 5101704 Barra do Bugres                2176          1723 1.26 
+ 4 5106232 Nova Olímpia                    789           630 1.25 
+ 5 5108956 Nova Monte Verde                500           414 1.21 
+ 6 5103353 Confresa                       1506          1255 1.2  
+ 7 5107859 São Félix do Araguaia           869           734 1.18 
+ 8 5100805 Apiacás                         496           421 1.18 
+ 9 5104104 Guarantã do Norte              1711          1462 1.17 
+10 5106752 Pontes e Lacerda               2546          2194 1.16 
+11 5105101 Juara                          1313          1240 1.06 
+12 5107107 São José dos Quatro Marcos     1444          1497 0.965
+13 5106216 Nova Canaã do Norte             634           760 0.834
+14 5107750 Salto do Céu                    316           453 0.698</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2581,20 +2582,17 @@ vertical-align: -.125em;
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, munic, uf, year, bf_families_n, bf_quota, bf_families_quota_ratio)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 43 × 7
-   geocode munic           uf     year bf_families_n bf_quota bf_families_quota_ratio
-   &lt;chr&gt;   &lt;chr&gt;           &lt;chr&gt; &lt;int&gt;         &lt;dbl&gt;    &lt;dbl&gt;                   &lt;dbl&gt;
- 1 4109807 Ibiporã         PR     2006          1774      397                    4.47
- 2 4109807 Ibiporã         PR     2007          1471      397                    3.71
- 3 5006200 Nova Andradina  MS     2006          2486      549                    4.53
- 4 5006200 Nova Andradina  MS     2007          2172      549                    3.96
- 5 5006606 Ponta Porã      MS     2006          4232      680                    6.22
- 6 5006606 Ponta Porã      MS     2007          3885      680                    5.71
- 7 5007901 Sidrolândia     MS     2006          1781      432                    4.12
- 8 5007901 Sidrolândia     MS     2007          1620      432                    3.75
- 9 5101803 Barra do Garças MT     2006          2755      417                    6.61
-10 5101803 Barra do Garças MT     2007          2501      417                    6.00
-# ℹ 33 more rows</code></pre>
+<pre><code># A tibble: 8 × 7
+  geocode munic          uf     year bf_families_n bf_quota bf_families_quota_ratio
+  &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt; &lt;int&gt;         &lt;dbl&gt;    &lt;dbl&gt;                   &lt;dbl&gt;
+1 4109807 Ibiporã        PR     2006          1774      397                    4.47
+2 4109807 Ibiporã        PR     2007          1471      397                    3.71
+3 5006200 Nova Andradina MS     2006          2486      549                    4.53
+4 5006200 Nova Andradina MS     2007          2172      549                    3.96
+5 5006606 Ponta Porã     MS     2006          4232      680                    6.22
+6 5006606 Ponta Porã     MS     2007          3885      680                    5.71
+7 5007901 Sidrolândia    MS     2006          1781      432                    4.12
+8 5007901 Sidrolândia    MS     2007          1620      432                    3.75</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2613,16 +2611,230 @@ vertical-align: -.125em;
 3  2006     4</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The workbook (header on row 7) carries one row per municipality with a 7-digit code and four estimates of poor families, one per period; the pipeline assigns them to 2004-2005, 2006-2008, 2009-2011 and 2012-2019, which is the constant-within-period pattern of the lost <code>bf-quotas.xlsx</code>. The 2006-2007 ratio has a median near one (1.04) and a 99th percentile of 2.1. Sixty-nine municipality-years exceed 3, 61 of them in Mato Grosso; the fourteen municipalities of task 1.4 are the largest cases (3.1 to 12.5) and other Mato Grosso municipalities (Barra do Garças among them) and a few in Mato Grosso do Sul and Paraná also exceed 3. The values exceed 3 in the source itself: the LAI workbook is the quota’s origin, so the outliers are source-borne, not a tidy-step error, and the fix (if any) needs an external quota series. Rows with zero beneficiary families against a positive quota exist nationally in June 2004 (98), 2005 (23) and 2006 (4). <strong>Decision.</strong> D-2026-10-07-g (period mapping); task 1.4 stays open as a source question; task 1.8 (zero rows) open. <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state and output blocks (header names, 5,570 unique codes, every panel row of a listed municipality has a quota).</p>
+<p><strong>Finding.</strong> The workbook (header on row 7) carries one row per municipality with a 7-digit code and four estimates of poor families, one per period; the pipeline assigns them to 2004-2005, 2006-2008, 2009-2011 and 2012-2019, which is the constant-within-period pattern of the lost <code>bf-quotas.xlsx</code>. The 2006-2007 ratio has a median near one (1.04) and a 99th percentile of 2.1. Sixty-nine municipality-years exceed 3, 61 of them in Mato Grosso; the fourteen municipalities of task 1.4 are the largest cases (3.1 to 12.5) and other Mato Grosso municipalities (Barra do Garças among them) and a few in Mato Grosso do Sul and Paraná also exceed 3. The values exceed 3 in the source itself: the LAI workbook is the quota’s origin, so the outliers are source-borne, not a tidy-step error, and the fix (if any) needs an external quota series. Rows with zero beneficiary families against a positive quota exist nationally in June 2004 (98), 2005 (23) and 2006 (4). <strong>Decision.</strong> D-2026-10-07-g (period mapping); task 1.4 stays open as a source question; task 1.8 (zero rows) open. Task 1.4 settled at Q4b (phase 2, step 2.1, D-2026-10-21-a). <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state and output blocks (header names, 5,570 unique codes, every panel row of a listed municipality has a quota).</p>
+</section>
+<section id="q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" class="level2">
+<h2 class="anchored" data-anchor-id="q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21">Q4b. Why do the Mato Grosso quotas fail, and does realignment repair them? (phase 2, step 2.1, 2026-10-21)</h2>
+<p>What is checked: the stored estimate against the workbook’s own December families, state by state; the row order of the Mato Grosso block; the offset between each Mato Grosso row and its alphabetical position; the realigned estimates for the task 1.4 municipalities and Cuiabá; where the zero “até 2005” estimates land; and the pipeline output after the fix.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>est_cols <span class="ot">&lt;-</span> <span class="fu">names</span>(quota_raw)[<span class="fu">str_detect</span>(<span class="fu">names</span>(quota_raw), <span class="st">&quot;ESTIMATIVA&quot;</span>)]</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># quota_raw keeps the workbook&#39;s blank header cells as &quot;&quot; names, which</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dplyr verbs refuse, so the columns are pulled by position and name.</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>wb <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">sheet_row =</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(quota_raw)) <span class="sc">+</span> <span class="dv">7</span>L,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">IBGE =</span> quota_raw<span class="sc">$</span>IBGE, <span class="at">UF =</span> quota_raw<span class="sc">$</span>UF, <span class="at">munic =</span> quota_raw<span class="sc">$</span>MUNICÍPIOS,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">q_ate05 =</span> <span class="fu">as.numeric</span>(quota_raw[[est_cols[<span class="dv">1</span>]]]),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">q_0608  =</span> <span class="fu">as.numeric</span>(quota_raw[[est_cols[<span class="dv">2</span>]]]),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">q_0911  =</span> <span class="fu">as.numeric</span>(quota_raw[[est_cols[<span class="dv">3</span>]]]),</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">q_12    =</span> <span class="fu">as.numeric</span>(quota_raw[[est_cols[<span class="dv">4</span>]]]),</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">fam_dec2006 =</span> <span class="fu">as.numeric</span>(quota_raw[[<span class="dv">21</span>]]),   <span class="co"># &quot;2006&quot;, Famílias (Dezembro)</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">fam_dec2010 =</span> <span class="fu">as.numeric</span>(quota_raw[[<span class="dv">37</span>]])) <span class="sc">%&gt;%</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(IBGE), <span class="fu">str_detect</span>(IBGE, <span class="st">&quot;^[0-9]{7}$&quot;</span>))</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>wb <span class="sc">%&gt;%</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(UF) <span class="sc">%&gt;%</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">cor_0608 =</span> <span class="fu">round</span>(<span class="fu">cor</span>(fam_dec2006, q_0608, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>), <span class="dv">2</span>),</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">med_ratio =</span> <span class="fu">round</span>(<span class="fu">median</span>(fam_dec2006 <span class="sc">/</span> q_0608, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">2</span>),</span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_above_3 =</span> <span class="fu">sum</span>(fam_dec2006 <span class="sc">/</span> q_0608 <span class="sc">&gt;</span> <span class="dv">3</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_below_0.2 =</span> <span class="fu">sum</span>(fam_dec2006 <span class="sc">/</span> q_0608 <span class="sc">&lt;</span> <span class="fl">0.2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(cor_0608) <span class="sc">%&gt;%</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">6</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 27 × 6
+  UF        n cor_0608 med_ratio n_above_3 n_below_0.2
+  &lt;chr&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;       &lt;int&gt;
+1 MT      141     0.12      1.04        29          18
+2 AP       16     0.97      0.84         0           0
+3 MS       79     0.97      0.94         4           2
+4 PE      185     0.98      0.99         0           0
+5 TO      139     0.98      1.03         0           0
+6 BA      417     0.99      1.03         0           0
+# ℹ 21 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>mt <span class="ot">&lt;-</span> wb <span class="sc">%&gt;%</span> <span class="fu">filter</span>(UF <span class="sc">==</span> <span class="st">&quot;MT&quot;</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(<span class="fu">head</span>(mt, <span class="dv">3</span>), <span class="fu">tail</span>(mt, <span class="dv">2</span>)) <span class="sc">%&gt;%</span> <span class="fu">select</span>(sheet_row, IBGE, munic, q_0608, fam_dec2006)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  sheet_row IBGE    munic                            q_0608 fam_dec2006
+      &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;                             &lt;dbl&gt;       &lt;dbl&gt;
+1      2287 5107743 SANTA CRUZ DO XINGU                 546          92
+2      2288 5108303 UNIAO DO SUL                        835          86
+3      2289 5100102 ACORIZAL                           2359         573
+4      2426 5105507 VILA BELA DA SANTISSIMA TRINDADE    845         981
+5      2427 5108600 VILA RICA                           967         988</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mt_alpha <span class="ot">&lt;-</span> <span class="fu">order</span>(mt<span class="sc">$</span>munic, <span class="at">method =</span> <span class="st">&quot;radix&quot;</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>mt <span class="ot">&lt;-</span> mt <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">alpha_pos =</span> <span class="fu">match</span>(<span class="fu">row_number</span>(), mt_alpha),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">shift =</span> alpha_pos <span class="sc">-</span> <span class="fu">row_number</span>())</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(mt<span class="sc">$</span>shift)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ -2  -1   0 113 134 
+113  21   5   1   1 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>mt <span class="sc">%&gt;%</span> <span class="fu">filter</span>(shift <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(sheet_row, munic, alpha_pos, shift)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  sheet_row munic               alpha_pos shift
+      &lt;int&gt; &lt;chr&gt;                   &lt;int&gt; &lt;int&gt;
+1      2287 SANTA CRUZ DO XINGU       114   113
+2      2288 UNIAO DO SUL              136   134</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>realigned <span class="ot">&lt;-</span> mt <span class="sc">%&gt;%</span> <span class="fu">select</span>(sheet_row, IBGE, munic, shift, fam_dec2006, fam_dec2010)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (v <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;q_ate05&quot;</span>, <span class="st">&quot;q_0608&quot;</span>, <span class="st">&quot;q_0911&quot;</span>, <span class="st">&quot;q_12&quot;</span>)) {</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  realigned[[v]] <span class="ot">&lt;-</span> <span class="cn">NA_real_</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  realigned[[v]][mt_alpha] <span class="ot">&lt;-</span> mt[[v]]</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>realigned <span class="ot">&lt;-</span> realigned <span class="sc">%&gt;%</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">r06_stored =</span> <span class="fu">round</span>(fam_dec2006 <span class="sc">/</span> mt<span class="sc">$</span>q_0608, <span class="dv">2</span>),</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">r06_realigned =</span> <span class="fu">round</span>(fam_dec2006 <span class="sc">/</span> q_0608, <span class="dv">2</span>),</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">r10_realigned =</span> <span class="fu">round</span>(fam_dec2010 <span class="sc">/</span> q_0911, <span class="dv">2</span>))</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>cases_14 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;5100250&quot;</span>, <span class="st">&quot;5100805&quot;</span>, <span class="st">&quot;5101704&quot;</span>, <span class="st">&quot;5103353&quot;</span>, <span class="st">&quot;5104104&quot;</span>, <span class="st">&quot;5105101&quot;</span>,</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;5106216&quot;</span>, <span class="st">&quot;5106232&quot;</span>, <span class="st">&quot;5106752&quot;</span>, <span class="st">&quot;5107107&quot;</span>, <span class="st">&quot;5107248&quot;</span>, <span class="st">&quot;5107750&quot;</span>,</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;5107859&quot;</span>, <span class="st">&quot;5108956&quot;</span>)</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>realigned <span class="sc">%&gt;%</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(IBGE <span class="sc">%in%</span> <span class="fu">c</span>(cases_14, <span class="st">&quot;5103403&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(munic, shift, q_ate05, q_0608, q_0911, q_12, fam_dec2006,</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>         r06_stored, r06_realigned, r10_realigned) <span class="sc">%&gt;%</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(r06_stored)) <span class="sc">%&gt;%</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15 × 10
+   munic                  shift q_ate05 q_0608 q_0911  q_12 fam_dec2006 r06_stored r06_realigned r10_realigned
+   &lt;chr&gt;                  &lt;int&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+ 1 CUIABA                    -2   19979  16882  20431 23230       20279      53.9           1.2           1.06
+ 2 GUARANTA DO NORTE         -2    1766   1462   2256  1939        1660      12.1           1.14          0.88
+ 3 PONTES E LACERDA          -2    3091   2194   2905  2303        2555      11.6           1.16          0.98
+ 4 ALTA FLORESTA             -2    2699   2359   3039  2529        2852      10.2           1.21          1.05
+ 5 SAO JOSE DOS QUATRO M…    -1    1663   1497   1201  1276        1384       7.69          0.92          1.14
+ 6 JUARA                     -2    1489   1240   2570  1941        1255       7.25          1.01          0.55
+ 7 BARRA DO BUGRES           -2    2080   1723   2155  2446        2069       6.19          1.2           1.08
+ 8 NOVA OLIMPIA              -2     795    630   1238  1479         734       4.34          1.17          1.06
+ 9 APIACAS                   -2     473    421    711   594         479       4.2           1.14          1.01
+10 SANTA CARMEM              -2      99     81    268   192          98       3.63          1.21          1.13
+11 SALTO DO CEU              -2     442    453    314   328         273       3.46          0.6           1.23
+12 NOVA CANAA DO NORTE       -2     856    760   1001  1037         594       3.21          0.78          0.55
+13 CONFRESA                  -2    1663   1255   2503  2790        1506       3.12          1.2           0.83
+14 SAO FELIX DO ARAGUAIA     -1     943    734    783  1297         838       3.09          1.14          1.13
+15 NOVA MONTE VERDE          -2     513    414    790   546         400       2.88          0.97          0.59</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>abslog <span class="ot">&lt;-</span> <span class="cf">function</span>(r) <span class="fu">median</span>(<span class="fu">abs</span>(<span class="fu">log</span>(r[<span class="fu">is.finite</span>(<span class="fu">log</span>(r))])))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">block =</span> <span class="fu">c</span>(<span class="st">&quot;MT as stored&quot;</span>, <span class="st">&quot;MT realigned&quot;</span>, <span class="st">&quot;other 26 states as stored&quot;</span>),</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">cor_0608 =</span> <span class="fu">c</span>(<span class="fu">cor</span>(mt<span class="sc">$</span>fam_dec2006, mt<span class="sc">$</span>q_0608),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">cor</span>(realigned<span class="sc">$</span>fam_dec2006, realigned<span class="sc">$</span>q_0608),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">with</span>(wb <span class="sc">%&gt;%</span> <span class="fu">filter</span>(UF <span class="sc">!=</span> <span class="st">&quot;MT&quot;</span>), <span class="fu">cor</span>(fam_dec2006, q_0608, <span class="at">use =</span> <span class="st">&quot;complete.obs&quot;</span>))),</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">med_abs_log_ratio =</span> <span class="fu">c</span>(<span class="fu">abslog</span>(mt<span class="sc">$</span>fam_dec2006 <span class="sc">/</span> mt<span class="sc">$</span>q_0608),</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">abslog</span>(realigned<span class="sc">$</span>fam_dec2006 <span class="sc">/</span> realigned<span class="sc">$</span>q_0608),</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>                             <span class="fu">abslog</span>(<span class="fu">with</span>(wb <span class="sc">%&gt;%</span> <span class="fu">filter</span>(UF <span class="sc">!=</span> <span class="st">&quot;MT&quot;</span>), fam_dec2006 <span class="sc">/</span> q_0608))),</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">p95_ratio =</span> <span class="fu">c</span>(<span class="fu">quantile</span>(mt<span class="sc">$</span>fam_dec2006 <span class="sc">/</span> mt<span class="sc">$</span>q_0608, .<span class="dv">95</span>),</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">quantile</span>(realigned<span class="sc">$</span>fam_dec2006 <span class="sc">/</span> realigned<span class="sc">$</span>q_0608, .<span class="dv">95</span>),</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">quantile</span>(<span class="fu">with</span>(wb <span class="sc">%&gt;%</span> <span class="fu">filter</span>(UF <span class="sc">!=</span> <span class="st">&quot;MT&quot;</span>), fam_dec2006 <span class="sc">/</span> q_0608), .<span class="dv">95</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  block                     cor_0608 med_abs_log_ratio p95_ratio
+  &lt;chr&gt;                        &lt;dbl&gt;             &lt;dbl&gt;     &lt;dbl&gt;
+1 MT as stored                 0.122             0.908     10.1 
+2 MT realigned                 0.994             0.142      1.32
+3 other 26 states as stored    0.986             0.135      1.28</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>realigned <span class="sc">%&gt;%</span> <span class="fu">filter</span>(r06_realigned <span class="sc">&gt;</span> <span class="fl">2.5</span> <span class="sc">|</span> r06_realigned <span class="sc">&lt;</span> <span class="fl">0.3</span> <span class="sc">|</span> r10_realigned <span class="sc">&gt;</span> <span class="fl">2.5</span> <span class="sc">|</span> r10_realigned <span class="sc">&lt;</span> <span class="fl">0.3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(munic, q_ate05, q_0608, q_0911, fam_dec2006, fam_dec2010, r06_realigned, r10_realigned)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 8
+  munic     q_ate05 q_0608 q_0911 fam_dec2006 fam_dec2010 r06_realigned r10_realigned
+  &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+1 ITANHANGA       0    100    290          14         305          0.14          1.05</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Zero &quot;até 2005&quot; estimates: stored on Guiratinga and Indiavaí, realigned</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="co"># onto the municipalities installed after 2005.</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>mt <span class="sc">%&gt;%</span> <span class="fu">filter</span>(q_ate05 <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(munic, q_ate05, q_0608)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  munic      q_ate05 q_0608
+  &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+1 GUIRATINGA       0     93
+2 INDIAVAI         0    100</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>realigned <span class="sc">%&gt;%</span> <span class="fu">filter</span>(q_ate05 <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(munic, q_ate05, q_0608, q_0911)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  munic             q_ate05 q_0608 q_0911
+  &lt;chr&gt;               &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+1 IPIRANGA DO NORTE       0     93    265
+2 ITANHANGA               0    100    290</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline output after the fix (bf_panel read at setup).</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>mt_out <span class="ot">&lt;-</span> bf_panel <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> mt<span class="sc">$</span>IBGE, bf_ref_month <span class="sc">==</span> <span class="dv">6</span>, year <span class="sc">%in%</span> <span class="dv">2006</span><span class="sc">:</span><span class="dv">2007</span>)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mt_out<span class="sc">$</span>bf_families_quota_ratio)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9537  1.0804  1.0705  1.2000  2.6727 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(bf_ref_month <span class="sc">==</span> <span class="dv">6</span>, year <span class="sc">%in%</span> <span class="dv">2006</span><span class="sc">:</span><span class="dv">2007</span>, bf_families_quota_ratio <span class="sc">&gt;</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(munic_id <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="at">geocode =</span> munic_id, munic, uf), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(uf)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  uf        n
+  &lt;chr&gt; &lt;int&gt;
+1 MS        6
+2 PR        2</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The stored estimate tracks the workbook’s own December families in every state but Mato Grosso (correlation 0.97 or above against 0.12). The Mato Grosso block lists Santa Cruz do Xingu and União do Sul on its first two rows and the other 139 municipalities alphabetically, while the four estimate columns run in strict alphabetical order over all 141 rows: each estimate sits two rows above its municipality up to Santa Cruz do Xingu’s alphabetical slot (113 municipalities), one row above up to União do Sul’s slot (21), and in place for the last five. Cuiabá’s row holds 376 poor families for 2006-2008 and Conquista D’Oeste’s row holds Cuiabá’s 16,882; the workbook’s own coverage column carries the same misalignment (Cuiabá at 5,393 percent in 2006), so the error is in the LAI response as delivered, not in the download or the tidy step. Realigned by name, the Mato Grosso block has the correlation (0.994) and the ratio distribution (median absolute log ratio 0.14, 95th percentile 1.3) of the other states, all fourteen task 1.4 municipalities fall to ratios between 0.6 and 1.2, and the two zero “até 2005” estimates land on Ipiranga do Norte and Itanhangá, two of the nine municipalities created after the 2000 census (task 1.6). The only residual outlier is Itanhangá’s 2006 ratio of 0.14, a rollout-year value of a new municipality. The three Mato Grosso do Sul and one Paraná municipalities above 3 are consistent with their states’ pattern and stay as stored. After the fix no Mato Grosso municipality exceeds 3 in 2006-2007. <strong>Decision.</strong> D-2026-10-21-a (supersedes D-2026-10-05-n): the four period columns of the Mato Grosso rows are realigned in <code>02-social-bf.R</code>; the raw file is untouched. <strong>Assertion.</strong> <code>02-social-bf.R</code>, realignment block (141 Mato Grosso rows, the two displaced geocodes first, the rest in alphabetical order, shift counts 113/21/5) and output block (June 2006 families-quota correlation above 0.95 in Mato Grosso, no 2006 ratio at or above 3).</p>
 </section>
 <section id="q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear">Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>geocode_map <span class="ot">&lt;-</span> munic_id <span class="sc">%&gt;%</span> <span class="fu">transmute</span>(<span class="at">ibge =</span> <span class="fu">str_sub</span>(munic_id, <span class="dv">1</span>, <span class="dv">6</span>), <span class="at">geocode =</span> munic_id)</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">lookup_rows =</span> <span class="fu">nrow</span>(munic_id), <span class="at">unique_prefixes =</span> <span class="fu">n_distinct</span>(geocode_map<span class="sc">$</span>ibge),</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">mds_codes =</span> <span class="fu">n_distinct</span>(bf_old<span class="sc">$</span>ibge), <span class="at">matched =</span> <span class="fu">sum</span>(<span class="fu">unique</span>(bf_old<span class="sc">$</span>ibge) <span class="sc">%in%</span> geocode_map<span class="sc">$</span>ibge))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>geocode_map <span class="ot">&lt;-</span> munic_id <span class="sc">%&gt;%</span> <span class="fu">transmute</span>(<span class="at">ibge =</span> <span class="fu">str_sub</span>(munic_id, <span class="dv">1</span>, <span class="dv">6</span>), <span class="at">geocode =</span> munic_id)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">lookup_rows =</span> <span class="fu">nrow</span>(munic_id), <span class="at">unique_prefixes =</span> <span class="fu">n_distinct</span>(geocode_map<span class="sc">$</span>ibge),</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">mds_codes =</span> <span class="fu">n_distinct</span>(bf_old<span class="sc">$</span>ibge), <span class="at">matched =</span> <span class="fu">sum</span>(<span class="fu">unique</span>(bf_old<span class="sc">$</span>ibge) <span class="sc">%in%</span> geocode_map<span class="sc">$</span>ibge))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
@@ -2632,10 +2844,10 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>bf_old <span class="sc">%&gt;%</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ibge <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;150475&quot;</span>, <span class="st">&quot;150680&quot;</span>), anomes <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">6</span>, anomes <span class="sc">%/%</span> <span class="dv">100</span> <span class="sc">%in%</span> <span class="dv">2011</span><span class="sc">:</span><span class="dv">2016</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ibge, anomes, qtd_familias_beneficiarias_bolsa_familia) <span class="sc">%&gt;%</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> ibge, <span class="at">values_from =</span> qtd_familias_beneficiarias_bolsa_familia)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>bf_old <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ibge <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;150475&quot;</span>, <span class="st">&quot;150680&quot;</span>), anomes <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">6</span>, anomes <span class="sc">%/%</span> <span class="dv">100</span> <span class="sc">%in%</span> <span class="dv">2011</span><span class="sc">:</span><span class="dv">2016</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ibge, anomes, qtd_familias_beneficiarias_bolsa_familia) <span class="sc">%&gt;%</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> ibge, <span class="at">values_from =</span> qtd_familias_beneficiarias_bolsa_familia)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 3

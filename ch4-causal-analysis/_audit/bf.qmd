@@ -244,10 +244,138 @@ error, and the fix (if any) needs an external quota series. Rows with
 zero beneficiary families against a positive quota exist nationally in
 June 2004 (98), 2005 (23) and 2006 (4).
 **Decision.** D-2026-10-07-g (period mapping); task 1.4 stays open as a
-source question; task 1.8 (zero rows) open.
+source question; task 1.8 (zero rows) open. Task 1.4 settled at Q4b (phase 2,
+step 2.1, D-2026-10-21-a).
 **Assertion.** `02-social-bf.R`, raw-state and output blocks (header
 names, 5,570 unique codes, every panel row of a listed municipality has a
 quota).
+
+## Q4b. Why do the Mato Grosso quotas fail, and does realignment repair them? (phase 2, step 2.1, 2026-10-21)
+
+What is checked: the stored estimate against the workbook's own
+December families, state by state; the row order of the Mato Grosso
+block; the offset between each Mato Grosso row and its alphabetical
+position; the realigned estimates for the task 1.4 municipalities and
+Cuiabá; where the zero "até 2005" estimates land; and the pipeline output
+after the fix.
+
+```{r q4b-states}
+est_cols <- names(quota_raw)[str_detect(names(quota_raw), "ESTIMATIVA")]
+# quota_raw keeps the workbook's blank header cells as "" names, which
+# dplyr verbs refuse, so the columns are pulled by position and name.
+wb <- tibble(sheet_row = seq_len(nrow(quota_raw)) + 7L,
+             IBGE = quota_raw$IBGE, UF = quota_raw$UF, munic = quota_raw$MUNICÍPIOS,
+             q_ate05 = as.numeric(quota_raw[[est_cols[1]]]),
+             q_0608  = as.numeric(quota_raw[[est_cols[2]]]),
+             q_0911  = as.numeric(quota_raw[[est_cols[3]]]),
+             q_12    = as.numeric(quota_raw[[est_cols[4]]]),
+             fam_dec2006 = as.numeric(quota_raw[[21]]),   # "2006", Famílias (Dezembro)
+             fam_dec2010 = as.numeric(quota_raw[[37]])) %>%
+  filter(!is.na(IBGE), str_detect(IBGE, "^[0-9]{7}$"))
+wb %>%
+  group_by(UF) %>%
+  summarise(n = n(),
+            cor_0608 = round(cor(fam_dec2006, q_0608, use = "complete.obs"), 2),
+            med_ratio = round(median(fam_dec2006 / q_0608, na.rm = TRUE), 2),
+            n_above_3 = sum(fam_dec2006 / q_0608 > 3, na.rm = TRUE),
+            n_below_0.2 = sum(fam_dec2006 / q_0608 < 0.2, na.rm = TRUE),
+            .groups = "drop") %>%
+  arrange(cor_0608) %>%
+  print(n = 6)
+```
+
+```{r q4b-rows}
+mt <- wb %>% filter(UF == "MT")
+bind_rows(head(mt, 3), tail(mt, 2)) %>% select(sheet_row, IBGE, munic, q_0608, fam_dec2006)
+mt_alpha <- order(mt$munic, method = "radix")
+mt <- mt %>% mutate(alpha_pos = match(row_number(), mt_alpha),
+                    shift = alpha_pos - row_number())
+table(mt$shift)
+mt %>% filter(shift > 0) %>% select(sheet_row, munic, alpha_pos, shift)
+```
+
+```{r q4b-realign}
+realigned <- mt %>% select(sheet_row, IBGE, munic, shift, fam_dec2006, fam_dec2010)
+for (v in c("q_ate05", "q_0608", "q_0911", "q_12")) {
+  realigned[[v]] <- NA_real_
+  realigned[[v]][mt_alpha] <- mt[[v]]
+}
+realigned <- realigned %>%
+  mutate(r06_stored = round(fam_dec2006 / mt$q_0608, 2),
+         r06_realigned = round(fam_dec2006 / q_0608, 2),
+         r10_realigned = round(fam_dec2010 / q_0911, 2))
+cases_14 <- c("5100250", "5100805", "5101704", "5103353", "5104104", "5105101",
+              "5106216", "5106232", "5106752", "5107107", "5107248", "5107750",
+              "5107859", "5108956")
+realigned %>%
+  filter(IBGE %in% c(cases_14, "5103403")) %>%
+  select(munic, shift, q_ate05, q_0608, q_0911, q_12, fam_dec2006,
+         r06_stored, r06_realigned, r10_realigned) %>%
+  arrange(desc(r06_stored)) %>%
+  print(n = 15)
+abslog <- function(r) median(abs(log(r[is.finite(log(r))])))
+tibble(block = c("MT as stored", "MT realigned", "other 26 states as stored"),
+       cor_0608 = c(cor(mt$fam_dec2006, mt$q_0608),
+                    cor(realigned$fam_dec2006, realigned$q_0608),
+                    with(wb %>% filter(UF != "MT"), cor(fam_dec2006, q_0608, use = "complete.obs"))),
+       med_abs_log_ratio = c(abslog(mt$fam_dec2006 / mt$q_0608),
+                             abslog(realigned$fam_dec2006 / realigned$q_0608),
+                             abslog(with(wb %>% filter(UF != "MT"), fam_dec2006 / q_0608))),
+       p95_ratio = c(quantile(mt$fam_dec2006 / mt$q_0608, .95),
+                     quantile(realigned$fam_dec2006 / realigned$q_0608, .95),
+                     quantile(with(wb %>% filter(UF != "MT"), fam_dec2006 / q_0608), .95, na.rm = TRUE))) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 3)))
+realigned %>% filter(r06_realigned > 2.5 | r06_realigned < 0.3 | r10_realigned > 2.5 | r10_realigned < 0.3) %>%
+  select(munic, q_ate05, q_0608, q_0911, fam_dec2006, fam_dec2010, r06_realigned, r10_realigned)
+```
+
+```{r q4b-zero}
+# Zero "até 2005" estimates: stored on Guiratinga and Indiavaí, realigned
+# onto the municipalities installed after 2005.
+mt %>% filter(q_ate05 == 0) %>% select(munic, q_ate05, q_0608)
+realigned %>% filter(q_ate05 == 0) %>% select(munic, q_ate05, q_0608, q_0911)
+```
+
+```{r q4b-output}
+# Pipeline output after the fix (bf_panel read at setup).
+mt_out <- bf_panel %>%
+  filter(geocode %in% mt$IBGE, bf_ref_month == 6, year %in% 2006:2007)
+summary(mt_out$bf_families_quota_ratio)
+bf_panel %>%
+  filter(bf_ref_month == 6, year %in% 2006:2007, bf_families_quota_ratio > 3) %>%
+  left_join(munic_id %>% select(geocode = munic_id, munic, uf), by = "geocode") %>%
+  count(uf)
+```
+
+**Finding.** The stored estimate tracks the workbook's own December
+families in every state but Mato Grosso (correlation 0.97 or above against
+0.12). The Mato Grosso block lists Santa Cruz do Xingu and União do Sul on
+its first two rows and the other 139 municipalities alphabetically, while
+the four estimate columns run in strict alphabetical order over all 141
+rows: each estimate sits two rows above its municipality up to Santa Cruz do
+Xingu's alphabetical slot (113 municipalities), one row above up to União
+do Sul's slot (21), and in place for the last five. Cuiabá's row holds 376
+poor families for 2006-2008 and Conquista D'Oeste's row holds Cuiabá's
+16,882; the workbook's own coverage column carries the same misalignment
+(Cuiabá at 5,393 percent in 2006), so the error is in the LAI response as
+delivered, not in the download or the tidy step. Realigned by name, the
+Mato Grosso block has the correlation (0.994) and the ratio distribution
+(median absolute log ratio 0.14, 95th percentile 1.3) of the other states,
+all fourteen task 1.4 municipalities fall to ratios between 0.6 and 1.2,
+and the two zero "até 2005" estimates land on Ipiranga do Norte and
+Itanhangá, two of the nine municipalities created after the 2000 census
+(task 1.6). The only residual outlier is
+Itanhangá's 2006 ratio of 0.14, a rollout-year value of a new municipality.
+The three Mato Grosso do Sul and one Paraná municipalities above 3 are
+consistent with their states' pattern and stay as stored. After the fix no
+Mato Grosso municipality exceeds 3 in 2006-2007.
+**Decision.** D-2026-10-21-a (supersedes D-2026-10-05-n): the four period
+columns of the Mato Grosso rows are realigned in `02-social-bf.R`; the
+raw file is untouched.
+**Assertion.** `02-social-bf.R`, realignment block (141 Mato Grosso rows,
+the two displaced geocodes first, the rest in alphabetical order, shift
+counts 113/21/5) and output block (June 2006 families-quota correlation
+above 0.95 in Mato Grosso, no 2006 ratio at or above 3).
 
 ## Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?
 
