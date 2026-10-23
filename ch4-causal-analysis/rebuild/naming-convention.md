@@ -243,8 +243,8 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `crop_cotton_munic_area_share` | `agr_cotton_planted_munic_share` |  |
 | `cattle_heads` | `agr_cattle_n` |  |
 | `cattle_per_km2` | `agr_cattle_per_km2` |  |
-| `price_index_crop` | `mkt_price_crop_idx` |  |
-| `price_index_cattle` | `mkt_price_cattle_idx` |  |
+| `price_index_crop` | `mkt_price_crop_idx` | exposure-weighted relative price, not a base-1 index: the 2000 value is the base-window crop share (D-2026-10-23-a); whether `_idx` fits is decided at 2R |
+| `price_index_cattle` | `mkt_price_cattle_idx` | same: the 2000 value is the base-window cattle density (D-2026-10-23-a) |
 | `price_index_crop_lag1` | `mkt_price_crop_idx_lag1` |  |
 | `price_index_crop_z` | `mkt_price_crop_idx_z` |  |
 | `price_index_crop_lag1_z` | `mkt_price_crop_idx_z_lag1` |  |

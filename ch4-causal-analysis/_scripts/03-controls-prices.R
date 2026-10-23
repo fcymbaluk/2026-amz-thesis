@@ -4,7 +4,11 @@
 #           cotton and beef normalised to 2000, the crop index weighted by
 #           the base-window crop shares, the cattle index weighted by the
 #           base-window cattle density, and the crop index lag. All
-#           municipalities with a base-window weight of either kind.
+#           municipalities with a base-window weight of either kind. Each
+#           index is an exposure-weighted relative price: the world series
+#           are normalised to 2000 = 1, the index is not, and its 2000
+#           value equals the municipality's base-window exposure
+#           (D-2026-10-23-a).
 #
 # INPUTS    _data/raw/worldbank/CMO-Historical-Data-Annual.xlsx
 #             World Bank Commodity Markets Outlook (Pink Sheet), release of
@@ -29,12 +33,12 @@
 #                   (the indices are joined in full, not through the crop
 #                   index).
 #   D-2026-10-10-j  Task 1.10: typed outputs.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.3  Weights do not sum to one, so the indices are not 1 in 2000
-#             and sit on incompatible scales; a municipality whose four
-#             crop weights are all missing gets a crop index of 0.
-#             Normalisation moves to script 06 (D-2026-10-05-p).
+#   D-2026-10-23-a  The indices stay on the exposure scale (no anchoring
+#                   at 2000 = 1 within the municipality); the level is
+#                   absorbed by municipality fixed effects (task 1.3
+#                   resolved by reinterpretation).
+#   D-2026-10-23-b  A municipality whose four crop weights are all missing
+#                   has no crop index (NA, not 0).
 # RUN ORDER After 03-controls-agro.R (weights).
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
@@ -98,10 +102,14 @@ crop_prices <- prices_norm %>%
   select(year, all_of(CROPS)) %>%
   pivot_longer(-year, names_to = "crop", values_to = "price_rel")
 
-# Weighted sums drop missing weights, so a municipality whose PAM series
-# are all missing in the window reads 0 (task 1.3); a municipality with no
-# PAM series has no crop index. The cattle index is NA where the density
-# weight is NA.
+# A missing weight is dropped from the weighted sum (a crop without a PAM
+# value in the window counts as absent), but a municipality whose four
+# weights are all missing has no exposure measure and reads NA, not 0
+# (D-2026-10-23-b); a municipality with no PAM series has no crop index
+# either. The cattle index is NA where the density weight is NA.
+crop_all_na_geocodes <- weights %>%
+  filter(if_all(starts_with("crop_w_"), is.na)) %>%
+  pull(geocode)
 crop_index <- weights %>%
   select(geocode, starts_with("crop_w_")) %>%
   filter(if_any(starts_with("crop_w_"), ~ !is.na(.x)) |
@@ -110,7 +118,8 @@ crop_index <- weights %>%
                values_to = "w") %>%
   inner_join(crop_prices, by = "crop", relationship = "many-to-many") %>%
   group_by(geocode, year) %>%
-  summarise(price_index_crop = sum(w * price_rel, na.rm = TRUE),
+  summarise(price_index_crop = if (all(is.na(w))) NA_real_
+                               else sum(w * price_rel, na.rm = TRUE),
             .groups = "drop")
 
 beef_rel <- prices_norm %>% select(year, beef)
@@ -135,8 +144,10 @@ stopifnot(
   all(prices_norm[names(PINK_SERIES)] > 0),
   nrow(prices_index) == nrow(weights) * length(PRICES_YEARS),
   !anyDuplicated(paste(prices_index$geocode, prices_index$year)),
+  all(!(crop_all_na_geocodes %in% pam_geocodes) |
+        crop_all_na_geocodes %in% crop_index$geocode),
   all(is.na(prices_index$price_index_crop) ==
-        !(prices_index$geocode %in% pam_geocodes)),
+        (prices_index$geocode %in% crop_all_na_geocodes)),    # D-2026-10-23-b
   all(prices_index$price_index_crop >= 0, na.rm = TRUE),
   all(prices_index$price_index_cattle >= 0, na.rm = TRUE),
   all(is.na(prices_index$price_index_crop_lag1) ==
