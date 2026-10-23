@@ -1,7 +1,7 @@
 ---
 role: execution-path
-current_stage: "7, phase 2, step 2.4 (price normalization). Step 2.3 done 2026-10-22 (D-2026-10-22-d/e/f, branch phase2-2.3-electoral-timing); step 2.2 done 2026-10-22 (D-2026-10-22-a/b/c); step 2.1 done 2026-10-21 (D-2026-10-21-a). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired; descriptive sprint 2026-10-13 to 2026-10-18 delivered (stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13; tag ch4-descriptive-2026-10-18); its sources join the pipeline under task 4.8 after step 2.9"
-updated: 2026-10-22
+current_stage: "7, phase 2, step 2.5 (post-2000 municipalities). Step 2.4 resolved by reinterpretation 2026-10-23 (D-2026-10-23-a/b/c, branch phase2-2.4-price-normalization); step 2.3 done 2026-10-22 (D-2026-10-22-d/e/f, branch phase2-2.3-electoral-timing); step 2.2 done 2026-10-22 (D-2026-10-22-a/b/c); step 2.1 done 2026-10-21 (D-2026-10-21-a). Phase 1 complete and gated 2026-10-12 (D-2026-10-12-i); stage 5 Atlas Brasil re-acquired; descriptive sprint 2026-10-13 to 2026-10-18 delivered (stage 11 advanced out of order on the phase 1 panel; plan in ch4-causal-analysis/rebuild/06-descriptive-sprint.md; decision 2026-10-13; tag ch4-descriptive-2026-10-18); its sources join the pipeline under task 4.8 after step 2.9"
+updated: 2026-10-23
 ---
 
 # Execution path — from blank machine to defended empirical chapter
@@ -84,7 +84,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [x] 2.1 quota source (verify upstream first; done 2026-10-21, D-2026-10-21-a: Mato Grosso block of the LAI workbook realigned in script 02, 73 sample municipalities move, median split no longer survives, see tasks.md 1.4).
 - [x] 2.2 BF endpoint/extension (done 2026-10-22, D-2026-10-22-a/b/c: series to 2024 across the two file layouts, 2022 empty, `bf_regime` flags the Auxílio Emergencial substitution months and the 2023 programme, quota NA after 2021; footprint on the current panel: the 2020 row of the eight `bf_*` columns plus the new column; see tasks.md 1.2).
 - [x] 2.3 electoral timing (done 2026-10-22, D-2026-10-22-d/e/f: script 03 stores the electoral block on the governing years by an explicit map, no carry-forward, so the uncontested NA persists; the `elec_*_gov` lag of script 04 retired, panel 74 to 66 columns; interim series to 2024; footprint on the current panel: the eight `elec_*` columns, 2000 row and every election-year row; see tasks.md 1.5).
-- [ ] 2.4 price normalization.
+- [x] 2.4 price normalization (resolved by reinterpretation 2026-10-23, D-2026-10-23-a: the 2000 value of each index is the municipality's base-window exposure, absorbed by fixed effects, and the exposure-weighted price change is the intended shift-share control; anchoring was tested on the branch and reversed because it cancels the exposure, the cattle index collapsing to the beef series; D-2026-10-23-b: an all-NA weight window now NA, not 0; D-2026-10-23-c: pasture-share cattle exposure open to the author, needs a new raw source; see tasks.md 1.3).
 - [ ] 2.5 post-2000 municipalities.
 - [ ] 2.6 census anchors.
 - [ ] 2.7 NA-vs-zero.

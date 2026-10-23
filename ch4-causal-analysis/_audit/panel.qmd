@@ -241,8 +241,9 @@ tibble(max_abs_shift = max(abs(z_with - z_without), na.rm = TRUE),
 ```
 
 **Finding.** Every z-score has mean 0 and sd 1 to numerical precision;
-the crop z-score is NA where the crop index is NA (Santa Cruz do Arari)
-and the lags are NA in 2000. Adding Santa Cruz do Arari's restored index
+the crop z-score is NA where the crop index is NA (Santa Cruz do Arari
+and, since D-2026-10-23-b, Ipiranga do Norte, Itanhangá and Mojuí dos
+Campos, whose zeros left the pool) and the lags are NA in 2000. Adding Santa Cruz do Arari's restored index
 to the pool shifts the cattle z-score of every cell by at most about four
 thousandths of a standard deviation; the rest of the drift reported by the
 comparator for the z-scores is the Pink Sheet release (D-2026-10-10-a)

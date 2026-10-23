@@ -36,7 +36,9 @@
 #                   to km2 at the join.
 #   D-2026-10-11-d  Price indices z-scored on the pooled panel; level and
 #                   lag share one centre and spread; the cattle lag is
-#                   built from the z-score.
+#                   built from the z-score; flagged for the storage audit
+#                   (task 2.2). The indices arrive on the exposure scale
+#                   and stay there (D-2026-10-23-a).
 #   D-2026-10-11-f  bf_transfers_pc_brl_2024 = transfers / population, NA
 #                   where population is missing or zero.
 #   D-2026-10-11-g  Columns not carried into the panel at the join.
@@ -49,9 +51,6 @@
 #                   in the interim file.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.3  The z-scores standardise indices whose 2000 value is not 1
-#             (D-2026-10-05-p); the pooled standardisation itself is
-#             flagged for the storage audit (task 2.2).
 #   Task 1.6  bf_transfers_pc_brl_2024 is NA through 2009 for the nine
 #             municipalities without a 2000 census population.
 #   Task 1.9  Areas arrive in hectares from script 01 and are converted

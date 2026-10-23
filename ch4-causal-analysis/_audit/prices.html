@@ -2216,6 +2216,8 @@ vertical-align: -.125em;
   <li><a href="#q3.-is-the-index-anchored-to-1-in-2000-for-both-crop-and-cattle" id="toc-q3.-is-the-index-anchored-to-1-in-2000-for-both-crop-and-cattle" class="nav-link" data-scroll-target="#q3.-is-the-index-anchored-to-1-in-2000-for-both-crop-and-cattle">Q3. Is the index anchored to 1 in 2000 for both crop and cattle?</a></li>
   <li><a href="#q4.-are-the-scales-comparable" id="toc-q4.-are-the-scales-comparable" class="nav-link" data-scroll-target="#q4.-are-the-scales-comparable">Q4. Are the scales comparable?</a></li>
   <li><a href="#q5.-which-municipalities-have-a-zero-or-missing-index-and-why" id="toc-q5.-which-municipalities-have-a-zero-or-missing-index-and-why" class="nav-link" data-scroll-target="#q5.-which-municipalities-have-a-zero-or-missing-index-and-why">Q5. Which municipalities have a zero or missing index, and why?</a></li>
+  <li><a href="#q6.-what-would-anchoring-each-index-at-2000-1-within-the-municipality-do" id="toc-q6.-what-would-anchoring-each-index-at-2000-1-within-the-municipality-do" class="nav-link" data-scroll-target="#q6.-what-would-anchoring-each-index-at-2000-1-within-the-municipality-do">Q6. What would anchoring each index at 2000 = 1 within the municipality do?</a></li>
+  <li><a href="#q7.-can-the-cattle-exposure-be-expressed-as-a-pasture-share-from-the-raw-layer" id="toc-q7.-can-the-cattle-exposure-be-expressed-as-a-pasture-share-from-the-raw-layer" class="nav-link" data-scroll-target="#q7.-can-the-cattle-exposure-be-expressed-as-a-pasture-share-from-the-raw-layer">Q7. Can the cattle exposure be expressed as a pasture share from the raw layer?</a></li>
   </ul>
 </nav>
 </div>
@@ -2361,7 +2363,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 2 × 5
   index               n_na   min      p50     max
   &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
-1 price_index_crop       1     0  0.00567   0.494
+1 price_index_crop       4     0  0.00572   0.494
 2 price_index_cattle     3     0 12.9     138.   </code></pre>
 </div>
 <details class="code-fold">
@@ -2379,7 +2381,7 @@ vertical-align: -.125em;
 3  2002           0.0126               38.9          33.8</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Neither index is 1 in 2000. The crop index in 2000 equals the municipality’s total base-window crop share (a few hundredths for most of the sample) and the cattle index equals its base-window density (tens of heads per km2), because the weights do not sum to one and normalisation ran before the join. <strong>Decision.</strong> D-2026-10-05-p (open, phase 2 step 2.4; task 1.3). Reproduced on purpose. <strong>Assertion.</strong> none in phase 1 (KNOWN DEFECTS block).</p>
+<p><strong>Finding.</strong> Neither index is 1 in 2000. The crop index in 2000 equals the municipality’s total base-window crop share (a few hundredths for most of the sample) and the cattle index equals its base-window density (tens of heads per km2), because the weights do not sum to one and normalisation ran before the join. <strong>Decision.</strong> D-2026-10-05-p, closed by D-2026-10-23-a (phase 2, step 2.4, 2026-10-23): the 2000 value is the municipality’s base-window exposure and is meant to be; the world series, not the index, are normalised to 2000 = 1, and the level is absorbed by municipality fixed effects. No anchoring (Q6 shows what it would do). <strong>Assertion.</strong> none; the exposure level is documented, not constrained.</p>
 </section>
 <section id="q4.-are-the-scales-comparable" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-are-the-scales-comparable">Q4. Are the scales comparable?</h2>
@@ -2398,11 +2400,11 @@ vertical-align: -.125em;
   index                  n_na   min      p50    max      sd
   &lt;chr&gt;                 &lt;int&gt; &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
 1 price_index_cattle       63     0 18.4     273.   48.0   
-2 price_index_crop         21     0  0.00867   1.03  0.0469
-3 price_index_crop_lag1   523     0  0.00860   1.03  0.0467</code></pre>
+2 price_index_crop         84     0  0.00878   1.03  0.0470
+3 price_index_crop_lag1   583     0  0.00874   1.03  0.0468</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The cattle index is three orders of magnitude larger than the crop index and both carry the cross-sectional scale of the weights, so a pooled coefficient is not interpretable; script 04 standardises them and phase 2 re-anchors them. <strong>Decision.</strong> D-2026-10-05-p (open).</p>
+<p><strong>Finding.</strong> The cattle index is three orders of magnitude larger than the crop index and both carry the cross-sectional scale of the weights (a share of the territory against heads per km²), so the two coefficients are not comparable in raw units; script 04 standardises them. The scale difference is the unit of the exposures, not an error, and is left as is (D-2026-10-23-a); a pasture-share exposure for cattle would put both on the 0-1 scale (D-2026-10-23-c, Q7). <strong>Decision.</strong> D-2026-10-23-a; D-2026-10-23-c open.</p>
 </section>
 <section id="q5.-which-municipalities-have-a-zero-or-missing-index-and-why" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-which-municipalities-have-a-zero-or-missing-index-and-why">Q5. Which municipalities have a zero or missing index, and why?</h2>
@@ -2426,14 +2428,83 @@ vertical-align: -.125em;
 3 1304260 Uarini                 AM                                0            0.0423           0           0
 4 1501402 Belém                  PA                                0            0.168            0           0
 5 1504422 Marituba               PA                                0            8.01             0           0
-6 1504752 Mojuí dos Campos       PA                                0           NA               NA          NA
+6 1504752 Mojuí dos Campos       PA                               NA           NA               NA          NA
 7 1506401 Santa Cruz do Arari    PA                               NA           33.8             NA          NA
-8 5104526 Ipiranga do Norte      MT                                0           NA               NA          NA
-9 5104542 Itanhangá              MT                                0           NA               NA          NA
+8 5104526 Ipiranga do Norte      MT                               NA           NA               NA          NA
+9 5104542 Itanhangá              MT                               NA           NA               NA          NA
 # ℹ 3 more variables: crop_w_rice &lt;dbl&gt;, crop_w_cotton &lt;dbl&gt;, cattle_weight &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Nine sample municipalities have a zero or missing index in 2000. Five (Barcelos, Santa Isabel do Rio Negro and Uarini in Amazonas, Belém and Marituba in Pará) planted none of the four crops in 2000-2002, so their crop index is a true zero. Ipiranga do Norte, Itanhangá and Mojuí dos Campos have a crop index of 0 because their four weights are NA (no PAM value in the window) and the weighted sum drops NA terms, and no cattle index, their density weight being NA. Santa Cruz do Arari has no crop index, having no PAM series, and keeps its cattle index through the full join of the two indices. <strong>Decision.</strong> D-2026-10-10-h (zero for an all-NA window, inherited); D-2026-10-10-i (Santa Cruz do Arari); task 1.8 for the coding of absence. <strong>Assertion.</strong> <code>03-controls-prices.R</code>, output block (crop index NA exactly for municipalities without a PAM series; lag NA in 2000 or where the index is NA).</p>
+<p><strong>Finding.</strong> Nine sample municipalities have a zero or missing index in 2000. Five (Barcelos, Santa Isabel do Rio Negro and Uarini in Amazonas, Belém and Marituba in Pará) planted none of the four crops in 2000-2002, so their crop index is a true zero, a constant absorbed by the municipality effect. Ipiranga do Norte, Itanhangá and Mojuí dos Campos have no crop index (NA since phase 2 step 2.4; 0 in phase 1, when the weighted sum dropped their four NA weights) because they have no PAM value in the window, and no cattle index, their density weight being NA. Santa Cruz do Arari has no crop index, having no PAM series, and keeps its cattle index through the full join of the two indices. <strong>Decision.</strong> D-2026-10-10-h (true zero for an empty basket); D-2026-10-23-b (NA for an all-NA window); D-2026-10-10-i (Santa Cruz do Arari); task 1.8 for the remaining codings of absence. <strong>Assertion.</strong> <code>03-controls-prices.R</code>, output block (crop index NA exactly for municipalities whose four weights are missing; lag NA in 2000 or where the index is NA).</p>
+</section>
+<section id="q6.-what-would-anchoring-each-index-at-2000-1-within-the-municipality-do" class="level2">
+<h2 class="anchored" data-anchor-id="q6.-what-would-anchoring-each-index-at-2000-1-within-the-municipality-do">Q6. What would anchoring each index at 2000 = 1 within the municipality do?</h2>
+<p>Task 1.3 planned to divide each municipality’s index by its own 2000 value (D-2026-10-05-p). The procedure was implemented on the step 2.4 branch and reversed; this section keeps the evidence. What is checked: the anchored values recomputed here for the sample, the municipalities that would have no anchor, the cross-sectional range of the anchored cattle index within a year, and the split of the anchored crop index’s variance between years and within years.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>anchored <span class="ot">&lt;-</span> prices_index <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">crop_base =</span> price_index_crop[year <span class="sc">==</span> <span class="dv">2000</span>],</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">cattle_base =</span> price_index_cattle[year <span class="sc">==</span> <span class="dv">2000</span>],</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">crop_a =</span> <span class="fu">if_else</span>(crop_base <span class="sc">&gt;</span> <span class="dv">0</span>, price_index_crop <span class="sc">/</span> crop_base, <span class="cn">NA_real_</span>),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">cattle_a =</span> <span class="fu">if_else</span>(cattle_base <span class="sc">&gt;</span> <span class="dv">0</span>, price_index_cattle <span class="sc">/</span> cattle_base, <span class="cn">NA_real_</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>anchored <span class="sc">%&gt;%</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">crop_mean =</span> <span class="fu">mean</span>(crop_a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">crop_sd_within_year =</span> <span class="fu">sd</span>(crop_a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">cattle_mean =</span> <span class="fu">mean</span>(cattle_a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">cattle_range_within_year =</span> <span class="fu">diff</span>(<span class="fu">range</span>(cattle_a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_munic_no_crop_anchor =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(crop_a)),</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_munic_no_cattle_anchor =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(cattle_a)),</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">2004</span>, <span class="dv">2008</span>, <span class="dv">2012</span>, <span class="dv">2016</span>, <span class="dv">2020</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 7
+   year crop_mean crop_sd_within_year cattle_mean cattle_range_within_year n_munic_no_crop_anchor
+  &lt;int&gt;     &lt;dbl&gt;               &lt;dbl&gt;       &lt;dbl&gt;                    &lt;dbl&gt;                  &lt;dbl&gt;
+1  2000      1                  0            1                           0                      9
+2  2004      1.15               0.029        1.30                        0                      9
+3  2008      2.17               0.124        1.30                        0                      9
+4  2012      2.24               0.105        1.58                        0                      9
+5  2016      1.58               0.033        1.78                        0                      9
+6  2020      1.71               0.108        1.97                        0                      9
+# ℹ 1 more variable: n_munic_no_cattle_anchor &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>anchored <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(crop_a)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year_mean =</span> <span class="fu">ave</span>(crop_a, year)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">between_year_sd =</span> <span class="fu">round</span>(<span class="fu">sd</span>(year_mean), <span class="dv">3</span>),</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">within_year_sd =</span> <span class="fu">round</span>(<span class="fu">sd</span>(crop_a <span class="sc">-</span> year_mean), <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  between_year_sd within_year_sd
+            &lt;dbl&gt;          &lt;dbl&gt;
+1           0.381          0.071</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Anchoring cancels the exposure. The cattle index, built on one commodity, becomes the relative beef price in every municipality with a herd (zero range within a year), a pure year series that year effects absorb; the nine municipalities of the 503 with a zero or missing 2000 crop value (eight in the sample panel, Mojuí dos Campos being dropped) and the six with a zero or missing cattle value (five) would have no anchor and become NA. The anchored crop index keeps only the crop-mix variation: a within-year sd of about 0.07 against a between-year sd of about 0.38, intensity having cancelled. The exposure form that script 03 produces is the shift-share control the design asks for, and its 2000 level is absorbed by the municipality effect. <strong>Decision.</strong> D-2026-10-23-a: no anchoring; D-2026-10-05-p closed by reinterpretation. <strong>Assertion.</strong> none; the procedure was rejected.</p>
+</section>
+<section id="q7.-can-the-cattle-exposure-be-expressed-as-a-pasture-share-from-the-raw-layer" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-can-the-cattle-exposure-be-expressed-as-a-pasture-share-from-the-raw-layer">Q7. Can the cattle exposure be expressed as a pasture share from the raw layer?</h2>
+<p>A 2000-2002 pasture share of the territory would put the cattle exposure on the 0-1 scale of the crop shares. What is checked: whether the MapBiomas workbook in the raw layer carries land-cover classes.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>readxl<span class="sc">::</span><span class="fu">excel_sheets</span>(<span class="st">&quot;_data/raw/mapbiomas/mapbiomas_munic.xlsx&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] &quot;READ_ME&quot;          &quot;DEF_SECVEG&quot;       &quot;PIVOT_DEF_SECVEG&quot; &quot;METADADOS&quot;       </code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The workbook is the deforestation and secondary-vegetation module only: one data sheet (<code>DEF_SECVEG</code>, four transition names, see <code>mapbiomas.qmd</code> Q1), its pivot, a README and metadata; no land-cover class, so no pasture area. A pasture share needs a new acquisition (MapBiomas Collection 9 land-cover statistics by municipality, class 15, or the Censo Agropecuário 2006 pasture area). <strong>Decision.</strong> D-2026-10-23-c, open, reserved to the author. <strong>Assertion.</strong> none.</p>
 </section>
 
 </main>

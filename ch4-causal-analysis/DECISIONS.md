@@ -229,7 +229,7 @@ Supersedes: none
 
 ## D-2026-10-05-p  Price indices anchored at 2000 = 1 after the panel join
 
-Status: open (Task 1.3; phase 2 step 2.4)
+Status: closed by D-2026-10-23-a (phase 2, step 2.4, 2026-10-23): resolved by reinterpretation, the 2000 value of each index is the municipality's exposure and is meant to be; no anchoring
 Scope: script 06 (normalization moves here from script 03); price_index_*
 Context: price_index_crop (~0.014-0.03) and price_index_cattle (~26-51) are
          on incompatible scales and neither equals 1 in 2000, against the
@@ -757,7 +757,7 @@ Supersedes: none
 
 ## D-2026-10-10-h  Price indices: base-window weights times real prices relative to 2000; crop index lagged one year
 
-Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 1033-1189; refactored in phase 1, 03-controls-prices.R)
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 1033-1189; refactored in phase 1, 03-controls-prices.R); the zero for an all-NA window superseded by D-2026-10-23-b (2026-10-23)
 Scope: 03-controls-prices.R; price_index_crop, price_index_cattle, price_index_crop_lag1
 Context: the Pink Sheet real series (2010 US dollars) of Soybeans, Maize,
          Rice Thai 5%, Cotton A Index and Beef are divided by their 2000
@@ -1706,3 +1706,92 @@ Affects: tse_elections interim rows 2021-2024 (new); no panel column.
          storages); whether that election counts as ordinary is a
          definition change to decide before step 2.9 (tse.qmd Q7)
 Supersedes: the 2000-2020 window of D-2026-10-10-d
+
+## D-2026-10-23-a  Price indices kept on the exposure scale: no anchoring at 2000 = 1 within the municipality
+
+Status: closed (phase 2, step 2.4, branch phase2-2.4-price-normalization, 2026-10-23; comparator report in the commit message)
+Scope: 03-controls-prices.R (header), 04-panel-assemble.R and 06-normalized-outcome.R (KNOWN DEFECTS blocks); price_index_crop, price_index_cattle, price_index_crop_lag1 and their z-scores; rebuild/naming-convention.md notes
+Context: task 1.3 read the 2000 values of the indices (crop 0.014-0.03,
+         cattle 26-51 for most of the sample) as a failed normalisation,
+         against "the documented Pink Sheet specification (MUV-deflated,
+         2000 = 1)", and planned to divide each index by its 2000 value in
+         script 06 (D-2026-10-05-p). The specification describes the world
+         price series, which script 03 does normalise to 2000 = 1; the
+         index is the base-window exposure (crop share of the territory,
+         cattle density; D-2026-10-10-f) times the relative price, so its
+         2000 value is the exposure itself. The intended use is a control
+         for exogenous world price changes conditional on each
+         municipality's fixed agricultural structure: a shift-share term,
+         exposure times shock.
+Reason: the anchoring was implemented and tested on this branch before
+        being reversed (prices.qmd Q6). Dividing by the 2000 value cancels
+        the exposure: for one commodity completely, so the cattle index
+        became the relative beef price in all 500 municipalities with a
+        herd, with no cross-sectional range and collinear with year
+        effects; the crop index kept only the crop-mix variation
+        (within-year sd 0.07 against 0.38 between years) and lost
+        intensity. Under municipality and year fixed effects the exposure
+        form is the right object: the municipality level is absorbed, the
+        year-common price movement is absorbed, and the exposure-weighted
+        price change identifies the control. The two indices sit on
+        different scales because the exposures differ in unit (share
+        versus heads per km2); a control's scale only rescales its
+        coefficient, and the z-scores (D-2026-10-11-d) carry the
+        presentation. Therefore no anchoring: the indices are
+        exposure-weighted relative prices and are documented as such (the
+        `_idx` suffix of the naming convention is reconsidered at phase
+        2R). A municipality with no exposure to the four crops keeps a
+        constant index of 0, absorbed by the municipality effect, which
+        keeps its rows.
+Evidence: _audit/prices.qmd Q3, Q4 (the exposure scale), Q6 (what
+          anchoring would do; the rejected implementation is kept in the
+          session record only)
+Affects: no value; the three index columns and the four z-scores keep
+         their construction. Task 1.3 is resolved by reinterpretation.
+Supersedes: none; closes D-2026-10-05-p
+
+## D-2026-10-23-b  A municipality whose four crop weights are all missing has no crop index (NA, not 0)
+
+Status: closed (phase 2, step 2.4, branch phase2-2.4-price-normalization, 2026-10-23; comparator report in the commit message)
+Scope: 03-controls-prices.R (crop_index summarise, crop_all_na_geocodes, assertion); price_index_crop, price_index_crop_lag1 and their z-scores
+Context: the weighted sum drops missing weights, so an all-NA window read
+         0 (D-2026-10-10-h; prices.qmd Q5): Ipiranga do Norte and
+         Itanhangá (MT, installed 2005, both at-risk narrow) and Mojuí dos
+         Campos, none with a PAM value in 2000-2002. A true 0 belongs to a
+         municipality that planted none of the four crops; an all-NA
+         window is an unknown exposure.
+Reason: NA when every weight is missing. A partially missing window still
+        drops the missing crops (a crop without a PAM value in the window
+        counts as absent), as inherited, to be revisited at task 1.8 if
+        needed. The three municipalities are post-2000 cases of task 1.6,
+        where their series are rebuilt.
+Evidence: _audit/prices.qmd Q5
+Affects: price_index_crop and price_index_crop_lag1 for the three
+         municipalities (0 to NA, every year; two of them in the sample
+         panel), and through the pool of D-2026-10-11-d price_index_crop_z
+         and price_index_crop_lag1_z in every cell (the zeros leave the
+         pool); cattle unchanged
+Supersedes: the zero rule of D-2026-10-10-h for an all-NA window
+
+## D-2026-10-23-c  Cattle exposure as a pasture share (candidate; reserved to the author)
+
+Status: open (reserved to the author; not a phase 2 step)
+Scope: 03-controls-agro.R (cattle_weight), 03-controls-prices.R; price_index_cattle; a new raw source
+Context: the cattle exposure is the base-window herd density in heads per
+         km2, the crop exposures are shares of the territory; the two
+         indices therefore sit on different scales and cannot be combined
+         into one agricultural price index.
+Reason: a 2000-2002 pasture share of the municipal territory would put
+        cattle on the same 0-1 scale as the crops, make both indices read
+        as "share of territory exposed times relative price", and allow a
+        single combined index. The raw layer cannot supply it: the
+        MapBiomas workbook is the deforestation and secondary-vegetation
+        module only (sheet DEF_SECVEG, four transition names; prices.qmd
+        Q7). Candidate sources, each a stage 5 acquisition with a
+        provenance row: MapBiomas Collection 9 land cover statistics by
+        municipality (class 15, Pastagem), or the Censo Agropecuário 2006
+        pasture area (SIDRA). Density is a legitimate exposure measure in
+        its own right, so the change is optional.
+Evidence: _audit/prices.qmd Q7
+Affects: price_index_cattle and its z-scores, if adopted
+Supersedes: none

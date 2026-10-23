@@ -28,9 +28,6 @@
 #                   stored.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.3  The price indices are not re-anchored at 2000 = 1 here yet
-#             (D-2026-10-05-p, phase 2 step 2.4): price_index_* reach the
-#             final panel on the script 03 scales.
 #   Task 1.8  Nova Ubiratã's forest area refers to the pre-split territory
 #             (D-2026-10-11-c); its exposure offset follows the mapped area.
 # RUN ORDER After 05-sample-definition.R. Last pipeline script; the analysis
