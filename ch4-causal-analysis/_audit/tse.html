@@ -2217,6 +2217,7 @@ vertical-align: -.125em;
   <li><a href="#q4.-is-the-election-year-mapped-to-the-governing-period-correctly" id="toc-q4.-is-the-election-year-mapped-to-the-governing-period-correctly" class="nav-link" data-scroll-target="#q4.-is-the-election-year-mapped-to-the-governing-period-correctly">Q4. Is the election year mapped to the governing period correctly?</a></li>
   <li><a href="#q5.-how-are-the-competitiveness-measures-distributed-in-the-sample" id="toc-q5.-how-are-the-competitiveness-measures-distributed-in-the-sample" class="nav-link" data-scroll-target="#q5.-how-are-the-competitiveness-measures-distributed-in-the-sample">Q5. How are the competitiveness measures distributed in the sample?</a></li>
   <li><a href="#q6.-are-there-zero-vote-candidates-or-first-place-ties" id="toc-q6.-are-there-zero-vote-candidates-or-first-place-ties" class="nav-link" data-scroll-target="#q6.-are-there-zero-vote-candidates-or-first-place-ties">Q6. Are there zero-vote candidates or first-place ties?</a></li>
+  <li><a href="#q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" id="toc-q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" class="nav-link" data-scroll-target="#q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22">Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)</a></li>
   </ul>
 </nav>
 </div>
@@ -2247,13 +2248,13 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: TSE election results via Base dos Dados (<code>br_tse_eleicoes.resultados_candidato_municipio_zona</code>), mayors, nine Legal Amazon states, elections 2000-2024, queried on BigQuery 2026-10-09 (<code>_data/raw/tse/tse_mayoral_results_2000_2024.csv</code>; SQL in <code>_scripts/sql/2026-10-09-tse-mayoral-results.sql</code>). The Dahis, de las Heras and Saavedra (2026) replication file in <code>_data/raw/dahis-2026/</code> is an external cross-check (identical votes on the Legal Amazon, ordinary elections, 2000-2020, see <code>rebuild/05-reacquisition-controls.md</code> section 7) and is not read here. Pipeline script: <code>_scripts/03-controls-elections.R</code>. Interim output: <code>_data/interim/tse_elections_2000_2020.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
+<p>Source: TSE election results via Base dos Dados (<code>br_tse_eleicoes.resultados_candidato_municipio_zona</code>), mayors, nine Legal Amazon states, elections 2000-2024, queried on BigQuery 2026-10-09 (<code>_data/raw/tse/tse_mayoral_results_2000_2024.csv</code>; SQL in <code>_scripts/sql/2026-10-09-tse-mayoral-results.sql</code>). The Dahis, de las Heras and Saavedra (2026) replication file in <code>_data/raw/dahis-2026/</code> is an external cross-check (identical votes on the Legal Amazon, ordinary elections, 2000-2020, see <code>rebuild/05-reacquisition-controls.md</code> section 7) and is not read here. Pipeline script: <code>_scripts/03-controls-elections.R</code>. Interim output: <code>_data/interim/tse_elections_2000_2024.rds</code> (2000-2020 until phase 2, step 2.3). Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/raw/tse/tse_mayoral_results_2000_2024.csv&quot;</span>,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>()), <span class="at">na =</span> <span class="fu">character</span>())</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tse <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/tse_elections_2000_2020.rds&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>tse <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/tse_elections_2000_2024.rds&quot;</span>)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>sample_geo <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
@@ -2442,12 +2443,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 5
    year municipalities uncontested mov_na competitive_na
   &lt;int&gt;          &lt;int&gt;       &lt;int&gt;  &lt;int&gt;          &lt;int&gt;
-1  2000            802          10     10             10
-2  2004            807          10      2              2
-3  2008            807          29      0              0
-4  2012            808           7      0              0
-5  2016            808          20      0              0
-6  2020            808          16      0              0</code></pre>
+1  2004            802          10     10             10
+2  2008            807          10     10             10
+3  2012            806          29     29             29
+4  2016            808           7      7              7
+5  2020            807          20     20             20
+6  2024            807          16     16             16</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2458,17 +2459,17 @@ vertical-align: -.125em;
 <pre><code># A tibble: 8 × 7
    year election_year elec_n_candidates elec_enc elec_mov elec_competitive elec_uncontested
   &lt;int&gt;         &lt;int&gt;             &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;            &lt;int&gt;            &lt;int&gt;
-1  2008             1                 2     1.98    0.103                0                0
-2  2009             0                 2     1.98    0.103                0                0
-3  2010             0                 2     1.98    0.103                0                0
-4  2011             0                 2     1.98    0.103                0                0
-5  2012             1                 1     1       0.103                0                1
-6  2013             0                 1     1       0.103                0                1
-7  2014             0                 1     1       0.103                0                1
-8  2015             0                 1     1       0.103                0                1</code></pre>
+1  2008             1                 2     1.99   0.0595                1                0
+2  2009             0                 2     1.98   0.103                 0                0
+3  2010             0                 2     1.98   0.103                 0                0
+4  2011             0                 2     1.98   0.103                 0                0
+5  2012             1                 2     1.98   0.103                 0                0
+6  2013             0                 1     1     NA                    NA                1
+7  2014             0                 1     1     NA                    NA                1
+8  2015             0                 1     1     NA                    NA                1</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Uncontested races (7 to 29 per election) have ENC 1 and NA margin and competitive flag in the election row, as intended. The stored panel then carries them forward with <code>fill()</code>, which replaces the NA margin and flag of an uncontested race with the previous election’s values (Cabixi, RO, 2012-2015 above): a code defect of the inherited storage, reproduced on purpose and fixed with task 1.5. <strong>Decision.</strong> D-2026-10-10-d (definition); task 1.5 (storage). <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block, on the election rows (margin NA exactly when uncontested, ENC 1 when uncontested).</p>
+<p><strong>Finding.</strong> Uncontested races (7 to 29 per election) have ENC 1 and NA margin and competitive flag in the election row, as intended. In phase 1 the stored panel carried them forward with <code>fill()</code>, which replaced the NA margin and flag of an uncontested race with the previous election’s values (Cabixi, RO, 2012-2015): a code defect of the inherited storage, reproduced on purpose then. Since phase 2, step 2.3 (2026-10-22) each year is joined to its governing election and the NA persists over the four governing years, as the Cabixi rows above now show (the 2012 race governs 2013-2016). <strong>Decision.</strong> D-2026-10-10-d (definition); D-2026-10-22-d (storage). <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block, on the election rows (margin NA exactly when uncontested, ENC 1 when uncontested) and on the stored rows (margin NA exactly when uncontested or no election).</p>
 </section>
 <section id="q4.-is-the-election-year-mapped-to-the-governing-period-correctly" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-is-the-election-year-mapped-to-the-governing-period-correctly">Q4. Is the election year mapped to the governing period correctly?</h2>
@@ -2483,15 +2484,15 @@ vertical-align: -.125em;
    year election_year elec_n_candidates elec_enc elec_winner_party
   &lt;int&gt;         &lt;int&gt;             &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;            
 1  2003             0                 4     2.96 PPB              
-2  2004             1                 2     2.00 PDT              
+2  2004             1                 4     2.96 PPB              
 3  2005             0                 2     2.00 PDT              
 4  2006             0                 2     2.00 PDT              
 5  2007             0                 2     2.00 PDT              
-6  2008             1                 2     1.98 PTN              
+6  2008             1                 2     2.00 PDT              
 7  2009             0                 2     1.98 PTN              </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The values change in the election year itself (the October 2004 result is stored from 2004), so a listing year such as 2008 carries the result of the election held that October, while the mayor in office was elected in 2004. This is the off-by-one of task 1.5. <strong>Decision.</strong> D-2026-10-05-o (open, phase 2 step 2.3). <strong>Assertion.</strong> none in phase 1 (KNOWN DEFECTS block).</p>
+<p><strong>Finding.</strong> In phase 1 the values changed in the election year itself (the October 2004 result was stored from 2004), so a listing year such as 2008 carried the result of the election held that October, while the mayor in office was elected in 2004: the off-by-one of task 1.5. Since phase 2, step 2.3 (2026-10-22) the rows above show the governing rule: the 2004 result is stored from 2005 to 2008, the 2008 result from 2009, and <code>election_year</code> still flags 2004 and 2008 themselves. Q7 holds the evidence for the change. <strong>Decision.</strong> D-2026-10-05-o (closed by D-2026-10-22-d). <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block (every governing year equals its election row; year minus governing election in 1-4; 2000 NA).</p>
 </section>
 <section id="q5.-how-are-the-competitiveness-measures-distributed-in-the-sample" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-how-are-the-competitiveness-measures-distributed-in-the-sample">Q5. How are the competitiveness measures distributed in the sample?</h2>
@@ -2510,12 +2511,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 7
    year     n mean_candidates mean_enc median_mov share_competitive share_uncontested
   &lt;int&gt; &lt;int&gt;           &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1  2000   498            3.04     2.37      0.118             0.444           0.0100 
-2  2004   502            3.07     2.43      0.101             0.494           0.0139 
-3  2008   502            3.03     2.31      0.105             0.490           0.0398 
-4  2012   503            3.12     2.36      0.103             0.487           0.00795
-5  2016   503            3.33     2.44      0.120             0.429           0.0239 
-6  2020   503            3.92     2.54      0.125             0.433           0.0199 </code></pre>
+1  2004   498            3.04     2.37      0.118             0.444           0.0100 
+2  2008   502            3.07     2.43      0.101             0.495           0.0139 
+3  2012   502            3.03     2.31      0.106             0.488           0.0398 
+4  2016   503            3.12     2.36      0.102             0.489           0.00795
+5  2020   503            3.33     2.44      0.120             0.430           0.0239 
+6  2024   502            3.91     2.53      0.123             0.437           0.0199 </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Three candidates and 2.3 to 2.5 effective candidates on average, a median margin of 10 to 12 points, and 43 to 49 percent of the races below the ten-point threshold; the measures move little across elections, with a rise in candidacies in 2020. <strong>Decision.</strong> none required.</p>
@@ -2555,6 +2556,138 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> Fifty-six candidates with zero votes, almost all in 2012 (candidacies refused after the ballot was printed); they enter the ENC and the candidate count as inherited. No first-place tie, so the winner’s party and id are unambiguous. <strong>Decision.</strong> none in phase 1; the zero-vote rows are for task 1.8.</p>
+</section>
+<section id="q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22">Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)</h2>
+<p>What is checked: the governing election of each stored year; the stored block against the phase 1 panel’s one-year lag (<code>elec_*_gov</code>, built in script 04 as a compensation for the election-year storage, D-2026-10-11-e) on the biome sample; the municipality-years after 2000 without a governing election; the 2021-2024 rows and the 2024 election.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(year, elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_governing_year)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">governs =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 2
+  elec_governing_year governs  
+                &lt;int&gt; &lt;chr&gt;    
+1                2000 2001-2004
+2                2004 2005-2008
+3                2008 2009-2012
+4                2012 2013-2016
+5                2016 2017-2020
+6                2020 2021-2024</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The comparison against the phase 1 lagged block was run at the step on</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the interim panel of 2026-10-22; once the _gov block is gone from the</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"># panel (D-2026-10-22-e) the chunk reports the recorded result instead.</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>phase1 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>elec_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;elec_enc&quot;</span>, <span class="st">&quot;elec_mov&quot;</span>, <span class="st">&quot;elec_winner_share&quot;</span>, <span class="st">&quot;elec_n_candidates&quot;</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;elec_winner_party&quot;</span>, <span class="st">&quot;elec_winner_id&quot;</span>, <span class="st">&quot;elec_competitive&quot;</span>, <span class="st">&quot;elec_uncontested&quot;</span>)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>) <span class="sc">%in%</span> <span class="fu">names</span>(phase1))) {</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Recorded at the step: zero differing cells in six of the eight columns;&quot;</span>,</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;164 cells in elec_mov and in elec_competitive, all NA in the new storage&quot;</span>,</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;where the lag carried a previous election&#39;s value onto an uncontested race.</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  cmp <span class="ot">&lt;-</span> tse <span class="sc">%&gt;%</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(elec_vars)) <span class="sc">%&gt;%</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(phase1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>))),</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(elec_vars, <span class="cf">function</span>(v) {</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> cmp[[v]]; b <span class="ot">&lt;-</span> cmp[[<span class="fu">paste0</span>(v, <span class="st">&quot;_gov&quot;</span>)]]</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="fu">xor</span>(<span class="fu">is.na</span>(a), <span class="fu">is.na</span>(b)) <span class="sc">|</span> (<span class="sc">!</span><span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b) <span class="sc">&amp;</span> a <span class="sc">!=</span> b)</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">variable =</span> v, <span class="at">differing =</span> <span class="fu">sum</span>(d), <span class="at">new_na_old_value =</span> <span class="fu">sum</span>(d <span class="sc">&amp;</span> <span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b)))</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Recorded at the step: zero differing cells in six of the eight columns; 164 cells in elec_mov and in elec_competitive, all NA in the new storage where the lag carried a previous election&#39;s value onto an uncontested race.</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="ot">&lt;-</span> sample_geo <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cross_join</span>(<span class="fu">tibble</span>(<span class="at">year =</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(tse, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="sc">%&gt;%</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>, <span class="fu">is.na</span>(elec_enc)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  geocode municipality         state_abbreviation years         n
+  &lt;chr&gt;   &lt;chr&gt;                &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;
+1 1504752 Mojuí dos Campos     PA                 2001-2012    12
+2 2100402 Altamira do Maranhão MA                 2001-2004     4
+3 2102150 Brejo de Areia       MA                 2001-2004     4
+4 5104526 Ipiranga do Norte    MT                 2001-2004     4
+5 5104542 Itanhangá            MT                 2001-2004     4</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id_municipio <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;2100402&quot;</span>, <span class="st">&quot;2102150&quot;</span>, <span class="st">&quot;5104526&quot;</span>, <span class="st">&quot;5104542&quot;</span>), turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id_municipio, ano) <span class="sc">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id_municipio) <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">elections =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(ano), <span class="at">collapse =</span> <span class="st">&quot; &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  id_municipio elections                    
+  &lt;chr&gt;        &lt;chr&gt;                        
+1 2100402      2004 2008 2012 2016 2020 2024
+2 2102150      2004 2008 2012 2016 2020 2024
+3 5104526      2004 2008 2012 2016 2020 2024
+4 5104542      2004 2008 2012 2016 2020 2024</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, election_year, elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">with_values =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_enc)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 5
+    year election_year elec_governing_year municipalities with_values
+   &lt;int&gt;         &lt;int&gt;               &lt;int&gt;          &lt;int&gt;       &lt;int&gt;
+ 1  2019             0                2016            807         807
+ 2  2019             0                  NA              1           0
+ 3  2020             1                2016            807         807
+ 4  2020             1                  NA              1           0
+ 5  2021             0                2020            807         807
+ 6  2021             0                  NA              1           0
+ 7  2022             0                2020            807         807
+ 8  2022             0                  NA              1           0
+ 9  2023             0                2020            807         807
+10  2023             0                  NA              1           0
+11  2024             1                2020            807         807
+12  2024             1                  NA              1           0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ano <span class="sc">==</span> <span class="st">&quot;2024&quot;</span>, turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>, tipo_eleicao <span class="sc">==</span> <span class="st">&quot;eleicao ordinaria&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n_distinct</span>(id_municipio), <span class="at">empty_code_rows =</span> <span class="fu">sum</span>(id_municipio <span class="sc">==</span> <span class="st">&quot;&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  municipalities empty_code_rows
+           &lt;int&gt;           &lt;int&gt;
+1            806               2</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Each stored year is joined to the election held in the last October before it: the 2000 election governs 2001-2004, the 2020 election 2021-2024, and 2000 is NA because the 1996 election is outside the data. On the biome sample the new storage equals the phase 1 lagged block cell for cell in six of the eight columns; the margin and the competitive flag differ on 164 cells, all of them uncontested races on which the lag had carried the previous election’s values (5 municipalities under the 2004 election, 7 under 2008, 20 under 2012, 4 under 2016, 12 under 2020, four years each). After 2000, the only NA municipality-years are those without a governing election in the file: Mojuí dos Campos 2001-2012 (installed 2013), and 2001-2004 for Ipiranga do Norte and Itanhangá (installed 2005) and for Altamira do Maranhão and Brejo de Areia, which have no 2000 election in the extract; phase 1 stored them as NA too, because <code>fill()</code> had nothing to carry. In 2021-2024, 807 of the 808 municipalities carry the 2020 election; Macapá is NA because its 2020 election was postponed to December after the Amapá blackout and the file types it “eleicoes municipais 2020 - ap”, which the ordinary-election filter of D-2026-10-10-d excludes (within 2000-2020 the row is unaffected: Macapá’s 2020 row holds the 2016 election under both storages). Whether that postponed election counts as ordinary is a definition question left to the author (flagged in D-2026-10-22-f). The 2024 election covers 805 municipalities with a code plus two rows with an empty code (the Boa Esperança do Norte split) and governs 2025-2028, so it enters only <code>election_year</code>. <strong>Decision.</strong> D-2026-10-22-d (storage rule), D-2026-10-22-e (the <code>_gov</code> block of script 04 retired), D-2026-10-22-f (series to 2024). <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block (governing map and equality with the election rows); <code>04-panel-assemble.R</code>, output block (28 NA municipality-years after 2000 on the 503-municipality panel).</p>
 </section>
 
 </main>

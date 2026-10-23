@@ -22,7 +22,8 @@ external cross-check (identical votes on the Legal Amazon, ordinary
 elections, 2000-2020, see `rebuild/05-reacquisition-controls.md` section 7)
 and is not read here.
 Pipeline script: `_scripts/03-controls-elections.R`.
-Interim output: `_data/interim/tse_elections_2000_2020.rds`.
+Interim output: `_data/interim/tse_elections_2000_2024.rds` (2000-2020 until
+phase 2, step 2.3).
 Equivalence with the recovered panel is not checked here (the notebook never
 reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
 script 03 commit message and in the decision entries it cites.
@@ -39,7 +40,7 @@ options(width = 110)
 ```{r read}
 tse_raw <- read_csv("_data/raw/tse/tse_mayoral_results_2000_2024.csv",
                     col_types = cols(.default = col_character()), na = character())
-tse <- read_rds("_data/interim/tse_elections_2000_2020.rds")
+tse <- read_rds("_data/interim/tse_elections_2000_2024.rds")
 sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
   distinct(geocode, municipality, state_abbreviation)
 ```
@@ -124,14 +125,18 @@ tse %>% filter(geocode == "1100031", year %in% 2008:2015) %>%
 ```
 
 **Finding.** Uncontested races (7 to 29 per election) have ENC 1 and NA
-margin and competitive flag in the election row, as intended. The stored
-panel then carries them forward with `fill()`, which replaces the NA
+margin and competitive flag in the election row, as intended. In phase 1
+the stored panel carried them forward with `fill()`, which replaced the NA
 margin and flag of an uncontested race with the previous election's
-values (Cabixi, RO, 2012-2015 above): a code defect of the inherited
-storage, reproduced on purpose and fixed with task 1.5.
-**Decision.** D-2026-10-10-d (definition); task 1.5 (storage).
+values (Cabixi, RO, 2012-2015): a code defect of the inherited storage,
+reproduced on purpose then. Since phase 2, step 2.3 (2026-10-22) each year
+is joined to its governing election and the NA persists over the four
+governing years, as the Cabixi rows above now show (the 2012 race governs
+2013-2016).
+**Decision.** D-2026-10-10-d (definition); D-2026-10-22-d (storage).
 **Assertion.** `03-controls-elections.R`, output block, on the election
-rows (margin NA exactly when uncontested, ENC 1 when uncontested).
+rows (margin NA exactly when uncontested, ENC 1 when uncontested) and on
+the stored rows (margin NA exactly when uncontested or no election).
 
 ## Q4. Is the election year mapped to the governing period correctly?
 
@@ -140,12 +145,18 @@ tse %>% filter(geocode == "1100015", year %in% 2003:2009) %>%
   select(year, election_year, elec_n_candidates, elec_enc, elec_winner_party)
 ```
 
-**Finding.** The values change in the election year itself (the October
-2004 result is stored from 2004), so a listing year such as 2008 carries
-the result of the election held that October, while the mayor in office
-was elected in 2004. This is the off-by-one of task 1.5.
-**Decision.** D-2026-10-05-o (open, phase 2 step 2.3).
-**Assertion.** none in phase 1 (KNOWN DEFECTS block).
+**Finding.** In phase 1 the values changed in the election year itself
+(the October 2004 result was stored from 2004), so a listing year such as
+2008 carried the result of the election held that October, while the mayor
+in office was elected in 2004: the off-by-one of task 1.5. Since phase 2,
+step 2.3 (2026-10-22) the rows above show the governing rule: the 2004
+result is stored from 2005 to 2008, the 2008 result from 2009, and
+`election_year` still flags 2004 and 2008 themselves. Q7 holds the
+evidence for the change.
+**Decision.** D-2026-10-05-o (closed by D-2026-10-22-d).
+**Assertion.** `03-controls-elections.R`, output block (every governing
+year equals its election row; year minus governing election in 1-4; 2000
+NA).
 
 ## Q5. How are the competitiveness measures distributed in the sample?
 
@@ -185,3 +196,98 @@ candidates %>%
 the candidate count as inherited. No first-place tie, so the winner's
 party and id are unambiguous.
 **Decision.** none in phase 1; the zero-vote rows are for task 1.8.
+
+## Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)
+
+What is checked: the governing election of each stored year; the stored
+block against the phase 1 panel's one-year lag (`elec_*_gov`, built in
+script 04 as a compensation for the election-year storage, D-2026-10-11-e)
+on the biome sample; the municipality-years after 2000 without a governing
+election; the 2021-2024 rows and the 2024 election.
+
+```{r q7-map}
+tse %>%
+  distinct(year, elec_governing_year) %>%
+  filter(!is.na(elec_governing_year)) %>%
+  group_by(elec_governing_year) %>%
+  summarise(governs = paste(range(year), collapse = "-"), .groups = "drop")
+```
+
+```{r q7-lag-equivalence}
+# The comparison against the phase 1 lagged block was run at the step on
+# the interim panel of 2026-10-22; once the _gov block is gone from the
+# panel (D-2026-10-22-e) the chunk reports the recorded result instead.
+phase1 <- read_rds("_data/interim/panel_amz_2000_2020.rds")
+elec_vars <- c("elec_enc", "elec_mov", "elec_winner_share", "elec_n_candidates",
+               "elec_winner_party", "elec_winner_id", "elec_competitive", "elec_uncontested")
+if (!all(paste0(elec_vars, "_gov") %in% names(phase1))) {
+  cat("Recorded at the step: zero differing cells in six of the eight columns;",
+      "164 cells in elec_mov and in elec_competitive, all NA in the new storage",
+      "where the lag carried a previous election's value onto an uncontested race.\n")
+} else {
+  cmp <- tse %>%
+    select(geocode, year, all_of(elec_vars)) %>%
+    inner_join(phase1 %>% select(geocode, year, all_of(paste0(elec_vars, "_gov"))),
+               by = c("geocode", "year"))
+  map_dfr(elec_vars, function(v) {
+    a <- cmp[[v]]; b <- cmp[[paste0(v, "_gov")]]
+    d <- xor(is.na(a), is.na(b)) | (!is.na(a) & !is.na(b) & a != b)
+    tibble(variable = v, differing = sum(d), new_na_old_value = sum(d & is.na(a) & !is.na(b)))
+  })
+}
+```
+
+```{r q7-gaps}
+sample_tse <- sample_geo %>%
+  cross_join(tibble(year = 2000:2020)) %>%
+  left_join(tse, by = c("geocode", "year"))
+sample_tse %>%
+  filter(year > 2000, is.na(elec_enc)) %>%
+  group_by(geocode, municipality, state_abbreviation) %>%
+  summarise(years = paste(range(year), collapse = "-"), n = n(), .groups = "drop")
+tse_raw %>%
+  filter(id_municipio %in% c("2100402", "2102150", "5104526", "5104542"), turno == "1") %>%
+  distinct(id_municipio, ano) %>%
+  group_by(id_municipio) %>%
+  summarise(elections = paste(sort(ano), collapse = " "), .groups = "drop")
+```
+
+```{r q7-extension}
+tse %>%
+  filter(year >= 2019) %>%
+  group_by(year, election_year, elec_governing_year) %>%
+  summarise(municipalities = n(), with_values = sum(!is.na(elec_enc)), .groups = "drop")
+tse_raw %>%
+  filter(ano == "2024", turno == "1", tipo_eleicao == "eleicao ordinaria") %>%
+  summarise(municipalities = n_distinct(id_municipio), empty_code_rows = sum(id_municipio == ""))
+```
+
+**Finding.** Each stored year is joined to the election held in the last
+October before it: the 2000 election governs 2001-2004, the 2020 election
+2021-2024, and 2000 is NA because the 1996 election is outside the data.
+On the biome sample the new storage equals the phase 1 lagged block cell
+for cell in six of the eight columns; the margin and the competitive flag
+differ on 164 cells, all of them uncontested races on which the lag had
+carried the previous election's values (5 municipalities under the 2004
+election, 7 under 2008, 20 under 2012, 4 under 2016, 12 under 2020, four
+years each). After 2000, the only NA municipality-years are those without a
+governing election in the file: Mojuí dos Campos 2001-2012 (installed
+2013), and 2001-2004 for Ipiranga do Norte and Itanhangá (installed 2005)
+and for Altamira do Maranhão and Brejo de Areia, which have no 2000
+election in the extract; phase 1 stored them as NA too, because `fill()`
+had nothing to carry. In 2021-2024, 807 of the 808 municipalities carry
+the 2020 election; Macapá is NA because its 2020 election was postponed
+to December after the Amapá blackout and the file types it
+"eleicoes municipais 2020 - ap", which the ordinary-election filter of
+D-2026-10-10-d excludes (within 2000-2020 the row is unaffected: Macapá's
+2020 row holds the 2016 election under both storages). Whether that
+postponed election counts as ordinary is a definition question left to
+the author (flagged in D-2026-10-22-f). The 2024 election covers 805
+municipalities with a code plus two rows with an empty code (the Boa
+Esperança do Norte split) and governs 2025-2028, so it enters only
+`election_year`.
+**Decision.** D-2026-10-22-d (storage rule), D-2026-10-22-e (the `_gov`
+block of script 04 retired), D-2026-10-22-f (series to 2024).
+**Assertion.** `03-controls-elections.R`, output block (governing map and
+equality with the election rows); `04-panel-assemble.R`, output block (28
+NA municipality-years after 2000 on the 503-municipality panel).

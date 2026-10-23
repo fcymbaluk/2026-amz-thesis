@@ -2215,7 +2215,7 @@ vertical-align: -.125em;
   <li><a href="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" id="toc-q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" class="nav-link" data-scroll-target="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent">Q2. Which PPCDAm municipalities fall outside the biome sample, and how is the indicator coded where the list is silent?</a></li>
   <li><a href="#q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" id="toc-q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" class="nav-link" data-scroll-target="#q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion">Q3. Are the areas on one unit after the hectare-to-km² conversion?</a></li>
   <li><a href="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" id="toc-q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="nav-link" data-scroll-target="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</a></li>
-  <li><a href="#q5.-does-the-_gov-lag-place-each-elections-values-on-the-governing-years" id="toc-q5.-does-the-_gov-lag-place-each-elections-values-on-the-governing-years" class="nav-link" data-scroll-target="#q5.-does-the-_gov-lag-place-each-elections-values-on-the-governing-years">Q5. Does the <code>_gov</code> lag place each election’s values on the governing years?</a></li>
+  <li><a href="#q5.-are-the-electoral-columns-stored-on-the-governing-years" id="toc-q5.-are-the-electoral-columns-stored-on-the-governing-years" class="nav-link" data-scroll-target="#q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</a></li>
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
   </ul>
@@ -2282,11 +2282,11 @@ vertical-align: -.125em;
 <pre><code># A tibble: 21 × 12
     year mapbiomas ppcdam    bf  rais census ibge_pib   tse  area   pam   ppm prices
    &lt;int&gt;     &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt;
- 1  2000       503    503     0   478    503        0   498   503   492   493    502
+ 1  2000       503    503     0   478    503        0     0   503   492   493    502
  2  2001       503    503     0   491    503        0   498   503   499   500    502
  3  2002       503    503     0   495    503      494   498   503   494   500    502
  4  2003       503    503     0   498    503      494   498   503   495   500    502
- 5  2004       503    503   500   499    503      494   502   503   493   500    502
+ 5  2004       503    503   500   499    503      494   498   503   493   500    502
  6  2005       503    503   502   500    503      494   502   503   495   502    502
  7  2006       503    503   502   502    503      494   502   503   497   502    502
  8  2007       503    503   502   502    503      494   502   503   500   502    502
@@ -2294,7 +2294,7 @@ vertical-align: -.125em;
 10  2009       503    503   502   502    503      494   502   503   496   502    502
 11  2010       503    503   502   502    503      503   502   503   496   502    502
 12  2011       503    503   502   502    503      503   502   503   500   502    502
-13  2012       503    503   502   502    503      503   503   503   500   502    502
+13  2012       503    503   502   502    503      503   502   503   500   502    502
 14  2013       503    503   502   502    503      503   503   503   500   503    502
 15  2014       503    503   503   502    503      503   503   503   498   503    502
 16  2015       503    503   503   502    503      503   503   503   497   503    502
@@ -2302,7 +2302,7 @@ vertical-align: -.125em;
 18  2017       503    503   503   502    503      503   503   503   502   503    502
 19  2018       503    503   503   502    503      503   503   503   501   503    502
 20  2019       503    503   503   502    503      503   503   503   501   503    502
-21  2020       503    503     0   502    503      503   503   503   501   503    502</code></pre>
+21  2020       503    503   503   502    503      503   503   503   501   503    502</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2347,10 +2347,10 @@ vertical-align: -.125em;
 <pre><code># A tibble: 7 × 3
   column                    na_cells municipalities
   &lt;chr&gt;                        &lt;int&gt;          &lt;int&gt;
-1 bf_families_n                 2527            503
+1 bf_families_n                 2024            503
 2 cattle_heads                    30             10
 3 crop_soy_area_planted_km2      112             18
-4 elec_enc                        28              5
+4 elec_enc                       531            503
 5 emp_pia_rate_total              72             30
 6 population                    1078            503
 7 price_index_crop                21              1</code></pre>
@@ -2554,29 +2554,28 @@ vertical-align: -.125em;
 </div>
 <p><strong>Finding.</strong> Every z-score has mean 0 and sd 1 to numerical precision; the crop z-score is NA where the crop index is NA (Santa Cruz do Arari) and the lags are NA in 2000. Adding Santa Cruz do Arari’s restored index to the pool shifts the cattle z-score of every cell by at most about four thousandths of a standard deviation; the rest of the drift reported by the comparator for the z-scores is the Pink Sheet release (D-2026-10-10-a) passed through the standardisation. <strong>Decision.</strong> D-2026-10-11-d; the pooled standardisation is sample-dependent and is flagged for the storage audit (task 2.2). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (moments within <code>Z_TOL</code>, cattle lag NA in 2000).</p>
 </section>
-<section id="q5.-does-the-_gov-lag-place-each-elections-values-on-the-governing-years" class="level2">
-<h2 class="anchored" data-anchor-id="q5.-does-the-_gov-lag-place-each-elections-values-on-the-governing-years">Q5. Does the <code>_gov</code> lag place each election’s values on the governing years?</h2>
-<p>What is checked: one municipality’s effective number of candidates as stored (changes in the election year) and as lagged (changes the year after), across the 2004 and 2008 elections; NA counts of the lagged block by year.</p>
+<section id="q5.-are-the-electoral-columns-stored-on-the-governing-years" class="level2">
+<h2 class="anchored" data-anchor-id="q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</h2>
+<p>What is checked: one municipality’s effective number of candidates and winner’s party across the 2004 and 2008 elections; NA counts of the electoral block by year. Until phase 2, step 2.3 (2026-10-22) the stored block changed in the election year and script 04 added a one-year lag with the <code>_gov</code> suffix (D-2026-10-11-e); since the step, script 03 stores the values on the governing years and the lag is retired (D-2026-10-22-d, -e; <code>_audit/tse.qmd</code> Q4, Q7).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1100015&quot;</span>, year <span class="sc">%in%</span> <span class="dv">2003</span><span class="sc">:</span><span class="dv">2010</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_enc, elec_enc_gov,</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>         elec_winner_party, elec_winner_party_gov)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_enc, elec_winner_party, elec_mov, elec_competitive)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 6
-   year election_year elec_enc elec_enc_gov elec_winner_party elec_winner_party_gov
-  &lt;int&gt;         &lt;int&gt;    &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;             &lt;chr&gt;                
-1  2003             0     2.96         2.96 PPB               PPB                  
-2  2004             1     2.00         2.96 PDT               PPB                  
-3  2005             0     2.00         2.00 PDT               PDT                  
-4  2006             0     2.00         2.00 PDT               PDT                  
-5  2007             0     2.00         2.00 PDT               PDT                  
-6  2008             1     1.98         2.00 PTN               PDT                  
-7  2009             0     1.98         1.98 PTN               PTN                  
-8  2010             0     1.98         1.98 PTN               PTN                  </code></pre>
+   year election_year elec_enc elec_winner_party elec_mov elec_competitive
+  &lt;int&gt;         &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;                &lt;dbl&gt;            &lt;int&gt;
+1  2003             0     2.96 PPB                 0.0240                1
+2  2004             1     2.96 PPB                 0.0240                1
+3  2005             0     2.00 PDT                 0.0462                1
+4  2006             0     2.00 PDT                 0.0462                1
+5  2007             0     2.00 PDT                 0.0462                1
+6  2008             1     2.00 PDT                 0.0462                1
+7  2009             0     1.98 PTN                 0.107                 0
+8  2010             0     1.98 PTN                 0.107                 0</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2584,30 +2583,45 @@ vertical-align: -.125em;
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">na_gov =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_enc_gov)),</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_stored =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_enc)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(na_gov <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">|</span> na_stored <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">na_enc =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_enc)), <span class="at">na_mov =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)),</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(na_enc <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">|</span> na_mov <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 13 × 3
-    year na_gov na_stored
-   &lt;int&gt;  &lt;int&gt;     &lt;int&gt;
- 1  2000    503         5
- 2  2001      5         5
- 3  2002      5         5
- 4  2003      5         5
- 5  2004      5         1
- 6  2005      1         1
- 7  2006      1         1
- 8  2007      1         1
- 9  2008      1         1
-10  2009      1         1
-11  2010      1         1
-12  2011      1         1
-13  2012      1         0</code></pre>
+<pre><code># A tibble: 21 × 4
+    year na_enc na_mov uncontested
+   &lt;int&gt;  &lt;int&gt;  &lt;int&gt;       &lt;int&gt;
+ 1  2000    503    503           0
+ 2  2001      5     10           5
+ 3  2002      5     10           5
+ 4  2003      5     10           5
+ 5  2004      5     10           5
+ 6  2005      1      8           7
+ 7  2006      1      8           7
+ 8  2007      1      8           7
+ 9  2008      1      8           7
+10  2009      1     21          20
+# ℹ 11 more rows</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>, <span class="fu">is.na</span>(elec_enc)) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality) <span class="sc">%&gt;%</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  geocode municipality         years    
+  &lt;chr&gt;   &lt;chr&gt;                &lt;chr&gt;    
+1 1504752 Mojuí dos Campos     2001-2012
+2 2100402 Altamira do Maranhão 2001-2004
+3 2102150 Brejo de Areia       2001-2004
+4 5104526 Ipiranga do Norte    2001-2004
+5 5104542 Itanhangá            2001-2004</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The stored block changes in the election year (2004, 2008), the lagged block one year later (2005, 2009), which is the governing-period rule; 2000 is NA in every <code>_gov</code> column because the 1996 election is outside the data. The stored block’s timing is the defect of task 1.5. <strong>Decision.</strong> D-2026-10-11-e (lag kept as inherited); D-2026-10-05-o (open, phase 2 step 2.3). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>_gov</code> NA in 2000).</p>
+<p><strong>Finding.</strong> The stored block changes the year after each election (2005, 2009): the governing-period rule. In 2000 every electoral column is NA because the 1996 election is outside the data; after 2000 the margin and the competitive flag are NA exactly on the uncontested races, and the 28 municipality-years with no value at all are those without a governing election in the file (Mojuí dos Campos 2001-2012; Ipiranga do Norte, Itanhangá, Altamira do Maranhão and Brejo de Areia 2001-2004). <strong>Decision.</strong> D-2026-10-22-d (storage), D-2026-10-22-e (<code>_gov</code> retired; supersedes D-2026-10-11-e). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (2000 NA; 28 NA municipality-years after 2000; margin and flag NA iff uncontested or no election).</p>
 </section>
 <section id="q6.-where-are-per-capita-transfers-missing-and-why" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</h2>
@@ -2615,16 +2629,16 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">transfers =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_transfers_total_brl_2024)),</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">population =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(population)),</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_capita =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_transfers_pc_brl_2024)),</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transfers <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">transfers =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_transfers_total_brl_2024)),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">population =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(population)),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">per_capita =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(bf_transfers_pc_brl_2024)),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transfers <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 16 × 4
+<pre><code># A tibble: 17 × 4
     year transfers population per_capita
    &lt;int&gt;     &lt;int&gt;      &lt;int&gt;      &lt;int&gt;
  1  2004       500        494        493
@@ -2642,7 +2656,8 @@ vertical-align: -.125em;
 13  2016       503        503        503
 14  2017       503        503        503
 15  2018       503        503        503
-16  2019       503        503        503</code></pre>
+16  2019       503        503        503
+17  2020       503        503        503</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Per-capita transfers exist exactly where both inputs do: 2004-2019, less the nine Mato Grosso municipalities without population through 2009 (D-2026-10-05-k). No municipality-year has a zero population. <strong>Decision.</strong> D-2026-10-11-f; D-2026-10-10-k (open, population storage). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA pattern equals the union of the inputs’ NA).</p>
@@ -2653,16 +2668,16 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1504752&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, <span class="fu">all_of</span>(<span class="fu">unname</span>(blocks)), bf_transfers_pc_brl_2024) <span class="sc">%&gt;%</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="sc">!!!</span><span class="fu">set_names</span>(<span class="fu">unname</span>(blocks), <span class="fu">names</span>(blocks))) <span class="sc">%&gt;%</span></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="cf">if</span> (<span class="fu">any</span>(<span class="sc">!</span><span class="fu">is.na</span>(.x))) {</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">range</span>(year[<span class="sc">!</span><span class="fu">is.na</span>(.x)]), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>)</span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;none&quot;</span></span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  })) <span class="sc">%&gt;%</span></span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;block&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;years_with_data&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1504752&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, <span class="fu">all_of</span>(<span class="fu">unname</span>(blocks)), bf_transfers_pc_brl_2024) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="sc">!!!</span><span class="fu">set_names</span>(<span class="fu">unname</span>(blocks), <span class="fu">names</span>(blocks))) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="cf">if</span> (<span class="fu">any</span>(<span class="sc">!</span><span class="fu">is.na</span>(.x))) {</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">range</span>(year[<span class="sc">!</span><span class="fu">is.na</span>(.x)]), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;none&quot;</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  })) <span class="sc">%&gt;%</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;block&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;years_with_data&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 2
@@ -2670,16 +2685,16 @@ vertical-align: -.125em;
    &lt;chr&gt;                    &lt;chr&gt;          
  1 mapbiomas                2000-2020      
  2 ppcdam                   2000-2020      
- 3 bf                       2014-2019      
+ 3 bf                       2014-2020      
  4 rais                     none           
  5 census                   2000-2020      
  6 ibge_pib                 2002-2020      
- 7 tse                      2012-2020      
+ 7 tse                      2013-2020      
  8 area                     2000-2020      
  9 pam                      2013-2020      
 10 ppm                      2013-2020      
 11 prices                   2000-2020      
-12 bf_transfers_pc_brl_2024 2014-2019      </code></pre>
+12 bf_transfers_pc_brl_2024 2014-2020      </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Mojuí dos Campos carries deforestation, area, PPCDAm (never listed), the census block and the split GDP and population for every year; PAM and PPM series from 2013; elections from the 2012 election; Bolsa Família from 2014. The crop index reads 0 throughout because its base-window weights are NA (D-2026-10-10-h) and the cattle index is NA. It has no RAIS row at all. The RAIS gap and the agricultural series before 2013 are what re-inclusion would have to solve (task 1.6). <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8). <strong>Assertion.</strong> none; the row count assertion counts it among the 503.</p>

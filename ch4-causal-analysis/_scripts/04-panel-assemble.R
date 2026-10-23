@@ -1,10 +1,9 @@
 # 04-panel-assemble.R
 # PURPOSE   Assemble the municipality-year panel of the Amazon-biome sample
 #           (503 municipalities, 2000-2020) from the interim outputs of
-#           scripts 01-03, and add the three derived blocks the analysis
-#           scripts inherit: pooled z-scores of the price indices, the
-#           electoral block lagged to the governing year, and per-capita
-#           Bolsa Família transfers.
+#           scripts 01-03, and add the two derived blocks the analysis
+#           scripts inherit: pooled z-scores of the price indices and
+#           per-capita Bolsa Família transfers.
 #
 # INPUTS    _data/interim/mapbiomas_deforestation_amz_1987_2023.rds
 #                                                     01-env-deforestation.R
@@ -15,7 +14,7 @@
 #           _data/interim/census_pea_informal_2000_2022.rds
 #                                                     02-social-census.R
 #           _data/interim/ibge_pib_gdp_2002_2022.rds  03-controls-gdp.R
-#           _data/interim/tse_elections_2000_2020.rds 03-controls-elections.R
+#           _data/interim/tse_elections_2000_2024.rds 03-controls-elections.R
 #           _data/interim/pam_ppm_munic_area_2025.rds 03-controls-agro.R
 #           _data/interim/pam_ppm_crop_areas_1988_2025.rds
 #                                                     03-controls-agro.R
@@ -38,21 +37,21 @@
 #   D-2026-10-11-d  Price indices z-scored on the pooled panel; level and
 #                   lag share one centre and spread; the cattle lag is
 #                   built from the z-score.
-#   D-2026-10-11-e  Electoral block lagged one year within municipality
-#                   (_gov); election_year not lagged.
 #   D-2026-10-11-f  bf_transfers_pc_brl_2024 = transfers / population, NA
 #                   where population is missing or zero.
 #   D-2026-10-11-g  Columns not carried into the panel at the join.
 #   D-2026-10-11-h  Task 1.10: typed output; the xlsx copy retired.
 #   D-2026-10-22-b  bf_regime carried into the panel (phase 2, step 2.2);
 #                   NA before 2004, when the programme did not exist.
+#   D-2026-10-22-e  The elec_*_gov lag retired (phase 2, step 2.3): the
+#                   elec_* columns arrive on the governing years from
+#                   script 03 (D-2026-10-22-d); elec_governing_year stays
+#                   in the interim file.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 1.3  The z-scores standardise indices whose 2000 value is not 1
 #             (D-2026-10-05-p); the pooled standardisation itself is
 #             flagged for the storage audit (task 2.2).
-#   Task 1.5  The _gov lag compensates for the election-year storage of
-#             the elec_* columns (D-2026-10-05-o); both blocks are kept.
 #   Task 1.6  bf_transfers_pc_brl_2024 is NA through 2009 for the nine
 #             municipalities without a 2000 census population.
 #   Task 1.9  Areas arrive in hectares from script 01 and are converted
@@ -65,11 +64,10 @@ library(tidyverse)  # magrittr %>% throughout, never the native pipe
 PANEL_YEARS   <- 2000:2020                                    # D-2026-10-11-a
 BF_REF_MONTH  <- 6L                                           # D-2026-10-05-a
 HA_PER_KM2    <- 100                                          # D-2026-10-11-c
-ELEC_GOV_LAG  <- 1L                                           # D-2026-10-11-e
-ELEC_GOV_VARS <- c("elec_enc", "elec_mov", "elec_winner_share",
+ELEC_VARS     <- c("elec_enc", "elec_mov", "elec_winner_share",
                    "elec_n_candidates", "elec_winner_party",
                    "elec_winner_id", "elec_competitive",
-                   "elec_uncontested")                        # D-2026-10-11-e
+                   "elec_uncontested")                        # D-2026-10-22-d
 PPCDAM_FIRST_LISTING_YEAR <- 2008L                            # D-2026-10-11-b
 # Mojuí dos Campos included, dropped in script 05 (D-2026-10-05-l); update
 # at task 1.1.
@@ -82,6 +80,11 @@ N_PPCDAM_OUTSIDE_EXPECTED <- 4L                               # D-2026-10-11-b
 # D-2026-10-10-f); inherited, area vintage settled at task 1.8.
 N_FOREST_OVER_AREA_EXPECTED <- 4L
 Z_TOL <- 1e-6
+# Municipality-years after 2000 without a governing election in the data
+# (D-2026-10-22-d): Mojuí dos Campos 2001-2012 (installed 2013), and
+# 2001-2004 for Ipiranga do Norte, Itanhangá (installed 2005), Altamira do
+# Maranhão and Brejo de Areia (no 2000 election in the file; panel.qmd Q5).
+N_ELEC_NA_POST2000_EXPECTED <- 28L
 
 PANEL_COLS <- c(
   "geocode", "municipality", "state", "state_abbreviation", "year",
@@ -98,7 +101,7 @@ PANEL_COLS <- c(
   "pea", "informal", "population",
   "gdp_brl", "gdp_per_capita", "gdp_per_capita_log", "gdp_brl_2024",
   "gdp_per_capita_2024", "gdp_per_capita_2024_log",
-  ELEC_GOV_VARS, "election_year",
+  ELEC_VARS, "election_year",
   "munic_area_km2",
   "crop_soy_area_planted_km2", "crop_corn_area_planted_km2",
   "crop_rice_area_planted_km2", "crop_cotton_area_planted_km2",
@@ -108,20 +111,18 @@ PANEL_COLS <- c(
   "price_index_crop", "price_index_cattle", "price_index_crop_lag1",
   "price_index_crop_z", "price_index_crop_lag1_z", "price_index_cattle_z",
   "price_index_cattle_lag1_z",
-  paste0(ELEC_GOV_VARS, "_gov"),
+  # Phase 2, step 2.3 (D-2026-10-22-e): the eight elec_*_gov columns that
+  # stood here are retired.
   "bf_transfers_pc_brl_2024",
   # Phase 2, step 2.2 (D-2026-10-22-b): programme regime of the reference
   # month, appended after the phase 1 columns so their order is unchanged.
   "bf_regime"
 )
 PANEL_INT_COLS <- c("year", "ppcdam_list", "elec_n_candidates",
-                    "elec_competitive", "elec_uncontested", "election_year",
-                    "elec_n_candidates_gov", "elec_competitive_gov",
-                    "elec_uncontested_gov")             # D-2026-10-11-h
+                    "elec_competitive", "elec_uncontested",
+                    "election_year")                    # D-2026-10-11-h
 PANEL_CHR_COLS <- c("geocode", "municipality", "state", "state_abbreviation",
-                    "elec_winner_party", "elec_winner_id",
-                    "elec_winner_party_gov", "elec_winner_id_gov",
-                    "bf_regime")
+                    "elec_winner_party", "elec_winner_id", "bf_regime")
 
 # ---- Read -------------------------------------------------------------------
 interim <- function(name) read_rds(file.path("_data/interim", name))
@@ -132,7 +133,7 @@ bf         <- interim("bf_panel_2004_2024.rds")
 rais       <- interim("rais_employment_1999_2024.rds")
 census     <- interim("census_pea_informal_2000_2022.rds")
 gdp        <- interim("ibge_pib_gdp_2002_2022.rds")
-tse        <- interim("tse_elections_2000_2020.rds")
+tse        <- interim("tse_elections_2000_2024.rds")
 munic_area <- interim("pam_ppm_munic_area_2025.rds")
 crops      <- interim("pam_ppm_crop_areas_1988_2025.rds")
 cattle     <- interim("pam_ppm_cattle_1974_2025.rds")
@@ -160,7 +161,7 @@ stopifnot(
   all(ppcdam$ppcdam_list %in% c(0L, 1L, NA)),
   length(setdiff(unique(ppcdam$geocode), sample_geocodes)) ==
     N_PPCDAM_OUTSIDE_EXPECTED,
-  all(ELEC_GOV_VARS %in% names(tse))
+  all(ELEC_VARS %in% names(tse))
 )
 
 # ---- Transform --------------------------------------------------------------
@@ -181,7 +182,7 @@ bf_cols   <- bf %>%
   filter(bf_ref_month == BF_REF_MONTH) %>%
   select(-bf_ref_month)
 rais_cols <- rais %>% select(geocode, year, starts_with("emp_"))
-tse_cols  <- tse %>% select(-elec_total_votes)
+tse_cols  <- tse %>% select(-elec_total_votes, -elec_governing_year)  # D-2026-10-11-g, -22-e
 
 panel <- deforestation %>%
   left_join(ppcdam %>% select(geocode, year, ppcdam_list),
@@ -216,10 +217,7 @@ panel <- panel %>%
   ) %>%
   group_by(geocode) %>%
   mutate(
-    price_index_cattle_lag1_z = lag(price_index_cattle_z, n = 1L),
-    # Mayors elected in October of t govern t+1 to t+4 (D-2026-10-11-e).
-    across(all_of(ELEC_GOV_VARS), ~ lag(.x, n = ELEC_GOV_LAG),
-           .names = "{.col}_gov")
+    price_index_cattle_lag1_z = lag(price_index_cattle_z, n = 1L)
   ) %>%
   ungroup() %>%
   mutate(
@@ -247,8 +245,14 @@ stopifnot(
   all(abs(map_dbl(panel[z_cols], mean, na.rm = TRUE)) < Z_TOL),
   all(abs(map_dbl(panel[z_cols], sd, na.rm = TRUE) - 1) < Z_TOL),
   all(is.na(panel$price_index_cattle_lag1_z[first_year])),
-  all(map_lgl(panel[paste0(ELEC_GOV_VARS, "_gov")],
-              ~ all(is.na(.x[first_year])))),
+  # Governing-year storage (D-2026-10-22-d): 2000 NA; after 2000 the only
+  # NA municipality-years are those without a governing election in the
+  # data (panel.qmd Q5).
+  all(is.na(panel$elec_enc[first_year])),
+  sum(is.na(panel$elec_enc[!first_year])) == N_ELEC_NA_POST2000_EXPECTED,
+  all(is.na(panel$elec_mov) ==
+        (is.na(panel$elec_enc) | panel$elec_uncontested == 1L)),
+  all(is.na(panel$elec_competitive) == is.na(panel$elec_mov)),
   all(is.na(panel$bf_transfers_pc_brl_2024) ==
         (is.na(panel$bf_transfers_total_brl_2024) |
            is.na(panel$population) | panel$population <= 0)),

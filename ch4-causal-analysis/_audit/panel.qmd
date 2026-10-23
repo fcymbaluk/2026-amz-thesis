@@ -252,35 +252,46 @@ sample-dependent and is flagged for the storage audit (task 2.2).
 **Assertion.** `04-panel-assemble.R`, output block (moments within
 `Z_TOL`, cattle lag NA in 2000).
 
-## Q5. Does the `_gov` lag place each election's values on the governing years?
+## Q5. Are the electoral columns stored on the governing years?
 
-What is checked: one municipality's effective number of candidates as
-stored (changes in the election year) and as lagged (changes the year
-after), across the 2004 and 2008 elections; NA counts of the lagged block
-by year.
+What is checked: one municipality's effective number of candidates and
+winner's party across the 2004 and 2008 elections; NA counts of the
+electoral block by year. Until phase 2, step 2.3 (2026-10-22) the stored
+block changed in the election year and script 04 added a one-year lag with
+the `_gov` suffix (D-2026-10-11-e); since the step, script 03 stores the
+values on the governing years and the lag is retired (D-2026-10-22-d, -e;
+`_audit/tse.qmd` Q4, Q7).
 
 ```{r q5-alignment}
 panel %>%
   filter(geocode == "1100015", year %in% 2003:2010) %>%
-  select(year, election_year, elec_enc, elec_enc_gov,
-         elec_winner_party, elec_winner_party_gov)
+  select(year, election_year, elec_enc, elec_winner_party, elec_mov, elec_competitive)
 ```
 
 ```{r q5-na}
 panel %>%
   group_by(year) %>%
-  summarise(na_gov = sum(is.na(elec_enc_gov)),
-            na_stored = sum(is.na(elec_enc)), .groups = "drop") %>%
-  filter(na_gov > 0 | na_stored > 0)
+  summarise(na_enc = sum(is.na(elec_enc)), na_mov = sum(is.na(elec_mov)),
+            uncontested = sum(elec_uncontested, na.rm = TRUE), .groups = "drop") %>%
+  filter(na_enc > 0 | na_mov > 0)
+panel %>%
+  filter(year > 2000, is.na(elec_enc)) %>%
+  group_by(geocode, municipality) %>%
+  summarise(years = paste(range(year), collapse = "-"), .groups = "drop")
 ```
 
-**Finding.** The stored block changes in the election year (2004, 2008),
-the lagged block one year later (2005, 2009), which is the governing-period
-rule; 2000 is NA in every `_gov` column because the 1996 election is
-outside the data. The stored block's timing is the defect of task 1.5.
-**Decision.** D-2026-10-11-e (lag kept as inherited); D-2026-10-05-o
-(open, phase 2 step 2.3).
-**Assertion.** `04-panel-assemble.R`, output block (`_gov` NA in 2000).
+**Finding.** The stored block changes the year after each election (2005,
+2009): the governing-period rule. In 2000 every electoral column is NA
+because the 1996 election is outside the data; after 2000 the margin and
+the competitive flag are NA exactly on the uncontested races, and the 28
+municipality-years with no value at all are those without a governing
+election in the file (Mojuí dos Campos 2001-2012; Ipiranga do Norte,
+Itanhangá, Altamira do Maranhão and Brejo de Areia 2001-2004).
+**Decision.** D-2026-10-22-d (storage), D-2026-10-22-e (`_gov` retired;
+supersedes D-2026-10-11-e).
+**Assertion.** `04-panel-assemble.R`, output block (2000 NA; 28 NA
+municipality-years after 2000; margin and flag NA iff uncontested or no
+election).
 
 ## Q6. Where are per-capita transfers missing, and why?
 

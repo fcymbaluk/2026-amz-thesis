@@ -44,7 +44,7 @@ DEFOR_REF_MAIN_YEARS  <- 2000:2007   # D-2026-10-12-f, D-2026-10-05-h
 DEFOR_SD_FLOOR        <- 1e-9        # D-2026-10-12-f
 PANEL_YEARS           <- 2000:2020   # D-2026-10-11-a
 N_MUNIC_EXPECTED      <- 502L        # D-2026-10-05-l; task 1.1
-N_SAMPLE_COLS_EXPECTED <- 83L        # script 05 output; 82 + bf_regime (D-2026-10-22-b)
+N_SAMPLE_COLS_EXPECTED <- 75L        # script 05 output; 82 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e)
 # panel-outcome.qmd Q2: Afuá and Santa Cruz do Arari (short window), Santa
 # Cruz do Arari (main window); none in the at-risk sample.
 N_DEGENERATE_SHORT_EXPECTED <- 2L
