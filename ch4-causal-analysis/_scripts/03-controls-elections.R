@@ -2,8 +2,9 @@
 # PURPOSE   Build the municipality-year electoral competitiveness panel
 #           (effective number of candidates, margin of victory, winner's
 #           share, party and id, competitive and uncontested flags) from
-#           first-round mayoral results, carried forward over 2000-2020.
-#           All municipalities of the nine Legal Amazon states.
+#           first-round mayoral results, stored on the governing years of
+#           each election over 2000-2024. All municipalities of the nine
+#           Legal Amazon states.
 #
 # INPUTS    _data/raw/tse/tse_mayoral_results_2000_2024.csv
 #             TSE via Base dos Dados (BigQuery,
@@ -11,7 +12,7 @@
 #             queried 2026-10-09; SQL in
 #             _scripts/sql/2026-10-09-tse-mayoral-results.sql
 #
-# OUTPUTS   _data/interim/tse_elections_2000_2020.rds / .csv
+# OUTPUTS   _data/interim/tse_elections_2000_2024.rds / .csv
 #
 # DECISIONS IMPLEMENTED
 #           (justification: annex, pending; evidence: _audit/tse.qmd;
@@ -24,12 +25,16 @@
 #                   competitive if the margin is below 10 points; a single
 #                   candidate is uncontested (margin NA, ENC 1).
 #   D-2026-10-10-j  Task 1.10: typed outputs.
+#   D-2026-10-22-d  Task 1.5 (phase 2, step 2.3): the mayor elected in
+#                   October of t governs t+1 to t+4; each year is joined
+#                   to its governing election, no carry-forward, so an
+#                   uncontested race keeps its NA margin and flag over the
+#                   four years; 2000 NA (1996 outside the data).
+#   D-2026-10-22-f  Series 2000-2024: the 2020 election governs 2021-2024;
+#                   the 2024 election governs 2025-2028 and enters only
+#                   election_year.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.5  Values change in the election year (2004 -> 2004-2007), not
-#             in the governing years; and the carry-forward fills the NA
-#             margin and competitive flag of an uncontested race with the
-#             previous election's values. Reproduced on purpose.
 #   D-2026-10-10-c  36 ballot-number duplicates of 2000 and 2004 are
 #             summed, so their votes count twice, as inherited. Dedupe
 #             is a phase 2 decision.
@@ -39,8 +44,14 @@ library(tidyverse)  # magrittr %>% throughout, never the native pipe
 
 # ---- Constants --------------------------------------------------------------
 TSE_FILE           <- "_data/raw/tse/tse_mayoral_results_2000_2024.csv"
-ELEC_YEARS         <- 2000:2020
-TSE_ELECTION_YEARS <- seq(2000L, 2020L, by = 4L)             # D-2026-10-10-d
+ELEC_YEARS         <- 2000:2024                               # D-2026-10-22-f
+TSE_ELECTION_YEARS <- seq(2000L, 2024L, by = 4L)             # D-2026-10-10-d
+ELEC_CYCLE         <- 4L
+ELEC_GOVERNING_LAG <- 1L   # elected in October of t, governs from t + 1 (D-2026-10-22-d)
+# The election governing year y: the last election year at or before y - 1.
+governing_election <- function(year) {
+  as.integer(floor((year - ELEC_GOVERNING_LAG) / ELEC_CYCLE) * ELEC_CYCLE)
+}
 TSE_OFFICE         <- "prefeito"
 TSE_ROUND          <- 1L                                      # D-2026-10-10-d
 TSE_ELECTION_TYPE  <- "eleicao ordinaria"                     # D-2026-10-10-d
@@ -50,8 +61,9 @@ TSE_COLUMNS <- c("ano", "turno", "id_eleicao", "tipo_eleicao", "data_eleicao",
                  "sigla_uf", "id_municipio", "id_municipio_tse", "cargo",
                  "sequencial_candidato", "numero_candidato", "sigla_partido",
                  "numero_partido", "resultado", "votos", "n_zonas")
-# Municipalities with a first-round ordinary election in 2000-2020, nine
-# states.
+# Municipalities with a first-round ordinary election in 2000-2024, nine
+# states (tse.qmd Q7: 805 with a code in 2024, plus two rows with an
+# empty code; Macapá's postponed 2020 election is not typed ordinary).
 N_MUNIC_TSE_EXPECTED <- 808L
 
 # ---- Read -------------------------------------------------------------------
@@ -82,7 +94,8 @@ mayors <- tse_raw %>%
   transmute(geocode = id_municipio, year = as.integer(ano),
             sequencial_candidato, numero_candidato, sigla_partido,
             numero_partido, votes = as.integer(votos)) %>%
-  filter(year %in% TSE_ELECTION_YEARS)
+  filter(year %in% TSE_ELECTION_YEARS,
+         year %in% governing_election(ELEC_YEARS))      # D-2026-10-22-f
 stopifnot(all(is_geocode(mayors$geocode)))
 
 # One row per candidate: votes summed over zones and over the ballot-number
@@ -121,23 +134,50 @@ elections <- candidates %>%
     elec_enc         = if_else(elec_uncontested == 1L, 1, elec_enc)
   )
 
-# Election values carried forward to the next election year; fill() also
-# overwrites the NA margin of an uncontested race (task 1.5).
+# ---- Governing-year storage (D-2026-10-22-d; phase 2, step 2.3) -----------
+# Each year is joined to the election that governs it: the October election
+# of t covers t + 1 to t + 4. No carry-forward, so the NA margin and flag of
+# an uncontested race persist over its four years; 2000 is NA because the
+# 1996 election is outside the data. election_year flags the election
+# itself, including 2024, whose results govern beyond ELEC_YEARS.
 tse_elections <- elections %>%
   distinct(geocode) %>%
   cross_join(tibble(year = ELEC_YEARS)) %>%
-  left_join(elections, by = c("geocode", "year")) %>%
-  arrange(geocode, year) %>%
-  group_by(geocode) %>%
-  fill(elec_enc, elec_mov, elec_winner_share, elec_n_candidates,
-       elec_total_votes, elec_winner_party, elec_winner_id,
-       elec_competitive, elec_uncontested, .direction = "down") %>%
-  ungroup() %>%
-  mutate(election_year = as.integer(year %in% TSE_ELECTION_YEARS))
+  mutate(elec_governing_year = governing_election(year)) %>%
+  left_join(elections %>% rename(elec_governing_year = year),
+            by = c("geocode", "elec_governing_year")) %>%
+  mutate(elec_governing_year = if_else(is.na(elec_enc), NA_integer_,
+                                       elec_governing_year),
+         election_year = as.integer(year %in% TSE_ELECTION_YEARS)) %>%
+  arrange(geocode, year)
+# ---- end governing-year storage -------------------------------------------
 
 # ---- Assert: output state ---------------------------------------------------
-# tse.qmd Q2, Q3, Q4. Definitions hold on the election rows; the stored
-# panel then carries them forward.
+# tse.qmd Q2, Q3, Q4, Q7. Definitions hold on the election rows; every
+# governing year equals its election row and the uncontested NA persists.
+governing_check <- tse_elections %>%
+  filter(!is.na(elec_governing_year)) %>%
+  select(geocode, year, elec_governing_year, elec_enc, elec_mov,
+         elec_winner_id, elec_competitive, elec_uncontested) %>%
+  inner_join(elections %>%
+               select(geocode, elec_governing_year = year,
+                      enc0 = elec_enc, mov0 = elec_mov, id0 = elec_winner_id,
+                      comp0 = elec_competitive, unc0 = elec_uncontested),
+             by = c("geocode", "elec_governing_year"))
+stopifnot(
+  all((governing_check$year - governing_check$elec_governing_year) %in%
+        seq_len(ELEC_CYCLE)),
+  all(governing_check$elec_enc == governing_check$enc0),
+  identical(governing_check$elec_mov, governing_check$mov0),
+  identical(governing_check$elec_winner_id, governing_check$id0),
+  identical(governing_check$elec_competitive, governing_check$comp0),
+  all(is.na(tse_elections$elec_mov) ==
+        (is.na(tse_elections$elec_enc) | tse_elections$elec_uncontested == 1L)),
+  all(is.na(tse_elections$elec_enc[tse_elections$year == min(ELEC_YEARS)])),
+  all(tse_elections$elec_governing_year[tse_elections$year > min(ELEC_YEARS)] %in%
+        TSE_ELECTION_YEARS | is.na(tse_elections$elec_enc[tse_elections$year > min(ELEC_YEARS)])),
+  is.integer(tse_elections$elec_governing_year)
+)
 stopifnot(
   !anyDuplicated(paste(elections$geocode, elections$year)),
   all(elections$elec_enc >= 1),
@@ -170,5 +210,5 @@ stopifnot(
 )
 
 # ---- Write ------------------------------------------------------------------
-write_rds(tse_elections, "_data/interim/tse_elections_2000_2020.rds")
-write_csv(tse_elections, "_data/interim/tse_elections_2000_2020.csv")
+write_rds(tse_elections, "_data/interim/tse_elections_2000_2024.rds")
+write_csv(tse_elections, "_data/interim/tse_elections_2000_2024.csv")

@@ -90,7 +90,7 @@ Order of fixes. Value-level fixes on the existing sample first, most upstream fi
 |---|---|---|---|
 | 2.1 | 1.4 quota source errors (14 MT municipalities, ratio > 3) | 02 | values of `bf_quota`, `bf_families_quota_ratio` |
 | 2.2 | 1.2 BF 2020 endpoint | 02 | rows for 2020 in `bf_*` columns |
-| 2.3 | 1.5 electoral timing (election year vs governing period) | 03 | values of `elec_*_gov` columns |
+| 2.3 | 1.5 electoral timing (election year vs governing period) | 03 | values of the eight `elec_*` columns (moved to the governing years); the `elec_*_gov` lag of script 04 retired (done 2026-10-22, D-2026-10-22-d/e/f) |
 | 2.4 | 1.3 price index normalization (anchor 2000 = 1) | 06 | values of `price_index_*` |
 | 2.5 | 1.6 municipalities created after the 2000 census (NA not zero, population estimates, new flags, recomputed ratios) | 01-03 | values and flags for the nine MT municipalities and their parents |
 | 2.6 | 1.7 census-interpolated series: store raw anchors in `muni_baseline`, mark interpolated columns | 05 | new baseline columns, codebook flags |

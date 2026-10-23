@@ -214,7 +214,7 @@ Supersedes: none
 
 ## D-2026-10-05-o  Electoral values mapped to the governing period
 
-Status: open (Task 1.5; phase 2 step 2.3)
+Status: closed (phase 2, step 2.3, 2026-10-22: implemented by D-2026-10-22-d, the _gov block retired by D-2026-10-22-e)
 Scope: script 03; elec_*_gov columns
 Context: the stated rule is that an election's values apply to the governing
          years (2004 election → 2005-2008), but the stored columns change in
@@ -914,7 +914,7 @@ Supersedes: none
 
 ## D-2026-10-11-e  Electoral block lagged one year within municipality (_gov); election_year not lagged
 
-Status: closed (pre-rebuild; script 04 at tag pre-reorg, lines 495-517; refactored in phase 1, 04-panel-assemble.R)
+Status: superseded by D-2026-10-22-e (phase 2, step 2.3, 2026-10-22)
 Scope: 04-panel-assemble.R (ELEC_GOV_VARS, ELEC_GOV_LAG); the eight elec_*_gov columns
 Context: the stored elec_* columns change in the election year
          (D-2026-10-05-o, open). The legacy script added a one-year lag of
@@ -1642,3 +1642,67 @@ Evidence: _audit/bf.qmd Q4, Q6
 Affects: bf_quota, bf_families_quota_ratio, bf_transfers_quota_brl_2024 in
          2020-2021 (values) and 2022-2024 (NA)
 Supersedes: none
+
+## D-2026-10-22-d  Electoral values stored on the governing years by an explicit map, no carry-forward
+
+Status: closed (phase 2, step 2.3, branch phase2-2.3-electoral-timing, 2026-10-22; comparator report in the commit message)
+Scope: 03-controls-elections.R (ELEC_GOVERNING_LAG, governing map); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_winner_party, elec_winner_id, elec_competitive, elec_uncontested
+Context: task 1.5. The stored columns took an election's values from the
+         election year (2004 -> 2004-2007) and carried them forward with
+         fill(), which also overwrote the NA margin and competitive flag of
+         an uncontested race with the previous election's values
+         (_audit/tse.qmd Q3, Q4; D-2026-10-10-d). The stated rule is that
+         the mayor elected in October of t governs t+1 to t+4.
+Reason: each year is joined to the election that governs it
+        (year - 1 floored to the election cycle), so a governing year
+        equals its election row exactly and no carry-forward exists; the
+        uncontested NA persists over the four governing years; 2000 is NA
+        because the 1996 election is outside the data. The governing rule
+        then holds for every derived electoral variable.
+Evidence: _audit/tse.qmd Q4, Q7
+Affects: the eight elec_* columns in every year (values shift one year
+         later; 2000 NA; uncontested cells NA); election_year unchanged;
+         elec_governing_year added to the interim file only (dropped at
+         the join with elec_total_votes, D-2026-10-11-g)
+Supersedes: the storage part of D-2026-10-10-d; closes D-2026-10-05-o
+
+## D-2026-10-22-e  The elec_*_gov lag of script 04 dropped: redundant under the governing storage
+
+Status: closed (phase 2, step 2.3, branch phase2-2.3-electoral-timing, 2026-10-22; comparator report in the commit message)
+Scope: 04-panel-assemble.R (ELEC_GOV_VARS, ELEC_GOV_LAG, PANEL_COLS); 05-sample-definition.R and 06-normalized-outcome.R column counts; codebook.csv
+Context: the one-year lag of D-2026-10-11-e compensated the election-year
+         storage; with D-2026-10-22-d the stored elec_* columns are what
+         the _gov block was, cell for cell, except on the uncontested cells
+         the fill() had overwritten. No analysis script or manuscript
+         passage reads a _gov column.
+Reason: eight duplicate columns add nothing; the panel drops from 74 to
+        66 columns and the sample panel from 83 to 75. The _term suffix of
+        rebuild/naming-convention.md then applies to the stored columns at
+        phase 2R.
+Evidence: _audit/panel.qmd Q5
+Affects: elec_enc_gov, elec_mov_gov, elec_winner_share_gov,
+         elec_n_candidates_gov, elec_winner_party_gov, elec_winner_id_gov,
+         elec_competitive_gov, elec_uncontested_gov (removed)
+Supersedes: D-2026-10-11-e
+
+## D-2026-10-22-f  Electoral interim series extended to 2024; the 2024 election governs beyond the window
+
+Status: closed (phase 2, step 2.3, branch phase2-2.3-electoral-timing, 2026-10-22; comparator report in the commit message)
+Scope: 03-controls-elections.R (ELEC_YEARS, TSE_ELECTION_YEARS); output renamed tse_elections_2000_2024
+Context: the raw file holds the elections of 2000-2024 (D-2026-10-10-d
+         anticipated their entry with tasks 1.2 and 1.5); step 2.2 took the
+         Bolsa Família interim to 2024.
+Reason: under the governing rule the 2020 election covers 2021-2024 and
+        the 2024 election covers 2025-2028, so the series runs 2000-2024
+        with the 2024 election entering only election_year. The panel grid
+        stays 2000-2020 until step 2.9.
+Evidence: _audit/tse.qmd Q7
+Affects: tse_elections interim rows 2021-2024 (new); no panel column.
+         Open for the author: Macapá's 2020 election, postponed to
+         December after the Amapá blackout, is typed "eleicoes municipais
+         2020 - ap" and falls outside the ordinary-election filter of
+         D-2026-10-10-d, so the municipality is NA in 2021-2024 (within
+         2000-2020 its 2020 row holds the 2016 election under both
+         storages); whether that election counts as ordinary is a
+         definition change to decide before step 2.9 (tse.qmd Q7)
+Supersedes: the 2000-2020 window of D-2026-10-10-d

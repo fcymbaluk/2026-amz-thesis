@@ -224,7 +224,7 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `elec_competitive` | `pol_mayor_competitive_dum` |  |
 | `elec_uncontested` | `pol_mayor_uncontested_dum` |  |
 | `election_year` | `pol_elec_year_dum` | confirmed 2026-10-05: 0/1 flag for election years (`03-data-cleaning-controls.R`, `year %in% election_years`) |
-| `elec_enc_gov` | `pol_mayor_enc_idx_term` | confirmed 2026-10-05: `_gov` means aligned to the governing mayor, built as a one-year lag in `04-data-panel.R` (the off-by-one is task 1.5); not gubernatorial |
+| `elec_enc_gov` | `pol_mayor_enc_idx_term` | confirmed 2026-10-05: `_gov` means aligned to the governing mayor, built as a one-year lag in `04-data-panel.R` (the off-by-one is task 1.5); not gubernatorial. Retired 2026-10-22 (phase 2, step 2.3, D-2026-10-22-e): the stored `elec_*` columns are now on the governing years, so at phase 2R the `_term` names apply to them and the eight `_gov` rows below lapse |
 | `elec_mov_gov` | `pol_mayor_margin_share_term` | same |
 | `elec_winner_share_gov` | `pol_mayor_winner_share_term` | same |
 | `elec_n_candidates_gov` | `pol_mayor_cand_n_term` | same |
