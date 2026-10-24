@@ -238,8 +238,12 @@ present, years, "Total" in the other classifications).
 
 ## Q4. How are Mojuí dos Campos and Santarém handled before 2013?
 
-What is checked: Mojuí's presence in each table, the 2022 labour-force
-share used to split Santarém, and the adjusted anchors.
+What is checked: Mojuí's presence in each table, the pair's 2022
+labour-force share, and the stored series of the pair around the anchors.
+Until phase 2, step 2.5 (2026-10-23) the pipeline split Santarém's 2000
+and 2010 PEA anchors with Mojuí by that share and copied Santarém's
+informality (D-2026-10-07-d); since the step the parent rule of task 1.6
+applies (D-2026-10-23-f).
 
 ```{r q4-mojui}
 tibble(table = c("616 PEA 2000/2010", "6580 LF 2022", "2031 2000/2010", "10261 2022",
@@ -252,7 +256,7 @@ pair <- lf14 %>% filter(geocode %in% c("1504752", "1506807")) %>% mutate(lf14 = 
 share <- pair$lf14[pair$geocode == "1504752"] / sum(pair$lf14)
 share
 census_pea_informal %>%
-  filter(geocode %in% c("1504752", "1506807"), year %in% c(2000, 2010, 2013, 2022))
+  filter(geocode %in% c("1504752", "1506807"), year %in% c(2000, 2010, 2013, 2021, 2022))
 ```
 
 ```{r q4-plot}
@@ -266,17 +270,17 @@ census_pea_informal %>%
   theme_minimal()
 ```
 
-**Finding.** Mojuí dos Campos (emancipated from Santarém in 2013) appears
-only in the 2022 tables and workbook. The pipeline gives it 2000 and 2010
-PEA anchors equal to Santarém's times its 2022 share of the pair's labour
-force (5.76 percent), reduces Santarém's anchors by the complement, and
-copies Santarém's informality share. The PIA is not adjusted: Mojuí has
-no PIA before 2022 and Santarém keeps its full population. The recovered
-panel carries the adjusted Santarém PEA (phase 1 check), which corrects
-the wording of D-2026-10-05-l for these two series.
-**Decision.** D-2026-10-07-d.
-**Assertion.** `02-social-census.R`, output block (every municipality of
-the 2010 grid has a complete pea and informal series).
+**Finding.** Mojuí dos Campos (emancipated from Santarém, installed 2013)
+appears only in the 2022 tables and workbook. Its PEA and informality are
+NA before 2022, like the four other municipalities created after 2010.
+Santarém's series are its published anchors interpolated: the 2000 and
+2010 values include the territory that became Mojuí (5.76 percent of the
+pair's 2022 labour force) and the 2022 value does not, so the 2010-2022
+segment slopes down toward a smaller territory. The parent flag of script
+04 records this; no comparable area is built. The PIA was never adjusted.
+**Decision.** D-2026-10-23-f (supersedes D-2026-10-07-d).
+**Assertion.** `02-social-census.R`, output block (`na_rule_ok`: a
+municipality first counted in 2022 is NA before 2022).
 
 ## Q5. Which municipalities are absent from the 2000 census, and what do they carry?
 
@@ -300,16 +304,17 @@ census_pia %>% filter(geocode %in% c(absent_2000[1:3], "1504752"),
 
 **Finding.** Fifty-eight municipalities installed after the 2000 census
 (the nine Mato Grosso ones of task 1.6 among them) read "..." in the 2000
-API tables and are missing from the 2000 workbook. As inherited, their
-2000 PEA and informality anchors are 0, so both series rise linearly
-from zero to the 2010 value, and their PIA is back-extrapolated to 2000
-from the 2010-2022 slope. The five municipalities created after 2010
-have no PIA before 2022; the four other than Mojuí dos Campos have no PEA
-or informality before 2022 either.
-**Decision.** D-2026-10-07-e (reproduced on purpose; task 1.6 replaces
-the zeros with NA and the back-extrapolation with official estimates).
-**Assertion.** `02-social-census.R`, output block (no NA for the 2010
-grid; NA only for post-2010 municipalities before 2022).
+API tables and are missing from the 2000 workbook. Until phase 2, step
+2.5 (2026-10-23) their 2000 PEA and informality anchors read 0, so both
+series rose linearly from zero to the 2010 value, and their PIA was
+back-extrapolated to 2000 from the 2010-2022 slope (D-2026-10-07-e).
+Since the step "..." is NA and the three series start at the 2010 census
+(Q7). The five municipalities created after 2010 have no value before
+2022 in any of the three series.
+**Decision.** D-2026-10-23-d (supersedes D-2026-10-07-e).
+**Assertion.** `02-social-census.R`, output block (`na_rule_ok`: NA
+before 2010 for the 58, before 2022 for the five, complete otherwise;
+58 absent).
 
 ## Q6. Do the interpolated series stay plausible?
 
@@ -348,3 +353,44 @@ municipal median declines across the three censuses.
 **Decision.** D-2026-10-07-f (linear extrapolation of the PIA ends).
 **Assertion.** `02-social-census.R`, output block (non-negative, informal
 within 0-100, row counts).
+
+## Q7. What do the municipalities absent from the 2000 census carry under the step 2.5 rule?
+
+What is checked: the stored PEA, informality and PIA of the nine sample
+municipalities around the 2010 census and at the PIA ends, and the NA
+pattern of the whole group of 58 by year.
+
+```{r q7-rule}
+nine <- c("5101852", "5103254", "5103361", "5103437", "5104526", "5104542", "5106190",
+          "5107578", "5107743")
+census_pea_informal %>%
+  filter(geocode %in% nine, year %in% c(2009, 2010, 2011)) %>%
+  arrange(geocode, year)
+census_pia %>%
+  filter(geocode %in% nine, year %in% c(2009, 2010, 2022, 2023, 2024)) %>%
+  pivot_wider(names_from = year, values_from = pia)
+census_pea_informal %>%
+  filter(geocode %in% absent_2000) %>%
+  group_by(year) %>%
+  summarise(n = n(), pea_na = sum(is.na(pea)), informal_na = sum(is.na(informal)),
+            .groups = "drop") %>%
+  filter(year %in% c(2000, 2005, 2009, 2010, 2022))
+census_pia %>%
+  filter(geocode %in% absent_2000) %>%
+  group_by(year) %>%
+  summarise(n = n(), pia_na = sum(is.na(pia)), .groups = "drop") %>%
+  filter(year %in% c(1999, 2000, 2009, 2010, 2023, 2024))
+```
+
+**Finding.** The 58 municipalities are NA in PEA, informality and PIA
+from 1999 to 2009 and complete from 2010, the PIA through 2024 (the
+2023-2024 extrapolation of D-2026-10-07-f is kept, since it extends the
+anchor range at its end). Colniza's informality now begins at its 2010
+census value instead of climbing from zero through the treatment years.
+The ratios that divide by these series (`emp_pia_rate_*` in
+`02-social-rais.R`, `bf_transfers_pea_brl_2024` in `02-social-bf.R`)
+inherit the NA without code changes; population is rebuilt separately
+from the official estimates (`_audit/ibge_pib.qmd` Q7).
+**Decision.** D-2026-10-23-d.
+**Assertion.** `02-social-census.R`, output block (`na_rule_ok` for the
+three series; `N_ABSENT_2000_EXPECTED`).

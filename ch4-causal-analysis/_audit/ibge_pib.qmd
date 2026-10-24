@@ -17,10 +17,13 @@ preços correntes, mil reais), SIDRA agregados API v3, queried 2026-10-09
 (`_data/raw/ibge/sidra/sidra_5938_pib_*.json`); IBGE censuses 1970-2010
 and 2022, resident population (`_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx`,
 `Ibge_pop_2022 (Censo - Sidra).xlsx`); IBGE annual population estimates,
-SIDRA Tabela 6579 (`sidra_6579_pop_estimate_*.json`, inspected here, not read
-by the pipeline); IPCA deflator (`_data/aux/deflator_ipca_2024.csv`).
+SIDRA Tabela 6579 (`sidra_6579_pop_estimate_*.json`, read by the pipeline
+since phase 2, step 2.5); the post-2000 municipality lookup
+(`_data/aux/munic_post2000.csv`); IPCA deflator
+(`_data/aux/deflator_ipca_2024.csv`).
 Pipeline script: `_scripts/03-controls-gdp.R`.
-Interim output: `_data/interim/ibge_pib_gdp_2002_2022.rds`.
+Interim outputs: `_data/interim/ibge_pop_2000_2022.rds`,
+`_data/interim/ibge_pib_gdp_2002_2022.rds`.
 Equivalence with the recovered panel is not checked here (the notebook never
 reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
 script 03 commit message and in the decision entries it cites.
@@ -48,7 +51,13 @@ pop_0010_raw <- read_excel("_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx", shee
                            col_types = "text")
 pop_2022_raw <- read_excel("_data/raw/ibge/Ibge_pop_2022 (Censo - Sidra).xlsx", sheet = "Tabela",
                            col_types = "text", col_names = FALSE, .name_repair = "minimal")
-gdp <- read_rds("_data/interim/ibge_pib_gdp_2002_2022.rds")
+pop <- read_rds("_data/interim/ibge_pop_2000_2022.rds")
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+# Since step 2.5 the GDP file carries no population; it is joined here from
+# its own file so the questions below read as before.
+gdp <- read_rds("_data/interim/ibge_pib_gdp_2002_2022.rds") %>%
+  left_join(pop %>% select(geocode, year, population, pop_source), by = c("geocode", "year"))
 sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
   distinct(geocode, municipality, state_abbreviation)
 is_geocode <- function(x) !is.na(x) & str_detect(x, "^[0-9]{7}$")
@@ -115,31 +124,41 @@ D-2026-10-05-k (consequence for the nine); D-2026-10-10-g.
 **Assertion.** `03-controls-gdp.R`, raw-state block (column names, 5,566
 rows, 2022 header cells, 5,570 municipalities in 2022, anchors positive).
 
-## Q3. Do Santarém and Mojuí dos Campos recover the combined pre-2013 total?
+## Q3. What do Santarém and Mojuí dos Campos carry before 2013?
+
+What is checked: the pair's stored GDP and population around 2013, and
+Santarém's stored GDP against the served value. Until phase 2, step 2.5
+(2026-10-23) the pipeline split Santarém's pre-2013 GDP and population
+with Mojuí by the pair's 2022 shares (D-2026-10-10-e); since the step the
+parent rule of task 1.6 applies (D-2026-10-23-f).
 
 ```{r q3-pair}
 pair <- gdp %>%
   filter(geocode %in% c("1506807", "1504752"), year %in% c(2002, 2010:2014, 2022)) %>%
-  select(geocode, year, population, gdp_brl)
-pair %>% pivot_wider(names_from = geocode, values_from = c(population, gdp_brl))
+  select(geocode, year, population, pop_source, gdp_brl)
+pair %>% pivot_wider(names_from = geocode, values_from = c(population, pop_source, gdp_brl))
 santarem_raw <- pib_raw %>%
   filter(geocode == "1506807", year %in% c(2002, 2010:2014, 2022)) %>%
   transmute(year, santarem_served = as.numeric(value) * 1000)
 pair %>%
-  group_by(year) %>%
-  summarise(pair_gdp = sum(gdp_brl), .groups = "drop") %>%
+  filter(geocode == "1506807") %>%
   inner_join(santarem_raw, by = "year") %>%
-  mutate(diff = pair_gdp - santarem_served)
+  mutate(diff = gdp_brl - santarem_served) %>%
+  select(year, gdp_brl, santarem_served, diff)
 ```
 
-**Finding.** Before 2013 the two series sum exactly to Santarém's served
-GDP (and the same holds for population, asserted in the script); from 2013
-each municipality has its own series, so the pair's total exceeds
-Santarém's. Mojuí receives about 5.6 percent of the pair's GDP and 6.6
-percent of its population, the 2022 shares.
-**Decision.** D-2026-10-10-e.
-**Assertion.** `03-controls-gdp.R`, output block (pair sums equal the
-served values before 2013).
+**Finding.** Santarém's stored GDP equals the served value in every
+year, and its population is the published anchors interpolated: the 2000
+and 2010 values include the territory that became Mojuí and the 2022
+value does not, so the 2010-2022 segment slopes toward a smaller
+territory (the parent-rule bias task 1.6 names; flagged in script 04,
+not corrected). Mojuí is NA before 2013 in GDP (served as "...") and in
+population (not installed), carries the official estimates for 2013-2021
+and its 2022 census count.
+**Decision.** D-2026-10-23-f (supersedes D-2026-10-10-e).
+**Assertion.** `03-controls-gdp.R`, output block (a lookup municipality
+is NA before its installation year and complete from it, in population
+and in GDP).
 
 ## Q4. Which municipalities lack GDP per capita before 2010, and what do the official estimates say?
 
@@ -165,17 +184,18 @@ gdp %>%
 ```
 
 **Finding.** The nine Mato Grosso municipalities installed after 2000 have
-GDP from 2002 (seven of them) or 2005 (Ipiranga do Norte, Itanhangá) but no
-population before 2010, so their GDP per capita is NA for 2002-2009; this
-is why Colniza drops from every covariate-adjusted specification
-(D-2026-10-05-k). Tabela 6579 carries official estimates for 2001-2006,
-2008-2009, 2011-2021 and 2024 onward (2007 was a population count, 2010
-and 2022 censuses, 2023 is not served) for every one of them from their
-installation, the input task 1.6 will splice in.
-**Decision.** D-2026-10-05-k (closed, consequence); task 1.6 open; the
-estimates are not used in phase 1.
-**Assertion.** `03-controls-gdp.R`, output block (population missing only
-before a municipality's first census, Mojuí excepted).
+GDP from 2002 (seven of them) or 2005 (Ipiranga do Norte, Itanhangá) but,
+until phase 2, step 2.5 (2026-10-23), no population before 2010, so their
+GDP per capita was NA for 2002-2009 and Colniza dropped from every
+covariate-adjusted specification (D-2026-10-05-k). Tabela 6579 carries
+official estimates for 2001-2006, 2008-2009, 2011-2021 and 2024 onward
+(2007 was a population count, 2010 and 2022 censuses, 2023 is not
+served) for every one of them from their installation; since the step
+they are spliced in (Q7) and the first table above is empty.
+**Decision.** D-2026-10-05-k (closed at step 2.5 by D-2026-10-23-e).
+**Assertion.** `03-controls-gdp.R`, output block (population NA only
+before the first census that counts the municipality, or before the
+installation year for a lookup municipality).
 
 ## Q5. How far is the interpolated population from the official estimates?
 
@@ -196,23 +216,84 @@ the decade, where a straight line between censuses departs most from the
 estimated path. From 2011 the median drifts to -6.7 percent by 2021: the
 line toward the 2022 census, which came in below the projected estimates,
 runs under them, and the range reaches -26/+11 percent. The deviation is
-the cost of D-2026-10-05-f, to be weighed in tasks 1.6 and 1.7.
-**Decision.** none in phase 1 (tasks 1.6, 1.7).
+the cost of D-2026-10-05-f, kept at step 2.5: the estimates enter only
+where a municipality has no 2000 anchor (D-2026-10-23-e); the anchors
+are stored at task 1.7.
+**Decision.** D-2026-10-05-f (interpolation kept); D-2026-10-23-e.
 
 ## Q6. For which years is population stored?
 
 ```{r q6-years}
-gdp %>% filter(geocode %in% sample_geo$geocode) %>%
+pop %>%
+  filter(geocode %in% sample_geo$geocode) %>%
   group_by(year) %>%
-  summarise(n = n(), population_na = sum(is.na(population)), gdp_na = sum(is.na(gdp_brl)),
+  summarise(n = n(), population_na = sum(is.na(population)),
+            census = sum(pop_source == "census", na.rm = TRUE),
+            census_interp = sum(pop_source == "census_interp", na.rm = TRUE),
+            ibge_estimate = sum(pop_source == "ibge_estimate", na.rm = TRUE),
+            estimate_interp = sum(pop_source == "estimate_interp", na.rm = TRUE),
+            .groups = "drop") %>%
+  filter(year <= 2010 | year >= 2020)
+gdp %>%
+  filter(geocode %in% sample_geo$geocode) %>%
+  group_by(year) %>%
+  summarise(n = n(), gdp_na = sum(is.na(gdp_brl)), per_capita_na = sum(is.na(gdp_per_capita)),
             .groups = "drop") %>%
   filter(year <= 2004 | year >= 2020)
 ```
 
-**Finding.** The output starts in 2002 with the GDP series and ends in
-2022 with the last census, so the panel has no population for 2000 and
-2001 although the 2000 census anchor exists. The 2023 GDP release is read
-and dropped by the year cap.
-**Decision.** D-2026-10-10-k (open).
-**Assertion.** `03-controls-gdp.R`, output block (row count 5,570 x 21
-years).
+**Finding.** Since phase 2, step 2.5 (2026-10-23) population is its own
+series, 2000-2022 for every municipality, with the source of each cell;
+until then it rode on the GDP rows and the panel had no population in
+2000-2001 (D-2026-10-10-k). In the biome sample the only NA cells are the
+post-2000 municipalities before installation (ten in 2000, three in 2001,
+two through 2004: Mojuí dos Campos through 2012); GDP per capita is NA
+only where GDP is. The 2023 GDP release is read and dropped by the year
+cap; 2023-2024 population belongs to the anchor work of task 1.7.
+**Decision.** D-2026-10-23-e (closes D-2026-10-10-k for 2000-2022).
+**Assertion.** `03-controls-gdp.R`, output block (5,570 x 23 rows, source
+NA exactly where population is, per-capita NA pattern).
+
+## Q7. How are the official estimates spliced in for the municipalities installed after 2000?
+
+What is checked: the stored population and its source for the nine sample
+municipalities 2000-2012, the estimate path against the 2010 census, and
+the pre-installation estimates Tabela 6579 serves.
+
+```{r q7-splice}
+est <- est_raw %>% transmute(geocode, year, estimate = sidra_value(value, character(0)))
+pop %>%
+  filter(geocode %in% post2000$geocode, year <= 2012) %>%
+  left_join(post2000 %>% select(geocode, municipality, install_year), by = "geocode") %>%
+  select(municipality, install_year, year, population, pop_source) %>%
+  pivot_wider(names_from = year, values_from = c(population, pop_source), names_vary = "slowest") %>%
+  select(municipality, install_year, starts_with("population_"))
+pop %>%
+  filter(geocode %in% post2000$geocode, year %in% c(2006, 2007, 2008, 2009, 2010)) %>%
+  left_join(est, by = c("geocode", "year")) %>%
+  left_join(post2000 %>% select(geocode, municipality), by = "geocode") %>%
+  select(municipality, year, population, pop_source, estimate) %>%
+  pivot_wider(names_from = year, values_from = c(population, estimate), names_vary = "slowest")
+est %>%
+  filter(geocode %in% post2000$geocode) %>%
+  left_join(post2000 %>% select(geocode, municipality, install_year), by = "geocode") %>%
+  filter(!is.na(estimate), year < install_year) %>%
+  select(municipality, install_year, year, estimate)
+```
+
+**Finding.** Each lookup municipality is NA before its installation year,
+carries the official estimate from that year to 2009 (2013-2021 for
+Mojuí), and the interpolated census path from 2010. The 2007 count year,
+not served, is interpolated between the 2006 and 2008 estimates. The
+estimates of the 2001 cohort before the 2007 count are projections from a
+base that did not enumerate the municipality: Colniza reads 14,149 in
+2006 and 29,636 in 2008, and the other eight move by a few percent at the
+same point in either direction; the 2009 estimates sit close to the 2010
+census. Tabela 6579 also serves a 2004 estimate for Ipiranga do Norte and
+Itanhangá, published before their installation in 2005 (the FPM quota of
+the first year), which the rule does not use. A 2007 count (SIDRA Tabela
+793) could replace the nine interpolated cells as a value-level change.
+**Decision.** D-2026-10-23-e.
+**Assertion.** `03-controls-gdp.R`, output block (NA before installation,
+complete from it; nine `estimate_interp` cells, all 2007; census years
+read `census`).

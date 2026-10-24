@@ -92,7 +92,7 @@ Order of fixes. Value-level fixes on the existing sample first, most upstream fi
 | 2.2 | 1.2 BF 2020 endpoint | 02 | rows for 2020 in `bf_*` columns |
 | 2.3 | 1.5 electoral timing (election year vs governing period) | 03 | values of the eight `elec_*` columns (moved to the governing years); the `elec_*_gov` lag of script 04 retired (done 2026-10-22, D-2026-10-22-d/e/f) |
 | 2.4 | 1.3 price index normalization (anchor 2000 = 1) | 06 | values of `price_index_*` (resolved by reinterpretation 2026-10-23, D-2026-10-23-a: the 2000 value is the exposure, no anchoring; the all-NA weight window now NA in script 03, D-2026-10-23-b; pasture-share exposure for cattle open to the author, D-2026-10-23-c) |
-| 2.5 | 1.6 municipalities created after the 2000 census (NA not zero, population estimates, new flags, recomputed ratios) | 01-03 | values and flags for the nine MT municipalities and their parents |
+| 2.5 | 1.6 municipalities created after the 2000 census (NA not zero, population estimates, new flags, recomputed ratios) | 02-04 | values and flags for the nine MT municipalities and their parents (done 2026-10-23, D-2026-10-23-d/e/f: census series NA before 2010, population from the official estimates in its own 2000-2022 file, lookup `_data/aux/munic_post2000.csv`, flags `muni_new_post2000` and `muni_parent_split`; the Santarém-Mojuí splits retired) |
 | 2.6 | 1.7 census-interpolated series: store raw anchors in `muni_baseline`, mark interpolated columns | 05 | new baseline columns, codebook flags |
 | 2.7 | 1.8 NA versus zero audit (denominator counts, documented rules) | 02, 04 | values and new `_n` denominator columns |
 | 2.8 | 1.9 unit pattern: rescale all shares to 0-1, record units in the codebook | 06 | values of percent-scaled columns |

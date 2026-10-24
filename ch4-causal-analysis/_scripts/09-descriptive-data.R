@@ -6,7 +6,7 @@
 #           per capita) and join them onto the phase 1 panel. Analysis
 #           layer: pipeline 01-06 untouched; promoted under task 4.8.
 # Inputs    _data/final/panel_amz_2000_2020_final.rds        script 06
-#           _data/interim/ibge_pib_gdp_2002_2022.rds           script 03
+#           _data/interim/ibge_pop_2000_2022.rds               script 03 (since phase 2, step 2.5)
 #           _data/raw/atlas/censo_total_1991_2010.xlsx         Atlas Brasil
 #           _data/raw/ibge/sidra/sidra_5938_va_*_N6.json       SIDRA 5938
 #           _data/raw/siconfi/siconfi_*_amz_*.csv              Base dos Dados,
@@ -143,7 +143,9 @@ N_UF_EXPECTED     <- 9L
 
 # ---- Read -------------------------------------------------------------------
 panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
-population_all <- read_rds("_data/interim/ibge_pib_gdp_2002_2022.rds") %>%
+# Population from its own series since phase 2, step 2.5 (D-2026-10-23-e);
+# the GDP file no longer carries it. Rerun due at stage 10.
+population_all <- read_rds("_data/interim/ibge_pop_2000_2022.rds") %>%
   select(geocode, year, population)
 deflator <- read_csv("_data/aux/deflator_ipca_2024.csv",
                      col_types = cols(year = col_integer(),

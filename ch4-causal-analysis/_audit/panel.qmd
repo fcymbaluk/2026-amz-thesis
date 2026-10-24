@@ -15,8 +15,9 @@ execute:
 Source: none. This notebook audits the join of the interim outputs of
 scripts 01-03 into the municipality-year panel of the Amazon-biome sample
 (503 municipalities, 2000-2020) and the three derived blocks added at the
-join (pooled z-scores of the price indices, the electoral block lagged to
-the governing year, per-capita Bolsa Família transfers).
+join (pooled z-scores of the price indices, per-capita Bolsa Família
+transfers; the electoral lag retired at step 2.3; the two municipality
+flags of step 2.5).
 Pipeline script: `_scripts/04-panel-assemble.R`.
 Interim output: `_data/interim/panel_amz_2000_2020.rds`.
 Equivalence with the recovered panel is not checked here (the notebook never
@@ -309,10 +310,13 @@ panel %>%
   filter(transfers > 0)
 ```
 
-**Finding.** Per-capita transfers exist exactly where both inputs do:
-2004-2019, less the nine Mato Grosso municipalities without population
-through 2009 (D-2026-10-05-k). No municipality-year has a zero population.
-**Decision.** D-2026-10-11-f; D-2026-10-10-k (open, population storage).
+**Finding.** Per-capita transfers exist exactly where both inputs do.
+Since phase 2, step 2.5 (2026-10-23) population is complete from each
+municipality's installation (D-2026-10-23-e), so the per-capita column is
+missing only where the transfers are; until then the nine Mato Grosso
+municipalities without a 2000 census population were NA through 2009
+(D-2026-10-05-k). No municipality-year has a zero population.
+**Decision.** D-2026-10-11-f; D-2026-10-23-e (closes D-2026-10-10-k).
 **Assertion.** `04-panel-assemble.R`, output block (NA pattern equals the
 union of the inputs' NA).
 
@@ -335,12 +339,47 @@ panel %>%
   pivot_longer(everything(), names_to = "block", values_to = "years_with_data")
 ```
 
-**Finding.** Mojuí dos Campos carries deforestation, area, PPCDAm (never
-listed), the census block and the split GDP and population for every year;
-PAM and PPM series from 2013; elections from the 2012 election; Bolsa
-Família from 2014. The crop index reads 0 throughout because its
-base-window weights are NA (D-2026-10-10-h) and the cattle index is NA. It
-has no RAIS row at all. The RAIS gap and the agricultural series before
-2013 are what re-inclusion would have to solve (task 1.6).
-**Decision.** D-2026-10-05-l (provisional; issue #8).
+**Finding.** Mojuí dos Campos carries deforestation, area and PPCDAm
+(never listed) for every year; since phase 2, step 2.5 (2026-10-23) its
+GDP and population start in 2013 (official estimates to 2021, the 2022
+census) and the census block in 2022, the split with Santarém being
+retired (D-2026-10-23-f); PAM and PPM series from 2013; elections from
+the 2012 election; Bolsa Família from 2014. The crop index is NA (all
+base-window weights missing, D-2026-10-23-b) and so is the cattle index.
+It has no RAIS row at all. The RAIS gap and the series before 2013 are
+what re-inclusion would have to solve.
+**Decision.** D-2026-10-05-l (provisional; issue #8); D-2026-10-23-f.
 **Assertion.** none; the row count assertion counts it among the 503.
+
+## Q8. Which municipalities carry the post-2000 and parent flags?
+
+What is checked: the lookup rows against the sample municipalities with no
+2000 population, the parents named in the lookup against the flag, and the
+time-invariance of both flags (phase 2, step 2.5).
+
+```{r q8-flags}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+post2000 %>% select(geocode, municipality, install_year, parent_names)
+panel %>%
+  filter(year == 2000, is.na(population)) %>%
+  select(geocode, municipality, muni_new_post2000)
+panel %>%
+  filter(year == 2000, muni_parent_split == 1L) %>%
+  select(geocode, municipality, state_abbreviation)
+setdiff(unique(unlist(str_split(post2000$parent_geocodes, ";"))), sample_geocodes)
+panel %>%
+  group_by(geocode) %>%
+  summarise(across(c(muni_new_post2000, muni_parent_split), n_distinct), .groups = "drop") %>%
+  summarise(across(-geocode, max))
+```
+
+**Finding.** Ten municipalities carry `muni_new_post2000`: the nine Mato
+Grosso municipalities installed in 2001 and 2005 and Mojuí dos Campos
+(2013), exactly the set with no population in 2000. Ten of their twelve
+parents are in the biome sample and carry `muni_parent_split`; Ribeirão
+Cascalheira and Cáceres are outside it. Both flags are constant within
+municipality. Installation years, parents and laws stay in the lookup.
+**Decision.** D-2026-10-23-f.
+**Assertion.** `04-panel-assemble.R`, output block (the NA-population set
+in 2000 equals the lookup; ten flagged in each column).
