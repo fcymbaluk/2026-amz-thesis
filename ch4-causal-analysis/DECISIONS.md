@@ -159,7 +159,7 @@ Supersedes: none
 
 ## D-2026-10-05-k  Colniza drops from covariate-adjusted specifications
 
-Status: closed (pre-rebuild; consequence of missing pre-2010 GDP per capita); reopened by Task 1.6
+Status: closed (pre-rebuild; consequence of missing pre-2010 GDP per capita); reopened by Task 1.6; closed 2026-10-23 at phase 2, step 2.5 (D-2026-10-23-e: official estimates fill the population, GDP per capita exists from 2002)
 Scope: script 03 (population and GDP), 08 (xformla rows)
 Context: Colniza (5103254) was created after the 2000 census; population is NA
          until 2009, so gdp_per_capita_* is NA from 2002 to 2008 and the unit
@@ -457,7 +457,7 @@ Supersedes: none
 
 ## D-2026-10-07-d  Mojuí dos Campos 2000 and 2010 PEA allocated from Santarém; informality copied
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg, lines 1521-1612; refactored in phase 1, 02-social-census.R)
+Status: closed (pre-rebuild; script 02 at tag pre-reorg, lines 1521-1612; refactored in phase 1, 02-social-census.R); superseded 2026-10-23 at phase 2, step 2.5 by D-2026-10-23-f (allocation retired)
 Scope: 02-social-census.R (MOJUI_GEOCODE, SANTAREM_GEOCODE); pea, informal for 1504752 and 1506807
 Context: Mojuí dos Campos was emancipated from Santarém in 2013 and has no
          2000 or 2010 census row.
@@ -477,7 +477,7 @@ Supersedes: none
 
 ## D-2026-10-07-e  SIDRA "..." read as zero in the 2000 anchors of municipalities installed after 2000
 
-Status: closed (phase 1, script 02; reproduces the inherited defect, task 1.6 replaces it)
+Status: closed (phase 1, script 02; reproduces the inherited defect, task 1.6 replaces it); superseded 2026-10-23 at phase 2, step 2.5 by D-2026-10-23-d ("..." is NA)
 Scope: 02-social-census.R (SIDRA_ZERO_SYMBOLS); pea, informal, 2000-2009, 58 municipalities
 Context: SIDRA prints "-" for a true zero and "..." for a value not
          available; the 58 municipalities installed after the 2000 census
@@ -687,7 +687,7 @@ Supersedes: none
 
 ## D-2026-10-10-e  Santarém's GDP and population before 2013 split with Mojuí dos Campos by the 2022 shares
 
-Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 215-315; refactored in phase 1, 03-controls-gdp.R)
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 215-315; refactored in phase 1, 03-controls-gdp.R); superseded 2026-10-23 at phase 2, step 2.5 by D-2026-10-23-f (split retired)
 Scope: 03-controls-gdp.R; population, gdp_brl, gdp_brl_2024 and the per-capita columns of 1506807 and 1504752
 Context: Mojuí dos Campos was installed in 2013 and has no GDP or census
          population before that year. For 2002-2012 the legacy script gives
@@ -823,7 +823,7 @@ Supersedes: none
 
 ## D-2026-10-10-k  Population stored only for the GDP years 2002-2022
 
-Status: open (tasks 1.6 and 1.7; phase 2 steps 2.5 and 2.6)
+Status: closed for 2000-2022 (phase 2, step 2.5, 2026-10-23, D-2026-10-23-e: population stored 2000-2022 in _data/interim/ibge_pop_2000_2022, independently of the GDP years); 2023-2024 with the anchors of task 1.7
 Scope: 03-controls-gdp.R; population
 Context: the population series is interpolated on 2000-2022 from the three
          census anchors, joined onto the GDP rows (2002 onward) and capped
@@ -1795,3 +1795,122 @@ Reason: a 2000-2002 pasture share of the municipal territory would put
 Evidence: _audit/prices.qmd Q7
 Affects: price_index_cattle and its z-scores, if adopted
 Supersedes: none
+
+## D-2026-10-23-d  Municipalities absent from the 2000 census: census anchors NA, no backcasting
+
+Status: closed (phase 2, step 2.5, branch phase2-2.5-post2000-municipalities, 2026-10-23; comparator report in the commit message)
+Scope: 02-social-census.R (SIDRA symbols, informal_anchor, PIA extrapolation); pea, informal, pia and, downstream, emp_pia_rate_* (02-social-rais.R) and bf_transfers_pea_brl_2024 (02-social-bf.R)
+Context: the 58 municipalities installed after the 2000 census (nine of
+         them in the sample, all Mato Grosso, all at-risk narrow, Colniza
+         treated in 2008) read "..." in the 2000 SIDRA tables and are
+         missing from the 2000 PIA workbook. Phase 1 reproduced the
+         inherited handling (D-2026-10-07-e): PEA and informality anchors
+         of 0 in 2000, so both series rise linearly from zero to the 2010
+         census value (Colniza's informality reads 46.9 in 2006 against
+         78.1 in 2010), and the PIA back-extrapolated to 2000 from the
+         2010-2022 slope (D-2026-10-07-f).
+Reason: absence from a census is a missing value, never zero, and a
+        series that starts at the first census that counts the
+        municipality has no defensible value before it. "..." is read as
+        NA; an informality anchor with no occupied total is NA; the
+        extrapolation of D-2026-10-07-f applies only beyond the ends of
+        the anchor range (1999, 2023-2024), never across a missing anchor,
+        so the PIA of these municipalities is NA before 2010. The ratios
+        that divide by these series follow without code changes.
+        Population is handled separately with official estimates
+        (D-2026-10-23-e).
+Evidence: _audit/census.qmd Q5 (the inherited values), Q7 (the rule)
+Affects: pea, informal, pia 2000-2009 for the 58 (nine in the sample);
+         emp_pia_rate_total/agric/low/mid/high 2001-2009 and
+         bf_transfers_pea_brl_2024 2004-2009 for the nine
+Supersedes: D-2026-10-07-e; narrows D-2026-10-07-f to the ends of the
+            anchor range
+
+## D-2026-10-23-e  Population stored 2000-2022 as its own series; official estimates from installation for municipalities without a 2000 anchor
+
+Status: closed (phase 2, step 2.5, branch phase2-2.5-post2000-municipalities, 2026-10-23; comparator report in the commit message)
+Scope: 03-controls-gdp.R (population block, new output ibge_pop_2000_2022); 04-panel-assemble.R (population joined from the new file); population, gdp_per_capita, gdp_per_capita_log, gdp_per_capita_2024, gdp_per_capita_2024_log, bf_transfers_pc_brl_2024
+Context: population was interpolated between the three censuses and
+         stored on the GDP rows only, so the panel carried NA in 2000-2001
+         for every municipality (D-2026-10-10-k) and through 2009 for the
+         nine post-2000 municipalities, whose GDP per capita was therefore
+         NA for 2002-2009 and which dropped from every covariate-adjusted
+         specification (D-2026-10-05-k). SIDRA Tabela 6579 (re-acquired
+         at stage 5) carries IBGE's official annual estimates for every
+         one of them from installation (ibge_pib.qmd Q4).
+Reason: the population series is built for 2000-2022 and all
+        municipalities, independently of the GDP years, and written as
+        _data/interim/ibge_pop_2000_2022 with a pop_source column; the GDP
+        file keeps the per-capita columns and drops population, which
+        script 04 joins from the new file. For a municipality absent from
+        the 2000 census the rule is: NA before the installation year
+        (muni_post2000 lookup, D-2026-10-23-f; the 2004 estimate IBGE
+        published for the two municipalities installed in 2005 is not
+        used), the official estimate from the installation year to 2009,
+        then the census anchors interpolated as for every other
+        municipality. 2007 was a population count and is not served by
+        Tabela 6579: it is interpolated between the 2006 and 2008
+        estimates and marked as such (author's choice, 2026-10-23; the
+        count, SIDRA Tabela 793, could replace those cells as a
+        value-level change). The pre-count estimates of the 2001 cohort
+        are IBGE projections from a base that did not enumerate the
+        municipality (Colniza: 14,149 in 2006, 29,636 in 2008), reported
+        in the notebook. Interpolation between censuses is unchanged
+        (D-2026-10-05-f; anchors stored at task 1.7). 2023-2024 are not
+        built here: the panel ends in 2020 and the extension is task 1.7
+        / step 2.9 business.
+Evidence: _audit/ibge_pib.qmd Q4, Q6 (phase 1 state), Q7 (the spliced
+          series and the estimate paths)
+Affects: population 2000-2001 for all 502 sample municipalities (NA to
+         the interpolated value); population 2001-2009 (2005-2009 for
+         Ipiranga do Norte and Itanhangá) for the nine; the four
+         gdp_per_capita columns 2002-2009 and bf_transfers_pc_brl_2024
+         2004-2009 for the nine; Santarém and Mojuí per D-2026-10-23-f
+Supersedes: none; closes D-2026-10-10-k for 2000-2022 and D-2026-10-05-k
+
+## D-2026-10-23-f  Post-2000 municipalities and their parents: lookup, two panel flags, parents flagged and never adjusted
+
+Status: closed (phase 2, step 2.5, branch phase2-2.5-post2000-municipalities, 2026-10-23; comparator report in the commit message)
+Scope: _data/aux/munic_post2000.csv (new); 02-social-census.R and 03-controls-gdp.R (Mojuí/Santarém blocks removed); 04-panel-assemble.R (muni_new_post2000, muni_parent_split); pea, informal, population, gdp_* of 1506807 and 1504752
+Context: the lost scripts split Santarém's PEA (D-2026-10-07-d) and its
+         GDP and population (D-2026-10-10-e) with Mojuí dos Campos by the
+         pair's 2022 shares and copied Santarém's informality to Mojuí,
+         reproduced in phase 1. Task 1.6 asks that parents be flagged, not
+         adjusted, and that no minimum comparable areas be built. The
+         installation years and parents are not in any raw file; IBGE's
+         municipal register (Cadastro de Cidades e Vilas, "formação
+         administrativa", served by the biblioteca API, consulted
+         2026-10-23) gives them with the creating law.
+Reason: a hand-built lookup in _data/aux/ (the deflator precedent) holds
+        geocode, installation year, parents (all of them, first-named
+        first), law and source for the nine Mato Grosso municipalities and
+        Mojuí; step 2.9 adds the six other post-2000 Mato Grosso
+        municipalities, and script 04 asserts that every sample
+        municipality without a 2000 PIA anchor has a row. Two flags enter
+        the panel because analysis scripts will act on them (robustness
+        runs excluding units whose pre-2010 series are estimates, or
+        parents whose 2000-2010 interpolation spans territory later lost):
+        muni_new_post2000 and muni_parent_split, 0/1, time-invariant.
+        Installation year, parent geocodes and the per-cell population
+        source stay in the lookup and the interim population file,
+        documented in the codebook (author's choice, 2026-10-23). Every
+        Mojuí device is retired: Santarém's series are the published
+        census and IBGE values (its 2000 and 2010 anchors include Mojuí's
+        territory, 2022 excludes it, which the parent flag records); Mojuí
+        is NA before 2013 in GDP and population (estimates 2013-2021, the
+        2022 census) and NA before 2022 in the census-anchored series, like
+        the four other municipalities created after 2010. Mojuí stays in
+        the script 04 panel and is dropped in script 05 (D-2026-10-05-l),
+        so re-inclusion (issue #8) is not foreclosed. Parents in the
+        sample: Aripuanã, Alto Boa Vista, Pontes e Lacerda, Mirassol
+        d'Oeste, Lambari D'Oeste, Tapurah, Itaúba, Cláudia, São José do
+        Xingu, Santarém (Ribeirão Cascalheira and Cáceres are outside the
+        biome sample). The register names Curvelândia's third parent
+        "Itambi d'Oeste", read as Lambari D'Oeste (5105234), its
+        neighbour; flagged in the lookup.
+Evidence: _audit/census.qmd Q7, _audit/ibge_pib.qmd Q7, _audit/panel.qmd Q8
+Affects: Santarém: pea 2000-2021 (the 2000 and 2010 anchors no longer
+         reduced), bf_transfers_pea_brl_2024 2004-2020, population and
+         gdp_* 2002-2012; Mojuí (outside the sample panel): everything
+         before 2013; two new panel columns
+Supersedes: D-2026-10-07-d, D-2026-10-10-e

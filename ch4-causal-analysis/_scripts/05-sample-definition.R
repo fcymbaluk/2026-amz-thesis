@@ -35,10 +35,12 @@
 #                   _data/interim/.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.6  Ipiranga do Norte and Itanhangá (MT) have no 2000-2003 PAM or
-#             PPM rows, so their pressure_agri and pressure_score are NA
-#             (D-2026-10-10-g); Santa Cruz do Arari has no crop series
-#             (D-2026-10-10-i).
+#   Task 1.8  Ipiranga do Norte and Itanhangá (MT, installed 2005) have no
+#             2000-2003 PAM or PPM rows, so their pressure_agri and
+#             pressure_score are NA (D-2026-10-10-g); Santa Cruz do Arari
+#             has no crop series (D-2026-10-10-i). Whether a baseline can
+#             be stated for a municipality installed after the window is
+#             settled with the NA-versus-zero rules.
 #   Task 1.8  Nova Ubiratã's forest share and cattle density are computed
 #             on the post-split 2025 area (D-2026-10-11-c).
 #   Task 2.2  The cross-sectional standardisation of the pressure scores is
@@ -59,7 +61,7 @@ PANEL_YEARS               <- 2000:2020   # D-2026-10-11-a
 MOJUI_GEOCODE             <- "1504752"   # D-2026-10-05-l
 N_MUNIC_IN_EXPECTED       <- 503L        # script 04 output; task 1.1
 N_MUNIC_EXPECTED          <- 502L        # D-2026-10-05-l; task 1.1
-N_PANEL_COLS_EXPECTED     <- 66L   # 73 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e)
+N_PANEL_COLS_EXPECTED     <- 68L   # 73 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e) + 2 muni_* (D-2026-10-23-f)
 # panel-sample.qmd Q3-Q4: cohorts 2008-2009 in the main window, 2011-2012
 # added in the robust window; every treated municipality is at risk.
 N_TREATED_MAIN_EXPECTED   <- 43L

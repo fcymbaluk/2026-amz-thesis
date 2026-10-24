@@ -31,17 +31,18 @@
 #                   Tabela 6580 labour force (14+) for 2022.
 #   D-2026-10-07-c  Informality = share of the occupied population outside
 #                   the formal categories (Tabelas 2031 and 10261), unrounded.
-#   D-2026-10-07-d  Mojuí dos Campos 2000 and 2010 PEA allocated from
-#                   Santarém by the 2022 share; informality copied.
-#   D-2026-10-07-e  SIDRA "..." read as zero in the 2000 anchors.
 #   D-2026-10-07-f  PIA extrapolated to 1999 and 2023-2024 with the slope
-#                   of the adjacent census decade.
+#                   of the adjacent census decade; the ends of the anchor
+#                   range only (D-2026-10-23-d).
+#   D-2026-10-23-d  Municipalities absent from the 2000 census (phase 2,
+#                   step 2.5): "..." read as NA, informality NA without an
+#                   occupied total, no PIA extrapolation across the
+#                   missing anchor; pea, informal and pia NA before 2010.
+#   D-2026-10-23-f  The Mojuí dos Campos allocation of D-2026-10-07-d
+#                   retired (phase 2, step 2.5): Santarém's anchors as
+#                   published, Mojuí NA before 2022.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.6  Municipalities absent from the 2000 census carry pea = 0 and
-#             informal = 0 in 2000 (missing coded as zero) and a
-#             back-extrapolated PIA for 2000-2009; Mojuí dos Campos has
-#             no PIA before 2022. Reproduced on purpose.
 #   Task 1.7  Only the interpolated series are stored; the anchors are not.
 #   Task 1.9  informal is stored on 0-100; rescaled to 0-1 in phase 2.
 # RUN ORDER First of the 02 scripts; no pipeline inputs. Feeds
@@ -67,7 +68,7 @@ PIA_AGE_GROUPS_2022 <- PIA_AGE_GROUPS_2000
 PIA_HEADER_ROW_2010 <- 6L
 PIA_HEADER_ROW_2022 <- 6L
 SIDRA_DIR           <- "_data/raw/ibge/sidra"
-SIDRA_ZERO_SYMBOLS  <- c("-", "...")       # D-2026-10-07-e; task 1.6
+SIDRA_ZERO_SYMBOLS  <- "-"   # "..." (not available) is NA, D-2026-10-23-d
 # Tabela 2031 category ids (2000, 2010): formal = employees with a signed
 # card, military and statutory public servants, employers.
 INFORMAL_TOTAL_ID_2031  <- "0"                                # D-2026-10-07-c
@@ -79,9 +80,10 @@ INFORMAL_TOTAL_ID_10261  <- "96165"
 INFORMAL_FORMAL_IDS_10261 <- c("31722", "79367", "79369", "79370", "79372",
                                "79375", "45934", "45936")
 INFORMAL_SCALE   <- 100                                        # task 1.9
-MOJUI_GEOCODE    <- "1504752"                                 # D-2026-10-07-d
-SANTAREM_GEOCODE <- "1506807"
 N_MUNIC_2000_EXPECTED <- 5507L
+# census.qmd Q5: municipalities of the 2010 grid installed after the 2000
+# census (D-2026-10-23-d).
+N_ABSENT_2000_EXPECTED <- 58L
 N_MUNIC_2010_EXPECTED <- 5565L
 N_MUNIC_2022_EXPECTED <- 5570L
 N_SIDRA_2031_FILES    <- 9L   # per census year: total plus eight positions
@@ -197,7 +199,10 @@ stopifnot(
 )
 
 # ---- Transform --------------------------------------------------------------
-# PIA anchors and the 1999-2024 series (D-2026-10-07-a, D-2026-10-07-f).
+# PIA anchors and the 1999-2024 series (D-2026-10-07-a, D-2026-10-07-f). A
+# municipality first counted in 2010 or 2022 has no value before that
+# census: the extrapolation extends the anchor range at its ends only,
+# never across a missing anchor (D-2026-10-23-d).
 pia_anchors <- bind_rows(
   pia_2000_long %>% mutate(year = CENSUS_YEARS[1]),
   pia_2010_long %>% mutate(year = CENSUS_YEARS[2]),
@@ -210,8 +215,11 @@ census_pia <- pia_anchors %>%
   group_by(geocode) %>%
   complete(year = PIA_YEARS) %>%
   arrange(geocode, year) %>%
-  mutate(pia = interp_linear(pia, year),
-         pia = extrapolate_linear(pia, year)) %>%
+  mutate(first_anchor = min(year[!is.na(pia)]),
+         pia = interp_linear(pia, year),
+         pia = extrapolate_linear(pia, year),
+         pia = if_else(first_anchor > CENSUS_YEARS[1] & year < first_anchor,
+                       NA_real_, pia)) %>%
   ungroup() %>%
   select(geocode, year, pia)
 
@@ -227,8 +235,8 @@ pea_anchors <- pea10_raw %>%
               transmute(geocode, year,
                         pea = sidra_value(value, SIDRA_ZERO_SYMBOLS)))
 
-# Informality anchors (D-2026-10-07-c, D-2026-10-07-e). A municipality with
-# no occupied population in the extract reads 0, as inherited (task 1.6).
+# Informality anchors (D-2026-10-07-c). A municipality absent from the
+# census has no occupied total ("...") and reads NA (D-2026-10-23-d).
 informal_anchor <- function(positions, total_id, formal_ids) {
   positions %>%
     mutate(value = sidra_value(value, SIDRA_ZERO_SYMBOLS)) %>%
@@ -242,7 +250,7 @@ informal_anchor <- function(positions, total_id, formal_ids) {
               informal = if_else(occupied > 0,
                                  INFORMAL_SCALE * (occupied - formal) /
                                    occupied,
-                                 0))
+                                 NA_real_))
 }
 informal_anchors <- bind_rows(
   informal_anchor(pos_2000_raw, INFORMAL_TOTAL_ID_2031,
@@ -253,33 +261,11 @@ informal_anchors <- bind_rows(
                   INFORMAL_FORMAL_IDS_10261)
 )
 
-# Mojuí dos Campos was emancipated from Santarém in 2013 and has no 2000 or
-# 2010 census row; its share of the 2022 labour force splits Santarém's
-# earlier PEA, and Santarém's informality stands in for its own
-# (D-2026-10-07-d).
-pea_2022_pair <- pea_anchors %>%
-  filter(year == CENSUS_YEARS[3],
-         geocode %in% c(MOJUI_GEOCODE, SANTAREM_GEOCODE))
-mojui_share <- pea_2022_pair$pea[pea_2022_pair$geocode == MOJUI_GEOCODE] /
-  sum(pea_2022_pair$pea)
-pea_santarem_pre <- pea_anchors %>%
-  filter(geocode == SANTAREM_GEOCODE, year < CENSUS_YEARS[3])
-pea_anchors_adj <- pea_anchors %>%
-  filter(!(geocode == SANTAREM_GEOCODE & year < CENSUS_YEARS[3])) %>%
-  bind_rows(
-    pea_santarem_pre %>% mutate(pea = pea * (1 - mojui_share)),
-    pea_santarem_pre %>% mutate(geocode = MOJUI_GEOCODE,
-                                pea = pea * mojui_share)
-  )
-informal_anchors_adj <- informal_anchors %>%
-  bind_rows(
-    informal_anchors %>%
-      filter(geocode == SANTAREM_GEOCODE, year < CENSUS_YEARS[3]) %>%
-      mutate(geocode = MOJUI_GEOCODE)
-  )
-
-census_pea_informal <- pea_anchors_adj %>%
-  full_join(informal_anchors_adj, by = c("geocode", "year")) %>%
+# Interpolation between the anchors a municipality has; a municipality
+# absent from the 2000 census starts in 2010 (D-2026-10-23-d), one created
+# after 2010 starts in 2022 (D-2026-10-23-f).
+census_pea_informal <- pea_anchors %>%
+  full_join(informal_anchors, by = c("geocode", "year")) %>%
   group_by(geocode) %>%
   complete(year = PEA_YEARS) %>%
   arrange(geocode, year) %>%
@@ -289,17 +275,38 @@ census_pea_informal <- pea_anchors_adj %>%
   select(geocode, year, pea, informal)
 
 # ---- Assert: output state ---------------------------------------------------
-# census.qmd Q4, Q5, Q6.
+# census.qmd Q5, Q6, Q7. Three groups of municipalities: counted in 2000
+# (complete series), first counted in 2010 (NA before 2010), first counted
+# in 2022 (NA before 2022).
 n_munic_pia <- n_distinct(pia_anchors$geocode)
-n_munic_pea <- n_distinct(pea_anchors_adj$geocode)
+n_munic_pea <- n_distinct(pea_anchors$geocode)
+grid_2000   <- unique(pia_2000_long$geocode)
+grid_2010   <- unique(pia_2010_long$geocode)
+absent_2000 <- pea10_raw %>%
+  filter(year == CENSUS_YEARS[1], value == "...") %>%
+  pull(geocode)
+na_rule_ok <- function(d, cols) {
+  d <- d %>%
+    mutate(group = case_when(geocode %in% grid_2000 ~ 1L,
+                             geocode %in% grid_2010 ~ 2L,
+                             TRUE ~ 3L),
+           expect_na = (group == 2L & year < CENSUS_YEARS[2]) |
+             (group == 3L & year < CENSUS_YEARS[3]))
+  all(map_lgl(cols, function(v) {
+    x <- d[[v]]
+    all(is.na(x[d$expect_na])) &&
+      !anyNA(x[!d$expect_na & d$group == 2L])
+  }))
+}
 stopifnot(
   n_munic_pia == N_MUNIC_2022_EXPECTED,
   nrow(census_pia) == n_munic_pia * length(PIA_YEARS),
   !anyDuplicated(paste(census_pia$geocode, census_pia$year)),
   all(census_pia$pia >= 0, na.rm = TRUE),
-  !anyNA(census_pia$pia[census_pia$geocode %in% pia_2010_long$geocode]),
-  all(is.na(census_pia$pia[!census_pia$geocode %in% pia_2010_long$geocode &
-                             census_pia$year < CENSUS_YEARS[3]])),
+  length(absent_2000) == N_ABSENT_2000_EXPECTED,
+  setequal(absent_2000, setdiff(grid_2010, grid_2000)),
+  na_rule_ok(census_pia, "pia"),
+  !anyNA(census_pia$pia[census_pia$geocode %in% grid_2000]),
   n_munic_pea == N_MUNIC_2022_EXPECTED,
   nrow(census_pea_informal) == n_munic_pea * length(PEA_YEARS),
   !anyDuplicated(paste(census_pea_informal$geocode,
@@ -307,8 +314,9 @@ stopifnot(
   all(census_pea_informal$pea >= 0, na.rm = TRUE),
   all(census_pea_informal$informal >= 0 &
         census_pea_informal$informal <= INFORMAL_SCALE, na.rm = TRUE),
+  na_rule_ok(census_pea_informal, c("pea", "informal")),
   !anyNA(census_pea_informal %>%
-           filter(geocode %in% pea10_raw$geocode) %>%
+           filter(geocode %in% grid_2000) %>%
            select(pea, informal)),
   is.character(census_pia$geocode),
   is.integer(census_pia$year),

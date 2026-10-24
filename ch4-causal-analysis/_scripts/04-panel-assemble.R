@@ -13,6 +13,7 @@
 #                                                     02-social-rais.R
 #           _data/interim/census_pea_informal_2000_2022.rds
 #                                                     02-social-census.R
+#           _data/interim/ibge_pop_2000_2022.rds      03-controls-gdp.R
 #           _data/interim/ibge_pib_gdp_2002_2022.rds  03-controls-gdp.R
 #           _data/interim/tse_elections_2000_2024.rds 03-controls-elections.R
 #           _data/interim/pam_ppm_munic_area_2025.rds 03-controls-agro.R
@@ -21,6 +22,7 @@
 #           _data/interim/pam_ppm_cattle_1974_2025.rds
 #                                                     03-controls-agro.R
 #           _data/interim/prices_index_2000_2020.rds  03-controls-prices.R
+#           _data/aux/munic_post2000.csv              lookup, D-2026-10-23-f
 #
 # OUTPUTS   _data/interim/panel_amz_2000_2020.rds / .csv
 #
@@ -49,10 +51,14 @@
 #                   elec_* columns arrive on the governing years from
 #                   script 03 (D-2026-10-22-d); elec_governing_year stays
 #                   in the interim file.
+#   D-2026-10-23-e  population joined from its own 2000-2022 series
+#                   (phase 2, step 2.5), so 2000-2001 and the post-2000
+#                   municipalities' pre-2010 years are filled.
+#   D-2026-10-23-f  muni_new_post2000 and muni_parent_split from the
+#                   lookup (phase 2, step 2.5); parents flagged, never
+#                   adjusted.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.6  bf_transfers_pc_brl_2024 is NA through 2009 for the nine
-#             municipalities without a 2000 census population.
 #   Task 1.9  Areas arrive in hectares from script 01 and are converted
 #             here; the conversion moves upstream with the unit pattern.
 # RUN ORDER After every 01, 02 and 03 script. Script 05 reads the output.
@@ -84,6 +90,11 @@ Z_TOL <- 1e-6
 # 2001-2004 for Ipiranga do Norte, Itanhangá (installed 2005), Altamira do
 # Maranhão and Brejo de Areia (no 2000 election in the file; panel.qmd Q5).
 N_ELEC_NA_POST2000_EXPECTED <- 28L
+POST2000_LOOKUP <- "_data/aux/munic_post2000.csv"             # D-2026-10-23-f
+# panel.qmd Q8: the nine Mato Grosso municipalities and Mojuí dos Campos;
+# ten of their twelve parents are in the biome sample.
+N_POST2000_EXPECTED <- 10L
+N_PARENT_EXPECTED   <- 10L
 
 PANEL_COLS <- c(
   "geocode", "municipality", "state", "state_abbreviation", "year",
@@ -115,11 +126,15 @@ PANEL_COLS <- c(
   "bf_transfers_pc_brl_2024",
   # Phase 2, step 2.2 (D-2026-10-22-b): programme regime of the reference
   # month, appended after the phase 1 columns so their order is unchanged.
-  "bf_regime"
+  "bf_regime",
+  # Phase 2, step 2.5 (D-2026-10-23-f): installed after the 2000 census;
+  # ceded territory to such a municipality.
+  "muni_new_post2000", "muni_parent_split"
 )
 PANEL_INT_COLS <- c("year", "ppcdam_list", "elec_n_candidates",
                     "elec_competitive", "elec_uncontested",
-                    "election_year")                    # D-2026-10-11-h
+                    "election_year",                    # D-2026-10-11-h
+                    "muni_new_post2000", "muni_parent_split")
 PANEL_CHR_COLS <- c("geocode", "municipality", "state", "state_abbreviation",
                     "elec_winner_party", "elec_winner_id", "bf_regime")
 
@@ -131,18 +146,23 @@ ppcdam     <- interim("ppcdam_list_2004_2024.rds")
 bf         <- interim("bf_panel_2004_2024.rds")
 rais       <- interim("rais_employment_1999_2024.rds")
 census     <- interim("census_pea_informal_2000_2022.rds")
+pop        <- interim("ibge_pop_2000_2022.rds")
 gdp        <- interim("ibge_pib_gdp_2002_2022.rds")
 tse        <- interim("tse_elections_2000_2024.rds")
 munic_area <- interim("pam_ppm_munic_area_2025.rds")
 crops      <- interim("pam_ppm_crop_areas_1988_2025.rds")
 cattle     <- interim("pam_ppm_cattle_1974_2025.rds")
 prices     <- interim("prices_index_2000_2020.rds")
+post2000   <- read_csv(POST2000_LOOKUP,
+                       col_types = cols(.default = col_character(),
+                                        install_year = col_integer()))
+parents    <- unique(unlist(str_split(post2000$parent_geocodes, ";")))
 
 # ---- Assert: raw state ------------------------------------------------------
 # panel.qmd Q1: every input is keyed on geocode (and year), the biome sample
 # is complete over PANEL_YEARS, and the PPCDAm indicator is 0/1 where known.
-keyed <- list(mapbiomas, ppcdam, rais, census, gdp, tse, crops, cattle,
-              prices)
+keyed <- list(mapbiomas, ppcdam, rais, census, pop, gdp, tse, crops,
+              cattle, prices)
 sample_geocodes <- sort(unique(mapbiomas$geocode))
 stopifnot(
   all(map_lgl(keyed, ~ !anyDuplicated(paste(.x$geocode, .x$year)))),
@@ -160,7 +180,10 @@ stopifnot(
   all(ppcdam$ppcdam_list %in% c(0L, 1L, NA)),
   length(setdiff(unique(ppcdam$geocode), sample_geocodes)) ==
     N_PPCDAM_OUTSIDE_EXPECTED,
-  all(ELEC_VARS %in% names(tse))
+  all(ELEC_VARS %in% names(tse)),
+  all(c("population", "pop_source") %in% names(pop)),
+  !"population" %in% names(gdp),
+  all(post2000$geocode %in% sample_geocodes)
 )
 
 # ---- Transform --------------------------------------------------------------
@@ -189,6 +212,8 @@ panel <- deforestation %>%
   left_join(bf_cols,    by = c("geocode", "year")) %>%
   left_join(rais_cols,  by = c("geocode", "year")) %>%
   left_join(census,     by = c("geocode", "year")) %>%
+  left_join(pop %>% select(geocode, year, population),
+            by = c("geocode", "year")) %>%
   left_join(gdp,        by = c("geocode", "year")) %>%
   left_join(tse_cols,   by = c("geocode", "year")) %>%
   left_join(munic_area, by = "geocode") %>%
@@ -224,7 +249,10 @@ panel <- panel %>%
       !is.na(population) & population > 0,
       bf_transfers_total_brl_2024 / population,
       NA_real_
-    )                                                         # D-2026-10-11-f
+    ),                                                        # D-2026-10-11-f
+    # Time-invariant flags from the lookup (D-2026-10-23-f).
+    muni_new_post2000 = as.integer(geocode %in% post2000$geocode),
+    muni_parent_split = as.integer(geocode %in% parents)
   ) %>%
   select(all_of(PANEL_COLS)) %>%
   mutate(across(all_of(PANEL_INT_COLS), as.integer))
@@ -256,6 +284,12 @@ stopifnot(
         (is.na(panel$bf_transfers_total_brl_2024) |
            is.na(panel$population) | panel$population <= 0)),
   identical(is.na(panel$bf_regime), panel$year < min(bf$year)),
+  # Every sample municipality without a 2000 census population is in the
+  # lookup, and only those (panel.qmd Q8).
+  setequal(panel$geocode[first_year & is.na(panel$population)],
+           post2000$geocode),
+  sum(panel$muni_new_post2000[first_year]) == N_POST2000_EXPECTED,
+  sum(panel$muni_parent_split[first_year]) == N_PARENT_EXPECTED,
   all(map_lgl(panel[PANEL_INT_COLS], is.integer)),
   all(map_lgl(panel[PANEL_CHR_COLS], is.character)),
   all(map_lgl(panel[setdiff(PANEL_COLS, c(PANEL_INT_COLS, PANEL_CHR_COLS))],

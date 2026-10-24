@@ -2218,6 +2218,7 @@ vertical-align: -.125em;
   <li><a href="#q5.-are-the-electoral-columns-stored-on-the-governing-years" id="toc-q5.-are-the-electoral-columns-stored-on-the-governing-years" class="nav-link" data-scroll-target="#q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</a></li>
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
+  <li><a href="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags" id="toc-q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="nav-link" data-scroll-target="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</a></li>
   </ul>
 </nav>
 </div>
@@ -2248,7 +2249,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: none. This notebook audits the join of the interim outputs of scripts 01-03 into the municipality-year panel of the Amazon-biome sample (503 municipalities, 2000-2020) and the three derived blocks added at the join (pooled z-scores of the price indices, the electoral block lagged to the governing year, per-capita Bolsa Família transfers). Pipeline script: <code>_scripts/04-panel-assemble.R</code>. Interim output: <code>_data/interim/panel_amz_2000_2020.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 04 commit message and in the decision entries it cites.</p>
+<p>Source: none. This notebook audits the join of the interim outputs of scripts 01-03 into the municipality-year panel of the Amazon-biome sample (503 municipalities, 2000-2020) and the three derived blocks added at the join (pooled z-scores of the price indices, per-capita Bolsa Família transfers; the electoral lag retired at step 2.3; the two municipality flags of step 2.5). Pipeline script: <code>_scripts/04-panel-assemble.R</code>. Interim output: <code>_data/interim/panel_amz_2000_2020.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 04 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2282,27 +2283,27 @@ vertical-align: -.125em;
 <pre><code># A tibble: 21 × 12
     year mapbiomas ppcdam    bf  rais census ibge_pib   tse  area   pam   ppm prices
    &lt;int&gt;     &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt;
- 1  2000       503    503     0   478    503        0     0   503   492   493    499
- 2  2001       503    503     0   491    503        0   498   503   499   500    499
- 3  2002       503    503     0   495    503      494   498   503   494   500    499
- 4  2003       503    503     0   498    503      494   498   503   495   500    499
- 5  2004       503    503   500   499    503      494   498   503   493   500    499
- 6  2005       503    503   502   500    503      494   502   503   495   502    499
- 7  2006       503    503   502   502    503      494   502   503   497   502    499
- 8  2007       503    503   502   502    503      494   502   503   500   502    499
- 9  2008       503    503   502   502    503      494   502   503   495   502    499
-10  2009       503    503   502   502    503      494   502   503   496   502    499
-11  2010       503    503   502   502    503      503   502   503   496   502    499
-12  2011       503    503   502   502    503      503   502   503   500   502    499
-13  2012       503    503   502   502    503      503   502   503   500   502    499
-14  2013       503    503   502   502    503      503   503   503   500   503    499
-15  2014       503    503   503   502    503      503   503   503   498   503    499
-16  2015       503    503   503   502    503      503   503   503   497   503    499
-17  2016       503    503   503   502    503      503   503   503   499   503    499
-18  2017       503    503   503   502    503      503   503   503   502   503    499
-19  2018       503    503   503   502    503      503   503   503   501   503    499
-20  2019       503    503   503   502    503      503   503   503   501   503    499
-21  2020       503    503   503   502    503      503   503   503   501   503    499</code></pre>
+ 1  2000       503    503     0   478    493      493     0   503   492   493    499
+ 2  2001       503    503     0   484    493      500   498   503   499   500    499
+ 3  2002       503    503     0   488    493      500   498   503   494   500    499
+ 4  2003       503    503     0   491    493      500   498   503   495   500    499
+ 5  2004       503    503   500   492    493      500   498   503   493   500    499
+ 6  2005       503    503   502   491    493      502   502   503   495   502    499
+ 7  2006       503    503   502   493    493      502   502   503   497   502    499
+ 8  2007       503    503   502   493    493      502   502   503   500   502    499
+ 9  2008       503    503   502   493    493      502   502   503   495   502    499
+10  2009       503    503   502   493    493      502   502   503   496   502    499
+11  2010       503    503   502   502    502      502   502   503   496   502    499
+12  2011       503    503   502   502    502      502   502   503   500   502    499
+13  2012       503    503   502   502    502      502   502   503   500   502    499
+14  2013       503    503   502   502    502      503   503   503   500   503    499
+15  2014       503    503   503   502    502      503   503   503   498   503    499
+16  2015       503    503   503   502    502      503   503   503   497   503    499
+17  2016       503    503   503   502    502      503   503   503   499   503    499
+18  2017       503    503   503   502    502      503   503   503   502   503    499
+19  2018       503    503   503   502    502      503   503   503   501   503    499
+20  2019       503    503   503   502    502      503   503   503   501   503    499
+21  2020       503    503   503   502    502      503   503   503   501   503    499</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2323,7 +2324,7 @@ vertical-align: -.125em;
  2 ppcdam                         503
  3 bf                             503
  4 rais                           502
- 5 census                         503
+ 5 census                         502
  6 ibge_pib                       503
  7 tse                            503
  8 area                           503
@@ -2344,16 +2345,17 @@ vertical-align: -.125em;
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 7 × 3
+<pre><code># A tibble: 8 × 3
   column                    na_cells municipalities
   &lt;chr&gt;                        &lt;int&gt;          &lt;int&gt;
 1 bf_families_n                 2024            503
 2 cattle_heads                    30             10
 3 crop_soy_area_planted_km2      112             18
 4 elec_enc                       531            503
-5 emp_pia_rate_total              72             30
-6 population                    1078            503
-7 price_index_crop                84              4</code></pre>
+5 emp_pia_rate_total             145             30
+6 informal                       111             10
+7 population                      30             10
+8 price_index_crop                84              4</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> All 503 municipalities have rows in every block except RAIS (Mojuí dos Campos has none) and the PAM crop block with the crop index (Santa Cruz do Arari has no series, D-2026-10-10-i). Within the sources’ windows the gaps are: Bolsa Família 2004-2019 only; population and GDP from 2002, with the nine Mato Grosso municipalities absent from the 2000 census NA through 2009 (72 cells, D-2026-10-05-k); RAIS 72 municipality-years (Mojuí’s 21 and 51 early years of small municipalities, <code>_audit/rais.qmd</code> Q2, task 1.8); elections 28 cells (Mojuí 2000-2011 and four municipalities installed in 2001 for 2000-2003); cattle 30 cells and crop areas 112 cells (Mojuí before 2013, the post-2000 Mato Grosso municipalities before their first survey year, D-2026-10-10-g, Santa Cruz do Arari, and scattered years of six Pará municipalities of the Belém metropolitan area and the Marajó). Everything else is complete over 2000-2020. <strong>Decision.</strong> D-2026-10-11-a (left joins onto the MapBiomas sample, 503 municipalities including Mojuí dos Campos); D-2026-10-11-g (columns not carried into the panel). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (unique keys, 503 geocodes, every sample municipality in the areas file) and output block (503 × 21 rows, unique keys).</p>
@@ -2641,15 +2643,15 @@ vertical-align: -.125em;
 <pre><code># A tibble: 17 × 4
     year transfers population per_capita
    &lt;int&gt;     &lt;int&gt;      &lt;int&gt;      &lt;int&gt;
- 1  2004       500        494        493
- 2  2005       502        494        493
- 3  2006       502        494        493
- 4  2007       502        494        493
- 5  2008       502        494        493
- 6  2009       502        494        493
- 7  2010       502        503        502
- 8  2011       502        503        502
- 9  2012       502        503        502
+ 1  2004       500        500        500
+ 2  2005       502        502        502
+ 3  2006       502        502        502
+ 4  2007       502        502        502
+ 5  2008       502        502        502
+ 6  2009       502        502        502
+ 7  2010       502        502        502
+ 8  2011       502        502        502
+ 9  2012       502        502        502
 10  2013       502        503        502
 11  2014       503        503        503
 12  2015       503        503        503
@@ -2660,7 +2662,7 @@ vertical-align: -.125em;
 17  2020       503        503        503</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Per-capita transfers exist exactly where both inputs do: 2004-2019, less the nine Mato Grosso municipalities without population through 2009 (D-2026-10-05-k). No municipality-year has a zero population. <strong>Decision.</strong> D-2026-10-11-f; D-2026-10-10-k (open, population storage). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA pattern equals the union of the inputs’ NA).</p>
+<p><strong>Finding.</strong> Per-capita transfers exist exactly where both inputs do. Since phase 2, step 2.5 (2026-10-23) population is complete from each municipality’s installation (D-2026-10-23-e), so the per-capita column is missing only where the transfers are; until then the nine Mato Grosso municipalities without a 2000 census population were NA through 2009 (D-2026-10-05-k). No municipality-year has a zero population. <strong>Decision.</strong> D-2026-10-11-f; D-2026-10-23-e (closes D-2026-10-10-k). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA pattern equals the union of the inputs’ NA).</p>
 </section>
 <section id="q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="level2">
 <h2 class="anchored" data-anchor-id="q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</h2>
@@ -2687,8 +2689,8 @@ vertical-align: -.125em;
  2 ppcdam                   2000-2020      
  3 bf                       2014-2020      
  4 rais                     none           
- 5 census                   2000-2020      
- 6 ibge_pib                 2002-2020      
+ 5 census                   none           
+ 6 ibge_pib                 2013-2020      
  7 tse                      2013-2020      
  8 area                     2000-2020      
  9 pam                      2013-2020      
@@ -2697,7 +2699,97 @@ vertical-align: -.125em;
 12 bf_transfers_pc_brl_2024 2014-2020      </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Mojuí dos Campos carries deforestation, area, PPCDAm (never listed), the census block and the split GDP and population for every year; PAM and PPM series from 2013; elections from the 2012 election; Bolsa Família from 2014. The crop index reads 0 throughout because its base-window weights are NA (D-2026-10-10-h) and the cattle index is NA. It has no RAIS row at all. The RAIS gap and the agricultural series before 2013 are what re-inclusion would have to solve (task 1.6). <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8). <strong>Assertion.</strong> none; the row count assertion counts it among the 503.</p>
+<p><strong>Finding.</strong> Mojuí dos Campos carries deforestation, area and PPCDAm (never listed) for every year; since phase 2, step 2.5 (2026-10-23) its GDP and population start in 2013 (official estimates to 2021, the 2022 census) and the census block in 2022, the split with Santarém being retired (D-2026-10-23-f); PAM and PPM series from 2013; elections from the 2012 election; Bolsa Família from 2014. The crop index is NA (all base-window weights missing, D-2026-10-23-b) and so is the cattle index. It has no RAIS row at all. The RAIS gap and the series before 2013 are what re-inclusion would have to solve. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8); D-2026-10-23-f. <strong>Assertion.</strong> none; the row count assertion counts it among the 503.</p>
+</section>
+<section id="q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="level2">
+<h2 class="anchored" data-anchor-id="q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</h2>
+<p>What is checked: the lookup rows against the sample municipalities with no 2000 population, the parents named in the lookup against the flag, and the time-invariance of both flags (phase 2, step 2.5).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year, parent_names)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 4
+   geocode municipality          install_year parent_names                            
+   &lt;chr&gt;   &lt;chr&gt;                        &lt;int&gt; &lt;chr&gt;                                   
+ 1 5101852 Bom Jesus do Araguaia         2001 Alto Boa Vista;Ribeirão Cascalheira     
+ 2 5103254 Colniza                       2001 Aripuanã                                
+ 3 5103361 Conquista D&#39;Oeste             2001 Pontes e Lacerda                        
+ 4 5103437 Curvelândia                   2001 Cáceres;Mirassol d&#39;Oeste;Lambari D&#39;Oeste
+ 5 5104526 Ipiranga do Norte             2005 Tapurah                                 
+ 6 5104542 Itanhangá                     2005 Tapurah                                 
+ 7 5106190 Nova Santa Helena             2001 Itaúba;Cláudia                          
+ 8 5107578 Rondolândia                   2001 Aripuanã                                
+ 9 5107743 Santa Cruz do Xingu           2001 São José do Xingu                       
+10 1504752 Mojuí dos Campos              2013 Santarém                                </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2000</span>, <span class="fu">is.na</span>(population)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, muni_new_post2000)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+   geocode municipality          muni_new_post2000
+   &lt;chr&gt;   &lt;chr&gt;                             &lt;int&gt;
+ 1 1504752 Mojuí dos Campos                      1
+ 2 5101852 Bom Jesus do Araguaia                 1
+ 3 5103254 Colniza                               1
+ 4 5103361 Conquista D&#39;Oeste                     1
+ 5 5103437 Curvelândia                           1
+ 6 5104526 Ipiranga do Norte                     1
+ 7 5104542 Itanhangá                             1
+ 8 5106190 Nova Santa Helena                     1
+ 9 5107578 Rondolândia                           1
+10 5107743 Santa Cruz do Xingu                   1</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2000</span>, muni_parent_split <span class="sc">==</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+   geocode municipality      state_abbreviation
+   &lt;chr&gt;   &lt;chr&gt;             &lt;chr&gt;             
+ 1 1506807 Santarém          PA                
+ 2 5100359 Alto Boa Vista    MT                
+ 3 5101407 Aripuanã          MT                
+ 4 5103056 Cláudia           MT                
+ 5 5104559 Itaúba            MT                
+ 6 5105234 Lambari D&#39;Oeste   MT                
+ 7 5105622 Mirassol d&#39;Oeste  MT                
+ 8 5106752 Pontes e Lacerda  MT                
+ 9 5107354 São José do Xingu MT                
+10 5108006 Tapurah           MT                </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">unique</span>(<span class="fu">unlist</span>(<span class="fu">str_split</span>(post2000<span class="sc">$</span>parent_geocodes, <span class="st">&quot;;&quot;</span>))), sample_geocodes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] &quot;5107180&quot; &quot;5102504&quot;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(muni_new_post2000, muni_parent_split), n_distinct), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="sc">-</span>geocode, max))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  muni_new_post2000 muni_parent_split
+              &lt;int&gt;             &lt;int&gt;
+1                 1                 1</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Ten municipalities carry <code>muni_new_post2000</code>: the nine Mato Grosso municipalities installed in 2001 and 2005 and Mojuí dos Campos (2013), exactly the set with no population in 2000. Ten of their twelve parents are in the biome sample and carry <code>muni_parent_split</code>; Ribeirão Cascalheira and Cáceres are outside it. Both flags are constant within municipality. Installation years, parents and laws stay in the lookup. <strong>Decision.</strong> D-2026-10-23-f. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (the NA-population set in 2000 equals the lookup; ten flagged in each column).</p>
 </section>
 
 </main>

@@ -2213,10 +2213,11 @@ vertical-align: -.125em;
   <ul>
   <li><a href="#q1.-what-do-the-gdp-extracts-contain" id="toc-q1.-what-do-the-gdp-extracts-contain" class="nav-link active" data-scroll-target="#q1.-what-do-the-gdp-extracts-contain">Q1. What do the GDP extracts contain?</a></li>
   <li><a href="#q2.-what-do-the-population-workbooks-contain" id="toc-q2.-what-do-the-population-workbooks-contain" class="nav-link" data-scroll-target="#q2.-what-do-the-population-workbooks-contain">Q2. What do the population workbooks contain?</a></li>
-  <li><a href="#q3.-do-santarém-and-mojuí-dos-campos-recover-the-combined-pre-2013-total" id="toc-q3.-do-santarém-and-mojuí-dos-campos-recover-the-combined-pre-2013-total" class="nav-link" data-scroll-target="#q3.-do-santarém-and-mojuí-dos-campos-recover-the-combined-pre-2013-total">Q3. Do Santarém and Mojuí dos Campos recover the combined pre-2013 total?</a></li>
+  <li><a href="#q3.-what-do-santarém-and-mojuí-dos-campos-carry-before-2013" id="toc-q3.-what-do-santarém-and-mojuí-dos-campos-carry-before-2013" class="nav-link" data-scroll-target="#q3.-what-do-santarém-and-mojuí-dos-campos-carry-before-2013">Q3. What do Santarém and Mojuí dos Campos carry before 2013?</a></li>
   <li><a href="#q4.-which-municipalities-lack-gdp-per-capita-before-2010-and-what-do-the-official-estimates-say" id="toc-q4.-which-municipalities-lack-gdp-per-capita-before-2010-and-what-do-the-official-estimates-say" class="nav-link" data-scroll-target="#q4.-which-municipalities-lack-gdp-per-capita-before-2010-and-what-do-the-official-estimates-say">Q4. Which municipalities lack GDP per capita before 2010, and what do the official estimates say?</a></li>
   <li><a href="#q5.-how-far-is-the-interpolated-population-from-the-official-estimates" id="toc-q5.-how-far-is-the-interpolated-population-from-the-official-estimates" class="nav-link" data-scroll-target="#q5.-how-far-is-the-interpolated-population-from-the-official-estimates">Q5. How far is the interpolated population from the official estimates?</a></li>
   <li><a href="#q6.-for-which-years-is-population-stored" id="toc-q6.-for-which-years-is-population-stored" class="nav-link" data-scroll-target="#q6.-for-which-years-is-population-stored">Q6. For which years is population stored?</a></li>
+  <li><a href="#q7.-how-are-the-official-estimates-spliced-in-for-the-municipalities-installed-after-2000" id="toc-q7.-how-are-the-official-estimates-spliced-in-for-the-municipalities-installed-after-2000" class="nav-link" data-scroll-target="#q7.-how-are-the-official-estimates-spliced-in-for-the-municipalities-installed-after-2000">Q7. How are the official estimates spliced in for the municipalities installed after 2000?</a></li>
   </ul>
 </nav>
 </div>
@@ -2247,7 +2248,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: IBGE PIB dos Municípios, SIDRA Tabela 5938, variable 37 (PIB a preços correntes, mil reais), SIDRA agregados API v3, queried 2026-10-09 (<code>_data/raw/ibge/sidra/sidra_5938_pib_*.json</code>); IBGE censuses 1970-2010 and 2022, resident population (<code>_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx</code>, <code>Ibge_pop_2022 (Censo - Sidra).xlsx</code>); IBGE annual population estimates, SIDRA Tabela 6579 (<code>sidra_6579_pop_estimate_*.json</code>, inspected here, not read by the pipeline); IPCA deflator (<code>_data/aux/deflator_ipca_2024.csv</code>). Pipeline script: <code>_scripts/03-controls-gdp.R</code>. Interim output: <code>_data/interim/ibge_pib_gdp_2002_2022.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
+<p>Source: IBGE PIB dos Municípios, SIDRA Tabela 5938, variable 37 (PIB a preços correntes, mil reais), SIDRA agregados API v3, queried 2026-10-09 (<code>_data/raw/ibge/sidra/sidra_5938_pib_*.json</code>); IBGE censuses 1970-2010 and 2022, resident population (<code>_data/raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx</code>, <code>Ibge_pop_2022 (Censo - Sidra).xlsx</code>); IBGE annual population estimates, SIDRA Tabela 6579 (<code>sidra_6579_pop_estimate_*.json</code>, read by the pipeline since phase 2, step 2.5); the post-2000 municipality lookup (<code>_data/aux/munic_post2000.csv</code>); IPCA deflator (<code>_data/aux/deflator_ipca_2024.csv</code>). Pipeline script: <code>_scripts/03-controls-gdp.R</code>. Interim outputs: <code>_data/interim/ibge_pop_2000_2022.rds</code>, <code>_data/interim/ibge_pib_gdp_2002_2022.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2263,10 +2264,16 @@ vertical-align: -.125em;
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                           <span class="at">col_types =</span> <span class="st">&quot;text&quot;</span>)</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>pop_2022_raw <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">&quot;_data/raw/ibge/Ibge_pop_2022 (Censo - Sidra).xlsx&quot;</span>, <span class="at">sheet =</span> <span class="st">&quot;Tabela&quot;</span>,</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                           <span class="at">col_types =</span> <span class="st">&quot;text&quot;</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>, <span class="at">.name_repair =</span> <span class="st">&quot;minimal&quot;</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>gdp <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/ibge_pib_gdp_2002_2022.rds&quot;</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>sample_geo <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>is_geocode <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="sc">!</span><span class="fu">is.na</span>(x) <span class="sc">&amp;</span> <span class="fu">str_detect</span>(x, <span class="st">&quot;^[0-9]{7}$&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/ibge_pop_2000_2022.rds&quot;</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Since step 2.5 the GDP file carries no population; it is joined here from</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># its own file so the questions below read as before.</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>gdp <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/ibge_pib_gdp_2002_2022.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(pop <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, population, pop_source), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>sample_geo <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>is_geocode <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="sc">!</span><span class="fu">is.na</span>(x) <span class="sc">&amp;</span> <span class="fu">str_detect</span>(x, <span class="st">&quot;^[0-9]{7}$&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="q1.-what-do-the-gdp-extracts-contain" class="level2">
@@ -2421,27 +2428,29 @@ vertical-align: -.125em;
 </div>
 <p><strong>Finding.</strong> The 1970-2010 workbook has one row per municipality of the 2010 grid plus Cococi (CE), an extinct municipality with no value; “…” marks the censuses before a municipality existed, 59 cells in 2000. The 2022 workbook (Tabela 4709) has four header rows, a Brasil row, 5,570 municipal rows and a source footer; five municipalities installed in 2013 appear only there, Mojuí dos Campos among them. In the sample the nine Mato Grosso municipalities of task 1.6 have no 2000 value. <strong>Decision.</strong> D-2026-10-05-f (interpolation between the anchors); D-2026-10-05-k (consequence for the nine); D-2026-10-10-g. <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, raw-state block (column names, 5,566 rows, 2022 header cells, 5,570 municipalities in 2022, anchors positive).</p>
 </section>
-<section id="q3.-do-santarém-and-mojuí-dos-campos-recover-the-combined-pre-2013-total" class="level2">
-<h2 class="anchored" data-anchor-id="q3.-do-santarém-and-mojuí-dos-campos-recover-the-combined-pre-2013-total">Q3. Do Santarém and Mojuí dos Campos recover the combined pre-2013 total?</h2>
+<section id="q3.-what-do-santarém-and-mojuí-dos-campos-carry-before-2013" class="level2">
+<h2 class="anchored" data-anchor-id="q3.-what-do-santarém-and-mojuí-dos-campos-carry-before-2013">Q3. What do Santarém and Mojuí dos Campos carry before 2013?</h2>
+<p>What is checked: the pair’s stored GDP and population around 2013, and Santarém’s stored GDP against the served value. Until phase 2, step 2.5 (2026-10-23) the pipeline split Santarém’s pre-2013 GDP and population with Mojuí by the pair’s 2022 shares (D-2026-10-10-e); since the step the parent rule of task 1.6 applies (D-2026-10-23-f).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>pair <span class="ot">&lt;-</span> gdp <span class="sc">%&gt;%</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;1506807&quot;</span>, <span class="st">&quot;1504752&quot;</span>), year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2002</span>, <span class="dv">2010</span><span class="sc">:</span><span class="dv">2014</span>, <span class="dv">2022</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, population, gdp_brl)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>pair <span class="sc">%&gt;%</span> <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> geocode, <span class="at">values_from =</span> <span class="fu">c</span>(population, gdp_brl))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, population, pop_source, gdp_brl)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>pair <span class="sc">%&gt;%</span> <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> geocode, <span class="at">values_from =</span> <span class="fu">c</span>(population, pop_source, gdp_brl))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 7 × 5
-   year population_1504752 population_1506807 gdp_brl_1504752 gdp_brl_1506807
-  &lt;int&gt;              &lt;dbl&gt;              &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;
-1  2002             17782.            251164.       46810232.      782380768.
-2  2010             19477.            275103.      130388799.     2179303201.
-3  2011             19683.            278011.      146881399.     2454958601.
-4  2012             19889.            280918.      183756543.     3071285457.
-5  2013             20250.            303920.      213045000      3433607000 
-6  2014             20611.            307034       228694000      3785536000 
-7  2022             23501             331942       464580000      7764936000 </code></pre>
+<pre><code># A tibble: 7 × 7
+   year population_1504752 population_1506807 pop_source_1504752 pop_source_1506807 gdp_brl_1504752
+  &lt;int&gt;              &lt;dbl&gt;              &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;                        &lt;dbl&gt;
+1  2002                 NA            268946. &lt;NA&gt;               census_interp                   NA
+2  2010                 NA            294580  &lt;NA&gt;               census                          NA
+3  2011                 NA            297694. &lt;NA&gt;               census_interp                   NA
+4  2012                 NA            300807  &lt;NA&gt;               census_interp                   NA
+5  2013              15232            303920. ibge_estimate      census_interp            213045000
+6  2014              15341            307034  ibge_estimate      census_interp            228694000
+7  2022              23501            331942  census             census                   464580000
+# ℹ 1 more variable: gdp_brl_1506807 &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2449,25 +2458,25 @@ vertical-align: -.125em;
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506807&quot;</span>, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2002</span>, <span class="dv">2010</span><span class="sc">:</span><span class="dv">2014</span>, <span class="dv">2022</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(year, <span class="at">santarem_served =</span> <span class="fu">as.numeric</span>(value) <span class="sc">*</span> <span class="dv">1000</span>)</span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>pair <span class="sc">%&gt;%</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">pair_gdp =</span> <span class="fu">sum</span>(gdp_brl), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(santarem_raw, <span class="at">by =</span> <span class="st">&quot;year&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> pair_gdp <span class="sc">-</span> santarem_served)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506807&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(santarem_raw, <span class="at">by =</span> <span class="st">&quot;year&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> gdp_brl <span class="sc">-</span> santarem_served) <span class="sc">%&gt;%</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, gdp_brl, santarem_served, diff)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 4
-   year   pair_gdp santarem_served      diff
-  &lt;int&gt;      &lt;dbl&gt;           &lt;dbl&gt;     &lt;dbl&gt;
-1  2002  829191000       829191000         0
-2  2010 2309692000      2309692000         0
-3  2011 2601840000      2601840000         0
-4  2012 3255042000      3255042000         0
-5  2013 3646652000      3433607000 213045000
-6  2014 4014230000      3785536000 228694000
-7  2022 8229516000      7764936000 464580000</code></pre>
+   year    gdp_brl santarem_served  diff
+  &lt;int&gt;      &lt;dbl&gt;           &lt;dbl&gt; &lt;dbl&gt;
+1  2002  829191000       829191000     0
+2  2010 2309692000      2309692000     0
+3  2011 2601840000      2601840000     0
+4  2012 3255042000      3255042000     0
+5  2013 3433607000      3433607000     0
+6  2014 3785536000      3785536000     0
+7  2022 7764936000      7764936000     0</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Before 2013 the two series sum exactly to Santarém’s served GDP (and the same holds for population, asserted in the script); from 2013 each municipality has its own series, so the pair’s total exceeds Santarém’s. Mojuí receives about 5.6 percent of the pair’s GDP and 6.6 percent of its population, the 2022 shares. <strong>Decision.</strong> D-2026-10-10-e. <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (pair sums equal the served values before 2013).</p>
+<p><strong>Finding.</strong> Santarém’s stored GDP equals the served value in every year, and its population is the published anchors interpolated: the 2000 and 2010 values include the territory that became Mojuí and the 2022 value does not, so the 2010-2022 segment slopes toward a smaller territory (the parent-rule bias task 1.6 names; flagged in script 04, not corrected). Mojuí is NA before 2013 in GDP (served as “…”) and in population (not installed), carries the official estimates for 2013-2021 and its 2022 census count. <strong>Decision.</strong> D-2026-10-23-f (supersedes D-2026-10-10-e). <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (a lookup municipality is NA before its installation year and complete from it, in population and in GDP).</p>
 </section>
 <section id="q4.-which-municipalities-lack-gdp-per-capita-before-2010-and-what-do-the-official-estimates-say" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-which-municipalities-lack-gdp-per-capita-before-2010-and-what-do-the-official-estimates-say">Q4. Which municipalities lack GDP per capita before 2010, and what do the official estimates say?</h2>
@@ -2483,18 +2492,12 @@ vertical-align: -.125em;
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">gdp_present =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(gdp_brl)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 6
-  geocode municipality          state_abbreviation years         n gdp_present
-  &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;       &lt;int&gt;
-1 5101852 Bom Jesus do Araguaia MT                 2002-2009     8           8
-2 5103254 Colniza               MT                 2002-2009     8           8
-3 5103361 Conquista D&#39;Oeste     MT                 2002-2009     8           8
-4 5103437 Curvelândia           MT                 2002-2009     8           8
-5 5104526 Ipiranga do Norte     MT                 2002-2009     8           5
-6 5104542 Itanhangá             MT                 2002-2009     8           5
-7 5106190 Nova Santa Helena     MT                 2002-2009     8           8
-8 5107578 Rondolândia           MT                 2002-2009     8           8
-9 5107743 Santa Cruz do Xingu   MT                 2002-2009     8           8</code></pre>
+<pre><code># A tibble: 3 × 6
+  geocode municipality      state_abbreviation years         n gdp_present
+  &lt;chr&gt;   &lt;chr&gt;             &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;       &lt;int&gt;
+1 1504752 Mojuí dos Campos  PA                 2002-2012    11           0
+2 5104526 Ipiranga do Norte MT                 2002-2004     3           0
+3 5104542 Itanhangá         MT                 2002-2004     3           0</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2520,20 +2523,20 @@ vertical-align: -.125em;
 <pre><code># A tibble: 11 × 4
     year population   gdp_brl estimate
    &lt;int&gt;      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
- 1  2002        NA   43092000    11394
- 2  2003        NA   66267000    11902
- 3  2004        NA  105680000    12971
- 4  2005        NA  113854000    13562
- 5  2006        NA  110702000    14149
- 6  2007        NA  156481000       NA
- 7  2008        NA  174023000    29636
- 8  2009        NA  182534000    31597
+ 1  2002     11394   43092000    11394
+ 2  2003     11902   66267000    11902
+ 3  2004     12971  105680000    12971
+ 4  2005     13562  113854000    13562
+ 5  2006     14149  110702000    14149
+ 6  2007     21892. 156481000       NA
+ 7  2008     29636  174023000    29636
+ 8  2009     31597  182534000    31597
  9  2010     26381  223793000       NA
 10  2011     26330. 254527000    27616
 11  2012     26278. 268827000    28810</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The nine Mato Grosso municipalities installed after 2000 have GDP from 2002 (seven of them) or 2005 (Ipiranga do Norte, Itanhangá) but no population before 2010, so their GDP per capita is NA for 2002-2009; this is why Colniza drops from every covariate-adjusted specification (D-2026-10-05-k). Tabela 6579 carries official estimates for 2001-2006, 2008-2009, 2011-2021 and 2024 onward (2007 was a population count, 2010 and 2022 censuses, 2023 is not served) for every one of them from their installation, the input task 1.6 will splice in. <strong>Decision.</strong> D-2026-10-05-k (closed, consequence); task 1.6 open; the estimates are not used in phase 1. <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (population missing only before a municipality’s first census, Mojuí excepted).</p>
+<p><strong>Finding.</strong> The nine Mato Grosso municipalities installed after 2000 have GDP from 2002 (seven of them) or 2005 (Ipiranga do Norte, Itanhangá) but, until phase 2, step 2.5 (2026-10-23), no population before 2010, so their GDP per capita was NA for 2002-2009 and Colniza dropped from every covariate-adjusted specification (D-2026-10-05-k). Tabela 6579 carries official estimates for 2001-2006, 2008-2009, 2011-2021 and 2024 onward (2007 was a population count, 2010 and 2022 censuses, 2023 is not served) for every one of them from their installation; since the step they are spliced in (Q7) and the first table above is empty. <strong>Decision.</strong> D-2026-10-05-k (closed at step 2.5 by D-2026-10-23-e). <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (population NA only before the first census that counts the municipality, or before the installation year for a lookup municipality).</p>
 </section>
 <section id="q5.-how-far-is-the-interpolated-population-from-the-official-estimates" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-how-far-is-the-interpolated-population-from-the-official-estimates">Q5. How far is the interpolated population from the official estimates?</h2>
@@ -2553,52 +2556,163 @@ vertical-align: -.125em;
 <pre><code># A tibble: 18 × 5
     year     n median_rel     p10    p90
    &lt;int&gt; &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
- 1  2002   493    0.00617 -0.0559 0.0964
- 2  2003   493    0.00926 -0.0785 0.137 
- 3  2004   493   -0.00304 -0.127  0.171 
- 4  2005   493   -0.00221 -0.151  0.218 
- 5  2006   493   -0.00186 -0.170  0.258 
- 6  2008   493   -0.00129 -0.0819 0.113 
- 7  2009   493    0.00141 -0.0832 0.128 
- 8  2011   502   -0.00582 -0.0294 0.0117
- 9  2012   503   -0.0111  -0.0557 0.0238
-10  2013   503   -0.0345  -0.112  0.0326
-11  2014   503   -0.0412  -0.135  0.0464
-12  2015   503   -0.0465  -0.160  0.0597
-13  2016   503   -0.0515  -0.182  0.0718
-14  2017   503   -0.0560  -0.200  0.0832
-15  2018   503   -0.0552  -0.210  0.0765
-16  2019   503   -0.0591  -0.230  0.0872
-17  2020   503   -0.0629  -0.247  0.0995
-18  2021   503   -0.0667  -0.264  0.111 </code></pre>
+ 1  2002   500   0.00515  -0.0553 0.0934
+ 2  2003   500   0.00887  -0.0785 0.134 
+ 3  2004   500  -0.00229  -0.126  0.171 
+ 4  2005   502  -0.000850 -0.150  0.217 
+ 5  2006   502  -0.000226 -0.170  0.251 
+ 6  2008   502   0        -0.0790 0.112 
+ 7  2009   502   0        -0.0817 0.127 
+ 8  2011   502  -0.00577  -0.0288 0.0117
+ 9  2012   502  -0.0111   -0.0558 0.0238
+10  2013   503  -0.0345   -0.112  0.0313
+11  2014   503  -0.0412   -0.135  0.0459
+12  2015   503  -0.0465   -0.160  0.0583
+13  2016   503  -0.0515   -0.182  0.0710
+14  2017   503  -0.0560   -0.200  0.0830
+15  2018   503  -0.0552   -0.210  0.0762
+16  2019   503  -0.0591   -0.230  0.0864
+17  2020   503  -0.0629   -0.247  0.0978
+18  2021   503  -0.0667   -0.264  0.110 </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Through 2009 the median deviation stays within one percent, with the 10-90 range widening to about -17/+26 percent in the middle of the decade, where a straight line between censuses departs most from the estimated path. From 2011 the median drifts to -6.7 percent by 2021: the line toward the 2022 census, which came in below the projected estimates, runs under them, and the range reaches -26/+11 percent. The deviation is the cost of D-2026-10-05-f, to be weighed in tasks 1.6 and 1.7. <strong>Decision.</strong> none in phase 1 (tasks 1.6, 1.7).</p>
+<p><strong>Finding.</strong> Through 2009 the median deviation stays within one percent, with the 10-90 range widening to about -17/+26 percent in the middle of the decade, where a straight line between censuses departs most from the estimated path. From 2011 the median drifts to -6.7 percent by 2021: the line toward the 2022 census, which came in below the projected estimates, runs under them, and the range reaches -26/+11 percent. The deviation is the cost of D-2026-10-05-f, kept at step 2.5: the estimates enter only where a municipality has no 2000 anchor (D-2026-10-23-e); the anchors are stored at task 1.7. <strong>Decision.</strong> D-2026-10-05-f (interpolation kept); D-2026-10-23-e.</p>
 </section>
 <section id="q6.-for-which-years-is-population-stored" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-for-which-years-is-population-stored">Q6. For which years is population stored?</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>gdp <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">population_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(population)), <span class="at">gdp_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(gdp_brl)),</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&lt;=</span> <span class="dv">2004</span> <span class="sc">|</span> year <span class="sc">&gt;=</span> <span class="dv">2020</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>pop <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">population_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(population)),</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">census =</span> <span class="fu">sum</span>(pop_source <span class="sc">==</span> <span class="st">&quot;census&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">census_interp =</span> <span class="fu">sum</span>(pop_source <span class="sc">==</span> <span class="st">&quot;census_interp&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">ibge_estimate =</span> <span class="fu">sum</span>(pop_source <span class="sc">==</span> <span class="st">&quot;ibge_estimate&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">estimate_interp =</span> <span class="fu">sum</span>(pop_source <span class="sc">==</span> <span class="st">&quot;estimate_interp&quot;</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&lt;=</span> <span class="dv">2010</span> <span class="sc">|</span> year <span class="sc">&gt;=</span> <span class="dv">2020</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14 × 7
+    year     n population_na census census_interp ibge_estimate estimate_interp
+   &lt;int&gt; &lt;int&gt;         &lt;int&gt;  &lt;int&gt;         &lt;int&gt;         &lt;int&gt;           &lt;int&gt;
+ 1  2000   503            10    493             0             0               0
+ 2  2001   503             3      0           493             7               0
+ 3  2002   503             3      0           493             7               0
+ 4  2003   503             3      0           493             7               0
+ 5  2004   503             3      0           493             7               0
+ 6  2005   503             1      0           493             9               0
+ 7  2006   503             1      0           493             9               0
+ 8  2007   503             1      0           493             0               9
+ 9  2008   503             1      0           493             9               0
+10  2009   503             1      0           493             9               0
+11  2010   503             1    502             0             0               0
+12  2020   503             0      0           502             1               0
+13  2021   503             0      0           502             1               0
+14  2022   503             0    503             0             0               0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>gdp <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">gdp_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(gdp_brl)), <span class="at">per_capita_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(gdp_per_capita)),</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&lt;=</span> <span class="dv">2004</span> <span class="sc">|</span> year <span class="sc">&gt;=</span> <span class="dv">2020</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 4
-   year     n population_na gdp_na
-  &lt;int&gt; &lt;int&gt;         &lt;int&gt;  &lt;int&gt;
-1  2002   503             9      2
-2  2003   503             9      2
-3  2004   503             9      2
-4  2020   503             0      0
-5  2021   503             0      0
-6  2022   503             0      0</code></pre>
+   year     n gdp_na per_capita_na
+  &lt;int&gt; &lt;int&gt;  &lt;int&gt;         &lt;int&gt;
+1  2002   503      3             3
+2  2003   503      3             3
+3  2004   503      3             3
+4  2020   503      0             0
+5  2021   503      0             0
+6  2022   503      0             0</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The output starts in 2002 with the GDP series and ends in 2022 with the last census, so the panel has no population for 2000 and 2001 although the 2000 census anchor exists. The 2023 GDP release is read and dropped by the year cap. <strong>Decision.</strong> D-2026-10-10-k (open). <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (row count 5,570 x 21 years).</p>
+<p><strong>Finding.</strong> Since phase 2, step 2.5 (2026-10-23) population is its own series, 2000-2022 for every municipality, with the source of each cell; until then it rode on the GDP rows and the panel had no population in 2000-2001 (D-2026-10-10-k). In the biome sample the only NA cells are the post-2000 municipalities before installation (ten in 2000, three in 2001, two through 2004: Mojuí dos Campos through 2012); GDP per capita is NA only where GDP is. The 2023 GDP release is read and dropped by the year cap; 2023-2024 population belongs to the anchor work of task 1.7. <strong>Decision.</strong> D-2026-10-23-e (closes D-2026-10-10-k for 2000-2022). <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (5,570 x 23 rows, source NA exactly where population is, per-capita NA pattern).</p>
+</section>
+<section id="q7.-how-are-the-official-estimates-spliced-in-for-the-municipalities-installed-after-2000" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-how-are-the-official-estimates-spliced-in-for-the-municipalities-installed-after-2000">Q7. How are the official estimates spliced in for the municipalities installed after 2000?</h2>
+<p>What is checked: the stored population and its source for the nine sample municipalities 2000-2012, the estimate path against the 2010 census, and the pre-installation estimates Tabela 6579 serves.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>est <span class="ot">&lt;-</span> est_raw <span class="sc">%&gt;%</span> <span class="fu">transmute</span>(geocode, year, <span class="at">estimate =</span> <span class="fu">sidra_value</span>(value, <span class="fu">character</span>(<span class="dv">0</span>)))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>pop <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode, year <span class="sc">&lt;=</span> <span class="dv">2012</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, install_year, year, population, pop_source) <span class="sc">%&gt;%</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> <span class="fu">c</span>(population, pop_source), <span class="at">names_vary =</span> <span class="st">&quot;slowest&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, install_year, <span class="fu">starts_with</span>(<span class="st">&quot;population_&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 15
+   municipality   install_year population_2000 population_2001 population_2002 population_2003 population_2004
+   &lt;chr&gt;                 &lt;int&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;
+ 1 Mojuí dos Cam…         2013              NA              NA              NA              NA              NA
+ 2 Bom Jesus do …         2001              NA            3880            4001            4130            4403
+ 3 Colniza                2001              NA           10910           11394           11902           12971
+ 4 Conquista D&#39;O…         2001              NA            2644            2688            2736            2836
+ 5 Curvelândia            2001              NA            4591            4650            4709            4831
+ 6 Ipiranga do N…         2005              NA              NA              NA              NA              NA
+ 7 Itanhangá              2005              NA              NA              NA              NA              NA
+ 8 Nova Santa He…         2001              NA            3292            3353            3412            3535
+ 9 Rondolândia            2001              NA            3352            3500            3657            3985
+10 Santa Cruz do…         2001              NA            1109            1166            1225            1348
+# ℹ 8 more variables: population_2005 &lt;dbl&gt;, population_2006 &lt;dbl&gt;, population_2007 &lt;dbl&gt;,
+#   population_2008 &lt;dbl&gt;, population_2009 &lt;dbl&gt;, population_2010 &lt;dbl&gt;, population_2011 &lt;dbl&gt;,
+#   population_2012 &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>pop <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2006</span>, <span class="dv">2007</span>, <span class="dv">2008</span>, <span class="dv">2009</span>, <span class="dv">2010</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(est, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, year, population, pop_source, estimate) <span class="sc">%&gt;%</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> <span class="fu">c</span>(population, estimate), <span class="at">names_vary =</span> <span class="st">&quot;slowest&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 28 × 12
+   municipality         pop_source population_2006 estimate_2006 population_2007 estimate_2007 population_2008
+   &lt;chr&gt;                &lt;chr&gt;                &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;
+ 1 Mojuí dos Campos     &lt;NA&gt;                    NA            NA             NA             NA              NA
+ 2 Bom Jesus do Aragua… ibge_esti…            4703          4703             NA             NA            4696
+ 3 Bom Jesus do Aragua… estimate_…              NA            NA           4700.            NA              NA
+ 4 Bom Jesus do Aragua… census                  NA            NA             NA             NA              NA
+ 5 Colniza              ibge_esti…           14149         14149             NA             NA           29636
+ 6 Colniza              estimate_…              NA            NA          21892.            NA              NA
+ 7 Colniza              census                  NA            NA             NA             NA              NA
+ 8 Conquista D&#39;Oeste    ibge_esti…            2947          2947             NA             NA            3226
+ 9 Conquista D&#39;Oeste    estimate_…              NA            NA           3086.            NA              NA
+10 Conquista D&#39;Oeste    census                  NA            NA             NA             NA              NA
+# ℹ 18 more rows
+# ℹ 5 more variables: estimate_2008 &lt;dbl&gt;, population_2009 &lt;dbl&gt;, estimate_2009 &lt;dbl&gt;, population_2010 &lt;dbl&gt;,
+#   estimate_2010 &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>est <span class="sc">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(estimate), year <span class="sc">&lt;</span> install_year) <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, install_year, year, estimate)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  municipality      install_year  year estimate
+  &lt;chr&gt;                    &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+1 Ipiranga do Norte         2005  2004     2445
+2 Itanhangá                 2005  2004     4054
+3 Mojuí dos Campos          2013  2012    15018</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Each lookup municipality is NA before its installation year, carries the official estimate from that year to 2009 (2013-2021 for Mojuí), and the interpolated census path from 2010. The 2007 count year, not served, is interpolated between the 2006 and 2008 estimates. The estimates of the 2001 cohort before the 2007 count are projections from a base that did not enumerate the municipality: Colniza reads 14,149 in 2006 and 29,636 in 2008, and the other eight move by a few percent at the same point in either direction; the 2009 estimates sit close to the 2010 census. Tabela 6579 also serves a 2004 estimate for Ipiranga do Norte and Itanhangá, published before their installation in 2005 (the FPM quota of the first year), which the rule does not use. A 2007 count (SIDRA Tabela 793) could replace the nine interpolated cells as a value-level change. <strong>Decision.</strong> D-2026-10-23-e. <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (NA before installation, complete from it; nine <code>estimate_interp</code> cells, all 2007; census years read <code>census</code>).</p>
 </section>
 
 </main>
