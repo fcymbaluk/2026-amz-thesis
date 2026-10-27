@@ -2219,6 +2219,7 @@ vertical-align: -.125em;
   <li><a href="#q6.-do-treated-and-control-municipalities-share-a-region-of-common-support" id="toc-q6.-do-treated-and-control-municipalities-share-a-region-of-common-support" class="nav-link" data-scroll-target="#q6.-do-treated-and-control-municipalities-share-a-region-of-common-support">Q6. Do treated and control municipalities share a region of common support?</a></li>
   <li><a href="#q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample" id="toc-q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample" class="nav-link" data-scroll-target="#q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample">Q7. Are the pressure scores standardized, and how much do they depend on the sample?</a></li>
   <li><a href="#q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel" id="toc-q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel" class="nav-link" data-scroll-target="#q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel">Q8. Why does Santa Cruz do Arari’s availability flag differ from the recovered panel?</a></li>
+  <li><a href="#q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" id="toc-q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" class="nav-link" data-scroll-target="#q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel">Q9. Which census anchors does the municipality store carry, and do they agree with the panel?</a></li>
   </ul>
 </nav>
 </div>
@@ -2675,6 +2676,93 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> With the restored area the municipality’s 2000 forest share is 0.94 and it passes the floor; with zero baseline clearing it stays outside both gates, as in the recovered panel, so the change touches <code>avail_ok</code> only (21 cells). The recovered FALSE has no derivation from a missing share (<code>NA &gt;= 0.10</code> is NA, not FALSE), so the reference value is treated as a legacy artefact and the rebuilt value accepted. <strong>Decision.</strong> D-2026-10-12-d. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AVAIL_EXPECTED</code> = 500).</p>
+</section>
+<section id="q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" class="level2">
+<h2 class="anchored" data-anchor-id="q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel">Q9. Which census anchors does the municipality store carry, and do they agree with the panel?</h2>
+<p>What is checked: the twelve anchor columns added at phase 2, step 2.6 (<code>pia</code>, <code>pea</code>, <code>informal</code>, <code>population</code> at the 2000, 2010 and 2022 censuses, as read), their NA pattern, their agreement with the panel’s values in 2000 and 2010, and the gap between the 2000 anchor and the interpolated 2002-2007 mean that the analysis script currently uses as a baseline.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>anchor_cols <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;_c20(00|10|22)$&quot;</span>, <span class="fu">names</span>(muni), <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(anchor_cols), <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)))) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;column&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;n_na&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_na <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  column            n_na
+  &lt;chr&gt;            &lt;int&gt;
+1 pia_c2000            9
+2 pea_c2000            9
+3 informal_c2000       9
+4 population_c2000     9</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(pia_c2000)) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, pia_c2010, population_c2010)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 5
+  geocode municipality          state_abbreviation pia_c2010 population_c2010
+  &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;                  &lt;dbl&gt;            &lt;dbl&gt;
+1 5101852 Bom Jesus do Araguaia MT                      3913             5314
+2 5103254 Colniza               MT                     18790            26381
+3 5103361 Conquista D&#39;Oeste     MT                      2545             3385
+4 5103437 Curvelândia           MT                      3726             4866
+5 5104526 Ipiranga do Norte     MT                      3822             5123
+6 5104542 Itanhangá             MT                      3914             5276
+7 5106190 Nova Santa Helena     MT                      2656             3468
+8 5107578 Rondolândia           MT                      2517             3604
+9 5107743 Santa Cruz do Xingu   MT                      1400             1900</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span>L, <span class="dv">2010</span>L)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, pea, informal, population) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, <span class="fu">all_of</span>(anchor_cols)), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pea_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, pea_c2000, pea_c2010),</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">informal_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, informal_c2000, informal_c2010),</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">population_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, population_c2000, population_c2010)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">pea_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(pea <span class="sc">-</span> pea_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">informal_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(informal <span class="sc">-</span> informal_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(population <span class="sc">-</span> population_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_same =</span> <span class="fu">all</span>(<span class="fu">is.na</span>(pea) <span class="sc">==</span> <span class="fu">is.na</span>(pea_c) <span class="sc">&amp;</span> <span class="fu">is.na</span>(informal) <span class="sc">==</span> <span class="fu">is.na</span>(informal_c) <span class="sc">&amp;</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">is.na</span>(population) <span class="sc">==</span> <span class="fu">is.na</span>(population_c)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  pea_max_diff informal_max_diff population_max_diff na_same
+         &lt;dbl&gt;             &lt;dbl&gt;               &lt;dbl&gt; &lt;lgl&gt;  
+1            0                 0                   0 TRUE   </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2002</span><span class="sc">:</span><span class="dv">2007</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">informal_0207 =</span> <span class="fu">mean</span>(informal), <span class="at">population_0207 =</span> <span class="fu">mean</span>(population),</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, informal_c2000, population_c2000), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">informal_points_from_2000 =</span> informal_0207 <span class="sc">-</span> informal_c2000,</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_ratio_to_2000 =</span> population_0207 <span class="sc">/</span> population_c2000) <span class="sc">%&gt;%</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> informal_points_from_2000 population_ratio_to_2000
+ Min.   :-13.986989        Min.   :0.7904          
+ 1st Qu.: -4.189639        1st Qu.:1.0257          
+ Median : -1.887057        Median :1.0819          
+ Mean   : -2.123689        Mean   :1.1013          
+ 3rd Qu.: -0.003054        3rd Qu.:1.1552          
+ Max.   : 11.173078        Max.   :1.7591          
+ NAs    :9                 NAs    :9               </code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The store carries the twelve anchors for the 502 municipalities; only the nine Mato Grosso municipalities installed after the 2000 census are NA, in the 2000 vintage of all four variables, and every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the panel’s values in those years exactly, with the same NA pattern, which confirms that the interpolated series pass through the census values and that the store adds no new information for those years; what it adds is the clean value for the intercensal baseline: the 2002-2007 mean of the interpolated informality share sits below the 2000 census for most municipalities, and the population mean above it, by the blend documented in <code>_audit/census.qmd</code> Q8. Analysis scripts take baseline census quantities from here (memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>). <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (anchor years and coverage) and output block (<code>same_or_na</code> against the panel at the census years; <code>N_ANCHOR_NA_2000_EXPECTED</code>; no NA in the later vintages).</p>
 </section>
 
 </main>

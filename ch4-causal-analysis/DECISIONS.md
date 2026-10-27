@@ -79,7 +79,7 @@ Supersedes: none
 
 ## D-2026-10-05-f  PIA interpolated linearly between the 2000, 2010 and 2022 censuses
 
-Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-census.R); storage of anchors reopened by Task 1.7; the "extrapolated flat" wording is corrected by D-2026-10-07-f
+Status: closed (pre-rebuild; script 02 at tag pre-reorg; refactored in phase 1, 02-social-census.R); storage of anchors reopened by Task 1.7; the "extrapolated flat" wording is corrected by D-2026-10-07-f; anchors stored 2026-10-26 at phase 2, step 2.6 (D-2026-10-26-a), interpolation unchanged
 Scope: script 02 (lines 217-334), raw/ibge/data-censo{2000,2010,2022}-pia.xlsx
 Context: PIA exists only at census years; the panel is annual.
 Reason: linear interpolation between anchors, extrapolated flat outside them,
@@ -1914,3 +1914,69 @@ Affects: Santarém: pea 2000-2021 (the 2000 and 2010 anchors no longer
          gdp_* 2002-2012; Mojuí (outside the sample panel): everything
          before 2013; two new panel columns
 Supersedes: D-2026-10-07-d, D-2026-10-10-e
+
+## D-2026-10-26-a  Census anchors stored as read in the municipality store; the interpolated panel columns flagged in the codebook
+
+Status: closed (phase 2, step 2.6, branch phase2-2.6-census-anchors, 2026-10-26; comparator report in the commit message)
+Scope: 02-social-census.R (new output _data/interim/census_anchors_2000_2022); 05-sample-definition.R (ANCHOR_VARS, ANCHOR_COLS, N_ANCHOR_NA_2000_EXPECTED); _data/interim/panel_amz_baseline (12 columns added); _data/aux/codebook.csv (columns interpolated, anchor_years; 12 rows); no panel column
+Context: pia, pea, informal and population are linear interpolations
+         between the 2000, 2010 and 2022 censuses (D-2026-10-05-f), so
+         every intercensal cell is a blend of two censuses. A covariate
+         or moderator measured as a pre-treatment mean of such a series,
+         or of a ratio built on it (the five emp_pia_rate_*, the four
+         gdp_per_capita*, bf_transfers_pc_brl_2024,
+         bf_transfers_pea_brl_2024), carries the 2010 census, which is
+         post-treatment for the 2008 and 2009 cohorts: the share of 2010
+         in the blend is 55 percent over a 2004-2007 window and 45
+         percent over 2002-2007 (the window of
+         08-data-analysis-2WFE-CS.R), by construction of the linear
+         fill. In the sample the 2004-2007 mean of the interpolated PIA
+         is 16 percent above the 2000 census at the median (IQR 9 to 26
+         percent) and the informality share 2.3 points below. Task 1.7
+         asks for the anchors to be stored and the interpolated columns
+         flagged, the interpolation itself unchanged.
+Reason: script 02 writes the three census-anchored series as read, one
+        row per municipality of the 2022 grid and census year, NA where
+        the municipality was absent from a census (the 58 of
+        D-2026-10-23-d in 2000, the five created after 2010 in 2000 and
+        2010), and asserts that the annual series equal the anchors at
+        the census years; the population anchors are the "census" rows
+        of the population file of D-2026-10-23-e. Script 05 joins the
+        four variables wide onto the municipality store as
+        pia_c2000/pia_c2010/pia_c2022 and likewise pea_, informal_ and
+        population_ (the _cYYYY vintage suffix of the naming convention,
+        extended from the Atlas file to the census anchors), asserts
+        that the 2000 and 2010 anchors equal the panel's values in those
+        years, NA included, and that only the nine post-2000
+        municipalities are NA in the 2000 vintage. The anchors stay out
+        of the annual panel: they are time-invariant, the store is the
+        municipality-level file analysis scripts join by geocode
+        (D-2026-10-12-a), and the baseline covariates themselves are
+        built in the analysis scripts (memo
+        docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md).
+        The companion rule for the analysis scripts, that a covariate or
+        moderator defined on a pre-treatment window takes the 2000
+        anchor from the store and never the interpolated series, is a
+        design rule across scripts and is recorded in
+        docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md;
+        it applies to 08 at the stage 10 rerun. The codebook gains two
+        columns, interpolated (TRUE for the 14 panel columns that carry
+        or divide by an interpolated series) and anchor_years, and 12
+        rows for the store's anchors (script 05). The alternative of
+        replacing the interpolation by predetermined annual series
+        (IBGE's official estimates for population, a constant age
+        structure scaled by them for PIA) was weighed and set aside by
+        the author on 2026-10-26: it moves 11 panel columns in every
+        non-census year, puts the estimate-to-census break of 2010 in
+        every per-capita series, and gains nothing for designs whose
+        covariates are pre-treatment, which the anchors already serve; a
+        fixed census denominator for the annual series was rejected
+        because working-age population grew 30 percent between 2000 and
+        2010 at the median (IQR 16 to 48 percent, maximum threefold),
+        fastest where frontier migration was strongest.
+Evidence: _audit/census.qmd Q8 (the blend shares and the anchors file);
+          _audit/panel-sample.qmd Q9 (the store's anchors)
+Affects: panel_amz_baseline (12 columns added, 21 unchanged); no cell of
+         the panel (compare_outputs: 0 differing cells, 0 schema change
+         on the script 04 panel and the final panel)
+Supersedes: none; closes the task 1.7 storage item of D-2026-10-05-f

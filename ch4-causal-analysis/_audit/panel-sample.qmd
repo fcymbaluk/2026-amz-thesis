@@ -363,3 +363,62 @@ treated as a legacy artefact and the rebuilt value accepted.
 **Decision.** D-2026-10-12-d.
 **Assertion.** `05-sample-definition.R`, output block
 (`N_AVAIL_EXPECTED` = 500).
+
+## Q9. Which census anchors does the municipality store carry, and do they agree with the panel?
+
+What is checked: the twelve anchor columns added at phase 2, step 2.6
+(`pia`, `pea`, `informal`, `population` at the 2000, 2010 and 2022
+censuses, as read), their NA pattern, their agreement with the panel's
+values in 2000 and 2010, and the gap between the 2000 anchor and the
+interpolated 2002-2007 mean that the analysis script currently uses as a
+baseline.
+
+```{r q9-anchors}
+anchor_cols <- grep("_c20(00|10|22)$", names(muni), value = TRUE)
+muni %>%
+  summarise(across(all_of(anchor_cols), ~ sum(is.na(.x)))) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "n_na") %>%
+  filter(n_na > 0)
+muni %>%
+  filter(is.na(pia_c2000)) %>%
+  select(geocode, municipality, state_abbreviation, pia_c2010, population_c2010)
+panel %>%
+  filter(year %in% c(2000L, 2010L)) %>%
+  select(geocode, year, pea, informal, population) %>%
+  left_join(muni %>% select(geocode, all_of(anchor_cols)), by = "geocode") %>%
+  mutate(pea_c = if_else(year == 2000L, pea_c2000, pea_c2010),
+         informal_c = if_else(year == 2000L, informal_c2000, informal_c2010),
+         population_c = if_else(year == 2000L, population_c2000, population_c2010)) %>%
+  summarise(pea_max_diff = max(abs(pea - pea_c), na.rm = TRUE),
+            informal_max_diff = max(abs(informal - informal_c), na.rm = TRUE),
+            population_max_diff = max(abs(population - population_c), na.rm = TRUE),
+            na_same = all(is.na(pea) == is.na(pea_c) & is.na(informal) == is.na(informal_c) &
+                            is.na(population) == is.na(population_c)))
+panel %>%
+  filter(year %in% 2002:2007) %>%
+  group_by(geocode) %>%
+  summarise(informal_0207 = mean(informal), population_0207 = mean(population),
+            .groups = "drop") %>%
+  left_join(muni %>% select(geocode, informal_c2000, population_c2000), by = "geocode") %>%
+  transmute(informal_points_from_2000 = informal_0207 - informal_c2000,
+            population_ratio_to_2000 = population_0207 / population_c2000) %>%
+  summary()
+```
+
+**Finding.** The store carries the twelve anchors for the 502
+municipalities; only the nine Mato Grosso municipalities installed after
+the 2000 census are NA, in the 2000 vintage of all four variables, and
+every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the
+panel's values in those years exactly, with the same NA pattern, which
+confirms that the interpolated series pass through the census values and
+that the store adds no new information for those years; what it adds is
+the clean value for the intercensal baseline: the 2002-2007 mean of the
+interpolated informality share sits below the 2000 census for most
+municipalities, and the population mean above it, by the blend documented
+in `_audit/census.qmd` Q8. Analysis scripts take baseline census
+quantities from here (memo
+`docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md`).
+**Decision.** D-2026-10-26-a.
+**Assertion.** `05-sample-definition.R`, raw-state block (anchor years and
+coverage) and output block (`same_or_na` against the panel at the census
+years; `N_ANCHOR_NA_2000_EXPECTED`; no NA in the later vintages).

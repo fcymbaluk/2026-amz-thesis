@@ -4,7 +4,7 @@ Three files that keep the pipeline, the annex and the history from drifting apar
 
 ## 1. `_data/aux/codebook.csv`
 
-One row per variable in the final panel. Read by script 06 to set labels and by the annex to render section 6. Adding a variable to the panel without a codebook row fails an assertion in script 06.
+One row per variable in the final panel, plus one per column of the municipality store `panel_amz_baseline` that is not in the panel (the census anchors, from 2026-10-26; their `script` is 05 and their `construction` names the store). Read by script 06 to set labels and by the annex to render section 6. Adding a variable to the panel without a codebook row fails an assertion in script 06.
 
 Columns:
 
@@ -19,6 +19,8 @@ Columns:
 | `years` | Years with non-missing values, e.g. `2004-2019` |
 | `construction` | One line, or `see annex §x.y` |
 | `script` | Script that creates the variable |
+| `interpolated` | `TRUE` when the column carries, or divides by, a series interpolated between census anchors; `FALSE` otherwise (added at phase 2, step 2.6, D-2026-10-26-a) |
+| `anchor_years` | The census years of the anchors when `interpolated` is `TRUE`, e.g. `2000/2010/2022`; empty otherwise |
 
 Example rows:
 

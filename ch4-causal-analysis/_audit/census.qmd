@@ -20,7 +20,8 @@ agregados API v3, queried 2026-10-06 (`_data/raw/ibge/sidra/*.json`:
 Tabelas 616, 2953, 1572, 6580, 2031, 10261).
 Pipeline script: `_scripts/02-social-census.R`.
 Interim outputs: `_data/interim/census_pia_1999_2024.rds`,
-`_data/interim/census_pea_informal_2000_2022.rds`.
+`_data/interim/census_pea_informal_2000_2022.rds`,
+`_data/interim/census_anchors_2000_2022.rds` (phase 2, step 2.6).
 Equivalence with the recovered panel is not checked here (the notebook never
 reads `_data/reference/`); the `compare_outputs` report lives in the phase 1
 script 02 commit message and in the decision entries it cites.
@@ -394,3 +395,79 @@ from the official estimates (`_audit/ibge_pib.qmd` Q7).
 **Decision.** D-2026-10-23-d.
 **Assertion.** `02-social-census.R`, output block (`na_rule_ok` for the
 three series; `N_ABSENT_2000_EXPECTED`).
+
+## Q8. How much of a pre-treatment baseline on the interpolated series is the 2010 census, and do the stored anchors match?
+
+What is checked: the share of the 2010 anchor in the mean of a linearly
+interpolated series over the two baseline windows in use (2004-2007 in the
+chapter tables, 2002-2007 in `08-data-analysis-2WFE-CS.R`); the distance
+between those means and the 2000 census for PIA and informality in the
+biome sample; and the anchors file against the annual series at the census
+years.
+
+```{r q8-blend}
+census_anchors <- read_rds("_data/interim/census_anchors_2000_2022.rds")
+sample_ids <- read_rds("_data/interim/panel_amz_baseline.rds")$geocode
+tibble(window = c("2004-2007", "2002-2007"),
+       years = list(2004:2007, 2002:2007)) %>%
+  mutate(share_of_2010 = map_dbl(years, ~ mean((.x - 2000) / 10))) %>%
+  select(-years)
+wide <- function(d, var) {
+  d %>%
+    filter(geocode %in% sample_ids) %>%
+    group_by(geocode) %>%
+    summarise(c2000 = .data[[var]][year == 2000],
+              mean_0407 = mean(.data[[var]][year %in% 2004:2007]),
+              mean_0207 = mean(.data[[var]][year %in% 2002:2007]),
+              .groups = "drop")
+}
+pia_w <- wide(census_pia, "pia") %>%
+  transmute(ratio_0407 = mean_0407 / c2000, ratio_0207 = mean_0207 / c2000)
+inf_w <- wide(census_pea_informal, "informal") %>%
+  transmute(diff_0407 = mean_0407 - c2000, diff_0207 = mean_0207 - c2000)
+bind_rows(
+  pia_w %>% pivot_longer(everything()) %>% mutate(series = "pia, ratio to 2000"),
+  inf_w %>% pivot_longer(everything()) %>% mutate(series = "informal, points from 2000")
+) %>%
+  group_by(series, name) %>%
+  summarise(n = sum(!is.na(value)), p10 = quantile(value, .1, na.rm = TRUE),
+            q1 = quantile(value, .25, na.rm = TRUE), median = median(value, na.rm = TRUE),
+            q3 = quantile(value, .75, na.rm = TRUE), p90 = quantile(value, .9, na.rm = TRUE),
+            .groups = "drop") %>%
+  mutate(across(where(is.double), ~ round(.x, 3)))
+```
+
+```{r q8-anchors}
+census_anchors %>%
+  group_by(year) %>%
+  summarise(n = n(), pia_na = sum(is.na(pia)), pea_na = sum(is.na(pea)),
+            informal_na = sum(is.na(informal)), .groups = "drop")
+census_anchors %>%
+  left_join(census_pia, by = c("geocode", "year"), suffix = c("", "_series")) %>%
+  left_join(census_pea_informal, by = c("geocode", "year"), suffix = c("", "_series")) %>%
+  summarise(pia_max_diff = max(abs(pia - pia_series), na.rm = TRUE),
+            pea_max_diff = max(abs(pea - pea_series), na.rm = TRUE),
+            informal_max_diff = max(abs(informal - informal_series), na.rm = TRUE),
+            na_pattern_same = all(is.na(pia) == is.na(pia_series) &
+                                    is.na(pea) == is.na(pea_series) &
+                                    is.na(informal) == is.na(informal_series)))
+census_anchors %>% filter(geocode %in% sample_geo) %>% arrange(geocode, year)
+```
+
+**Finding.** By construction of the linear fill, the 2010 census is 55
+percent of a 2004-2007 mean and 45 percent of a 2002-2007 mean, so a
+"baseline" taken on the interpolated series is mostly, or nearly half,
+post-treatment information for the 2008 and 2009 cohorts. In the sample
+the 2004-2007 mean of PIA sits 16 percent above the 2000 census at the
+median (interquartile range 9 to 26 percent) and the informality share 2.3
+points below it. The anchors file holds the three series as read for the
+5,570 municipalities of the 2022 grid at the three census years: 63 NA in
+2000 (the 58 absent from that census and the five created after 2010),
+five NA in 2010, none in 2022, and it equals the annual series at the
+census years to the last digit with the same NA pattern. The interpolation
+itself is unchanged (task 1.7): the alternatives of a census-only
+denominator and of predetermined annual series are weighed in the memo
+`docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md`.
+**Decision.** D-2026-10-26-a.
+**Assertion.** `02-social-census.R`, output block (`same_or_na` on the
+three series; the NA counts by census year).
