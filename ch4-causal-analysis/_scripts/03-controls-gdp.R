@@ -23,6 +23,8 @@
 #           _data/aux/deflator_ipca_2024.csv
 #
 # OUTPUTS   _data/interim/ibge_pop_2000_2022.rds / .csv
+#             pop_source marks the census anchors ("census"); the baseline
+#             store of script 05 reads them from here (D-2026-10-26-a)
 #           _data/interim/ibge_pib_gdp_2002_2022.rds / .csv
 #
 # DECISIONS IMPLEMENTED
@@ -42,10 +44,6 @@
 #   D-2026-10-23-f  The Santarém and Mojuí dos Campos split of
 #                   D-2026-10-10-e retired (phase 2, step 2.5): Santarém
 #                   as published, Mojuí NA before 2013.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.7  Only the interpolated population is stored; the anchors are
-#             not.
 # RUN ORDER Independent of the other 03 scripts; no pipeline inputs.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe

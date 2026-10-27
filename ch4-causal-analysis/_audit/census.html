@@ -2218,6 +2218,7 @@ vertical-align: -.125em;
   <li><a href="#q5.-which-municipalities-are-absent-from-the-2000-census-and-what-do-they-carry" id="toc-q5.-which-municipalities-are-absent-from-the-2000-census-and-what-do-they-carry" class="nav-link" data-scroll-target="#q5.-which-municipalities-are-absent-from-the-2000-census-and-what-do-they-carry">Q5. Which municipalities are absent from the 2000 census, and what do they carry?</a></li>
   <li><a href="#q6.-do-the-interpolated-series-stay-plausible" id="toc-q6.-do-the-interpolated-series-stay-plausible" class="nav-link" data-scroll-target="#q6.-do-the-interpolated-series-stay-plausible">Q6. Do the interpolated series stay plausible?</a></li>
   <li><a href="#q7.-what-do-the-municipalities-absent-from-the-2000-census-carry-under-the-step-2.5-rule" id="toc-q7.-what-do-the-municipalities-absent-from-the-2000-census-carry-under-the-step-2.5-rule" class="nav-link" data-scroll-target="#q7.-what-do-the-municipalities-absent-from-the-2000-census-carry-under-the-step-2.5-rule">Q7. What do the municipalities absent from the 2000 census carry under the step 2.5 rule?</a></li>
+  <li><a href="#q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match" id="toc-q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match" class="nav-link" data-scroll-target="#q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match">Q8. How much of a pre-treatment baseline on the interpolated series is the 2010 census, and do the stored anchors match?</a></li>
   </ul>
 </nav>
 </div>
@@ -2248,7 +2249,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: IBGE Censos Demográficos 2000, 2010 and 2022. Population by age group from three recovered SIDRA workbooks (<code>_data/raw/ibge/data-censo{2000, 2010,2022}-pia.xlsx</code>: Dados do Universo 2000, Tabela 1378, Tabela 9514); economically active population and position in occupation from the SIDRA agregados API v3, queried 2026-10-06 (<code>_data/raw/ibge/sidra/*.json</code>: Tabelas 616, 2953, 1572, 6580, 2031, 10261). Pipeline script: <code>_scripts/02-social-census.R</code>. Interim outputs: <code>_data/interim/census_pia_1999_2024.rds</code>, <code>_data/interim/census_pea_informal_2000_2022.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 02 commit message and in the decision entries it cites.</p>
+<p>Source: IBGE Censos Demográficos 2000, 2010 and 2022. Population by age group from three recovered SIDRA workbooks (<code>_data/raw/ibge/data-censo{2000, 2010,2022}-pia.xlsx</code>: Dados do Universo 2000, Tabela 1378, Tabela 9514); economically active population and position in occupation from the SIDRA agregados API v3, queried 2026-10-06 (<code>_data/raw/ibge/sidra/*.json</code>: Tabelas 616, 2953, 1572, 6580, 2031, 10261). Pipeline script: <code>_scripts/02-social-census.R</code>. Interim outputs: <code>_data/interim/census_pia_1999_2024.rds</code>, <code>_data/interim/census_pea_informal_2000_2022.rds</code>, <code>_data/interim/census_anchors_2000_2022.rds</code> (phase 2, step 2.6). Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 02 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2894,6 +2895,120 @@ $`2022`
 </div>
 </div>
 <p><strong>Finding.</strong> The 58 municipalities are NA in PEA, informality and PIA from 1999 to 2009 and complete from 2010, the PIA through 2024 (the 2023-2024 extrapolation of D-2026-10-07-f is kept, since it extends the anchor range at its end). Colniza’s informality now begins at its 2010 census value instead of climbing from zero through the treatment years. The ratios that divide by these series (<code>emp_pia_rate_*</code> in <code>02-social-rais.R</code>, <code>bf_transfers_pea_brl_2024</code> in <code>02-social-bf.R</code>) inherit the NA without code changes; population is rebuilt separately from the official estimates (<code>_audit/ibge_pib.qmd</code> Q7). <strong>Decision.</strong> D-2026-10-23-d. <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>na_rule_ok</code> for the three series; <code>N_ABSENT_2000_EXPECTED</code>).</p>
+</section>
+<section id="q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match" class="level2">
+<h2 class="anchored" data-anchor-id="q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match">Q8. How much of a pre-treatment baseline on the interpolated series is the 2010 census, and do the stored anchors match?</h2>
+<p>What is checked: the share of the 2010 anchor in the mean of a linearly interpolated series over the two baseline windows in use (2004-2007 in the chapter tables, 2002-2007 in <code>08-data-analysis-2WFE-CS.R</code>); the distance between those means and the 2000 census for PIA and informality in the biome sample; and the anchors file against the annual series at the census years.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>census_anchors <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/census_anchors_2000_2022.rds&quot;</span>)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>sample_ids <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_baseline.rds&quot;</span>)<span class="sc">$</span>geocode</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">window =</span> <span class="fu">c</span>(<span class="st">&quot;2004-2007&quot;</span>, <span class="st">&quot;2002-2007&quot;</span>),</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">years =</span> <span class="fu">list</span>(<span class="dv">2004</span><span class="sc">:</span><span class="dv">2007</span>, <span class="dv">2002</span><span class="sc">:</span><span class="dv">2007</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">share_of_2010 =</span> <span class="fu">map_dbl</span>(years, <span class="sc">~</span> <span class="fu">mean</span>((.x <span class="sc">-</span> <span class="dv">2000</span>) <span class="sc">/</span> <span class="dv">10</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>years)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  window    share_of_2010
+  &lt;chr&gt;             &lt;dbl&gt;
+1 2004-2007          0.55
+2 2002-2007          0.45</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>wide <span class="ot">&lt;-</span> <span class="cf">function</span>(d, var) {</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  d <span class="sc">%&gt;%</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_ids) <span class="sc">%&gt;%</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">c2000 =</span> .data[[var]][year <span class="sc">==</span> <span class="dv">2000</span>],</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">mean_0407 =</span> <span class="fu">mean</span>(.data[[var]][year <span class="sc">%in%</span> <span class="dv">2004</span><span class="sc">:</span><span class="dv">2007</span>]),</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">mean_0207 =</span> <span class="fu">mean</span>(.data[[var]][year <span class="sc">%in%</span> <span class="dv">2002</span><span class="sc">:</span><span class="dv">2007</span>]),</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a>pia_w <span class="ot">&lt;-</span> <span class="fu">wide</span>(census_pia, <span class="st">&quot;pia&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">ratio_0407 =</span> mean_0407 <span class="sc">/</span> c2000, <span class="at">ratio_0207 =</span> mean_0207 <span class="sc">/</span> c2000)</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>inf_w <span class="ot">&lt;-</span> <span class="fu">wide</span>(census_pea_informal, <span class="st">&quot;informal&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">diff_0407 =</span> mean_0407 <span class="sc">-</span> c2000, <span class="at">diff_0207 =</span> mean_0207 <span class="sc">-</span> c2000)</span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a>  pia_w <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">everything</span>()) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">series =</span> <span class="st">&quot;pia, ratio to 2000&quot;</span>),</span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>  inf_w <span class="sc">%&gt;%</span> <span class="fu">pivot_longer</span>(<span class="fu">everything</span>()) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">series =</span> <span class="st">&quot;informal, points from 2000&quot;</span>)</span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(series, name) <span class="sc">%&gt;%</span></span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(value)), <span class="at">p10 =</span> <span class="fu">quantile</span>(value, .<span class="dv">1</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">q1 =</span> <span class="fu">quantile</span>(value, .<span class="dv">25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">median =</span> <span class="fu">median</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">q3 =</span> <span class="fu">quantile</span>(value, .<span class="dv">75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">p90 =</span> <span class="fu">quantile</span>(value, .<span class="dv">9</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.double), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 8
+  series                     name           n   p10    q1 median     q3   p90
+  &lt;chr&gt;                      &lt;chr&gt;      &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+1 informal, points from 2000 diff_0207    493 -6.57 -4.19  -1.89 -0.003  1.96
+2 informal, points from 2000 diff_0407    493 -8.03 -5.12  -2.31 -0.004  2.39
+3 pia, ratio to 2000         ratio_0207   493  1.00  1.07   1.13  1.21   1.32
+4 pia, ratio to 2000         ratio_0407   493  1.00  1.09   1.16  1.26   1.39</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>census_anchors <span class="sc">%&gt;%</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">pia_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(pia)), <span class="at">pea_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(pea)),</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">informal_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(informal)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 5
+   year     n pia_na pea_na informal_na
+  &lt;int&gt; &lt;int&gt;  &lt;int&gt;  &lt;int&gt;       &lt;int&gt;
+1  2000  5570     63     63          63
+2  2010  5570      5      5           5
+3  2022  5570      0      0           0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>census_anchors <span class="sc">%&gt;%</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(census_pia, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>), <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;_series&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(census_pea_informal, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>), <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">&quot;&quot;</span>, <span class="st">&quot;_series&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">pia_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(pia <span class="sc">-</span> pia_series), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">pea_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(pea <span class="sc">-</span> pea_series), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">informal_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(informal <span class="sc">-</span> informal_series), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_pattern_same =</span> <span class="fu">all</span>(<span class="fu">is.na</span>(pia) <span class="sc">==</span> <span class="fu">is.na</span>(pia_series) <span class="sc">&amp;</span></span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="fu">is.na</span>(pea) <span class="sc">==</span> <span class="fu">is.na</span>(pea_series) <span class="sc">&amp;</span></span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>                                    <span class="fu">is.na</span>(informal) <span class="sc">==</span> <span class="fu">is.na</span>(informal_series)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  pia_max_diff pea_max_diff informal_max_diff na_pattern_same
+         &lt;dbl&gt;        &lt;dbl&gt;             &lt;dbl&gt; &lt;lgl&gt;          
+1            0            0                 0 TRUE           </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>census_anchors <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(geocode, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 5
+   geocode  year    pia    pea informal
+   &lt;chr&gt;   &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;
+ 1 1100015  2000  17860  11942     83.1
+ 2 1100015  2010  18462  10308     68.2
+ 3 1100015  2022  17164   9457     56.2
+ 4 1504752  2000     NA     NA     NA  
+ 5 1504752  2010     NA     NA     NA  
+ 6 1504752  2022  18055   8022     74.5
+ 7 1506807  2000 170936  98076     74.0
+ 8 1506807  2010 208439 122596     69.0
+ 9 1506807  2022 254216 131261     56.9
+10 5103254  2000     NA     NA     NA  
+11 5103254  2010  18790  12893     78.1
+12 5103254  2022  19825  10317     59.5</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> By construction of the linear fill, the 2010 census is 55 percent of a 2004-2007 mean and 45 percent of a 2002-2007 mean, so a “baseline” taken on the interpolated series is mostly, or nearly half, post-treatment information for the 2008 and 2009 cohorts. In the sample the 2004-2007 mean of PIA sits 16 percent above the 2000 census at the median (interquartile range 9 to 26 percent) and the informality share 2.3 points below it. The anchors file holds the three series as read for the 5,570 municipalities of the 2022 grid at the three census years: 63 NA in 2000 (the 58 absent from that census and the five created after 2010), five NA in 2010, none in 2022, and it equals the annual series at the census years to the last digit with the same NA pattern. The interpolation itself is unchanged (task 1.7): the alternatives of a census-only denominator and of predetermined annual series are weighed in the memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>. <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>same_or_na</code> on the three series; the NA counts by census year).</p>
 </section>
 
 </main>

@@ -18,6 +18,9 @@
 #
 # OUTPUTS   _data/interim/census_pia_1999_2024.rds / .csv
 #           _data/interim/census_pea_informal_2000_2022.rds / .csv
+#           _data/interim/census_anchors_2000_2022.rds / .csv
+#             the three series as read at the census years, all
+#             municipalities (the baseline store of script 05 reads it)
 #
 # DECISIONS IMPLEMENTED
 #           (justification: _annex/parked/u-appendix-data-description.qmd
@@ -41,9 +44,11 @@
 #   D-2026-10-23-f  The Mojuí dos Campos allocation of D-2026-10-07-d
 #                   retired (phase 2, step 2.5): Santarém's anchors as
 #                   published, Mojuí NA before 2022.
+#   D-2026-10-26-a  The census anchors stored as read, one file, one row
+#                   per municipality and census year (phase 2, step 2.6);
+#                   the interpolation of the annual series is unchanged.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.7  Only the interpolated series are stored; the anchors are not.
 #   Task 1.9  informal is stored on 0-100; rescaled to 0-1 in phase 2.
 # RUN ORDER First of the 02 scripts; no pipeline inputs. Feeds
 #           02-social-rais.R (pia) and 02-social-bf.R (pea).
@@ -274,6 +279,20 @@ census_pea_informal <- pea_anchors %>%
   ungroup() %>%
   select(geocode, year, pea, informal)
 
+# The anchors as read, before any interpolation (D-2026-10-26-a): the
+# 2022 grid completed to the three census years, NA where the municipality
+# was absent from a census. A pre-treatment covariate that needs a census
+# quantity takes its value from here, never from the annual series, whose
+# 2001-2009 cells blend the 2010 census in.
+census_anchors <- pia_anchors %>%
+  full_join(pea_anchors, by = c("geocode", "year")) %>%
+  full_join(informal_anchors, by = c("geocode", "year")) %>%
+  group_by(geocode) %>%
+  complete(year = CENSUS_YEARS) %>%
+  ungroup() %>%
+  arrange(geocode, year) %>%
+  select(geocode, year, pia, pea, informal)
+
 # ---- Assert: output state ---------------------------------------------------
 # census.qmd Q5, Q6, Q7. Three groups of municipalities: counted in 2000
 # (complete series), first counted in 2010 (NA before 2010), first counted
@@ -285,6 +304,16 @@ grid_2010   <- unique(pia_2010_long$geocode)
 absent_2000 <- pea10_raw %>%
   filter(year == CENSUS_YEARS[1], value == "...") %>%
   pull(geocode)
+# The anchors file and the annual series agree at the census years, NA
+# included (census.qmd Q8).
+same_or_na <- function(a, b) {
+  all((is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & abs(a - b) < 1e-9))
+}
+anchor_check <- census_anchors %>%
+  left_join(census_pia, by = c("geocode", "year"), suffix = c("", "_s")) %>%
+  left_join(census_pea_informal, by = c("geocode", "year"),
+            suffix = c("", "_s"))
+n_absent_2010 <- N_MUNIC_2022_EXPECTED - N_MUNIC_2010_EXPECTED
 na_rule_ok <- function(d, cols) {
   d <- d %>%
     mutate(group = case_when(geocode %in% grid_2000 ~ 1L,
@@ -324,7 +353,21 @@ stopifnot(
   is.character(census_pea_informal$geocode),
   is.integer(census_pea_informal$year),
   is.double(census_pea_informal$pea),
-  is.double(census_pea_informal$informal)
+  is.double(census_pea_informal$informal),
+  nrow(census_anchors) == N_MUNIC_2022_EXPECTED * length(CENSUS_YEARS),
+  !anyDuplicated(paste(census_anchors$geocode, census_anchors$year)),
+  setequal(census_anchors$year, CENSUS_YEARS),
+  same_or_na(anchor_check$pia, anchor_check$pia_s),
+  same_or_na(anchor_check$pea, anchor_check$pea_s),
+  same_or_na(anchor_check$informal, anchor_check$informal_s),
+  sum(is.na(census_anchors$pia[census_anchors$year == CENSUS_YEARS[1]])) ==
+    N_ABSENT_2000_EXPECTED + n_absent_2010,
+  sum(is.na(census_anchors$pea[census_anchors$year == CENSUS_YEARS[1]])) ==
+    N_ABSENT_2000_EXPECTED + n_absent_2010,
+  sum(is.na(census_anchors$pia[census_anchors$year == CENSUS_YEARS[2]])) ==
+    n_absent_2010,
+  !anyNA(census_anchors[census_anchors$year == CENSUS_YEARS[3], ]),
+  all(map_lgl(census_anchors[c("pia", "pea", "informal")], is.double))
 )
 
 # ---- Write ------------------------------------------------------------------
@@ -334,3 +377,5 @@ write_rds(census_pea_informal,
           "_data/interim/census_pea_informal_2000_2022.rds")
 write_csv(census_pea_informal,
           "_data/interim/census_pea_informal_2000_2022.csv")
+write_rds(census_anchors, "_data/interim/census_anchors_2000_2022.rds")
+write_csv(census_anchors, "_data/interim/census_anchors_2000_2022.csv")

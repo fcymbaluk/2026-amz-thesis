@@ -146,7 +146,7 @@ Appended last.
 |------------------------------------|------------------------------------|
 | `_lag1`, `_lag2` | lagged k years |
 | `_bl0607` | baseline value, window 2006–2007 (replace digits as needed) |
-| `_c1991`, `_c2000`, `_c2010` | census vintage (Atlas) |
+| `_c1991`, `_c2000`, `_c2010`, `_c2022` | census vintage (Atlas; from 2026-10-26 also the census anchors of the municipality store, `pia_c2000` etc., D-2026-10-26-a) |
 | `_term` | electoral values aligned to the governing term rather than the election year |
 
 Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_crop_idx_z_lag1`, not `mkt_price_crop_idx_lag1_z`.
