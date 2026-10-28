@@ -291,3 +291,51 @@ block of script 04 retired), D-2026-10-22-f (series to 2024).
 **Assertion.** `03-controls-elections.R`, output block (governing map and
 equality with the election rows); `04-panel-assemble.R`, output block (28
 NA municipality-years after 2000 on the 503-municipality panel).
+
+## Q8. Who are the zero-vote candidates, and what does their exclusion move? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the zero-vote candidates of Q6 by year and recorded
+result, the sample's municipality-elections affected, and the pipeline
+output after the exclusion (task 1.8; D-2026-10-28-e).
+
+```{r q8-zero-vote}
+zero <- first_round %>%
+  group_by(geocode = id_municipio, year = as.integer(ano), numero_candidato, sigla_partido,
+           numero_partido) %>%
+  summarise(votes = sum(as.integer(votos)), resultado = paste(unique(resultado), collapse = "/"),
+            .groups = "drop") %>%
+  filter(votes == 0)
+zero %>% count(year, resultado)
+zero_sample <- zero %>% filter(geocode %in% sample_geo$geocode)
+zero_sample %>% count(year)
+affected <- zero_sample %>%
+  distinct(geocode, year) %>%
+  left_join(candidates %>% group_by(geocode, year) %>%
+              summarise(n_all = n(), n_valid = sum(votes > 0), .groups = "drop"),
+            by = c("geocode", "year")) %>%
+  left_join(sample_geo, by = "geocode")
+affected %>% count(year, n_valid)
+affected %>% filter(n_valid == 1) %>% select(municipality, state_abbreviation, year)
+# Pipeline output after the fix (tse read at setup): the eight races are
+# uncontested over their governing years.
+tse %>%
+  filter(geocode %in% affected$geocode[affected$n_valid == 1], year %in% 2013:2016) %>%
+  summarise(cells = n(), uncontested = sum(elec_uncontested), mov_na = sum(is.na(elec_mov)),
+            enc_one = sum(elec_enc == 1))
+```
+
+**Finding.** All 56 zero-vote candidates (54 in 2012, 2 in 2020) are
+recorded as "não eleito", so the file carries no marker of the refused
+candidacy beyond the zero. In the sample they sit in 37 elections of
+2012 and in Magalhães Barata 2020; in eight 2012 races (Borba,
+Tonantins, Uarini, Breves, Vigia, Aragominas, Itaúba, Matupá) the
+zero-vote candidate was the only opponent. Excluding them leaves the ENC
+and the winner's share unchanged (a zero share adds nothing), lowers
+`elec_n_candidates` in 148 cells of the final panel (37 municipalities,
+2013-2016) and makes the eight races uncontested, so their margin and
+competitive flag are NA and `elec_uncontested` is 1 over 2013-2016
+(`compare_outputs`, commit message of step 2.7).
+**Decision.** D-2026-10-28-e.
+**Assertion.** `03-controls-elections.R`, output block (56 zero-vote
+candidates dropped, every remaining candidate has votes, no election
+lost).

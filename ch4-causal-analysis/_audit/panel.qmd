@@ -37,7 +37,7 @@ options(width = 110)
 panel <- read_rds("_data/interim/panel_amz_2000_2020.rds")
 mapbiomas <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds")
 ppcdam <- read_rds("_data/interim/ppcdam_list_2004_2024.rds")
-munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2025.rds")
+munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2022.rds")
 sample_geocodes <- unique(mapbiomas$geocode)
 ```
 
@@ -139,10 +139,13 @@ geocodes, values in {0, 1}) and output block (no NA, zero before 2008).
 ## Q3. Are the areas on one unit after the hectare-to-km² conversion?
 
 What is checked: the MapBiomas forest area, converted from hectares, as a
-share of the 2025 IBGE municipal area; any share above 1 is a unit or
-boundary problem. The second chunk compares the total area MapBiomas
-Collection 9 maps for each municipality (all transition classes summed,
-constant across years) with the 2025 IBGE area, to separate the two.
+share of the IBGE municipal area (the 2025 release at phase 1; the 2022
+release from phase 2, step 2.7, D-2026-10-28-g); any share above 1 is a
+unit or boundary problem. The second chunk compares the total area
+MapBiomas Collection 9 maps for each municipality (all transition classes
+summed, constant across years) with the IBGE area in the panel, to
+separate the two; the third shows the 2025 release for the three
+municipalities of the Boa Esperança do Norte split.
 
 ```{r q3-share}
 share <- panel %>%
@@ -187,32 +190,36 @@ readxl::read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls",
             in_mapbiomas = geocode %in% as.character(mapbiomas_raw$geocode))
 ```
 
-**Finding.** The forest share of the municipal area lies between 0.06 and
-1.0 in every municipality-year but four: Nova Ubiratã (MT) in 2000-2003,
-where the converted forest area exceeds the 2025 municipal area by up to
-18 percent. It is a mesh-vintage mismatch, not a unit error: MapBiomas
-Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against
-8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT,
-geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã
-(3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small
-parts of Vera and Paranatinga; the new municipality is in the 2025 table
-and absent from MapBiomas and from the biome list (D-2026-10-10-f). Every
-2000-2020 variable of Nova Ubiratã refers to the pre-split territory
-while `munic_area_km2` is the post-split one, so its cattle density and
-crop shares are inflated by 43 percent in every year (the 2000 forest
-share is 0.83 of the mapped total). The mapped total and the 2025 area
-agree within 1 percent for 459 of the 503 municipalities; 20 differ by
-more than 2 percent, the largest after Nova Ubiratã being the
-Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85
-and 1.10) and Benjamin Constant, Caapiranga and Ipixuna (AM, 3-4 percent).
-The fall of Nova Ubiratã's forest plus deforestation from 10,480 km² in
-2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land
-cleared in year t is "Antrópico" from t+1, so it leaves both classes.
+**Finding.** With the 2022 release (phase 2, step 2.7, 2026-10-28) the
+forest share of the municipal area lies between 0.06 and 1.0 in every
+municipality-year, and the mapped total agrees with the area within 1
+percent for 486 of the 503 municipalities; the 7 that differ by more than
+2 percent are coastal municipalities of Maranhão and Pará where MapBiomas
+maps less than the area in either release (pam_ppm.qmd Q7). At phase 1,
+with the 2025 release, four municipality-years broke the bound: Nova
+Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the
+municipal area by up to 18 percent. That was a mesh-vintage mismatch, not
+a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in
+every year, against 8,721 km² in the 2025 IBGE table, because Boa
+Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was
+carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado,
+outside the sample), with small parts of Vera and Paranatinga; the new
+municipality is in the 2025 table and absent from MapBiomas, from the
+biome list and from the 2022 table. Every 2000-2020 variable of Nova
+Ubiratã refers to the pre-split territory, so with the post-split area its
+cattle density and crop shares were inflated by 43 percent in every year;
+the 2025 area agreed with the mapped total within 1 percent for 459
+municipalities and differed by more than 2 percent in 20, the largest
+after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO)
+boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã's
+forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is
+class composition (D-2026-10-06-b): land cleared in year t is "Antrópico"
+from t+1, so it leaves both classes.
 **Decision.** D-2026-10-11-c (conversion at the join; moves upstream with
-task 1.9). The area vintage is task 1.8 (D-2026-10-10-f), where this
-quantification is recorded.
+task 1.9); D-2026-10-28-g (the 2022 release, the mesh of Collection 9,
+superseding the vintage of D-2026-10-10-f).
 **Assertion.** `04-panel-assemble.R`, output block
-(`N_FOREST_OVER_AREA_EXPECTED` = 4).
+(`N_FOREST_OVER_AREA_EXPECTED` = 0).
 
 ## Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari's restored cattle index move them?
 
@@ -383,3 +390,60 @@ municipality. Installation years, parents and laws stay in the lookup.
 **Decision.** D-2026-10-23-f.
 **Assertion.** `04-panel-assemble.R`, output block (the NA-population set
 in 2000 equals the lookup; ten flagged in each column).
+
+## Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the three counts carried from script 02
+(`emp_workers_n`, `emp_agri_workers_n`, `pia`), the NA set they share
+with the `emp_*` rates and shares, the 0 / 0 pattern of the agricultural
+shares, and the first observed year of each source against the
+installation year of the lookup (task 1.8; D-2026-10-28-a, -b, -d).
+
+```{r q9-counts}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+panel %>%
+  summarise(across(c(emp_workers_n, emp_agri_workers_n, pia),
+                   list(na = ~ sum(is.na(.x)), zero = ~ sum(.x == 0, na.rm = TRUE))))
+emp_absent <- panel %>%
+  filter(is.na(emp_workers_n)) %>%
+  left_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  mutate(kind = if_else(!is.na(install_year) & year < install_year, "before installation", "gap"))
+emp_absent %>% count(kind)
+panel %>%
+  mutate(agri = case_when(is.na(emp_agri_workers_n) ~ "absent", emp_agri_workers_n == 0 ~ "zero",
+                          TRUE ~ "positive")) %>%
+  group_by(agri) %>%
+  summarise(cells = n(), across(c(emp_share_agri_low_workers, emp_share_agri_high_workers),
+                                ~ sum(is.na(.x)), .names = "na_{.col}"), .groups = "drop")
+```
+
+```{r q9-install}
+first_obs <- function(x, year) if (all(is.na(x))) NA_integer_ else min(year[!is.na(x)])
+panel %>%
+  inner_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  group_by(municipality, install_year) %>%
+  summarise(crops = first_obs(crop_soy_area_planted_km2, year), cattle = first_obs(cattle_heads, year),
+            employment = first_obs(emp_workers_n, year), population = first_obs(population, year),
+            gdp = first_obs(gdp_brl, year), bf = first_obs(bf_families_n, year),
+            .groups = "drop") %>%
+  arrange(install_year, municipality)
+```
+
+**Finding.** `emp_workers_n` and `emp_agri_workers_n` are NA in the 64
+municipality-years absent from the RAIS export, 30 before installation
+and 34 reporting gaps, the same cells where every `emp_*` rate and share
+is NA; `pia`, joined from the census file and not from the RAIS rows, is
+NA where `pea` is: before 2010 for the nine municipalities without a
+2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in
+the absent cells and where `emp_agri_workers_n` is 0, nowhere else. For
+the ten lookup municipalities every source starts in the installation
+year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014
+for Mojuí dos Campos, whose code enters the MDS files a year late) and is
+NA before it.
+**Decision.** D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d.
+**Assertion.** `04-panel-assemble.R`, output block (64 NA cells shared
+by the counts, rates and shares; 111 NA cells of `pia`, the NA set of
+`pea`; agricultural shares NA iff absent or zero agricultural bonds;
+`INSTALL_RULE_COLS` NA before the installation year and observed from
+it).

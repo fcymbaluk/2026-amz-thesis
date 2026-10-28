@@ -519,3 +519,44 @@ new layout parsed without NA, deflator through 2024) and output block
 June transfer per family below half of 2019's in the substitution years
 and below a tenth in 2020, above twice 2019's under the 2023 programme,
 quota NA after 2021).
+
+## Q7. Are the zero-beneficiary rows true zeros? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the rows of the 2004-2024 grid with zero families, by
+month and year; the sample's June rows with a zero quota ratio, with
+February of the same year and June of the next; and the rows with
+positive families and zero transfers (task 1.8; D-2026-10-28-c).
+
+```{r q7-zeros}
+names_tbl <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+bf_panel %>% filter(bf_families_n == 0) %>% count(bf_ref_month, year)
+bf_panel %>% filter(bf_families_n == 0, bf_transfers_total_brl_2024 > 0) %>% nrow()
+bf_panel %>% filter(bf_families_n > 0, bf_transfers_total_brl_2024 == 0) %>% count(bf_ref_month, year)
+june <- bf_panel %>% filter(bf_ref_month == 6)
+june %>%
+  filter(geocode %in% names_tbl$geocode, bf_families_n == 0) %>%
+  select(geocode, year, bf_quota, ratio = bf_families_quota_ratio) %>%
+  left_join(bf_panel %>% filter(bf_ref_month == 2) %>% select(geocode, year, feb_families = bf_families_n),
+            by = c("geocode", "year")) %>%
+  left_join(june %>% transmute(geocode, year = year - 1L, next_june_families = bf_families_n),
+            by = c("geocode", "year")) %>%
+  left_join(names_tbl, by = "geocode") %>%
+  select(municipality, state_abbreviation, year, bf_quota, ratio, feb_families, next_june_families) %>%
+  arrange(year, municipality)
+```
+
+**Finding.** Zero-family rows exist only in 2004 (98 in June, 100 in
+February), 2005 (23, 32) and 2006 (4, 4), always with zero transfers,
+and never afterwards. In the sample the fourteen June rows are ten 2004
+municipalities that are zero in February too and paid in June 2005, and
+Ipiranga do Norte and Itanhangá, installed in 2005, in 2005 (quota 0,
+ratio NA) and 2006 (quota 93 and 100, ratio 0), paid from 2007. This is
+the programme's rollout, so a zero of the payment file is a true zero and
+the quota ratio is 0, not NA. Positive families with zero transfers occur
+only in June 2020 (42 rows), the emergency-aid substitution months of
+D-2026-10-22-b. No value changes.
+**Decision.** D-2026-10-28-c.
+**Assertion.** `02-social-bf.R`, output block (zero families only in
+`BF_ROLLOUT_YEARS` and then with zero transfers; positive families with
+zero transfers only in `BF_ZERO_TRANSFER_YEARS`).

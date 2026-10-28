@@ -23,14 +23,15 @@
 #   D-2026-10-05-e  PIA as the employment denominator.
 #   D-2026-10-07-i  PEA-normalised and agricultural-by-wage rates of the
 #                   lost script not rebuilt; none reached the panel.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  workers_agri_{low,mid,high} stay NA where the municipality-year
-#             has no worker at all in that wage group, while the all-worker
-#             counts read 0 (the lost script's replace_na() named the wrong
-#             columns); shares with a zero denominator are NA, with no count
-#             column to tell "no agricultural employment" from "missing".
-#             Reproduced on purpose.
+#   D-2026-10-28-a  Task 1.8 (phase 2, step 2.7): the agricultural
+#                   wage-bracket counts are 0 where the municipality-year
+#                   has no bond in the bracket (the lost script's
+#                   replace_na() named the wrong columns), so the three
+#                   agricultural shares are NA only at 0 / 0; the counts
+#                   workers_total, workers_agric and pia reach the panel
+#                   through script 04.
+#   D-2026-10-28-b  A municipality-year absent from the export is not
+#                   observed, never zero: no grid completion here.
 # RUN ORDER 02-social-census.R must run first (PIA denominator). Feeds
 #           04-data-panel.R.
 
@@ -100,12 +101,14 @@ workers_wide <- rais_by_code %>%
   pivot_wider(names_from = wage_group, values_from = workers,
               names_prefix = "workers_", values_fill = 0L)
 
-# No values_fill here: the lost script left these cells NA (task 1.8).
+# ---- Fix (D-2026-10-28-a; phase 2, step 2.7) ---------------------------------
+# A bracket with no agricultural bond is 0, like the all-worker pivot above.
 workers_agri_wide <- rais_by_code %>%
   group_by(year, geocode, wage_group) %>%
   summarise(workers = sum(workers_agric), .groups = "drop") %>%
   pivot_wider(names_from = wage_group, values_from = workers,
-              names_prefix = "workers_agri_")
+              names_prefix = "workers_agri_", values_fill = 0L)
+# ---- end fix -----------------------------------------------------------------
 
 rais_employment <- rais_by_code %>%
   group_by(year, geocode) %>%
@@ -123,7 +126,8 @@ rais_employment <- rais_by_code %>%
     emp_share_low_workers  = workers_low / workers_total,
     emp_share_mid_workers  = workers_mid / workers_total,
     emp_share_high_workers = workers_high / workers_total,
-    # 0 / 0 is stored as NA, not NaN (task 1.8).
+    # 0 / 0 (no agricultural bond at all) is stored as NA, not NaN
+    # (D-2026-10-28-a); it is the only NA of these three shares.
     emp_share_agri_low_workers  = if_else(workers_agric > 0L,
                                           workers_agri_low / workers_agric,
                                           NA_real_),
@@ -142,8 +146,11 @@ rais_employment <- rais_by_code %>%
   arrange(geocode, year)
 
 # ---- Assert: output state ---------------------------------------------------
-# _audit/rais.qmd Q2, Q3.
+# _audit/rais.qmd Q2, Q3, Q5.
 share_cols <- rais_employment %>% select(starts_with("emp_share_"))
+agri_share_cols <- rais_employment %>% select(starts_with("emp_share_agri_"),
+                                              -emp_share_agri_workers)
+no_agri <- rais_employment$workers_agric == 0L
 stopifnot(
   !anyDuplicated(paste(rais_employment$geocode, rais_employment$year)),
   n_distinct(rais_employment$geocode) == N_RAIS_MUNIC_EXPECTED,
@@ -151,6 +158,15 @@ stopifnot(
   all(rais_employment$workers_low + rais_employment$workers_mid +
         rais_employment$workers_high == rais_employment$workers_total),
   all(rais_employment$workers_agric <= rais_employment$workers_total),
+  # D-2026-10-28-a: the agricultural bracket counts are never NA, add up
+  # to the agricultural total, and the agricultural shares are NA exactly
+  # where that total is zero.
+  !anyNA(rais_employment$workers_agri_low),
+  !anyNA(rais_employment$workers_agri_mid),
+  !anyNA(rais_employment$workers_agri_high),
+  all(rais_employment$workers_agri_low + rais_employment$workers_agri_mid +
+        rais_employment$workers_agri_high == rais_employment$workers_agric),
+  all(map_lgl(agri_share_cols, ~ identical(is.na(.x), no_agri))),
   all(share_cols >= 0 & share_cols <= 1, na.rm = TRUE),
   all(abs(rais_employment$emp_share_low_workers +
             rais_employment$emp_share_mid_workers +

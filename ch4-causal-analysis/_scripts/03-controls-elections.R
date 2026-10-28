@@ -33,6 +33,11 @@
 #   D-2026-10-22-f  Series 2000-2024: the 2020 election governs 2021-2024;
 #                   the 2024 election governs 2025-2028 and enters only
 #                   election_year.
+#   D-2026-10-28-e  Task 1.8 (phase 2, step 2.7): candidates with zero
+#                   valid votes (candidacies refused after the ballot was
+#                   printed) leave the candidate set before the shares;
+#                   the ENC is unchanged, the candidate count and the
+#                   uncontested flag follow the valid candidates.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   D-2026-10-10-c  36 ballot-number duplicates of 2000 and 2004 are
@@ -65,6 +70,9 @@ TSE_COLUMNS <- c("ano", "turno", "id_eleicao", "tipo_eleicao", "data_eleicao",
 # states (tse.qmd Q7: 805 with a code in 2024, plus two rows with an
 # empty code; Macapá's postponed 2020 election is not typed ordinary).
 N_MUNIC_TSE_EXPECTED <- 808L
+# Zero-vote candidates in the first round of the governing elections, 54
+# of 2012 and 2 of 2020 (tse.qmd Q6, Q8; D-2026-10-28-e).
+N_ZERO_VOTE_CANDIDATES_EXPECTED <- 56L
 
 # ---- Read -------------------------------------------------------------------
 tse_raw <- read_csv(TSE_FILE, col_types = cols(.default = col_character()),
@@ -101,11 +109,20 @@ stopifnot(all(is_geocode(mayors$geocode)))
 # One row per candidate: votes summed over zones and over the ballot-number
 # duplicates of 2000 and 2004 (D-2026-10-10-c); the smallest
 # sequencial_candidato stands for the candidate.
-candidates <- mayors %>%
+candidates_all <- mayors %>%
   group_by(geocode, year, numero_candidato, sigla_partido, numero_partido) %>%
   summarise(candidate_votes = sum(votes),
             candidate_id = min(sequencial_candidato),
-            .groups = "drop") %>%
+            .groups = "drop")
+
+# ---- Fix (D-2026-10-28-e; phase 2, step 2.7) ---------------------------------
+# A candidate with zero valid votes was not a competitor: dropped before the
+# shares, so the candidate count and the uncontested flag see only valid
+# candidates. The ENC is unaffected (a zero share adds nothing).
+n_zero_vote <- sum(candidates_all$candidate_votes == 0L)
+candidates <- candidates_all %>%
+  filter(candidate_votes > 0L) %>%
+# ---- end fix -----------------------------------------------------------------
   group_by(geocode, year) %>%
   mutate(total_votes = sum(candidate_votes),
          vote_share = candidate_votes / total_votes) %>%
@@ -179,6 +196,10 @@ stopifnot(
   is.integer(tse_elections$elec_governing_year)
 )
 stopifnot(
+  n_zero_vote == N_ZERO_VOTE_CANDIDATES_EXPECTED,              # D-2026-10-28-e
+  all(candidates$candidate_votes > 0L),
+  n_distinct(paste(candidates$geocode, candidates$year)) ==
+    n_distinct(paste(candidates_all$geocode, candidates_all$year)),
   !anyDuplicated(paste(elections$geocode, elections$year)),
   all(elections$elec_enc >= 1),
   all(elections$elec_mov >= 0 & elections$elec_mov <= 1, na.rm = TRUE),

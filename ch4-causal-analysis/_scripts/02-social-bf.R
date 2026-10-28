@@ -43,10 +43,11 @@
 #                   reported and flagged by bf_regime (step 2.2).
 #   D-2026-10-22-c  Quota carried to 2021 by the workbook's last period,
 #                   NA from 2022 (step 2.2).
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  bf_families_quota_ratio is 0 where the source reports zero
-#             families against a positive quota (2004-2006).
+#   D-2026-10-28-c  Task 1.8 (phase 2, step 2.7): the zero-family rows of
+#                   2004-2006 are rollout zeros (true zeros of the payment
+#                   file), so bf_families_quota_ratio is 0 there, not NA;
+#                   positive families with zero transfers occur only in
+#                   the 2020 substitution months (D-2026-10-22-b).
 # RUN ORDER 02-social-census.R must run first (PEA denominator). Feeds
 #           04-panel-assemble.R, which keeps bf_ref_month == BF_REF_MONTH.
 
@@ -65,6 +66,10 @@ BF_NEW_LAYOUT_YEARS <- 2023:2024
 BF_FILE_YEARS       <- c(BF_OLD_LAYOUT_YEARS, BF_NEW_LAYOUT_YEARS)
 BF_GAP_YEARS        <- setdiff(BF_YEARS, BF_FILE_YEARS)       # 2022
 BF_NEW_FIRST_ANOMES <- 202303L   # the re-created programme's first month
+# D-2026-10-28-c: the only years with zero-family rows (rollout), and the
+# only year with positive families and zero transfers (emergency aid).
+BF_ROLLOUT_YEARS       <- 2004:2006
+BF_ZERO_TRANSFER_YEARS <- 2020L
 BF_QUOTA_FILE <- file.path(
   BF_DIR, "Atende_SIC_PBF_2003 a Out_2021_Acumulado_Benef.Médio.xlsx"
 )
@@ -388,6 +393,15 @@ stopifnot(
                                        geocode_map$geocode[geocode_map$ibge ==
                                                              BF_NEW_MISSING_IBGE]])),
   all(bf_panel$bf_families_quota_ratio >= 0, na.rm = TRUE),
+  # D-2026-10-28-c: zero families only in the rollout years, and then with
+  # zero transfers; positive families with zero transfers only in 2020.
+  all(bf_panel$year[!is.na(bf_panel$bf_families_n) &
+                      bf_panel$bf_families_n == 0] %in% BF_ROLLOUT_YEARS),
+  all(bf_panel$bf_transfers_total_brl_2024[!is.na(bf_panel$bf_families_n) &
+                                             bf_panel$bf_families_n == 0] == 0),
+  all(bf_panel$year[!is.na(bf_panel$bf_families_n) & bf_panel$bf_families_n > 0 &
+                      bf_panel$bf_transfers_total_brl_2024 == 0] %in%
+        BF_ZERO_TRANSFER_YEARS),
   all(bf_panel$bf_transfers_pea_brl_2024 >= 0, na.rm = TRUE),
   all(bf_panel$bf_transfers_quota_brl_2024 >= 0, na.rm = TRUE),
   # Quota: present for the workbook's municipalities through 2021, NA after

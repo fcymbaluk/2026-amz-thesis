@@ -16,10 +16,13 @@ Source: IBGE Produção Agrícola Municipal (SIDRA Tabela 5457, variable 8331,
 área plantada ou destinada à colheita, four crops) and Pesquisa da Pecuária
 Municipal (SIDRA Tabela 3939, variable 105, efetivo bovino), SIDRA agregados
 API v3, queried 2026-10-09 (`_data/raw/ibge/sidra/sidra_5457_*.json`,
-`sidra_3939_*.json`); IBGE Áreas Territoriais 2025
-(`_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls`, sheet AR_BR_MUN_2025).
-Pipeline script: `_scripts/03-controls-agro.R`.
-Interim outputs: `_data/interim/pam_ppm_munic_area_2025.rds`,
+`sidra_3939_*.json`); IBGE Áreas Territoriais 2022
+(`_data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls`, sheet AR_BR_MUN_2022,
+the pipeline's area from phase 2, step 2.7, D-2026-10-28-g) and, for the
+vintage comparison of Q7, IBGE Áreas Territoriais 2025
+(`AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls`, sheet AR_BR_MUN_2025, the phase 1
+area). Pipeline script: `_scripts/03-controls-agro.R`.
+Interim outputs: `_data/interim/pam_ppm_munic_area_2022.rds`,
 `pam_ppm_crop_areas_1988_2025.rds`, `pam_ppm_cattle_1974_2025.rds`,
 `pam_ppm_weights_base_2000_2002.rds`.
 Equivalence with the recovered panel is not checked here (the notebook never
@@ -45,9 +48,11 @@ sidra <- function(pattern) {
 pam_raw <- map_dfr(c(soy = "soja", corn = "milho", rice = "arroz", cotton = "algodao"),
                    ~ sidra(paste0("^sidra_5457_areaplanted_", .x, "_")), .id = "crop")
 ppm_raw <- sidra("^sidra_3939_bovino_")
-areas_raw <- read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls",
-                        sheet = "AR_BR_MUN_2025", col_types = "text")
-munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2025.rds")
+areas_raw <- read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls",
+                        sheet = "AR_BR_MUN_2022", col_types = "text")
+areas_2025 <- read_excel("_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls",
+                         sheet = "AR_BR_MUN_2025", col_types = "text")
+munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2022.rds")
 crop_areas <- read_rds("_data/interim/pam_ppm_crop_areas_1988_2025.rds")
 cattle <- read_rds("_data/interim/pam_ppm_cattle_1974_2025.rds")
 weights <- read_rds("_data/interim/pam_ppm_weights_base_2000_2002.rds")
@@ -130,10 +135,12 @@ sample, "..." occurs for the nine post-2000 Mato Grosso municipalities in
 **Assertion.** `03-controls-agro.R`, raw-state block (category 2670, year
 set, 5,568 series, symbols).
 
-## Q3. What does the 2025 areas workbook contain?
+## Q3. What does the areas workbook contain? (2022 release from phase 2, step 2.7)
 
 What is checked: the column names IBGE ships, the rows that are not
-municipalities, the grid vintage, and the area of Santa Cruz do Arari.
+municipalities, the grid vintage, the PAM/PPM municipalities without an
+area, and the area of Santa Cruz do Arari. Until 2026-10-28 the pipeline
+read the 2025 release; the finding records both.
 
 ```{r q3-layout}
 names(areas_raw)
@@ -141,6 +148,8 @@ nrow(areas_raw)
 areas_raw %>% filter(!str_detect(CD_MUN, "^[0-9]{7}$") %in% TRUE)
 areas_raw %>% filter(str_detect(CD_MUN, "^[0-9]{7}$") %in% TRUE, !CD_MUN %in% all_munic$geocode)
 areas_raw %>% filter(CD_MUN == "1506401")
+setdiff(unique(c(pam_raw$geocode, ppm_raw$geocode)), areas_raw$CD_MUN)
+areas_2025 %>% filter(CD_MUN == "5101837")
 ```
 
 ```{r q3-sample}
@@ -150,21 +159,30 @@ munic_area %>%
             max_km2 = max(munic_area_km2))
 ```
 
-**Finding.** The workbook carries IBGE's own column names (`CD_MUN`,
-`AR_MUN_2025`), not the hand-renamed `geocode` and `Area km2` of the lost
-file, 5,573 coded rows and two trailing note rows. The coded rows are the
-2025 municipal grid: the 5,570 municipalities of the 2022 census, Boa
-Esperança do Norte (MT, installed 2025), and the two operational areas of
-Lagoa dos Patos and Lagoa Mirim, which are not municipalities. Santa Cruz
-do Arari has 1076.652 km2. Because the pipeline uses this single vintage
-for every year, the parents of Boa Esperança do Norte carry post-split
-areas throughout.
+**Finding.** The 2022 workbook carries IBGE's own column names (`ID`,
+`CD_MUN`, `AR_MUN_2022`), 5,572 coded rows and three trailing rows without
+a code (two blank, one note saying the areas were computed from the
+BR_Municipios_2022 file of the Malha Municipal Digital, the mesh MapBiomas
+Collection 9 maps). The coded rows are the 2022 grid: the 5,570
+municipalities of the 2022 census and the two operational areas of Lagoa
+dos Patos and Lagoa Mirim (4300001, 4300002), which are not
+municipalities. Santa Cruz do Arari has 1076.652 km², as in the 2025
+release. Boa Esperança do Norte (MT, 5101837, installed 2025), which PAM
+and PPM report, is the one surveyed municipality without a 2022 area; its
+crop shares, cattle density and base-window weights are NA and it stays in
+the interim files, outside the biome sample. Until 2026-10-28 the pipeline
+read the 2025 release (5,573 coded rows plus two trailing rows: the same
+grid plus Boa Esperança do Norte, with the hand-renamed `geocode` and
+`Area km2` of the lost file replaced by IBGE's names), so the parents of
+the split carried post-split areas in every year; Q7 compares the two
+vintages.
 **Decision.** D-2026-10-10-i (the area is stored for every municipality of
-the grid, independently of PAM); D-2026-10-10-f (2025 area in all years;
-the 2025 split is flagged for task 1.8).
-**Assertion.** `03-controls-agro.R`, raw-state block (column names, 5,573
-coded rows plus two, Santa Cruz do Arari present) and output block (5,571
-municipalities).
+the grid, independently of PAM); D-2026-10-28-g (the 2022 release in all
+years, superseding the vintage of D-2026-10-10-f).
+**Assertion.** `03-controls-agro.R`, raw-state block (column names, 5,572
+coded rows plus three, Boa Esperança do Norte the only PAM/PPM code without
+an area, Santa Cruz do Arari present) and output block (5,570
+municipalities; NA shares and density for Boa Esperança do Norte only).
 
 ## Q4. Are the shares, densities and base-window weights plausible in the sample?
 
@@ -233,3 +251,126 @@ and the cattle index are restored while the crop columns stay NA.
 **Decision.** D-2026-10-10-i.
 **Assertion.** `03-controls-agro.R`, raw-state block (absent from PAM,
 present in PPM and in the areas workbook).
+
+## Q6. Do the SIDRA symbols follow the installation rule? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: for the ten municipalities installed after 2000, the
+years PAM (soy) and PPM report as "..." against the installation year of
+the lookup, and the first year with a reported value (a number or "-");
+the "..." cells of the sample outside that set; the "-" cells (task 1.8;
+D-2026-10-28-d).
+
+```{r q6-symbols}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+# read_sidra_json carries its own municipality name: keep the keys and the symbol.
+window <- function(d) d %>%
+  filter(geocode %in% sample_geo$geocode, year %in% 2000:2020) %>%
+  select(geocode, year, value)
+symbol_rule <- function(d, label) {
+  d %>%
+    inner_join(post2000 %>% select(geocode, municipality, install_year), by = "geocode") %>%
+    group_by(municipality, install_year) %>%
+    summarise(dots = paste(range(year[value == "..."]), collapse = "-"),
+              first_reported = min(year[value != "..."]),
+              dash_or_number_before = sum(value != "..." & year < install_year),
+              .groups = "drop") %>%
+    mutate(source = label)
+}
+bind_rows(symbol_rule(window(pam_raw %>% filter(crop == "soy")), "PAM soy"),
+          symbol_rule(window(ppm_raw), "PPM")) %>%
+  arrange(source, municipality)
+window(pam_raw %>% filter(crop == "soy")) %>%
+  filter(value == "...", !geocode %in% post2000$geocode) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(municipality, state_abbreviation) %>%
+  summarise(years = paste(year, collapse = ", "), .groups = "drop")
+window(ppm_raw) %>% summarise(dash = sum(value == "-"), dots = sum(value == "..."),
+                              dots_outside_lookup = sum(value == "..." & !geocode %in% post2000$geocode))
+```
+
+**Finding.** For the ten lookup municipalities "..." covers exactly the
+years before installation and the first reported value (a number, or "-"
+where no soy was planted) appears in the installation year, in both
+surveys; nothing is reported before it. The
+remaining "..." cells of PAM are six Pará municipalities (Afuá,
+Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT,
+2002) in scattered years, where the survey did not report the
+municipality; PPM has no "..." outside the lookup set. The symbol rule
+of D-2026-10-10-g ("-" zero, "..." NA) stands, and NA before
+installation is a property of every source, asserted in script 04 against
+the lookup.
+**Decision.** D-2026-10-28-d.
+**Assertion.** `04-panel-assemble.R`, output block (NA before the
+installation year and observed from it in crops, cattle, employment,
+population and GDP).
+
+## Q7. Which area vintage sits on the MapBiomas mesh? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the total area MapBiomas Collection 9 maps for each
+municipality of the biome sample (all transition classes summed, 2023)
+against the 2022 and the 2025 IBGE areas; the municipalities where the two
+releases differ; the three municipalities of the Boa Esperança do Norte
+split.
+
+```{r q7-vintage}
+mapped_total <- read_excel("_data/raw/mapbiomas/mapbiomas_munic.xlsx",
+                           sheet = "DEF_SECVEG") %>%
+  mutate(geocode = as.character(geocode)) %>%
+  filter(geocode %in% sample_geo$geocode) %>%
+  group_by(geocode) %>%
+  summarise(mapped_total_km2 = sum(`2023`) / 100, .groups = "drop")
+vintages <- mapped_total %>%
+  left_join(rename(munic_area, area_2022 = munic_area_km2), by = "geocode") %>%
+  left_join(areas_2025 %>%
+              filter(str_detect(CD_MUN, "^[0-9]{7}$") %in% TRUE) %>%
+              transmute(geocode = CD_MUN, area_2025 = as.numeric(AR_MUN_2025)),
+            by = "geocode") %>%
+  mutate(ratio_2022 = mapped_total_km2 / area_2022,
+         ratio_2025 = mapped_total_km2 / area_2025)
+vintages %>%
+  summarise(n = n(),
+            within_1pct_2022 = sum(abs(ratio_2022 - 1) <= 0.01),
+            within_1pct_2025 = sum(abs(ratio_2025 - 1) <= 0.01),
+            over_2pct_2022 = sum(abs(ratio_2022 - 1) > 0.02),
+            over_2pct_2025 = sum(abs(ratio_2025 - 1) > 0.02),
+            releases_differ = sum(area_2022 != area_2025),
+            differ_over_1pct = sum(abs(area_2022 / area_2025 - 1) > 0.01))
+vintages %>%
+  filter(abs(ratio_2022 - 1) > 0.02) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  arrange(ratio_2022) %>%
+  transmute(geocode, municipality, state_abbreviation,
+            mapped_total_km2 = round(mapped_total_km2, 1),
+            area_2022 = round(area_2022, 1), area_2025 = round(area_2025, 1),
+            ratio_2022 = round(ratio_2022, 3), ratio_2025 = round(ratio_2025, 3))
+vintages %>%
+  filter(abs(area_2022 - area_2025) > 100) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  arrange(desc(abs(area_2022 - area_2025))) %>%
+  transmute(geocode, municipality, state_abbreviation,
+            mapped_total_km2 = round(mapped_total_km2, 1),
+            area_2022 = round(area_2022, 1), area_2025 = round(area_2025, 1),
+            ratio_2022 = round(ratio_2022, 3), ratio_2025 = round(ratio_2025, 3))
+```
+
+**Finding.** The 2022 area lies within 1 percent of the mapped total for
+486 of the 503 municipalities (485 of the 502 of the sample) against 459
+(458) for the 2025 release, and differs from it by more than 2 percent in
+7 against 20. The seven are coastal municipalities of Maranhão and Pará
+(Raposa, Godofredo Viana, Porto Rico do Maranhão, São João de Pirabas,
+Cururupu, Augusto Corrêa, Luís Domingues) where the mapped total falls
+short of the area in both releases alike: MapBiomas' own coverage of the
+coast, not the mesh. The two releases differ in 300 municipalities, 31 by
+more than 1 percent. The large differences are the mesh: Nova Ubiratã
+(12,460.7 km² in 2022 against 8,720.8 in 2025; ratio 1.000 against 1.429),
+the Seringueiras-São Miguel do Guaporé (RO) boundary swap (3,773.5 and
+7,460.1 km² in 2022; ratios 1.000 against 0.849 and 1.099) and boundary
+revisions of 400-630 km² in Amazonas (Apuí, São Gabriel da Cachoeira,
+Jutaí, Presidente Figueiredo, Borba), all of which the 2022 release puts
+on the mapped mesh. With it no forest area exceeds the municipal area
+(panel.qmd Q3).
+**Decision.** D-2026-10-28-g.
+**Assertion.** `03-controls-agro.R`, raw-state block (the 2022 file, sheet
+and column; grid counts); `04-panel-assemble.R`, output block
+(`N_FOREST_OVER_AREA_EXPECTED` = 0).

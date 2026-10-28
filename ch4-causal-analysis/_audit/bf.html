@@ -2218,6 +2218,7 @@ vertical-align: -.125em;
   <li><a href="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" id="toc-q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21" class="nav-link" data-scroll-target="#q4b.-why-do-the-mato-grosso-quotas-fail-and-does-realignment-repair-them-phase-2-step-2.1-2026-10-21">Q4b. Why do the Mato Grosso quotas fail, and does realignment repair them? (phase 2, step 2.1, 2026-10-21)</a></li>
   <li><a href="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" id="toc-q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear" class="nav-link" data-scroll-target="#q5.-do-the-six-digit-mds-codes-map-to-the-ibge-geocodes-and-how-do-mojuí-dos-campos-and-santarém-appear">Q5. Do the six-digit MDS codes map to the IBGE geocodes, and how do Mojuí dos Campos and Santarém appear?</a></li>
   <li><a href="#q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22" id="toc-q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22" class="nav-link" data-scroll-target="#q6.-what-do-the-2020-2026-files-hold-and-how-is-the-series-extended-to-2024-phase-2-step-2.2-2026-10-22">Q6. What do the 2020-2026 files hold, and how is the series extended to 2024? (phase 2, step 2.2, 2026-10-22)</a></li>
+  <li><a href="#q7.-are-the-zero-beneficiary-rows-true-zeros-phase-2-step-2.7-2026-10-28" id="toc-q7.-are-the-zero-beneficiary-rows-true-zeros-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q7.-are-the-zero-beneficiary-rows-true-zeros-phase-2-step-2.7-2026-10-28">Q7. Are the zero-beneficiary rows true zeros? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -3081,6 +3082,80 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> The 2020 and 2021 files have the 2004-2019 layout and coverage; the 2023-2026 files have a new layout that parses without loss and covers 5,570 codes until October 2025, the missing one being Boa Esperança do Norte (MT, installed 2025, outside the sample); its average-benefit column is the ratio of the two stored columns rounded by the provider and is not carried. On the biome municipalities the beneficiary count is stable from 2019 to October 2021 (2.11 to 2.24 million) while the transfer per family in the monthly files falls from about R$ 212 in January-March 2020 to R$ 6-7 in April-August and R$ 35-41 in September-December, returns to R$ 206-210 in January-March 2021, halves to R$ 99-106 in April-October 2021 and is empty from November 2021 to February 2023 (no file for 2022, 2023 starting in March). These are the two Auxílio Emergencial rounds: families paid the emergency aid were taken off the Bolsa Família payroll, so the monthly service reports the residual disbursement. The LAI workbook, which accounts for the entitlement, shows no fall on the same municipalities (R$ 5.58 bn in 2020 against 5.54 bn in 2019, 4.60 bn for January-October 2021); the monthly files sum to the workbook’s total exactly in 2019, to a third of it in 2020 and to two thirds in January-October 2021. June, the reference month, lies inside the substitution window in both years; February does not. From March 2023 the re-created programme pays about R$ 660-700 per family nominal (2.6-2.8 times 2019 in 2024 BRL) to 41 percent more biome families, with no quota series (the workbook ends in October 2021) and no PEA denominator after 2022. After the extension the interim grid runs 2004-2024 for both months: 2004-2019 values unchanged, 2020-2021 as reported under <code>pbf_emergency_aid</code> (June) and <code>pbf</code> (February), 2022 and February 2023 empty under <code>auxilio_brasil</code>, 2023-2024 under <code>pbf_2023</code> with the quota and PEA ratios NA. <strong>Decision.</strong> D-2026-10-22-a (series to 2024 across both layouts, 2022 empty; supersedes D-2026-10-05-b, closes D-2026-10-05-q), D-2026-10-22-b (substitution months stored as reported, <code>bf_regime</code> added and carried into the panel), D-2026-10-22-c (quota through 2021, NA after). <strong>Assertion.</strong> <code>02-social-bf.R</code>, raw-state block (both layouts’ columns, no 2022 file, 5,571 and 5,570 codes with the one missing code named, the new layout parsed without NA, deflator through 2024) and output block (grid size, regime sequence by month and year, Auxílio Brasil rows empty, June transfer per family below half of 2019’s in the substitution years and below a tenth in 2020, above twice 2019’s under the 2023 programme, quota NA after 2021).</p>
+</section>
+<section id="q7.-are-the-zero-beneficiary-rows-true-zeros-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-are-the-zero-beneficiary-rows-true-zeros-phase-2-step-2.7-2026-10-28">Q7. Are the zero-beneficiary rows true zeros? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: the rows of the 2004-2024 grid with zero families, by month and year; the sample’s June rows with a zero quota ratio, with February of the same year and June of the next; and the rows with positive families and zero transfers (task 1.8; D-2026-10-28-c).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>names_tbl <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bf_families_n <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(bf_ref_month, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  bf_ref_month  year     n
+         &lt;int&gt; &lt;int&gt; &lt;int&gt;
+1            2  2004   100
+2            2  2005    32
+3            2  2006     4
+4            6  2004    98
+5            6  2005    23
+6            6  2006     4</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bf_families_n <span class="sc">==</span> <span class="dv">0</span>, bf_transfers_total_brl_2024 <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>bf_panel <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bf_families_n <span class="sc">&gt;</span> <span class="dv">0</span>, bf_transfers_total_brl_2024 <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(bf_ref_month, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  bf_ref_month  year     n
+         &lt;int&gt; &lt;int&gt; &lt;int&gt;
+1            6  2020    42</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>june <span class="ot">&lt;-</span> bf_panel <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bf_ref_month <span class="sc">==</span> <span class="dv">6</span>)</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>june <span class="sc">%&gt;%</span></span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> names_tbl<span class="sc">$</span>geocode, bf_families_n <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, bf_quota, <span class="at">ratio =</span> bf_families_quota_ratio) <span class="sc">%&gt;%</span></span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(bf_panel <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bf_ref_month <span class="sc">==</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, <span class="at">feb_families =</span> bf_families_n),</span>
+<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(june <span class="sc">%&gt;%</span> <span class="fu">transmute</span>(geocode, <span class="at">year =</span> year <span class="sc">-</span> <span class="dv">1</span>L, <span class="at">next_june_families =</span> bf_families_n),</span>
+<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(names_tbl, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, state_abbreviation, year, bf_quota, ratio, feb_families, next_june_families) <span class="sc">%&gt;%</span></span>
+<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(year, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 14 × 7
+   municipality         state_abbreviation  year bf_quota ratio feb_families next_june_families
+   &lt;chr&gt;                &lt;chr&gt;              &lt;int&gt;    &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;              &lt;dbl&gt;
+ 1 Carmolândia          TO                  2004      211     0            0                127
+ 2 Cedral               MA                  2004     1204     0            0                438
+ 3 Cujubim              RO                  2004      659     0            0                169
+ 4 Feliz Natal          MT                  2004      165     0            0                 83
+ 5 Gaúcha do Norte      MT                  2004      197     0            0                 63
+ 6 Machadinho D&#39;Oeste   RO                  2004     2622     0            0                608
+ 7 Paranaíta            MT                  2004      634     0            0                395
+ 8 Parecis              RO                  2004      587     0            0                 28
+ 9 Pimenteiras do Oeste RO                  2004      276     0            0                 25
+10 Rondolândia          MT                  2004      273     0            0                  1
+11 Ipiranga do Norte    MT                  2005        0    NA            0                  0
+12 Itanhangá            MT                  2005        0    NA            0                  0
+13 Ipiranga do Norte    MT                  2006       93     0            0                 95
+14 Itanhangá            MT                  2006      100     0            0                 29</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Zero-family rows exist only in 2004 (98 in June, 100 in February), 2005 (23, 32) and 2006 (4, 4), always with zero transfers, and never afterwards. In the sample the fourteen June rows are ten 2004 municipalities that are zero in February too and paid in June 2005, and Ipiranga do Norte and Itanhangá, installed in 2005, in 2005 (quota 0, ratio NA) and 2006 (quota 93 and 100, ratio 0), paid from 2007. This is the programme’s rollout, so a zero of the payment file is a true zero and the quota ratio is 0, not NA. Positive families with zero transfers occur only in June 2020 (42 rows), the emergency-aid substitution months of D-2026-10-22-b. No value changes. <strong>Decision.</strong> D-2026-10-28-c. <strong>Assertion.</strong> <code>02-social-bf.R</code>, output block (zero families only in <code>BF_ROLLOUT_YEARS</code> and then with zero transfers; positive families with zero transfers only in <code>BF_ZERO_TRANSFER_YEARS</code>).</p>
 </section>
 
 </main>

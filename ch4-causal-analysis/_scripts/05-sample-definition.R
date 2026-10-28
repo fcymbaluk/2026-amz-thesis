@@ -42,15 +42,17 @@
 #                   never the interpolated series, are the baseline values
 #                   a pre-treatment covariate takes.
 #
+#   D-2026-10-28-d  Installation rule (phase 2, step 2.7): Ipiranga do
+#                   Norte and Itanhangá (MT, installed 2005) are NA in
+#                   the 2000-2003 window, so their pressure_agri and
+#                   pressure_score stay NA, never imputed from the
+#                   parents; Santa Cruz do Arari has no crop series
+#                   (D-2026-10-10-i).
+#   D-2026-10-28-g  forest_share_2000 and the cattle term of pressure_agri
+#                   divide by the 2022 municipal area (phase 2, step 2.7),
+#                   the MapBiomas mesh; Nova Ubiratã pre-split.
+#
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  Ipiranga do Norte and Itanhangá (MT, installed 2005) have no
-#             2000-2003 PAM or PPM rows, so their pressure_agri and
-#             pressure_score are NA (D-2026-10-10-g); Santa Cruz do Arari
-#             has no crop series (D-2026-10-10-i). Whether a baseline can
-#             be stated for a municipality installed after the window is
-#             settled with the NA-versus-zero rules.
-#   Task 1.8  Nova Ubiratã's forest share and cattle density are computed
-#             on the post-split 2025 area (D-2026-10-11-c).
 #   Task 2.2  The cross-sectional standardisation of the pressure scores is
 #             sample-dependent (D-2026-10-12-c).
 # RUN ORDER After 04-panel-assemble.R. Script 06 reads the panel output.
@@ -75,7 +77,7 @@ POP_CENSUS_SOURCE         <- "census"    # pop_source of 03-controls-gdp.R
 N_ANCHOR_NA_2000_EXPECTED <- 9L
 N_MUNIC_IN_EXPECTED       <- 503L        # script 04 output; task 1.1
 N_MUNIC_EXPECTED          <- 502L        # D-2026-10-05-l; task 1.1
-N_PANEL_COLS_EXPECTED     <- 68L   # 73 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e) + 2 muni_* (D-2026-10-23-f)
+N_PANEL_COLS_EXPECTED     <- 71L   # 73 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e) + 2 muni_* (D-2026-10-23-f) + 3 counts (D-2026-10-28-a)
 # panel-sample.qmd Q3-Q4: cohorts 2008-2009 in the main window, 2011-2012
 # added in the robust window; every treated municipality is at risk.
 N_TREATED_MAIN_EXPECTED   <- 43L

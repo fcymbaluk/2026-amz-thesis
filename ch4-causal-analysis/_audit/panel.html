@@ -2219,6 +2219,7 @@ vertical-align: -.125em;
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
   <li><a href="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags" id="toc-q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="nav-link" data-scroll-target="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</a></li>
+  <li><a href="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" id="toc-q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2256,7 +2257,7 @@ vertical-align: -.125em;
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>panel <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mapbiomas <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ppcdam <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/ppcdam_list_2004_2024.rds&quot;</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>munic_area <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_munic_area_2025.rds&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>munic_area <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_munic_area_2022.rds&quot;</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>sample_geocodes <span class="ot">&lt;-</span> <span class="fu">unique</span>(mapbiomas<span class="sc">$</span>geocode)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
@@ -2402,7 +2403,7 @@ vertical-align: -.125em;
 </section>
 <section id="q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion">Q3. Are the areas on one unit after the hectare-to-km² conversion?</h2>
-<p>What is checked: the MapBiomas forest area, converted from hectares, as a share of the 2025 IBGE municipal area; any share above 1 is a unit or boundary problem. The second chunk compares the total area MapBiomas Collection 9 maps for each municipality (all transition classes summed, constant across years) with the 2025 IBGE area, to separate the two.</p>
+<p>What is checked: the MapBiomas forest area, converted from hectares, as a share of the IBGE municipal area (the 2025 release at phase 1; the 2022 release from phase 2, step 2.7, D-2026-10-28-g); any share above 1 is a unit or boundary problem. The second chunk compares the total area MapBiomas Collection 9 maps for each municipality (all transition classes summed, constant across years) with the IBGE area in the panel, to separate the two; the third shows the 2025 release for the three municipalities of the Boa Esperança do Norte split.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2415,20 +2416,16 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.0646  0.3946  0.6597  0.6233  0.8606  1.1821 </code></pre>
+ 0.0646  0.3945  0.6603  0.6229  0.8597  0.9977 </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>share <span class="sc">%&gt;%</span> <span class="fu">filter</span>(forest_share <span class="sc">&gt;</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 6
-  geocode municipality state_abbreviation  year forest_share total_share
-  &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;              &lt;int&gt;        &lt;dbl&gt;       &lt;dbl&gt;
-1 5106240 Nova Ubiratã MT                  2000         1.18        1.20
-2 5106240 Nova Ubiratã MT                  2001         1.15        1.18
-3 5106240 Nova Ubiratã MT                  2002         1.10        1.16
-4 5106240 Nova Ubiratã MT                  2003         1.02        1.10</code></pre>
+<pre><code># A tibble: 0 × 6
+# ℹ 6 variables: geocode &lt;chr&gt;, municipality &lt;chr&gt;, state_abbreviation &lt;chr&gt;, year &lt;int&gt;, forest_share &lt;dbl&gt;,
+#   total_share &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2454,7 +2451,7 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>max_year_change_km2       n_within_1pct         n_over_2pct 
-       8.629286e-09        4.590000e+02        2.000000e+01 </code></pre>
+       8.629286e-09        4.860000e+02        7.000000e+00 </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2467,29 +2464,16 @@ vertical-align: -.125em;
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">ratio =</span> <span class="fu">round</span>(ratio, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 20 × 6
-   geocode municipality           state_abbreviation mapped_total_km2 munic_area_km2 ratio
-   &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;                         &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt;
- 1 5106240 Nova Ubiratã           MT                          12461.          8721.  1.43 
- 2 1101500 Seringueiras           RO                           3774.          4444   0.849
- 3 2109452 Raposa                 MA                             68.9           79.2 0.87 
- 4 1100320 São Miguel do Guaporé  RO                           7460.          6790.  1.10 
- 5 2104305 Godofredo Viana        MA                            667.           726.  0.92 
- 6 1301852 Iranduba               AM                           2217.          2332.  0.951
- 7 2109056 Porto Rico do Maranhão MA                            234.           245   0.955
- 8 1300607 Benjamin Constant      AM                           8696.          9100.  0.956
- 9 1300839 Caapiranga             AM                           9456.          9744.  0.97 
-10 1507474 São João de Pirabas    PA                            648.           668.  0.97 
-11 2103158 Centro do Guilherme    MA                           1168.          1135.  1.03 
-12 5108501 Vera                   MT                           3058.          2979.  1.03 
-13 1300086 Anamã                  AM                           2446.          2382.  1.03 
-14 2106375 Maranhãozinho          MA                            761.           782.  0.973
-15 1301803 Ipixuna                AM                          12110.         12438.  0.974
-16 2103703 Cururupu               MA                           1223.          1256.  0.974
-17 1500909 Augusto Corrêa         PA                           1075.          1100.  0.978
-18 2101301 Bacuri                 MA                            850.           832.  1.02 
-19 1301654 Guajará                AM                           7583.          7427.  1.02 
-20 1300060 Amaturá                AM                           4754.          4658.  1.02 </code></pre>
+<pre><code># A tibble: 7 × 6
+  geocode municipality           state_abbreviation mapped_total_km2 munic_area_km2 ratio
+  &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;                         &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt;
+1 2109452 Raposa                 MA                             68.9           79.2 0.87 
+2 2104305 Godofredo Viana        MA                            667.           720.  0.927
+3 2109056 Porto Rico do Maranhão MA                            234.           245   0.955
+4 1507474 São João de Pirabas    PA                            648.           668.  0.97 
+5 2103703 Cururupu               MA                           1223.          1258.  0.973
+6 1500909 Augusto Corrêa         PA                           1075.          1100.  0.978
+7 2106201 Luís Domingues         MA                            463.           472.  0.98 </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2509,7 +2493,7 @@ vertical-align: -.125em;
 3 5107925 Sorriso                              8455. TRUE        </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year but four: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeds the 2025 municipal area by up to 18 percent. It is a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas and from the biome list (D-2026-10-10-f). Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory while <code>munic_area_km2</code> is the post-split one, so its cattle density and crop shares are inflated by 43 percent in every year (the 2000 forest share is 0.83 of the mapped total). The mapped total and the 2025 area agree within 1 percent for 459 of the 503 municipalities; 20 differ by more than 2 percent, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10) and Benjamin Constant, Caapiranga and Ipixuna (AM, 3-4 percent). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-11-c (conversion at the join; moves upstream with task 1.9). The area vintage is task 1.8 (D-2026-10-10-f), where this quantification is recorded. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 4).</p>
+<p><strong>Finding.</strong> With the 2022 release (phase 2, step 2.7, 2026-10-28) the forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year, and the mapped total agrees with the area within 1 percent for 486 of the 503 municipalities; the 7 that differ by more than 2 percent are coastal municipalities of Maranhão and Pará where MapBiomas maps less than the area in either release (pam_ppm.qmd Q7). At phase 1, with the 2025 release, four municipality-years broke the bound: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the municipal area by up to 18 percent. That was a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas, from the biome list and from the 2022 table. Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory, so with the post-split area its cattle density and crop shares were inflated by 43 percent in every year; the 2025 area agreed with the mapped total within 1 percent for 459 municipalities and differed by more than 2 percent in 20, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-11-c (conversion at the join; moves upstream with task 1.9); D-2026-10-28-g (the 2022 release, the mesh of Collection 9, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
 </section>
 <section id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</h2>
@@ -2530,9 +2514,9 @@ vertical-align: -.125em;
 <pre><code># A tibble: 4 × 4
   variable                       mean    sd    na
   &lt;chr&gt;                         &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 price_index_crop_z         4.44e-16 1        84
-2 price_index_crop_lag1_z   -2.98e- 3 0.996   583
-3 price_index_cattle_z       7.48e-16 1.00     63
+1 price_index_crop_z         3.31e-16 1        84
+2 price_index_crop_lag1_z   -3.00e- 3 0.996   583
+3 price_index_cattle_z       1.16e-16 1.00     63
 4 price_index_cattle_lag1_z -1.33e- 2 0.982   563</code></pre>
 </div>
 </div>
@@ -2790,6 +2774,88 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> Ten municipalities carry <code>muni_new_post2000</code>: the nine Mato Grosso municipalities installed in 2001 and 2005 and Mojuí dos Campos (2013), exactly the set with no population in 2000. Ten of their twelve parents are in the biome sample and carry <code>muni_parent_split</code>; Ribeirão Cascalheira and Cáceres are outside it. Both flags are constant within municipality. Installation years, parents and laws stay in the lookup. <strong>Decision.</strong> D-2026-10-23-f. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (the NA-population set in 2000 equals the lookup; ten flagged in each column).</p>
+</section>
+<section id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: the three counts carried from script 02 (<code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>), the NA set they share with the <code>emp_*</code> rates and shares, the 0 / 0 pattern of the agricultural shares, and the first observed year of each source against the installation year of the lookup (task 1.8; D-2026-10-28-a, -b, -d).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(emp_workers_n, emp_agri_workers_n, pia),</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">na =</span> <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)), <span class="at">zero =</span> <span class="sc">~</span> <span class="fu">sum</span>(.x <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 6
+  emp_workers_n_na emp_workers_n_zero emp_agri_workers_n_na emp_agri_workers_n_zero pia_na pia_zero
+             &lt;int&gt;              &lt;int&gt;                 &lt;int&gt;                   &lt;int&gt;  &lt;int&gt;    &lt;int&gt;
+1               64                  0                    64                    1606    111        0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>emp_absent <span class="ot">&lt;-</span> panel <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(emp_workers_n)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">kind =</span> <span class="fu">if_else</span>(<span class="sc">!</span><span class="fu">is.na</span>(install_year) <span class="sc">&amp;</span> year <span class="sc">&lt;</span> install_year, <span class="st">&quot;before installation&quot;</span>, <span class="st">&quot;gap&quot;</span>))</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>emp_absent <span class="sc">%&gt;%</span> <span class="fu">count</span>(kind)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  kind                    n
+  &lt;chr&gt;               &lt;int&gt;
+1 before installation    30
+2 gap                    34</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">agri =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(emp_agri_workers_n) <span class="sc">~</span> <span class="st">&quot;absent&quot;</span>, emp_agri_workers_n <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;zero&quot;</span>,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;positive&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(agri) <span class="sc">%&gt;%</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cells =</span> <span class="fu">n</span>(), <span class="fu">across</span>(<span class="fu">c</span>(emp_share_agri_low_workers, emp_share_agri_high_workers),</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>                                <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)), <span class="at">.names =</span> <span class="st">&quot;na_{.col}&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  agri     cells na_emp_share_agri_low_workers na_emp_share_agri_high_workers
+  &lt;chr&gt;    &lt;int&gt;                         &lt;int&gt;                          &lt;int&gt;
+1 absent      64                            64                             64
+2 positive  8893                             0                              0
+3 zero      1606                          1606                           1606</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>first_obs <span class="ot">&lt;-</span> <span class="cf">function</span>(x, year) <span class="cf">if</span> (<span class="fu">all</span>(<span class="fu">is.na</span>(x))) <span class="cn">NA_integer_</span> <span class="cf">else</span> <span class="fu">min</span>(year[<span class="sc">!</span><span class="fu">is.na</span>(x)])</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(municipality, install_year) <span class="sc">%&gt;%</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">crops =</span> <span class="fu">first_obs</span>(crop_soy_area_planted_km2, year), <span class="at">cattle =</span> <span class="fu">first_obs</span>(cattle_heads, year),</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">employment =</span> <span class="fu">first_obs</span>(emp_workers_n, year), <span class="at">population =</span> <span class="fu">first_obs</span>(population, year),</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">gdp =</span> <span class="fu">first_obs</span>(gdp_brl, year), <span class="at">bf =</span> <span class="fu">first_obs</span>(bf_families_n, year),</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(install_year, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 8
+   municipality          install_year crops cattle employment population   gdp    bf
+   &lt;chr&gt;                        &lt;int&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;
+ 1 Bom Jesus do Araguaia         2001  2001   2001       2001       2001  2002  2004
+ 2 Colniza                       2001  2001   2001       2001       2001  2002  2004
+ 3 Conquista D&#39;Oeste             2001  2001   2001       2001       2001  2002  2004
+ 4 Curvelândia                   2001  2001   2001       2001       2001  2002  2004
+ 5 Nova Santa Helena             2001  2001   2001       2001       2001  2002  2004
+ 6 Rondolândia                   2001  2001   2001       2001       2001  2002  2004
+ 7 Santa Cruz do Xingu           2001  2001   2001       2001       2001  2002  2004
+ 8 Ipiranga do Norte             2005  2005   2005       2005       2005  2005  2005
+ 9 Itanhangá                     2005  2005   2005       2005       2005  2005  2005
+10 Mojuí dos Campos              2013  2013   2013       2013       2013  2013  2014</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> <code>emp_workers_n</code> and <code>emp_agri_workers_n</code> are NA in the 64 municipality-years absent from the RAIS export, 30 before installation and 34 reporting gaps, the same cells where every <code>emp_*</code> rate and share is NA; <code>pia</code>, joined from the census file and not from the RAIS rows, is NA where <code>pea</code> is: before 2010 for the nine municipalities without a 2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in the absent cells and where <code>emp_agri_workers_n</code> is 0, nowhere else. For the ten lookup municipalities every source starts in the installation year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014 for Mojuí dos Campos, whose code enters the MDS files a year late) and is NA before it. <strong>Decision.</strong> D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (64 NA cells shared by the counts, rates and shares; 111 NA cells of <code>pia</code>, the NA set of <code>pea</code>; agricultural shares NA iff absent or zero agricultural bonds; <code>INSTALL_RULE_COLS</code> NA before the installation year and observed from it).</p>
 </section>
 
 </main>
