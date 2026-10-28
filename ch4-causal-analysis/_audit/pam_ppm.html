@@ -2216,6 +2216,7 @@ vertical-align: -.125em;
   <li><a href="#q3.-what-does-the-2025-areas-workbook-contain" id="toc-q3.-what-does-the-2025-areas-workbook-contain" class="nav-link" data-scroll-target="#q3.-what-does-the-2025-areas-workbook-contain">Q3. What does the 2025 areas workbook contain?</a></li>
   <li><a href="#q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample" id="toc-q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample" class="nav-link" data-scroll-target="#q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample">Q4. Are the shares, densities and base-window weights plausible in the sample?</a></li>
   <li><a href="#q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari" id="toc-q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari" class="nav-link" data-scroll-target="#q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari">Q5. What does the pipeline carry for Santa Cruz do Arari?</a></li>
+  <li><a href="#q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28" id="toc-q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28">Q6. Do the SIDRA symbols follow the installation rule? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2601,6 +2602,91 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> The municipality has its area and its herd series, and no crop series. The recovered panel had NA in every one of its area, crop and price columns because the legacy script attached the area through the PAM table and the cattle index through the crop index; the rebuilt scripts store the area on its own and join the two indices in full, so the area and the cattle index are restored while the crop columns stay NA. <strong>Decision.</strong> D-2026-10-10-i. <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (absent from PAM, present in PPM and in the areas workbook).</p>
+</section>
+<section id="q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28">Q6. Do the SIDRA symbols follow the installation rule? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: for the ten municipalities installed after 2000, the years PAM (soy) and PPM report as “…” against the installation year of the lookup, and the first year with a reported value (a number or “-”); the “…” cells of the sample outside that set; the “-” cells (task 1.8; D-2026-10-28-d).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># read_sidra_json carries its own municipality name: keep the keys and the symbol.</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>window <span class="ot">&lt;-</span> <span class="cf">function</span>(d) d <span class="sc">%&gt;%</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, value)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>symbol_rule <span class="ot">&lt;-</span> <span class="cf">function</span>(d, label) {</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  d <span class="sc">%&gt;%</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(municipality, install_year) <span class="sc">%&gt;%</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">dots =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year[value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>]), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>),</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">first_reported =</span> <span class="fu">min</span>(year[value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span>]),</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">dash_or_number_before =</span> <span class="fu">sum</span>(value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> install_year),</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">source =</span> label)</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(<span class="fu">symbol_rule</span>(<span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)), <span class="st">&quot;PAM soy&quot;</span>),</span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>          <span class="fu">symbol_rule</span>(<span class="fu">window</span>(ppm_raw), <span class="st">&quot;PPM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(source, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 6
+   municipality          install_year dots      first_reported dash_or_number_before source 
+   &lt;chr&gt;                        &lt;int&gt; &lt;chr&gt;              &lt;int&gt;                 &lt;int&gt; &lt;chr&gt;  
+ 1 Bom Jesus do Araguaia         2001 2000-2000           2001                     0 PAM soy
+ 2 Colniza                       2001 2000-2000           2001                     0 PAM soy
+ 3 Conquista D&#39;Oeste             2001 2000-2000           2001                     0 PAM soy
+ 4 Curvelândia                   2001 2000-2000           2001                     0 PAM soy
+ 5 Ipiranga do Norte             2005 2000-2004           2005                     0 PAM soy
+ 6 Itanhangá                     2005 2000-2004           2005                     0 PAM soy
+ 7 Mojuí dos Campos              2013 2000-2012           2013                     0 PAM soy
+ 8 Nova Santa Helena             2001 2000-2000           2001                     0 PAM soy
+ 9 Rondolândia                   2001 2000-2000           2001                     0 PAM soy
+10 Santa Cruz do Xingu           2001 2000-2000           2001                     0 PAM soy
+11 Bom Jesus do Araguaia         2001 2000-2000           2001                     0 PPM    
+12 Colniza                       2001 2000-2000           2001                     0 PPM    
+13 Conquista D&#39;Oeste             2001 2000-2000           2001                     0 PPM    
+14 Curvelândia                   2001 2000-2000           2001                     0 PPM    
+15 Ipiranga do Norte             2005 2000-2004           2005                     0 PPM    
+16 Itanhangá                     2005 2000-2004           2005                     0 PPM    
+17 Mojuí dos Campos              2013 2000-2012           2013                     0 PPM    
+18 Nova Santa Helena             2001 2000-2000           2001                     0 PPM    
+19 Rondolândia                   2001 2000-2000           2001                     0 PPM    
+20 Santa Cruz do Xingu           2001 2000-2000           2001                     0 PPM    </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>, <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(year, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 3
+  municipality    state_abbreviation years                                                                    
+  &lt;chr&gt;           &lt;chr&gt;              &lt;chr&gt;                                                                    
+1 Afuá            PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                           
+2 Ananindeua      PA                 2002, 2003, 2004, 2005, 2006, 2008                                       
+3 Belém           PA                 2002, 2003, 2004, 2005, 2008, 2009, 2010, 2015, 2016                     
+4 Benevides       PA                 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2013, 2014, 2015, 2016   
+5 Chaves          PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                           
+6 Gaúcha do Norte MT                 2002                                                                     
+7 Marituba        PA                 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, …</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(ppm_raw) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">dash =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;-&quot;</span>), <span class="at">dots =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>),</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                              <span class="at">dots_outside_lookup =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+   dash  dots dots_outside_lookup
+  &lt;int&gt; &lt;int&gt;               &lt;int&gt;
+1    22    30                   0</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> For the ten lookup municipalities “…” covers exactly the years before installation and the first reported value (a number, or “-” where no soy was planted) appears in the installation year, in both surveys; nothing is reported before it. The remaining “…” cells of PAM are six Pará municipalities (Afuá, Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT, 2002) in scattered years, where the survey did not report the municipality; PPM has no “…” outside the lookup set. The symbol rule of D-2026-10-10-g (“-” zero, “…” NA) stands, and NA before installation is a property of every source, asserted in script 04 against the lookup. <strong>Decision.</strong> D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA before the installation year and observed from it in crops, cattle, employment, population and GDP).</p>
 </section>
 
 </main>

@@ -13,6 +13,7 @@
 #                                                     02-social-rais.R
 #           _data/interim/census_pea_informal_2000_2022.rds
 #                                                     02-social-census.R
+#           _data/interim/census_pia_1999_2024.rds    02-social-census.R
 #           _data/interim/ibge_pop_2000_2022.rds      03-controls-gdp.R
 #           _data/interim/ibge_pib_gdp_2002_2022.rds  03-controls-gdp.R
 #           _data/interim/tse_elections_2000_2024.rds 03-controls-elections.R
@@ -57,6 +58,15 @@
 #   D-2026-10-23-f  muni_new_post2000 and muni_parent_split from the
 #                   lookup (phase 2, step 2.5); parents flagged, never
 #                   adjusted.
+#   D-2026-10-28-a  emp_workers_n and emp_agri_workers_n carried from the
+#                   RAIS file and pia joined from the census file (phase 2,
+#                   step 2.7): the denominators of the emp_* block, so no
+#                   agricultural employment can be told from not observed.
+#   D-2026-10-28-b  The 64 municipality-years absent from the RAIS export
+#                   stay NA in every emp_* column (not observed).
+#   D-2026-10-28-d  Installation rule asserted against the lookup: NA
+#                   before the installation year in crops, cattle,
+#                   employment, population and GDP, observed from it.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 1.9  Areas arrive in hectares from script 01 and are converted
@@ -95,6 +105,19 @@ POST2000_LOOKUP <- "_data/aux/munic_post2000.csv"             # D-2026-10-23-f
 # ten of their twelve parents are in the biome sample.
 N_POST2000_EXPECTED <- 10L
 N_PARENT_EXPECTED   <- 10L
+# Municipality-years absent from the RAIS export (rais.qmd Q2; D-2026-10-28-b):
+# Mojuí dos Campos 2000-2012, the nine Mato Grosso municipalities before
+# installation (17) and 34 reporting gaps of 2000-2005.
+N_EMP_NA_EXPECTED <- 64L
+# pia is NA before 2010 for the nine municipalities without a 2000 census
+# (D-2026-10-23-d) and in every year for Mojuí dos Campos, absent from the
+# 2000 and 2010 censuses (panel.qmd Q9).
+N_PIA_NA_EXPECTED <- 111L
+# Columns observed from the installation year of a lookup municipality and
+# NA before it (panel.qmd Q9; D-2026-10-28-d); gdp_brl within its years.
+INSTALL_RULE_COLS  <- c("crop_soy_area_planted_km2", "cattle_heads",
+                        "emp_workers_n", "population", "gdp_brl")
+GDP_FIRST_YEAR     <- 2002L
 
 PANEL_COLS <- c(
   "geocode", "municipality", "state", "state_abbreviation", "year",
@@ -129,12 +152,17 @@ PANEL_COLS <- c(
   "bf_regime",
   # Phase 2, step 2.5 (D-2026-10-23-f): installed after the 2000 census;
   # ceded territory to such a municipality.
-  "muni_new_post2000", "muni_parent_split"
+  "muni_new_post2000", "muni_parent_split",
+  # Phase 2, step 2.7 (D-2026-10-28-a): the denominators of the emp_*
+  # block, formal bonds, agricultural formal bonds and the interpolated
+  # working-age population.
+  "emp_workers_n", "emp_agri_workers_n", "pia"
 )
 PANEL_INT_COLS <- c("year", "ppcdam_list", "elec_n_candidates",
                     "elec_competitive", "elec_uncontested",
                     "election_year",                    # D-2026-10-11-h
-                    "muni_new_post2000", "muni_parent_split")
+                    "muni_new_post2000", "muni_parent_split",
+                    "emp_workers_n", "emp_agri_workers_n")  # D-2026-10-28-a
 PANEL_CHR_COLS <- c("geocode", "municipality", "state", "state_abbreviation",
                     "elec_winner_party", "elec_winner_id", "bf_regime")
 
@@ -146,6 +174,7 @@ ppcdam     <- interim("ppcdam_list_2004_2024.rds")
 bf         <- interim("bf_panel_2004_2024.rds")
 rais       <- interim("rais_employment_1999_2024.rds")
 census     <- interim("census_pea_informal_2000_2022.rds")
+census_pia <- interim("census_pia_1999_2024.rds")
 pop        <- interim("ibge_pop_2000_2022.rds")
 gdp        <- interim("ibge_pib_gdp_2002_2022.rds")
 tse        <- interim("tse_elections_2000_2024.rds")
@@ -161,8 +190,8 @@ parents    <- unique(unlist(str_split(post2000$parent_geocodes, ";")))
 # ---- Assert: raw state ------------------------------------------------------
 # panel.qmd Q1: every input is keyed on geocode (and year), the biome sample
 # is complete over PANEL_YEARS, and the PPCDAm indicator is 0/1 where known.
-keyed <- list(mapbiomas, ppcdam, rais, census, pop, gdp, tse, crops,
-              cattle, prices)
+keyed <- list(mapbiomas, ppcdam, rais, census, census_pia, pop, gdp, tse,
+              crops, cattle, prices)
 sample_geocodes <- sort(unique(mapbiomas$geocode))
 stopifnot(
   all(map_lgl(keyed, ~ !anyDuplicated(paste(.x$geocode, .x$year)))),
@@ -203,7 +232,13 @@ deforestation <- mapbiomas %>%
 bf_cols   <- bf %>%
   filter(bf_ref_month == BF_REF_MONTH) %>%
   select(-bf_ref_month)
-rais_cols <- rais %>% select(geocode, year, starts_with("emp_"))
+# The counts take their panel names here (D-2026-10-28-a); the interim
+# file keeps the names its assertions use. pia comes from the census file,
+# not from the RAIS rows, so it is not lost in the RAIS gaps.
+rais_cols <- rais %>%
+  select(geocode, year, starts_with("emp_"),
+         emp_workers_n = workers_total, emp_agri_workers_n = workers_agric)
+pia_cols  <- census_pia %>% select(geocode, year, pia)
 tse_cols  <- tse %>% select(-elec_total_votes, -elec_governing_year)  # D-2026-10-11-g, -22-e
 
 panel <- deforestation %>%
@@ -212,6 +247,7 @@ panel <- deforestation %>%
   left_join(bf_cols,    by = c("geocode", "year")) %>%
   left_join(rais_cols,  by = c("geocode", "year")) %>%
   left_join(census,     by = c("geocode", "year")) %>%
+  left_join(pia_cols,   by = c("geocode", "year")) %>%
   left_join(pop %>% select(geocode, year, population),
             by = c("geocode", "year")) %>%
   left_join(gdp,        by = c("geocode", "year")) %>%
@@ -258,10 +294,39 @@ panel <- panel %>%
   mutate(across(all_of(PANEL_INT_COLS), as.integer))
 
 # ---- Assert: output state ---------------------------------------------------
-# panel.qmd Q1-Q5.
+# panel.qmd Q1-Q5, Q9.
 first_year <- panel$year == min(PANEL_YEARS)
 z_cols <- c("price_index_crop_z", "price_index_cattle_z")
+emp_na <- is.na(panel$emp_workers_n)
+agri_share_cols <- c("emp_share_agri_low_workers", "emp_share_agri_mid_workers",
+                     "emp_share_agri_high_workers")
+install_rule <- panel %>%
+  inner_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  select(geocode, year, install_year, all_of(INSTALL_RULE_COLS))
+pre_install  <- install_rule %>% filter(year < install_year)
+# GDP starts in 2002: the years before are not a gap of the rule.
+post_install <- install_rule %>%
+  filter(year >= install_year) %>%
+  mutate(gdp_brl = if_else(year < GDP_FIRST_YEAR, 0, gdp_brl))
 stopifnot(
+  # D-2026-10-28-b, -a: the employment NA set is the absent municipality-
+  # years, shared by every count, rate and share; the agricultural shares
+  # are NA there and where no agricultural bond exists.
+  sum(emp_na) == N_EMP_NA_EXPECTED,
+  identical(emp_na, is.na(panel$emp_agri_workers_n)),
+  identical(emp_na, is.na(panel$emp_share_agri_workers)),
+  identical(emp_na, is.na(panel$emp_share_low_workers)),
+  all(map_lgl(panel[agri_share_cols],
+              ~ identical(is.na(.x), emp_na | panel$emp_agri_workers_n == 0L))),
+  all(is.na(panel$emp_pia_rate_total) == (emp_na | is.na(panel$pia))),
+  sum(is.na(panel$pia)) == N_PIA_NA_EXPECTED,
+  identical(is.na(panel$pia), is.na(panel$pea)),
+  # D-2026-10-28-d: NA before installation, observed from it.
+  all(is.na(pre_install[INSTALL_RULE_COLS])),
+  !anyNA(post_install[INSTALL_RULE_COLS]),
+  all(emp_na[panel$geocode %in% post2000$geocode &
+               panel$year < post2000$install_year[match(panel$geocode,
+                                                        post2000$geocode)]]),
   nrow(panel) == N_MUNIC_EXPECTED * length(PANEL_YEARS),
   !anyDuplicated(paste(panel$geocode, panel$year)),
   identical(names(panel), PANEL_COLS),

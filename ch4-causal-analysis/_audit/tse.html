@@ -2218,6 +2218,7 @@ vertical-align: -.125em;
   <li><a href="#q5.-how-are-the-competitiveness-measures-distributed-in-the-sample" id="toc-q5.-how-are-the-competitiveness-measures-distributed-in-the-sample" class="nav-link" data-scroll-target="#q5.-how-are-the-competitiveness-measures-distributed-in-the-sample">Q5. How are the competitiveness measures distributed in the sample?</a></li>
   <li><a href="#q6.-are-there-zero-vote-candidates-or-first-place-ties" id="toc-q6.-are-there-zero-vote-candidates-or-first-place-ties" class="nav-link" data-scroll-target="#q6.-are-there-zero-vote-candidates-or-first-place-ties">Q6. Are there zero-vote candidates or first-place ties?</a></li>
   <li><a href="#q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" id="toc-q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" class="nav-link" data-scroll-target="#q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22">Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)</a></li>
+  <li><a href="#q8.-who-are-the-zero-vote-candidates-and-what-does-their-exclusion-move-phase-2-step-2.7-2026-10-28" id="toc-q8.-who-are-the-zero-vote-candidates-and-what-does-their-exclusion-move-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q8.-who-are-the-zero-vote-candidates-and-what-does-their-exclusion-move-phase-2-step-2.7-2026-10-28">Q8. Who are the zero-vote candidates, and what does their exclusion move? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2446,7 +2447,7 @@ vertical-align: -.125em;
 1  2004            802          10     10             10
 2  2008            807          10     10             10
 3  2012            806          29     29             29
-4  2016            808           7      7              7
+4  2016            808          19     19             19
 5  2020            807          20     20             20
 6  2024            807          16     16             16</code></pre>
 </div>
@@ -2511,12 +2512,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 7
    year     n mean_candidates mean_enc median_mov share_competitive share_uncontested
   &lt;int&gt; &lt;int&gt;           &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1  2004   498            3.04     2.37      0.118             0.444           0.0100 
-2  2008   502            3.07     2.43      0.101             0.495           0.0139 
-3  2012   502            3.03     2.31      0.106             0.488           0.0398 
-4  2016   503            3.12     2.36      0.102             0.489           0.00795
-5  2020   503            3.33     2.44      0.120             0.430           0.0239 
-6  2024   502            3.91     2.53      0.123             0.437           0.0199 </code></pre>
+1  2004   498            3.04     2.37      0.118             0.444            0.0100
+2  2008   502            3.07     2.43      0.101             0.495            0.0139
+3  2012   502            3.03     2.31      0.106             0.488            0.0398
+4  2016   503            3.04     2.36      0.101             0.497            0.0239
+5  2020   503            3.33     2.44      0.120             0.430            0.0239
+6  2024   502            3.91     2.53      0.123             0.437            0.0199</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Three candidates and 2.3 to 2.5 effective candidates on average, a median margin of 10 to 12 points, and 43 to 49 percent of the races below the ten-point threshold; the measures move little across elections, with a rise in candidacies in 2020. <strong>Decision.</strong> none required.</p>
@@ -2688,6 +2689,96 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> Each stored year is joined to the election held in the last October before it: the 2000 election governs 2001-2004, the 2020 election 2021-2024, and 2000 is NA because the 1996 election is outside the data. On the biome sample the new storage equals the phase 1 lagged block cell for cell in six of the eight columns; the margin and the competitive flag differ on 164 cells, all of them uncontested races on which the lag had carried the previous election’s values (5 municipalities under the 2004 election, 7 under 2008, 20 under 2012, 4 under 2016, 12 under 2020, four years each). After 2000, the only NA municipality-years are those without a governing election in the file: Mojuí dos Campos 2001-2012 (installed 2013), and 2001-2004 for Ipiranga do Norte and Itanhangá (installed 2005) and for Altamira do Maranhão and Brejo de Areia, which have no 2000 election in the extract; phase 1 stored them as NA too, because <code>fill()</code> had nothing to carry. In 2021-2024, 807 of the 808 municipalities carry the 2020 election; Macapá is NA because its 2020 election was postponed to December after the Amapá blackout and the file types it “eleicoes municipais 2020 - ap”, which the ordinary-election filter of D-2026-10-10-d excludes (within 2000-2020 the row is unaffected: Macapá’s 2020 row holds the 2016 election under both storages). Whether that postponed election counts as ordinary is a definition question left to the author (flagged in D-2026-10-22-f). The 2024 election covers 805 municipalities with a code plus two rows with an empty code (the Boa Esperança do Norte split) and governs 2025-2028, so it enters only <code>election_year</code>. <strong>Decision.</strong> D-2026-10-22-d (storage rule), D-2026-10-22-e (the <code>_gov</code> block of script 04 retired), D-2026-10-22-f (series to 2024). <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block (governing map and equality with the election rows); <code>04-panel-assemble.R</code>, output block (28 NA municipality-years after 2000 on the 503-municipality panel).</p>
+</section>
+<section id="q8.-who-are-the-zero-vote-candidates-and-what-does-their-exclusion-move-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q8.-who-are-the-zero-vote-candidates-and-what-does-their-exclusion-move-phase-2-step-2.7-2026-10-28">Q8. Who are the zero-vote candidates, and what does their exclusion move? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: the zero-vote candidates of Q6 by year and recorded result, the sample’s municipality-elections affected, and the pipeline output after the exclusion (task 1.8; D-2026-10-28-e).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>zero <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido,</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>           numero_partido) <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">resultado =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(resultado), <span class="at">collapse =</span> <span class="st">&quot;/&quot;</span>),</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(votes <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>zero <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, resultado)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+   year resultado      n
+  &lt;int&gt; &lt;chr&gt;      &lt;int&gt;
+1  2012 nao eleito    54
+2  2020 nao eleito     2</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="ot">&lt;-</span> zero <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+   year     n
+  &lt;int&gt; &lt;int&gt;
+1  2012    40
+2  2020     1</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>affected <span class="ot">&lt;-</span> zero_sample <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(candidates <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">summarise</span>(<span class="at">n_all =</span> <span class="fu">n</span>(), <span class="at">n_valid =</span> <span class="fu">sum</span>(votes <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>),</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, n_valid)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 3
+   year n_valid     n
+  &lt;int&gt;   &lt;int&gt; &lt;int&gt;
+1  2012       1     8
+2  2012       2     9
+3  2012       3    11
+4  2012       4     4
+5  2012       5     4
+6  2012       6     1
+7  2020       6     1</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_valid <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(municipality, state_abbreviation, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 3
+  municipality state_abbreviation  year
+  &lt;chr&gt;        &lt;chr&gt;              &lt;int&gt;
+1 Borba        AM                  2012
+2 Tonantins    AM                  2012
+3 Uarini       AM                  2012
+4 Breves       PA                  2012
+5 Vigia        PA                  2012
+6 Aragominas   TO                  2012
+7 Itaúba       MT                  2012
+8 Matupá       MT                  2012</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline output after the fix (tse read at setup): the eight races are</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="co"># uncontested over their governing years.</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> affected<span class="sc">$</span>geocode[affected<span class="sc">$</span>n_valid <span class="sc">==</span> <span class="dv">1</span>], year <span class="sc">%in%</span> <span class="dv">2013</span><span class="sc">:</span><span class="dv">2016</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cells =</span> <span class="fu">n</span>(), <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested), <span class="at">mov_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)),</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">enc_one =</span> <span class="fu">sum</span>(elec_enc <span class="sc">==</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  cells uncontested mov_na enc_one
+  &lt;int&gt;       &lt;int&gt;  &lt;int&gt;   &lt;int&gt;
+1    32          32     32      32</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> All 56 zero-vote candidates (54 in 2012, 2 in 2020) are recorded as “não eleito”, so the file carries no marker of the refused candidacy beyond the zero. In the sample they sit in 37 elections of 2012 and in Magalhães Barata 2020; in eight 2012 races (Borba, Tonantins, Uarini, Breves, Vigia, Aragominas, Itaúba, Matupá) the zero-vote candidate was the only opponent. Excluding them leaves the ENC and the winner’s share unchanged (a zero share adds nothing), lowers <code>elec_n_candidates</code> in 148 cells of the final panel (37 municipalities, 2013-2016) and makes the eight races uncontested, so their margin and competitive flag are NA and <code>elec_uncontested</code> is 1 over 2013-2016 (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-e. <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block (56 zero-vote candidates dropped, every remaining candidate has votes, no election lost).</p>
 </section>
 
 </main>

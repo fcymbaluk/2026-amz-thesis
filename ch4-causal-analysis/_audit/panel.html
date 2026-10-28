@@ -2219,6 +2219,7 @@ vertical-align: -.125em;
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
   <li><a href="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags" id="toc-q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="nav-link" data-scroll-target="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</a></li>
+  <li><a href="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" id="toc-q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2790,6 +2791,88 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> Ten municipalities carry <code>muni_new_post2000</code>: the nine Mato Grosso municipalities installed in 2001 and 2005 and Mojuí dos Campos (2013), exactly the set with no population in 2000. Ten of their twelve parents are in the biome sample and carry <code>muni_parent_split</code>; Ribeirão Cascalheira and Cáceres are outside it. Both flags are constant within municipality. Installation years, parents and laws stay in the lookup. <strong>Decision.</strong> D-2026-10-23-f. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (the NA-population set in 2000 equals the lookup; ten flagged in each column).</p>
+</section>
+<section id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: the three counts carried from script 02 (<code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>), the NA set they share with the <code>emp_*</code> rates and shares, the 0 / 0 pattern of the agricultural shares, and the first observed year of each source against the installation year of the lookup (task 1.8; D-2026-10-28-a, -b, -d).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(emp_workers_n, emp_agri_workers_n, pia),</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">na =</span> <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)), <span class="at">zero =</span> <span class="sc">~</span> <span class="fu">sum</span>(.x <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 6
+  emp_workers_n_na emp_workers_n_zero emp_agri_workers_n_na emp_agri_workers_n_zero pia_na pia_zero
+             &lt;int&gt;              &lt;int&gt;                 &lt;int&gt;                   &lt;int&gt;  &lt;int&gt;    &lt;int&gt;
+1               64                  0                    64                    1606    111        0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>emp_absent <span class="ot">&lt;-</span> panel <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(emp_workers_n)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">kind =</span> <span class="fu">if_else</span>(<span class="sc">!</span><span class="fu">is.na</span>(install_year) <span class="sc">&amp;</span> year <span class="sc">&lt;</span> install_year, <span class="st">&quot;before installation&quot;</span>, <span class="st">&quot;gap&quot;</span>))</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>emp_absent <span class="sc">%&gt;%</span> <span class="fu">count</span>(kind)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  kind                    n
+  &lt;chr&gt;               &lt;int&gt;
+1 before installation    30
+2 gap                    34</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">agri =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(emp_agri_workers_n) <span class="sc">~</span> <span class="st">&quot;absent&quot;</span>, emp_agri_workers_n <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;zero&quot;</span>,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;positive&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(agri) <span class="sc">%&gt;%</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cells =</span> <span class="fu">n</span>(), <span class="fu">across</span>(<span class="fu">c</span>(emp_share_agri_low_workers, emp_share_agri_high_workers),</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>                                <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)), <span class="at">.names =</span> <span class="st">&quot;na_{.col}&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  agri     cells na_emp_share_agri_low_workers na_emp_share_agri_high_workers
+  &lt;chr&gt;    &lt;int&gt;                         &lt;int&gt;                          &lt;int&gt;
+1 absent      64                            64                             64
+2 positive  8893                             0                              0
+3 zero      1606                          1606                           1606</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>first_obs <span class="ot">&lt;-</span> <span class="cf">function</span>(x, year) <span class="cf">if</span> (<span class="fu">all</span>(<span class="fu">is.na</span>(x))) <span class="cn">NA_integer_</span> <span class="cf">else</span> <span class="fu">min</span>(year[<span class="sc">!</span><span class="fu">is.na</span>(x)])</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(municipality, install_year) <span class="sc">%&gt;%</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">crops =</span> <span class="fu">first_obs</span>(crop_soy_area_planted_km2, year), <span class="at">cattle =</span> <span class="fu">first_obs</span>(cattle_heads, year),</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">employment =</span> <span class="fu">first_obs</span>(emp_workers_n, year), <span class="at">population =</span> <span class="fu">first_obs</span>(population, year),</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">gdp =</span> <span class="fu">first_obs</span>(gdp_brl, year), <span class="at">bf =</span> <span class="fu">first_obs</span>(bf_families_n, year),</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(install_year, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 8
+   municipality          install_year crops cattle employment population   gdp    bf
+   &lt;chr&gt;                        &lt;int&gt; &lt;int&gt;  &lt;int&gt;      &lt;int&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;
+ 1 Bom Jesus do Araguaia         2001  2001   2001       2001       2001  2002  2004
+ 2 Colniza                       2001  2001   2001       2001       2001  2002  2004
+ 3 Conquista D&#39;Oeste             2001  2001   2001       2001       2001  2002  2004
+ 4 Curvelândia                   2001  2001   2001       2001       2001  2002  2004
+ 5 Nova Santa Helena             2001  2001   2001       2001       2001  2002  2004
+ 6 Rondolândia                   2001  2001   2001       2001       2001  2002  2004
+ 7 Santa Cruz do Xingu           2001  2001   2001       2001       2001  2002  2004
+ 8 Ipiranga do Norte             2005  2005   2005       2005       2005  2005  2005
+ 9 Itanhangá                     2005  2005   2005       2005       2005  2005  2005
+10 Mojuí dos Campos              2013  2013   2013       2013       2013  2013  2014</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> <code>emp_workers_n</code> and <code>emp_agri_workers_n</code> are NA in the 64 municipality-years absent from the RAIS export, 30 before installation and 34 reporting gaps, the same cells where every <code>emp_*</code> rate and share is NA; <code>pia</code>, joined from the census file and not from the RAIS rows, is NA where <code>pea</code> is: before 2010 for the nine municipalities without a 2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in the absent cells and where <code>emp_agri_workers_n</code> is 0, nowhere else. For the ten lookup municipalities every source starts in the installation year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014 for Mojuí dos Campos, whose code enters the MDS files a year late) and is NA before it. <strong>Decision.</strong> D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (64 NA cells shared by the counts, rates and shares; 111 NA cells of <code>pia</code>, the NA set of <code>pea</code>; agricultural shares NA iff absent or zero agricultural bonds; <code>INSTALL_RULE_COLS</code> NA before the installation year and observed from it).</p>
 </section>
 
 </main>

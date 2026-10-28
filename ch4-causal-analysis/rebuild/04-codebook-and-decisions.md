@@ -21,6 +21,7 @@ Columns:
 | `script` | Script that creates the variable |
 | `interpolated` | `TRUE` when the column carries, or divides by, a series interpolated between census anchors; `FALSE` otherwise (added at phase 2, step 2.6, D-2026-10-26-a) |
 | `anchor_years` | The census years of the anchors when `interpolated` is `TRUE`, e.g. `2000/2010/2022`; empty otherwise |
+| `missing_rule` | One sentence: when the variable is NA and what 0 means, or that neither occurs, citing the decision that set the rule (added at phase 2, step 2.7, D-2026-10-28-f) |
 
 Example rows:
 

@@ -167,3 +167,79 @@ interpolated PIA; kept as inherited.
 **Decision.** none required.
 **Assertion.** `02-social-rais.R`, output block (counts add up; shares
 within 0-1).
+
+## Q5. Which municipality-years are gaps rather than zeros, and where are the agricultural shares NA after the bracket fix? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the 64 absent municipality-years of the 503 × 21 panel
+split into pre-installation years and reporting gaps, with the bond
+counts of the adjacent years; and the NA pattern of the agricultural
+bracket counts and shares in the interim output after `values_fill`
+(task 1.8; D-2026-10-28-a, D-2026-10-28-b).
+
+```{r q5-gaps}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation)
+absent <- sample_geo %>%
+  cross_join(tibble(year = 2000:2020)) %>%
+  anti_join(rais, by = c("geocode", "year")) %>%
+  left_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  mutate(kind = case_when(!is.na(install_year) & year < install_year ~ "before installation",
+                          TRUE ~ "gap"))
+absent %>% count(kind)
+absent %>% filter(kind == "gap") %>% count(year)
+absent %>%
+  filter(kind == "gap") %>%
+  left_join(rais %>% transmute(geocode, year = year + 1L, bonds_before = workers_total),
+            by = c("geocode", "year")) %>%
+  left_join(rais %>% transmute(geocode, year = year - 1L, bonds_after = workers_total),
+            by = c("geocode", "year")) %>%
+  select(municipality, state_abbreviation, year, bonds_before, bonds_after) %>%
+  arrange(desc(pmin(bonds_before, bonds_after, na.rm = TRUE))) %>%
+  print(n = 40)
+```
+
+```{r q5-brackets}
+rais %>%
+  summarise(across(c(workers_agri_low, workers_agri_mid, workers_agri_high), ~ sum(is.na(.x)),
+                   .names = "na_{.col}"),
+            adds_up = all(workers_agri_low + workers_agri_mid + workers_agri_high == workers_agric))
+rais %>%
+  mutate(no_agri = workers_agric == 0) %>%
+  group_by(no_agri) %>%
+  summarise(rows = n(),
+            across(c(emp_share_agri_low_workers, emp_share_agri_mid_workers,
+                     emp_share_agri_high_workers), ~ sum(is.na(.x)), .names = "na_{.col}"),
+            .groups = "drop")
+rais %>%
+  filter(geocode %in% sample_geo$geocode, year %in% 2000:2020) %>%
+  summarise(across(c(workers_agri_low, workers_agri_mid, workers_agri_high), ~ sum(.x == 0),
+                   .names = "zero_{.col}"),
+            no_agri = sum(workers_agric == 0))
+```
+
+**Finding.** Of the 64 absent municipality-years, 30 are years before
+the installation of the ten lookup municipalities (Mojuí dos Campos
+2000-2012, seven Mato Grosso municipalities in 2000, Ipiranga do Norte
+and Itanhangá 2000-2004) and 34 are gaps of 2000-2005 in twenty small
+Maranhão and Roraima municipalities. Several gaps sit between years with
+substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209
+after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10
+and 157), so absence is a reporting gap, not a year without bonds; the
+rows stay NA. After the fix the three agricultural bracket counts are
+never NA and add up to the agricultural total in every row; the three
+agricultural shares are NA exactly where no agricultural bond exists
+(0 / 0) and 0 where the bracket is empty. Against the pre-step output
+the fix moved 541 cells of `emp_share_agri_high_workers` (163
+municipalities) and 19 of `emp_share_agri_mid_workers` from NA to 0 in
+the final panel, none of `emp_share_agri_low_workers`
+(`compare_outputs`, commit message of step 2.7).
+**Decision.** D-2026-10-28-a (bracket counts 0, the counts
+`workers_total`, `workers_agric` and `pia` carried into the panel as
+`emp_workers_n`, `emp_agri_workers_n`, `pia`), D-2026-10-28-b (absent
+municipality-years NA).
+**Assertion.** `02-social-rais.R`, output block (bracket counts never
+NA and adding up; agricultural shares NA iff `workers_agric == 0`);
+`04-panel-assemble.R`, output block (64 NA cells of `emp_workers_n`,
+shared by every `emp_*` column).

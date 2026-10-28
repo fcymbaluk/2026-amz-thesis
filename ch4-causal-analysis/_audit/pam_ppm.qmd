@@ -233,3 +233,56 @@ and the cattle index are restored while the crop columns stay NA.
 **Decision.** D-2026-10-10-i.
 **Assertion.** `03-controls-agro.R`, raw-state block (absent from PAM,
 present in PPM and in the areas workbook).
+
+## Q6. Do the SIDRA symbols follow the installation rule? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: for the ten municipalities installed after 2000, the
+years PAM (soy) and PPM report as "..." against the installation year of
+the lookup, and the first year with a reported value (a number or "-");
+the "..." cells of the sample outside that set; the "-" cells (task 1.8;
+D-2026-10-28-d).
+
+```{r q6-symbols}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+# read_sidra_json carries its own municipality name: keep the keys and the symbol.
+window <- function(d) d %>%
+  filter(geocode %in% sample_geo$geocode, year %in% 2000:2020) %>%
+  select(geocode, year, value)
+symbol_rule <- function(d, label) {
+  d %>%
+    inner_join(post2000 %>% select(geocode, municipality, install_year), by = "geocode") %>%
+    group_by(municipality, install_year) %>%
+    summarise(dots = paste(range(year[value == "..."]), collapse = "-"),
+              first_reported = min(year[value != "..."]),
+              dash_or_number_before = sum(value != "..." & year < install_year),
+              .groups = "drop") %>%
+    mutate(source = label)
+}
+bind_rows(symbol_rule(window(pam_raw %>% filter(crop == "soy")), "PAM soy"),
+          symbol_rule(window(ppm_raw), "PPM")) %>%
+  arrange(source, municipality)
+window(pam_raw %>% filter(crop == "soy")) %>%
+  filter(value == "...", !geocode %in% post2000$geocode) %>%
+  left_join(sample_geo, by = "geocode") %>%
+  group_by(municipality, state_abbreviation) %>%
+  summarise(years = paste(year, collapse = ", "), .groups = "drop")
+window(ppm_raw) %>% summarise(dash = sum(value == "-"), dots = sum(value == "..."),
+                              dots_outside_lookup = sum(value == "..." & !geocode %in% post2000$geocode))
+```
+
+**Finding.** For the ten lookup municipalities "..." covers exactly the
+years before installation and the first reported value (a number, or "-"
+where no soy was planted) appears in the installation year, in both
+surveys; nothing is reported before it. The
+remaining "..." cells of PAM are six Pará municipalities (Afuá,
+Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT,
+2002) in scattered years, where the survey did not report the
+municipality; PPM has no "..." outside the lookup set. The symbol rule
+of D-2026-10-10-g ("-" zero, "..." NA) stands, and NA before
+installation is a property of every source, asserted in script 04 against
+the lookup.
+**Decision.** D-2026-10-28-d.
+**Assertion.** `04-panel-assemble.R`, output block (NA before the
+installation year and observed from it in crops, cattle, employment,
+population and GDP).

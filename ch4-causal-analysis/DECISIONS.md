@@ -1980,3 +1980,185 @@ Affects: panel_amz_baseline (12 columns added, 21 unchanged); no cell of
          the panel (compare_outputs: 0 differing cells, 0 schema change
          on the script 04 panel and the final panel)
 Supersedes: none; closes the task 1.7 storage item of D-2026-10-05-f
+
+## D-2026-10-28-a  RAIS agricultural wage-bracket counts zero-filled; the formal-job counts and the PIA carried into the panel as denominators
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: 02-social-rais.R (workers_agri_wide pivot, output assertions); 04-panel-assemble.R (rais_cols, PANEL_COLS, PANEL_INT_COLS); 05-sample-definition.R and 06-normalized-outcome.R (column-count guards); _data/aux/codebook.csv (three rows)
+Context: the lost script's replace_na() named the all-worker wage-bracket
+         columns and not the agricultural ones, so workers_agri_low,
+         _mid and _high were NA wherever the municipality-year had no
+         bond at all in that bracket (rais.qmd Q3; reproduced on purpose
+         in phase 1). The three agricultural shares were therefore NA in
+         two unrelated situations: no agricultural bond at all (0 / 0)
+         and no bond in the bracket (0 / positive). No count column
+         reached the panel, so "no agricultural employment" could not be
+         told from "not observed" (task 1.8). The step 2.6 memo expects
+         the formal-job and population counts for the baseline
+         covariates to arrive with this step.
+Reason: the bracket pivot fills with 0L like the all-worker pivot; the
+        all-worker and agricultural bracket counts then add up to their
+        totals in every municipality-year, and the three agricultural
+        shares are NA exactly where workers_agric == 0. In the sample
+        panel this moves 541 cells of emp_share_agri_high_workers (163
+        municipalities) and 19 of emp_share_agri_mid_workers from NA to
+        0; emp_share_agri_low_workers is unchanged. Script 04 carries
+        the formal-job count and the agricultural formal-job count from
+        the RAIS file as emp_workers_n and emp_agri_workers_n (the _n
+        count suffix of the naming convention; renamed at phase 2R with
+        the rest) and joins the interpolated working-age population from
+        the census file of script 02 as pia (named like pea, informal and
+        population, the other census-interpolated series; joined from
+        the census file and not from the RAIS rows, so it is NA where
+        pea is, 111 cells, and not in the RAIS gaps), the three appended
+        after the step 2.5 columns so the order is unchanged. The panel
+        then holds every denominator of
+        the emp_* block, and script 08 can build the baseline employment
+        covariates from the counts and the census anchors of
+        D-2026-10-26-a instead of from the interpolated rates.
+Evidence: _audit/rais.qmd Q5
+Affects: emp_share_agri_high_workers (541 cells), emp_share_agri_mid_workers (19 cells); three columns added to the panel; no other cell
+Supersedes: none; closes the task 1.8 bracket and denominator items
+
+## D-2026-10-28-b  Municipality-years absent from the RAIS export stay NA
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: 02-social-rais.R (no grid completion); 04-panel-assemble.R (N_EMP_NA_EXPECTED, output assertion); codebook missing_rule of the emp_* columns
+Context: the export has no row for a municipality-year without any
+         bond, so absence could mean a true zero or a reporting gap.
+         Within the 503 x 21 panel 64 municipality-years are absent
+         (rais.qmd Q2): 13 are Mojuí dos Campos before 2013, 17 are
+         pre-installation years of the nine Mato Grosso municipalities
+         of D-2026-10-23-f, and 34 are gaps in twenty small Maranhão and
+         Roraima municipalities in 2000-2005, several of them bracketed
+         by substantial counts (Serrano do Maranhão 2005: 211 bonds the
+         year before, 209 the year after; São João da Ponta 2000: 86 and
+         170; Amapá do Maranhão 2001: 10 and 157).
+Reason: a municipality-year absent from the export is not observed, not
+        zero: the bracketing counts show reporting gaps, and a
+        municipality not yet installed has no bonds to report. The emp_*
+        columns and the three counts stay NA there; script 04 asserts
+        that the NA set of emp_workers_n has exactly 64 cells, contains
+        every pre-installation cell of the lookup municipalities, and
+        coincides with the NA set of the all-worker rates and shares.
+        The alternative, zero where the municipality was installed, was
+        set aside by the author on 2026-10-28.
+Evidence: _audit/rais.qmd Q2 and Q5
+Affects: no cell; one assertion and the codebook rule
+Supersedes: none; closes the task 1.8 RAIS-absent item
+
+## D-2026-10-28-c  Bolsa Família zero-beneficiary rows of 2004-2006 are rollout zeros, kept; zero-transfer rows of 2020 kept as reported
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: 02-social-bf.R (BF_ROLLOUT_YEARS, BF_ZERO_TRANSFER_YEARS, output assertions; KNOWN DEFECTS block retired); codebook missing_rule of the bf_* columns
+Context: bf_families_quota_ratio is 0 in 14 June rows of the sample
+         (ten in 2004, two in 2005, two in 2006) where the file reports
+         zero families and zero transfers against a positive quota; the
+         phase 1 header listed it as a defect to settle at task 1.8.
+         Over the whole 2004-2024 grid the zero-family rows are 98, 23
+         and 4 in June and 100, 32 and 4 in February of 2004, 2005 and
+         2006, and none after; the rows with positive families and zero
+         transfers are the 42 of June 2020 and none else (bf.qmd Q1,
+         Q7).
+Reason: the zeros follow the programme's rollout: the ten 2004
+        municipalities are zero in February and June 2004 and positive
+        in 2005, the two 2005 and two 2006 rows are Ipiranga do Norte
+        and Itanhangá, installed in 2005, in their first years; no zero
+        occurs once the programme is established. A zero of the payment
+        file in those years is a true zero (no family paid), so the
+        ratio is 0 and not NA. The June 2020 rows with positive families
+        and zero transfers are the emergency-aid substitution months,
+        stored as reported and flagged by bf_regime (D-2026-10-22-b).
+        Script 02 asserts both patterns: zero families only in
+        2004-2006, positive families with zero transfers only in 2020.
+        bf_transfers_avg_brl_2024 stays NA where families are 0 (0 / 0).
+Evidence: _audit/bf.qmd Q1 and Q7
+Affects: no cell; two assertions and the codebook rule
+Supersedes: none; closes the task 1.8 Bolsa Família item
+
+## D-2026-10-28-d  Installation rule: a municipality is NA in every source before its installation year and observed from it; SIDRA "..." is NA and "-" is zero
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: 04-panel-assemble.R (INSTALL_RULE_COLS, output assertion); 03-controls-agro.R (header); 05-sample-definition.R (KNOWN DEFECTS item retired); codebook missing_rule
+Context: the SIDRA extracts carry two symbols, "-" for an absolute zero
+         and "..." for a value that does not exist or is not available,
+         read as 0 and NA since D-2026-10-10-g; task 1.8 asks the rule to
+         be confirmed on the municipalities installed after 2000. For
+         the nine Mato Grosso municipalities of D-2026-10-23-f the "..."
+         cells of PAM and PPM are exactly the years before installation
+         and the first reported year equals the installation year (2001
+         or 2005) in both surveys; no "-" or number occurs before
+         installation. The other "..." cells in the sample are six Pará
+         municipalities (Afuá, Ananindeua, Belém, Benevides, Chaves,
+         Marituba) and Gaúcha do Norte (MT, 2002) in scattered years
+         where the survey did not report them (pam_ppm.qmd Q6). In the
+         script 04 panel the 30 pre-installation cells of the ten lookup
+         municipalities are NA in crops, cattle, employment, population,
+         GDP and Bolsa Família; from the installation year all of them
+         are observed in crops, cattle, employment and population, and
+         in GDP from 2002 (panel.qmd Q9).
+Reason: the symbol rule stands. Script 04 asserts the installation rule
+        against the lookup: NA before the installation year and observed
+        from it in crop_soy_area_planted_km2, cattle_heads,
+        emp_workers_n and population (gdp_brl within its years), so a
+        pre-installation cell can never be read as zero and a later
+        reporting gap in one of these sources cannot hide behind the
+        installation. The "..." cells outside the lookup stay NA. The
+        baseline of a municipality installed after the base window of
+        script 05 (Ipiranga do Norte and Itanhangá, 2005, in the
+        2000-2003 window) stays NA with its pressure scores, never
+        imputed from the parents; the KNOWN DEFECTS note of script 05
+        that held the question is retired.
+Evidence: _audit/pam_ppm.qmd Q6; _audit/panel.qmd Q9
+Affects: no cell; one assertion in script 04
+Supersedes: none; confirms D-2026-10-10-g; closes the task 1.8 PAM/PPM item
+
+## D-2026-10-28-e  Zero-vote mayoral candidates excluded from the candidate set
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: 03-controls-elections.R (candidates filter, N_ZERO_VOTE_CANDIDATES_EXPECTED, output assertion); codebook missing_rule of the elec_* columns
+Context: 56 first-round candidates in ordinary elections of 2000-2020
+         have zero valid votes in the file (54 in 2012, 2 in 2020), all
+         with resultado "não eleito" and no other marker (tse.qmd Q6,
+         Q8). They are candidacies refused after the ballot was printed,
+         whose votes were nulled. They entered the ENC and the candidate
+         count as inherited: in the sample they sit in 37
+         municipality-elections of 2012 and in Magalhães Barata 2020
+         (Pracuúba 2024 lies outside the governing scope).
+Reason: a candidate with zero valid votes was not a competitor. The
+        script drops candidates whose summed votes are zero before the
+        shares are computed and asserts their count. The ENC and the
+        winner's share are unchanged everywhere (a zero share adds
+        nothing to the sum of squares); elec_n_candidates falls by one
+        (136 cells) or two (12 cells) in the 37 municipalities over
+        2013-2016, 148 cells of the final panel; eight 2012 elections
+        become uncontested (Borba, Tonantins, Uarini, Breves, Vigia,
+        Aragominas, Itaúba, Matupá), so their margin and competitive
+        flag turn NA and elec_uncontested 1 over 2013-2016, 32 cells.
+        In the interim file, nine states and 2000-2024, 52
+        municipalities move. The alternative, keeping them and
+        documenting, was set aside by the author on 2026-10-28.
+Evidence: _audit/tse.qmd Q6 and Q8
+Affects: elec_n_candidates (148 cells of the final panel, 37 municipalities), elec_mov, elec_competitive and elec_uncontested (32 cells, eight elections x four years)
+Supersedes: none; closes the task 1.8 zero-vote item
+
+## D-2026-10-28-f  Codebook column missing_rule: what NA and 0 mean, per variable
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28; comparator report in the commit message)
+Scope: _data/aux/codebook.csv (one column, every row); rebuild/04-codebook-and-decisions.md §1 (spec)
+Context: task 1.8 settles, variable by variable, whether a missing cell
+         is unobserved or zero and whether a zero is a true zero or an
+         artifact; the codebook had no place to record it, so the rule
+         lived in script comments and decision entries only.
+Reason: a column missing_rule, one sentence per variable, states when
+        the variable is NA and what 0 means (or that neither occurs),
+        for every panel column and every store column, so the annex can
+        render the rule and a reader of the final dataset need not open
+        the scripts. The rules record the audits of this step
+        (D-2026-10-28-a to -e), the earlier source rules (SIDRA symbols,
+        the PPCDAm 0, the governing-year NA of 2000, the Bolsa Família
+        regime), and the structural NA of interpolated series before the
+        first census of a municipality.
+Evidence: the decision entries cited in each rule
+Affects: codebook only
+Supersedes: none

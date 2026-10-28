@@ -383,3 +383,60 @@ municipality. Installation years, parents and laws stay in the lookup.
 **Decision.** D-2026-10-23-f.
 **Assertion.** `04-panel-assemble.R`, output block (the NA-population set
 in 2000 equals the lookup; ten flagged in each column).
+
+## Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)
+
+What is checked: the three counts carried from script 02
+(`emp_workers_n`, `emp_agri_workers_n`, `pia`), the NA set they share
+with the `emp_*` rates and shares, the 0 / 0 pattern of the agricultural
+shares, and the first observed year of each source against the
+installation year of the lookup (task 1.8; D-2026-10-28-a, -b, -d).
+
+```{r q9-counts}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+panel %>%
+  summarise(across(c(emp_workers_n, emp_agri_workers_n, pia),
+                   list(na = ~ sum(is.na(.x)), zero = ~ sum(.x == 0, na.rm = TRUE))))
+emp_absent <- panel %>%
+  filter(is.na(emp_workers_n)) %>%
+  left_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  mutate(kind = if_else(!is.na(install_year) & year < install_year, "before installation", "gap"))
+emp_absent %>% count(kind)
+panel %>%
+  mutate(agri = case_when(is.na(emp_agri_workers_n) ~ "absent", emp_agri_workers_n == 0 ~ "zero",
+                          TRUE ~ "positive")) %>%
+  group_by(agri) %>%
+  summarise(cells = n(), across(c(emp_share_agri_low_workers, emp_share_agri_high_workers),
+                                ~ sum(is.na(.x)), .names = "na_{.col}"), .groups = "drop")
+```
+
+```{r q9-install}
+first_obs <- function(x, year) if (all(is.na(x))) NA_integer_ else min(year[!is.na(x)])
+panel %>%
+  inner_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  group_by(municipality, install_year) %>%
+  summarise(crops = first_obs(crop_soy_area_planted_km2, year), cattle = first_obs(cattle_heads, year),
+            employment = first_obs(emp_workers_n, year), population = first_obs(population, year),
+            gdp = first_obs(gdp_brl, year), bf = first_obs(bf_families_n, year),
+            .groups = "drop") %>%
+  arrange(install_year, municipality)
+```
+
+**Finding.** `emp_workers_n` and `emp_agri_workers_n` are NA in the 64
+municipality-years absent from the RAIS export, 30 before installation
+and 34 reporting gaps, the same cells where every `emp_*` rate and share
+is NA; `pia`, joined from the census file and not from the RAIS rows, is
+NA where `pea` is: before 2010 for the nine municipalities without a
+2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in
+the absent cells and where `emp_agri_workers_n` is 0, nowhere else. For
+the ten lookup municipalities every source starts in the installation
+year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014
+for Mojuí dos Campos, whose code enters the MDS files a year late) and is
+NA before it.
+**Decision.** D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d.
+**Assertion.** `04-panel-assemble.R`, output block (64 NA cells shared
+by the counts, rates and shares; 111 NA cells of `pia`, the NA set of
+`pea`; agricultural shares NA iff absent or zero agricultural bonds;
+`INSTALL_RULE_COLS` NA before the installation year and observed from
+it).

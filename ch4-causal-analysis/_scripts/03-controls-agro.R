@@ -35,11 +35,11 @@
 #                   its area and its cattle index.
 #   D-2026-10-10-j  Task 1.10: typed outputs; all-NA base windows stored
 #                   as NA, not NaN.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  A municipality absent from the survey in a year reads NA
-#             ("...") and a zero reads 0 ("-"), as inherited; whether the
-#             survey covered it is not checked here.
+#   D-2026-10-28-d  Task 1.8 (phase 2, step 2.7): the symbol rule
+#                   confirmed; "..." is exactly the years before
+#                   installation for the post-2000 municipalities and a
+#                   survey gap elsewhere (pam_ppm.qmd Q6); the
+#                   installation rule is asserted in script 04.
 # RUN ORDER First of the 03 scripts; no pipeline inputs. Feeds
 #           03-controls-prices.R (weights) and 04 (area).
 
