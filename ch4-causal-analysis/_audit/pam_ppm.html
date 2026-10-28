@@ -2213,10 +2213,11 @@ vertical-align: -.125em;
   <ul>
   <li><a href="#q1.-what-do-the-pam-extracts-contain-and-which-municipalities-are-missing" id="toc-q1.-what-do-the-pam-extracts-contain-and-which-municipalities-are-missing" class="nav-link active" data-scroll-target="#q1.-what-do-the-pam-extracts-contain-and-which-municipalities-are-missing">Q1. What do the PAM extracts contain, and which municipalities are missing?</a></li>
   <li><a href="#q2.-what-do-the-ppm-extracts-contain" id="toc-q2.-what-do-the-ppm-extracts-contain" class="nav-link" data-scroll-target="#q2.-what-do-the-ppm-extracts-contain">Q2. What do the PPM extracts contain?</a></li>
-  <li><a href="#q3.-what-does-the-2025-areas-workbook-contain" id="toc-q3.-what-does-the-2025-areas-workbook-contain" class="nav-link" data-scroll-target="#q3.-what-does-the-2025-areas-workbook-contain">Q3. What does the 2025 areas workbook contain?</a></li>
+  <li><a href="#q3.-what-does-the-areas-workbook-contain-2022-release-from-phase-2-step-2.7" id="toc-q3.-what-does-the-areas-workbook-contain-2022-release-from-phase-2-step-2.7" class="nav-link" data-scroll-target="#q3.-what-does-the-areas-workbook-contain-2022-release-from-phase-2-step-2.7">Q3. What does the areas workbook contain? (2022 release from phase 2, step 2.7)</a></li>
   <li><a href="#q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample" id="toc-q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample" class="nav-link" data-scroll-target="#q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample">Q4. Are the shares, densities and base-window weights plausible in the sample?</a></li>
   <li><a href="#q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari" id="toc-q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari" class="nav-link" data-scroll-target="#q5.-what-does-the-pipeline-carry-for-santa-cruz-do-arari">Q5. What does the pipeline carry for Santa Cruz do Arari?</a></li>
   <li><a href="#q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28" id="toc-q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q6.-do-the-sidra-symbols-follow-the-installation-rule-phase-2-step-2.7-2026-10-28">Q6. Do the SIDRA symbols follow the installation rule? (phase 2, step 2.7, 2026-10-28)</a></li>
+  <li><a href="#q7.-which-area-vintage-sits-on-the-mapbiomas-mesh-phase-2-step-2.7-2026-10-28" id="toc-q7.-which-area-vintage-sits-on-the-mapbiomas-mesh-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q7.-which-area-vintage-sits-on-the-mapbiomas-mesh-phase-2-step-2.7-2026-10-28">Q7. Which area vintage sits on the MapBiomas mesh? (phase 2, step 2.7, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2247,7 +2248,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: IBGE Produção Agrícola Municipal (SIDRA Tabela 5457, variable 8331, área plantada ou destinada à colheita, four crops) and Pesquisa da Pecuária Municipal (SIDRA Tabela 3939, variable 105, efetivo bovino), SIDRA agregados API v3, queried 2026-10-09 (<code>_data/raw/ibge/sidra/sidra_5457_*.json</code>, <code>sidra_3939_*.json</code>); IBGE Áreas Territoriais 2025 (<code>_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls</code>, sheet AR_BR_MUN_2025). Pipeline script: <code>_scripts/03-controls-agro.R</code>. Interim outputs: <code>_data/interim/pam_ppm_munic_area_2025.rds</code>, <code>pam_ppm_crop_areas_1988_2025.rds</code>, <code>pam_ppm_cattle_1974_2025.rds</code>, <code>pam_ppm_weights_base_2000_2002.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
+<p>Source: IBGE Produção Agrícola Municipal (SIDRA Tabela 5457, variable 8331, área plantada ou destinada à colheita, four crops) and Pesquisa da Pecuária Municipal (SIDRA Tabela 3939, variable 105, efetivo bovino), SIDRA agregados API v3, queried 2026-10-09 (<code>_data/raw/ibge/sidra/sidra_5457_*.json</code>, <code>sidra_3939_*.json</code>); IBGE Áreas Territoriais 2022 (<code>_data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls</code>, sheet AR_BR_MUN_2022, the pipeline’s area from phase 2, step 2.7, D-2026-10-28-g) and, for the vintage comparison of Q7, IBGE Áreas Territoriais 2025 (<code>AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls</code>, sheet AR_BR_MUN_2025, the phase 1 area). Pipeline script: <code>_scripts/03-controls-agro.R</code>. Interim outputs: <code>_data/interim/pam_ppm_munic_area_2022.rds</code>, <code>pam_ppm_crop_areas_1988_2025.rds</code>, <code>pam_ppm_cattle_1974_2025.rds</code>, <code>pam_ppm_weights_base_2000_2002.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 03 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2259,15 +2260,17 @@ vertical-align: -.125em;
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>pam_raw <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">c</span>(<span class="at">soy =</span> <span class="st">&quot;soja&quot;</span>, <span class="at">corn =</span> <span class="st">&quot;milho&quot;</span>, <span class="at">rice =</span> <span class="st">&quot;arroz&quot;</span>, <span class="at">cotton =</span> <span class="st">&quot;algodao&quot;</span>),</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">sidra</span>(<span class="fu">paste0</span>(<span class="st">&quot;^sidra_5457_areaplanted_&quot;</span>, .x, <span class="st">&quot;_&quot;</span>)), <span class="at">.id =</span> <span class="st">&quot;crop&quot;</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>ppm_raw <span class="ot">&lt;-</span> <span class="fu">sidra</span>(<span class="st">&quot;^sidra_3939_bovino_&quot;</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>areas_raw <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">&quot;_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls&quot;</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sheet =</span> <span class="st">&quot;AR_BR_MUN_2025&quot;</span>, <span class="at">col_types =</span> <span class="st">&quot;text&quot;</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>munic_area <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_munic_area_2025.rds&quot;</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_crop_areas_1988_2025.rds&quot;</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>cattle <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_cattle_1974_2025.rds&quot;</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>weights <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_weights_base_2000_2002.rds&quot;</span>)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Biome sample of script 01 (503 municipalities, Mojuí dos Campos included).</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>sample_geo <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>areas_raw <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">&quot;_data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls&quot;</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sheet =</span> <span class="st">&quot;AR_BR_MUN_2022&quot;</span>, <span class="at">col_types =</span> <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>areas_2025 <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">&quot;_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls&quot;</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sheet =</span> <span class="st">&quot;AR_BR_MUN_2025&quot;</span>, <span class="at">col_types =</span> <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>munic_area <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_munic_area_2022.rds&quot;</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_crop_areas_1988_2025.rds&quot;</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>cattle <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_cattle_1974_2025.rds&quot;</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>weights <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/pam_ppm_weights_base_2000_2002.rds&quot;</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Biome sample of script 01 (503 municipalities, Mojuí dos Campos included).</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>sample_geo <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="q1.-what-do-the-pam-extracts-contain-and-which-municipalities-are-missing" class="level2">
@@ -2405,16 +2408,16 @@ vertical-align: -.125em;
 </div>
 <p><strong>Finding.</strong> One bovine herd series per municipality for 1974-2025, in heads, for 5,568 municipalities (three urban municipalities of RJ and SP are absent; Santa Cruz do Arari is present). Symbols as in PAM. In the sample, “…” occurs for the nine post-2000 Mato Grosso municipalities in 2000-2004 only. <strong>Decision.</strong> D-2026-10-10-g. <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (category 2670, year set, 5,568 series, symbols).</p>
 </section>
-<section id="q3.-what-does-the-2025-areas-workbook-contain" class="level2">
-<h2 class="anchored" data-anchor-id="q3.-what-does-the-2025-areas-workbook-contain">Q3. What does the 2025 areas workbook contain?</h2>
-<p>What is checked: the column names IBGE ships, the rows that are not municipalities, the grid vintage, and the area of Santa Cruz do Arari.</p>
+<section id="q3.-what-does-the-areas-workbook-contain-2022-release-from-phase-2-step-2.7" class="level2">
+<h2 class="anchored" data-anchor-id="q3.-what-does-the-areas-workbook-contain-2022-release-from-phase-2-step-2.7">Q3. What does the areas workbook contain? (2022 release from phase 2, step 2.7)</h2>
+<p>What is checked: the column names IBGE ships, the rows that are not municipalities, the grid vintage, the PAM/PPM municipalities without an area, and the area of Santa Cruz do Arari. Until 2026-10-28 the pipeline read the 2025 release; the finding records both.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(areas_raw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] &quot;CD_UF&quot;       &quot;NM_UF&quot;       &quot;NM_UF_SIGLA&quot; &quot;CD_MUN&quot;      &quot;NM_MUN&quot;      &quot;AR_MUN_2025&quot;</code></pre>
+<pre><code>[1] &quot;ID&quot;          &quot;CD_UF&quot;       &quot;NM_UF&quot;       &quot;NM_UF_SIGLA&quot; &quot;CD_MUN&quot;      &quot;NM_MUN&quot;      &quot;AR_MUN_2022&quot;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2428,51 +2431,68 @@ vertical-align: -.125em;
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>areas_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(CD_MUN, <span class="st">&quot;^[0-9]{7}$&quot;</span>) <span class="sc">%in%</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  CD_UF                                                            NM_UF NM_UF_SIGLA CD_MUN NM_MUN AR_MUN_2025
-  &lt;chr&gt;                                                            &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      
-1 &lt;NA&gt;                                                             &lt;NA&gt;  &lt;NA&gt;        &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;       
-2 OBS: Estes valores de área foram calculados a partir do arquivo… &lt;NA&gt;  &lt;NA&gt;        &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;       </code></pre>
+<pre><code># A tibble: 3 × 7
+  ID    CD_UF                                                      NM_UF NM_UF_SIGLA CD_MUN NM_MUN AR_MUN_2022
+  &lt;chr&gt; &lt;chr&gt;                                                      &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;      
+1 &lt;NA&gt;  &lt;NA&gt;                                                       &lt;NA&gt;  &lt;NA&gt;        &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;       
+2 &lt;NA&gt;  &lt;NA&gt;                                                       &lt;NA&gt;  &lt;NA&gt;        &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;       
+3 &lt;NA&gt;  OBS: Estes valores de área foram calculados a partir do a… &lt;NA&gt;  &lt;NA&gt;        &lt;NA&gt;   &lt;NA&gt;   &lt;NA&gt;       </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>areas_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">str_detect</span>(CD_MUN, <span class="st">&quot;^[0-9]{7}$&quot;</span>) <span class="sc">%in%</span> <span class="cn">TRUE</span>, <span class="sc">!</span>CD_MUN <span class="sc">%in%</span> all_munic<span class="sc">$</span>geocode)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 6
-  CD_UF NM_UF             NM_UF_SIGLA CD_MUN  NM_MUN                                 AR_MUN_2025       
-  &lt;chr&gt; &lt;chr&gt;             &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                                  &lt;chr&gt;             
-1 43    Rio Grande do Sul RS          4300001 &quot;Área Operacional \&quot;Lagoa Mirim\&quot;&quot;     2884.3400000000001
-2 43    Rio Grande do Sul RS          4300002 &quot;Área Operacional \&quot;Lagoa dos Patos\&quot;&quot; 10199.391         
-3 51    Mato Grosso       MT          5101837 &quot;Boa Esperança do Norte&quot;               4704.4880000000003</code></pre>
+<pre><code># A tibble: 2 × 7
+  ID    CD_UF NM_UF             NM_UF_SIGLA CD_MUN  NM_MUN          AR_MUN_2022       
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;             &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;           &lt;chr&gt;             
+1 4607  43    Rio Grande do Sul RS          4300001 Lagoa Mirim     2884.3400000000001
+2 4608  43    Rio Grande do Sul RS          4300002 Lagoa dos Patos 10201.523999999999</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>areas_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(CD_MUN <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+  ID    CD_UF NM_UF NM_UF_SIGLA CD_MUN  NM_MUN              AR_MUN_2022
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;               &lt;chr&gt;      
+1 259   15    Pará  PA          1506401 Santa Cruz do Arari 1076.652   </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(<span class="fu">unique</span>(<span class="fu">c</span>(pam_raw<span class="sc">$</span>geocode, ppm_raw<span class="sc">$</span>geocode)), areas_raw<span class="sc">$</span>CD_MUN)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] &quot;5101837&quot;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>areas_2025 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(CD_MUN <span class="sc">==</span> <span class="st">&quot;5101837&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
-  CD_UF NM_UF NM_UF_SIGLA CD_MUN  NM_MUN              AR_MUN_2025
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;               &lt;chr&gt;      
-1 15    Pará  PA          1506401 Santa Cruz do Arari 1076.652   </code></pre>
+  CD_UF NM_UF       NM_UF_SIGLA CD_MUN  NM_MUN                 AR_MUN_2025       
+  &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;             
+1 51    Mato Grosso MT          5101837 Boa Esperança do Norte 4704.4880000000003</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>munic_area <span class="sc">%&gt;%</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">min_km2 =</span> <span class="fu">min</span>(munic_area_km2), <span class="at">median_km2 =</span> <span class="fu">median</span>(munic_area_km2),</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_km2 =</span> <span class="fu">max</span>(munic_area_km2))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>munic_area <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">min_km2 =</span> <span class="fu">min</span>(munic_area_km2), <span class="at">median_km2 =</span> <span class="fu">median</span>(munic_area_km2),</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_km2 =</span> <span class="fu">max</span>(munic_area_km2))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
       n min_km2 median_km2 max_km2
   &lt;int&gt;   &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;
-1   503    79.2      3082. 159533.</code></pre>
+1   503    79.2      3076. 159533.</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The workbook carries IBGE’s own column names (<code>CD_MUN</code>, <code>AR_MUN_2025</code>), not the hand-renamed <code>geocode</code> and <code>Area km2</code> of the lost file, 5,573 coded rows and two trailing note rows. The coded rows are the 2025 municipal grid: the 5,570 municipalities of the 2022 census, Boa Esperança do Norte (MT, installed 2025), and the two operational areas of Lagoa dos Patos and Lagoa Mirim, which are not municipalities. Santa Cruz do Arari has 1076.652 km2. Because the pipeline uses this single vintage for every year, the parents of Boa Esperança do Norte carry post-split areas throughout. <strong>Decision.</strong> D-2026-10-10-i (the area is stored for every municipality of the grid, independently of PAM); D-2026-10-10-f (2025 area in all years; the 2025 split is flagged for task 1.8). <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (column names, 5,573 coded rows plus two, Santa Cruz do Arari present) and output block (5,571 municipalities).</p>
+<p><strong>Finding.</strong> The 2022 workbook carries IBGE’s own column names (<code>ID</code>, <code>CD_MUN</code>, <code>AR_MUN_2022</code>), 5,572 coded rows and three trailing rows without a code (two blank, one note saying the areas were computed from the BR_Municipios_2022 file of the Malha Municipal Digital, the mesh MapBiomas Collection 9 maps). The coded rows are the 2022 grid: the 5,570 municipalities of the 2022 census and the two operational areas of Lagoa dos Patos and Lagoa Mirim (4300001, 4300002), which are not municipalities. Santa Cruz do Arari has 1076.652 km², as in the 2025 release. Boa Esperança do Norte (MT, 5101837, installed 2025), which PAM and PPM report, is the one surveyed municipality without a 2022 area; its crop shares, cattle density and base-window weights are NA and it stays in the interim files, outside the biome sample. Until 2026-10-28 the pipeline read the 2025 release (5,573 coded rows plus two trailing rows: the same grid plus Boa Esperança do Norte, with the hand-renamed <code>geocode</code> and <code>Area km2</code> of the lost file replaced by IBGE’s names), so the parents of the split carried post-split areas in every year; Q7 compares the two vintages. <strong>Decision.</strong> D-2026-10-10-i (the area is stored for every municipality of the grid, independently of PAM); D-2026-10-28-g (the 2022 release in all years, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (column names, 5,572 coded rows plus three, Boa Esperança do Norte the only PAM/PPM code without an area, Santa Cruz do Arari present) and output block (5,570 municipalities; NA shares and density for Boa Esperança do Norte only).</p>
 </section>
 <section id="q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-are-the-shares-densities-and-base-window-weights-plausible-in-the-sample">Q4. Are the shares, densities and base-window weights plausible in the sample?</h2>
@@ -2480,35 +2500,35 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="sc">%&gt;%</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(variable) <span class="sc">%&gt;%</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(value)), <span class="at">p50 =</span> <span class="fu">median</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">p99 =</span> <span class="fu">quantile</span>(value, <span class="fl">0.99</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max =</span> <span class="fu">max</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">above_1 =</span> <span class="fu">sum</span>(value <span class="sc">&gt;</span> <span class="dv">1</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_&quot;</span>), <span class="at">names_to =</span> <span class="st">&quot;variable&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(variable) <span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(value)), <span class="at">p50 =</span> <span class="fu">median</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">p99 =</span> <span class="fu">quantile</span>(value, <span class="fl">0.99</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max =</span> <span class="fu">max</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">above_1 =</span> <span class="fu">sum</span>(value <span class="sc">&gt;</span> <span class="dv">1</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 6
   variable                      n_na      p50        p99       max above_1
   &lt;chr&gt;                        &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;   &lt;int&gt;
 1 crop_corn_area_planted_km2      91 5         588.      3150         7974
-2 crop_corn_munic_area_share      91 0.00237     0.0993     0.438        0
+2 crop_corn_munic_area_share      91 0.00237     0.0984     0.438        0
 3 crop_cotton_area_planted_km2    91 0          40.0      362.         271
-4 crop_cotton_munic_area_share    91 0           0.00656    0.0807       0
+4 crop_cotton_munic_area_share    91 0           0.00605    0.0807       0
 5 crop_rice_area_planted_km2      91 2.2       125.       912.        6114
-6 crop_rice_munic_area_share      91 0.000778    0.0403     0.241        0
+6 crop_rice_munic_area_share      91 0.000778    0.0400     0.241        0
 7 crop_soy_area_planted_km2       91 0        1464.      3960         2074
-8 crop_soy_munic_area_share       91 0           0.253      0.658        0</code></pre>
+8 crop_soy_munic_area_share       91 0           0.242      0.658        0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>cattle <span class="sc">%&gt;%</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(cattle_heads)), <span class="at">p50_heads =</span> <span class="fu">median</span>(cattle_heads, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_heads =</span> <span class="fu">max</span>(cattle_heads, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">p50_density =</span> <span class="fu">median</span>(cattle_per_km2, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_density =</span> <span class="fu">max</span>(cattle_per_km2, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>cattle <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(cattle_heads)), <span class="at">p50_heads =</span> <span class="fu">median</span>(cattle_heads, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_heads =</span> <span class="fu">max</span>(cattle_heads, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">p50_density =</span> <span class="fu">median</span>(cattle_per_km2, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_density =</span> <span class="fu">max</span>(cattle_per_km2, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
@@ -2520,10 +2540,10 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_any</span>(<span class="fu">c</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight), is.na)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, <span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_any</span>(<span class="fu">c</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight), is.na)) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, <span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 8
@@ -2536,13 +2556,13 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight),</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">zero =</span> <span class="sc">~</span> <span class="fu">sum</span>(.x <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">p50 =</span> <span class="sc">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max =</span> <span class="sc">~</span> <span class="fu">max</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))) <span class="sc">%&gt;%</span></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;weight&quot;</span>, <span class="st">&quot;stat&quot;</span>), <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(zero|p50|max)$&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(<span class="fu">starts_with</span>(<span class="st">&quot;crop_w_&quot;</span>), cattle_weight),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">zero =</span> <span class="sc">~</span> <span class="fu">sum</span>(.x <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">p50 =</span> <span class="sc">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max =</span> <span class="sc">~</span> <span class="fu">max</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))) <span class="sc">%&gt;%</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;weight&quot;</span>, <span class="st">&quot;stat&quot;</span>), <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(zero|p50|max)$&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 4
@@ -2550,7 +2570,7 @@ vertical-align: -.125em;
   &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
 1 crop_w_soy      430  0         0.300 
 2 crop_w_corn       5  0.00281   0.0825
-3 crop_w_rice      30  0.00211   0.107 
+3 crop_w_rice      30  0.00214   0.107 
 4 crop_w_cotton   426  0         0.0119
 5 cattle_weight     3 12.9     138.    </code></pre>
 </div>
@@ -2562,7 +2582,7 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>munic_area <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>munic_area <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 2
@@ -2572,14 +2592,14 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>crop_areas <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>cattle <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span><span class="sc">:</span><span class="dv">2002</span>, <span class="dv">2020</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>cattle <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span><span class="sc">:</span><span class="dv">2002</span>, <span class="dv">2020</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 4
@@ -2592,7 +2612,7 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>weights <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
@@ -2609,25 +2629,25 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># read_sidra_json carries its own municipality name: keep the keys and the symbol.</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>window <span class="ot">&lt;-</span> <span class="cf">function</span>(d) d <span class="sc">%&gt;%</span></span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, value)</span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>symbol_rule <span class="ot">&lt;-</span> <span class="cf">function</span>(d, label) {</span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  d <span class="sc">%&gt;%</span></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(municipality, install_year) <span class="sc">%&gt;%</span></span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">dots =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year[value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>]), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>),</span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">first_reported =</span> <span class="fu">min</span>(year[value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span>]),</span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">dash_or_number_before =</span> <span class="fu">sum</span>(value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> install_year),</span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">source =</span> label)</span>
-<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(<span class="fu">symbol_rule</span>(<span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)), <span class="st">&quot;PAM soy&quot;</span>),</span>
-<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>          <span class="fu">symbol_rule</span>(<span class="fu">window</span>(ppm_raw), <span class="st">&quot;PPM&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(source, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co"># read_sidra_json carries its own municipality name: keep the keys and the symbol.</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>window <span class="ot">&lt;-</span> <span class="cf">function</span>(d) d <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, value)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>symbol_rule <span class="ot">&lt;-</span> <span class="cf">function</span>(d, label) {</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  d <span class="sc">%&gt;%</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(post2000 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, municipality, install_year), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(municipality, install_year) <span class="sc">%&gt;%</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">dots =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year[value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>]), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>),</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">first_reported =</span> <span class="fu">min</span>(year[value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span>]),</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">dash_or_number_before =</span> <span class="fu">sum</span>(value <span class="sc">!=</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> install_year),</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">source =</span> label)</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(<span class="fu">symbol_rule</span>(<span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)), <span class="st">&quot;PAM soy&quot;</span>),</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>          <span class="fu">symbol_rule</span>(<span class="fu">window</span>(ppm_raw), <span class="st">&quot;PPM&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(source, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 20 × 6
@@ -2656,11 +2676,11 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>, <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(year, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(pam_raw <span class="sc">%&gt;%</span> <span class="fu">filter</span>(crop <span class="sc">==</span> <span class="st">&quot;soy&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>, <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(year, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 3
@@ -2676,8 +2696,8 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(ppm_raw) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">dash =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;-&quot;</span>), <span class="at">dots =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>),</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                              <span class="at">dots_outside_lookup =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">window</span>(ppm_raw) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">dash =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;-&quot;</span>), <span class="at">dots =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span>),</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>                              <span class="at">dots_outside_lookup =</span> <span class="fu">sum</span>(value <span class="sc">==</span> <span class="st">&quot;...&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>geocode <span class="sc">%in%</span> post2000<span class="sc">$</span>geocode))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 3
@@ -2687,6 +2707,94 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> For the ten lookup municipalities “…” covers exactly the years before installation and the first reported value (a number, or “-” where no soy was planted) appears in the installation year, in both surveys; nothing is reported before it. The remaining “…” cells of PAM are six Pará municipalities (Afuá, Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT, 2002) in scattered years, where the survey did not report the municipality; PPM has no “…” outside the lookup set. The symbol rule of D-2026-10-10-g (“-” zero, “…” NA) stands, and NA before installation is a property of every source, asserted in script 04 against the lookup. <strong>Decision.</strong> D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA before the installation year and observed from it in crops, cattle, employment, population and GDP).</p>
+</section>
+<section id="q7.-which-area-vintage-sits-on-the-mapbiomas-mesh-phase-2-step-2.7-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-which-area-vintage-sits-on-the-mapbiomas-mesh-phase-2-step-2.7-2026-10-28">Q7. Which area vintage sits on the MapBiomas mesh? (phase 2, step 2.7, 2026-10-28)</h2>
+<p>What is checked: the total area MapBiomas Collection 9 maps for each municipality of the biome sample (all transition classes summed, 2023) against the 2022 and the 2025 IBGE areas; the municipalities where the two releases differ; the three municipalities of the Boa Esperança do Norte split.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>mapped_total <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">&quot;_data/raw/mapbiomas/mapbiomas_munic.xlsx&quot;</span>,</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                           <span class="at">sheet =</span> <span class="st">&quot;DEF_SECVEG&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geocode =</span> <span class="fu">as.character</span>(geocode)) <span class="sc">%&gt;%</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mapped_total_km2 =</span> <span class="fu">sum</span>(<span class="st">`</span><span class="at">2023</span><span class="st">`</span>) <span class="sc">/</span> <span class="dv">100</span>, <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>vintages <span class="ot">&lt;-</span> mapped_total <span class="sc">%&gt;%</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">rename</span>(munic_area, <span class="at">area_2022 =</span> munic_area_km2), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(areas_2025 <span class="sc">%&gt;%</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>              <span class="fu">filter</span>(<span class="fu">str_detect</span>(CD_MUN, <span class="st">&quot;^[0-9]{7}$&quot;</span>) <span class="sc">%in%</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>              <span class="fu">transmute</span>(<span class="at">geocode =</span> CD_MUN, <span class="at">area_2025 =</span> <span class="fu">as.numeric</span>(AR_MUN_2025)),</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ratio_2022 =</span> mapped_total_km2 <span class="sc">/</span> area_2022,</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">ratio_2025 =</span> mapped_total_km2 <span class="sc">/</span> area_2025)</span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>vintages <span class="sc">%&gt;%</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">within_1pct_2022 =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(ratio_2022 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;=</span> <span class="fl">0.01</span>),</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">within_1pct_2025 =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(ratio_2025 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;=</span> <span class="fl">0.01</span>),</span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">over_2pct_2022 =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(ratio_2022 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="fl">0.02</span>),</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">over_2pct_2025 =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(ratio_2025 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="fl">0.02</span>),</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">releases_differ =</span> <span class="fu">sum</span>(area_2022 <span class="sc">!=</span> area_2025),</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">differ_over_1pct =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(area_2022 <span class="sc">/</span> area_2025 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="fl">0.01</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+      n within_1pct_2022 within_1pct_2025 over_2pct_2022 over_2pct_2025 releases_differ differ_over_1pct
+  &lt;int&gt;            &lt;int&gt;            &lt;int&gt;          &lt;int&gt;          &lt;int&gt;           &lt;int&gt;            &lt;int&gt;
+1   503              486              459              7             20             300               31</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>vintages <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(ratio_2022 <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="fl">0.02</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(ratio_2022) <span class="sc">%&gt;%</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(geocode, municipality, state_abbreviation,</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">mapped_total_km2 =</span> <span class="fu">round</span>(mapped_total_km2, <span class="dv">1</span>),</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">area_2022 =</span> <span class="fu">round</span>(area_2022, <span class="dv">1</span>), <span class="at">area_2025 =</span> <span class="fu">round</span>(area_2025, <span class="dv">1</span>),</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">ratio_2022 =</span> <span class="fu">round</span>(ratio_2022, <span class="dv">3</span>), <span class="at">ratio_2025 =</span> <span class="fu">round</span>(ratio_2025, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 8
+  geocode municipality           state_abbreviation mapped_total_km2 area_2022 area_2025 ratio_2022 ratio_2025
+  &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;                         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+1 2109452 Raposa                 MA                             68.9      79.2      79.2      0.87       0.87 
+2 2104305 Godofredo Viana        MA                            667.      720.      726.       0.927      0.92 
+3 2109056 Porto Rico do Maranhão MA                            234.      245       245        0.955      0.955
+4 1507474 São João de Pirabas    PA                            648.      668.      668.       0.97       0.97 
+5 2103703 Cururupu               MA                           1223.     1258.     1256.       0.973      0.974
+6 1500909 Augusto Corrêa         PA                           1075.     1100.     1100.       0.978      0.978
+7 2106201 Luís Domingues         MA                            463.      472.      467.       0.98       0.99 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>vintages <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(area_2022 <span class="sc">-</span> area_2025) <span class="sc">&gt;</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="fu">abs</span>(area_2022 <span class="sc">-</span> area_2025))) <span class="sc">%&gt;%</span></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(geocode, municipality, state_abbreviation,</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">mapped_total_km2 =</span> <span class="fu">round</span>(mapped_total_km2, <span class="dv">1</span>),</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">area_2022 =</span> <span class="fu">round</span>(area_2022, <span class="dv">1</span>), <span class="at">area_2025 =</span> <span class="fu">round</span>(area_2025, <span class="dv">1</span>),</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">ratio_2022 =</span> <span class="fu">round</span>(ratio_2022, <span class="dv">3</span>), <span class="at">ratio_2025 =</span> <span class="fu">round</span>(ratio_2025, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 29 × 8
+   geocode municipality          state_abbreviation mapped_total_km2 area_2022 area_2025 ratio_2022 ratio_2025
+   &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;                         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+ 1 5106240 Nova Ubiratã          MT                           12461.    12461.     8721.      1          1.43 
+ 2 1100320 São Miguel do Guaporé RO                            7460.     7460.     6790.      1          1.10 
+ 3 1101500 Seringueiras          RO                            3774.     3774.     4444       1          0.849
+ 4 1300144 Apuí                  AM                           54241.    54240.    53617.      1          1.01 
+ 5 1303809 São Gabriel da Cacho… AM                          108648.   109193.   108700.      0.995      1    
+ 6 1302306 Jutaí                 AM                           69457.    69457.    68971.      1          1.01 
+ 7 1303536 Presidente Figueiredo AM                           25459     25459.    25028.      1          1.02 
+ 8 1300805 Borba                 AM                           44236.    44236.    44644       1          0.991
+ 9 1300607 Benjamin Constant     AM                            8696.     8705.     9100.      0.999      0.956
+10 1301308 Codajás               AM                           18701.    18701.    19038.      1          0.982
+# ℹ 19 more rows</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The 2022 area lies within 1 percent of the mapped total for 486 of the 503 municipalities (485 of the 502 of the sample) against 459 (458) for the 2025 release, and differs from it by more than 2 percent in 7 against 20. The seven are coastal municipalities of Maranhão and Pará (Raposa, Godofredo Viana, Porto Rico do Maranhão, São João de Pirabas, Cururupu, Augusto Corrêa, Luís Domingues) where the mapped total falls short of the area in both releases alike: MapBiomas’ own coverage of the coast, not the mesh. The two releases differ in 300 municipalities, 31 by more than 1 percent. The large differences are the mesh: Nova Ubiratã (12,460.7 km² in 2022 against 8,720.8 in 2025; ratio 1.000 against 1.429), the Seringueiras-São Miguel do Guaporé (RO) boundary swap (3,773.5 and 7,460.1 km² in 2022; ratios 1.000 against 0.849 and 1.099) and boundary revisions of 400-630 km² in Amazonas (Apuí, São Gabriel da Cachoeira, Jutaí, Presidente Figueiredo, Borba), all of which the 2022 release puts on the mapped mesh. With it no forest area exceeds the municipal area (panel.qmd Q3). <strong>Decision.</strong> D-2026-10-28-g. <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (the 2022 file, sheet and column; grid counts); <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
 </section>
 
 </main>

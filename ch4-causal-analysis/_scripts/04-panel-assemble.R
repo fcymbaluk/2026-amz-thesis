@@ -17,7 +17,7 @@
 #           _data/interim/ibge_pop_2000_2022.rds      03-controls-gdp.R
 #           _data/interim/ibge_pib_gdp_2002_2022.rds  03-controls-gdp.R
 #           _data/interim/tse_elections_2000_2024.rds 03-controls-elections.R
-#           _data/interim/pam_ppm_munic_area_2025.rds 03-controls-agro.R
+#           _data/interim/pam_ppm_munic_area_2022.rds 03-controls-agro.R
 #           _data/interim/pam_ppm_crop_areas_1988_2025.rds
 #                                                     03-controls-agro.R
 #           _data/interim/pam_ppm_cattle_1974_2025.rds
@@ -67,6 +67,9 @@
 #   D-2026-10-28-d  Installation rule asserted against the lookup: NA
 #                   before the installation year in crops, cattle,
 #                   employment, population and GDP, observed from it.
+#   D-2026-10-28-g  munic_area_km2 is IBGE's 2022 release (phase 2, step
+#                   2.7), the mesh of MapBiomas Collection 9: no forest
+#                   area exceeds the municipal area.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 1.9  Areas arrive in hectares from script 01 and are converted
@@ -90,10 +93,12 @@ N_MUNIC_EXPECTED <- 503L
 # PPCDAm municipalities outside the biome sample: Grajaú (MA) and three
 # Mato Grosso municipalities of the Cerrado (panel.qmd Q2).
 N_PPCDAM_OUTSIDE_EXPECTED <- 4L                               # D-2026-10-11-b
-# Nova Ubiratã (MT) 2000-2003: MapBiomas maps the municipality before the
-# Boa Esperança do Norte split, the 2025 area after it (panel.qmd Q3,
-# D-2026-10-10-f); inherited, area vintage settled at task 1.8.
-N_FOREST_OVER_AREA_EXPECTED <- 4L
+# ---- Fix (D-2026-10-28-g; phase 2, step 2.7) ---------------------------------
+# The 2022 area is on the MapBiomas mesh, so no forest area exceeds the
+# municipal area (was 4: Nova Ubiratã 2000-2003 against the post-split 2025
+# area, panel.qmd Q3).
+N_FOREST_OVER_AREA_EXPECTED <- 0L
+# ---- end fix -----------------------------------------------------------------
 Z_TOL <- 1e-6
 # Municipality-years after 2000 without a governing election in the data
 # (D-2026-10-22-d): Mojuí dos Campos 2001-2012 (installed 2013), and
@@ -178,7 +183,7 @@ census_pia <- interim("census_pia_1999_2024.rds")
 pop        <- interim("ibge_pop_2000_2022.rds")
 gdp        <- interim("ibge_pib_gdp_2002_2022.rds")
 tse        <- interim("tse_elections_2000_2024.rds")
-munic_area <- interim("pam_ppm_munic_area_2025.rds")
+munic_area <- interim("pam_ppm_munic_area_2022.rds")
 crops      <- interim("pam_ppm_crop_areas_1988_2025.rds")
 cattle     <- interim("pam_ppm_cattle_1974_2025.rds")
 prices     <- interim("prices_index_2000_2020.rds")

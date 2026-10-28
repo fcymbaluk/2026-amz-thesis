@@ -26,10 +26,6 @@
 #   D-2026-10-12-h  Task 1.10 at script 06: typed final output; the
 #                   diagnostics leave the pipeline; helper columns never
 #                   stored.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  Nova Ubiratã's forest area refers to the pre-split territory
-#             (D-2026-10-11-c); its exposure offset follows the mapped area.
 # RUN ORDER After 05-sample-definition.R. Last pipeline script; the analysis
 #           scripts (07+) read the final panel.
 

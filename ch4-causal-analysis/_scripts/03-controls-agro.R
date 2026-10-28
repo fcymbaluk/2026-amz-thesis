@@ -1,5 +1,5 @@
 # 03-controls-agro.R
-# PURPOSE   Build the municipal agricultural exposure series: the 2025
+# PURPOSE   Build the municipal agricultural exposure series: the 2022
 #           municipal area; planted area of soy, corn, rice and cotton
 #           (PAM) as km2 and as a share of the municipal area, 1988-2025;
 #           cattle heads and density (PPM), 1974-2025; and the base-window
@@ -12,11 +12,11 @@
 #           _data/raw/ibge/sidra/sidra_3939_bovino_*_N6.json
 #                                        IBGE PPM, SIDRA Tabela 3939,
 #                                        variable 105, API v3, 2026-10-09
-#           _data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls
-#                                        IBGE Áreas Territoriais 2025,
-#                                        sheet AR_BR_MUN_2025
+#           _data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls
+#                                        IBGE Áreas Territoriais 2022,
+#                                        sheet AR_BR_MUN_2022
 #
-# OUTPUTS   _data/interim/pam_ppm_munic_area_2025.rds / .csv
+# OUTPUTS   _data/interim/pam_ppm_munic_area_2022.rds / .csv
 #           _data/interim/pam_ppm_crop_areas_1988_2025.rds / .csv
 #           _data/interim/pam_ppm_cattle_1974_2025.rds / .csv
 #           _data/interim/pam_ppm_weights_base_2000_2002.rds / .csv
@@ -26,7 +26,7 @@
 #            history: DECISIONS.md)
 #   D-2026-10-10-f  Crop and cattle exposure weights = 2000-2002 means of
 #                   the crop share and of the cattle density, over the
-#                   2025 municipal area.
+#                   municipal area (vintage: D-2026-10-28-g).
 #   D-2026-10-10-g  SIDRA symbols in PAM and PPM: "-" is zero, every other
 #                   symbol is NA.
 #   D-2026-10-10-i  The municipal area is stored for every municipality
@@ -40,6 +40,13 @@
 #                   installation for the post-2000 municipalities and a
 #                   survey gap elsewhere (pam_ppm.qmd Q6); the
 #                   installation rule is asserted in script 04.
+#   D-2026-10-28-g  Task 1.8 (phase 2, step 2.7): the municipal area is
+#                   IBGE's 2022 release, the mesh MapBiomas Collection 9
+#                   maps, in every year (was the 2025 release, post-split
+#                   for Nova Ubiratã); Boa Esperança do Norte (MT,
+#                   installed 2025, reported by PAM and PPM) has no 2022
+#                   area, so its shares and density are NA and it stays
+#                   in the interim files.
 # RUN ORDER First of the 03 scripts; no pipeline inputs. Feeds
 #           03-controls-prices.R (weights) and 04 (area).
 
@@ -62,15 +69,21 @@ PAM_FILE_TOKENS <- c(soy = "soja", corn = "milho", rice = "arroz",
                      cotton = "algodao")
 PPM_CATTLE_ID   <- "2670"           # Tabela 3939, classification 79, bovino
 HA_PER_KM2      <- 100
-AREAS_SHEET     <- "AR_BR_MUN_2025"
-AREAS_FILE      <- "_data/raw/ibge/AR_BR_RG_UF_RGINT_RGI_MUN_2025.xls"
+# ---- Fix (D-2026-10-28-g; phase 2, step 2.7) ---------------------------------
+AREAS_SHEET     <- "AR_BR_MUN_2022"
+AREAS_FILE      <- "_data/raw/ibge/AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls"
+AREAS_COLUMN    <- "AR_MUN_2022"
+# ---- end fix -----------------------------------------------------------------
 N_MUNIC_PAM_EXPECTED   <- 5564L
 N_MUNIC_PPM_EXPECTED   <- 5568L
-# The 2025 grid: 5,571 municipalities (Boa Esperança do Norte, installed
-# 2025, included) plus the Lagoa dos Patos and Lagoa Mirim operational areas.
-N_LOCALITIES_AREAS_EXPECTED <- 5573L
-N_MUNIC_AREAS_EXPECTED      <- 5571L
+# The 2022 grid: 5,570 municipalities plus the Lagoa dos Patos and Lagoa
+# Mirim operational areas (D-2026-10-28-g). Boa Esperança do Norte (MT,
+# installed 2025) is reported by PAM and PPM but has no 2022 area.
+N_LOCALITIES_AREAS_EXPECTED <- 5572L
+N_MUNIC_AREAS_EXPECTED      <- 5570L
+N_AREAS_TRAILING_ROWS       <- 3L     # two blank rows and the IBGE note
 AREAS_NON_MUNICIPAL         <- c("4300001", "4300002")
+BOA_ESPERANCA_NORTE_GEOCODE <- "5101837"                      # D-2026-10-28-g
 SANTA_CRUZ_ARARI_GEOCODE <- "1506401"                         # D-2026-10-10-i
 
 # ---- Read -------------------------------------------------------------------
@@ -112,35 +125,40 @@ stopifnot(
   sidra_symbol_ok(ppm_raw$value)
 )
 
-# pam_ppm.qmd Q3: IBGE's column names, one row per municipality plus two
-# trailing note rows without a code.
+# pam_ppm.qmd Q3: IBGE's column names, one row per municipality plus three
+# trailing rows without a code.
 areas <- areas_raw %>%
   filter(is_geocode(CD_MUN)) %>%
-  transmute(geocode = CD_MUN, munic_area_km2 = as.numeric(AR_MUN_2025))
+  transmute(geocode = CD_MUN, munic_area_km2 = as.numeric(.data[[AREAS_COLUMN]]))
 stopifnot(
-  identical(names(areas_raw), c("CD_UF", "NM_UF", "NM_UF_SIGLA", "CD_MUN",
-                                "NM_MUN", "AR_MUN_2025")),
-  nrow(areas_raw) == N_LOCALITIES_AREAS_EXPECTED + 2L,
+  identical(names(areas_raw), c("ID", "CD_UF", "NM_UF", "NM_UF_SIGLA",
+                                "CD_MUN", "NM_MUN", AREAS_COLUMN)),
+  nrow(areas_raw) == N_LOCALITIES_AREAS_EXPECTED + N_AREAS_TRAILING_ROWS,
   nrow(areas) == N_LOCALITIES_AREAS_EXPECTED,
   !anyDuplicated(areas$geocode),
   !anyNA(areas$munic_area_km2),
   all(areas$munic_area_km2 > 0),
-  all(unique(pam_raw$geocode) %in% areas$geocode),
-  all(unique(ppm_raw$geocode) %in% areas$geocode),
+  # D-2026-10-28-g: the one PAM/PPM municipality without a 2022 area.
+  identical(setdiff(unique(pam_raw$geocode), areas$geocode),
+            BOA_ESPERANCA_NORTE_GEOCODE),
+  identical(setdiff(unique(ppm_raw$geocode), areas$geocode),
+            BOA_ESPERANCA_NORTE_GEOCODE),
+  !BOA_ESPERANCA_NORTE_GEOCODE %in% areas$geocode,
   !SANTA_CRUZ_ARARI_GEOCODE %in% pam_raw$geocode,
   SANTA_CRUZ_ARARI_GEOCODE %in% ppm_raw$geocode,
   !is.na(areas$munic_area_km2[areas$geocode == SANTA_CRUZ_ARARI_GEOCODE])
 )
 
 # ---- Transform --------------------------------------------------------------
-# Every municipality of the 2025 grid, whether or not PAM or PPM report it
-# (D-2026-10-10-i).
+# Every municipality of the 2022 grid, whether or not PAM or PPM report it
+# (D-2026-10-10-i, D-2026-10-28-g).
 munic_area <- areas %>%
   filter(!geocode %in% AREAS_NON_MUNICIPAL) %>%
   arrange(geocode)
 
-# Shares use the 2025 area for every year, so a share above 1 is possible
-# where successive crops are planted in one year (D-2026-10-10-f).
+# Shares use the 2022 area for every year, so a share above 1 is possible
+# where successive crops are planted in one year (D-2026-10-10-f,
+# D-2026-10-28-g); Boa Esperança do Norte has no area, so NA shares.
 crop_long <- pam_raw %>%
   transmute(geocode, year, crop,
             area_planted_km2 = sidra_value(value, SIDRA_ZERO_SYMBOLS) /
@@ -191,7 +209,18 @@ weights <- crop_weights %>%
 share_cols <- paste0("crop_", names(PAM_CROP_IDS), "_munic_area_share")
 stopifnot(
   nrow(munic_area) == N_MUNIC_AREAS_EXPECTED,
-  all(unique(c(pam_raw$geocode, ppm_raw$geocode)) %in% munic_area$geocode),
+  identical(setdiff(unique(c(pam_raw$geocode, ppm_raw$geocode)),
+                    munic_area$geocode), BOA_ESPERANCA_NORTE_GEOCODE),
+  # D-2026-10-28-g: NA shares and density only for the municipality without
+  # an area; elsewhere the density is NA exactly where the herd is.
+  all(is.na(crop_areas[crop_areas$geocode == BOA_ESPERANCA_NORTE_GEOCODE,
+                       share_cols])),
+  all(is.na(cattle$cattle_per_km2[cattle$geocode ==
+                                    BOA_ESPERANCA_NORTE_GEOCODE])),
+  identical(is.na(cattle$cattle_per_km2[cattle$geocode !=
+                                          BOA_ESPERANCA_NORTE_GEOCODE]),
+            is.na(cattle$cattle_heads[cattle$geocode !=
+                                        BOA_ESPERANCA_NORTE_GEOCODE])),
   !anyDuplicated(munic_area$geocode),
   !anyNA(munic_area$munic_area_km2),
   nrow(crop_areas) == N_MUNIC_PAM_EXPECTED * length(PAM_YEARS),
@@ -218,8 +247,8 @@ stopifnot(
 )
 
 # ---- Write ------------------------------------------------------------------
-write_rds(munic_area, "_data/interim/pam_ppm_munic_area_2025.rds")
-write_csv(munic_area, "_data/interim/pam_ppm_munic_area_2025.csv")
+write_rds(munic_area, "_data/interim/pam_ppm_munic_area_2022.rds")
+write_csv(munic_area, "_data/interim/pam_ppm_munic_area_2022.csv")
 write_rds(crop_areas, "_data/interim/pam_ppm_crop_areas_1988_2025.rds")
 write_csv(crop_areas, "_data/interim/pam_ppm_crop_areas_1988_2025.csv")
 write_rds(cattle, "_data/interim/pam_ppm_cattle_1974_2025.rds")

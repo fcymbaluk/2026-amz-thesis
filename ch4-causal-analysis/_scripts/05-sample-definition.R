@@ -48,10 +48,11 @@
 #                   pressure_score stay NA, never imputed from the
 #                   parents; Santa Cruz do Arari has no crop series
 #                   (D-2026-10-10-i).
+#   D-2026-10-28-g  forest_share_2000 and the cattle term of pressure_agri
+#                   divide by the 2022 municipal area (phase 2, step 2.7),
+#                   the MapBiomas mesh; Nova Ubiratã pre-split.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.8  Nova Ubiratã's forest share and cattle density are computed
-#             on the post-split 2025 area (D-2026-10-11-c).
 #   Task 2.2  The cross-sectional standardisation of the pressure scores is
 #             sample-dependent (D-2026-10-12-c).
 # RUN ORDER After 04-panel-assemble.R. Script 06 reads the panel output.

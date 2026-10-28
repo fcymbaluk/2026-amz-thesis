@@ -708,7 +708,7 @@ Supersedes: none
 
 ## D-2026-10-10-f  Crop and cattle exposure weights: 2000-2002 means of the crop share and of the cattle density, over the 2025 municipal area
 
-Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 866-884 and 974-983; refactored in phase 1, 03-controls-agro.R)
+Status: closed (pre-rebuild; script 03 at tag pre-reorg, lines 866-884 and 974-983; refactored in phase 1, 03-controls-agro.R); area vintage superseded by D-2026-10-28-g (phase 2, step 2.7), the window rule stands
 Scope: 03-controls-agro.R; crop_*_munic_area_share, cattle_per_km2, the interim weights crop_w_* and cattle_weight; through them the price indices
 Context: planted area (ha) is converted to km2 and divided by the municipal
          area of the 2025 IBGE release, the only vintage in the raw layer,
@@ -2162,3 +2162,34 @@ Reason: a column missing_rule, one sentence per variable, states when
 Evidence: the decision entries cited in each rule
 Affects: codebook only
 Supersedes: none
+
+## D-2026-10-28-g  Municipal area from IBGE's 2022 release, the mesh of MapBiomas Collection 9
+
+Status: closed (phase 2, step 2.7, branch phase2-2.7-na-vs-zero, 2026-10-28, second commit; comparator report in the commit message)
+Scope: 03-controls-agro.R (areas workbook, pam_ppm_munic_area_2022, NA shares and density of Boa Esperança do Norte), 04-panel-assemble.R (area join, forest-over-area guard), headers of scripts 05 and 06; _data/aux/provenance.csv; munic_area_km2, crop_*_munic_area_share, cattle_per_km2, the base-window weights crop_w_* and cattle_weight and through them the price indices, their z-scores, pressure_agri, pressure_score and forest_share_2000 in the store
+Context: the pipeline divided every year by the 2025 release
+         (D-2026-10-10-f), the only vintage in the raw layer, which
+         carries Boa Esperança do Norte (MT, installed 2025) and so the
+         post-split areas of Nova Ubiratã and Sorriso throughout, while
+         MapBiomas Collection 9 maps the 2022 mesh: Nova Ubiratã's
+         forest area exceeds its municipal area in 2000-2003 and its
+         crop shares and cattle density are inflated by 43 percent in
+         every year (panel.qmd Q3). Task 1.8 asked for a vintage
+         contemporaneous with the panel or the mapped total.
+Reason: author decision 2026-10-28: IBGE's 2022 release
+        (AR_BR_RG_UF_RGINT_MES_MIC_MUN_2022.xls, areas computed from the
+        2022 Malha Municipal Digital, the mesh Collection 9 maps), over
+        the MapBiomas mapped total (not an official area; a sum of
+        mapped classes) and the 2025 release. In the sample the 2022
+        area lies within 1 percent of the mapped total for 485 of the
+        502 municipalities against 458 for 2025; no forest area exceeds
+        the municipal area; Nova Ubiratã has 12,460.74 km2. The 2022
+        grid holds 5,570 municipalities plus the two operational areas
+        of Lagoa dos Patos and Lagoa Mirim; Boa Esperança do Norte,
+        reported by PAM and PPM, has no area, so its shares and density
+        are NA and it stays in the interim files (outside the biome
+        sample). The base-window rule of D-2026-10-10-f stands; the 2025
+        workbook stays in the raw layer and is no longer read.
+Evidence: _audit/pam_ppm.qmd Q3, Q7; _audit/panel.qmd Q3; compare_outputs in the commit message
+Affects: munic_area_km2 and every column divided by it, the price indices and z-scores, pressure_* and forest_share_2000 (see the comparator report)
+Supersedes: D-2026-10-10-f in the area vintage only; D-2026-10-10-i unchanged in substance (the area is stored for every municipality of the grid)
