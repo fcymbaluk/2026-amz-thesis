@@ -8,9 +8,10 @@
 # INPUTS    _data/interim/panel_amz_2000_2020_sample.rds  05-sample-definition.R
 #
 # OUTPUTS   _data/final/panel_amz_2000_2020_final.rds / .csv
-#                           502 municipalities x 2000-2020, the 82 sample-panel
-#                           columns plus defor_norm_ref0003, defor_norm_ref0007
-#                           and log_forest_exposure
+#                           807 municipalities x 2000-2020 (the nine Legal
+#                           Amazon states from phase 2, step 2.9), the
+#                           sample-panel columns plus defor_norm_ref0003,
+#                           defor_norm_ref0007 and log_forest_exposure
 #
 # DECISIONS IMPLEMENTED
 #           (justification: annex, pending; evidence:
@@ -36,8 +37,8 @@ DEFOR_REF_SHORT_YEARS <- 2000:2003   # D-2026-10-12-f
 DEFOR_REF_MAIN_YEARS  <- 2000:2007   # D-2026-10-12-f, D-2026-10-05-h
 DEFOR_SD_FLOOR        <- 1e-9        # D-2026-10-12-f
 PANEL_YEARS           <- 2000:2020   # D-2026-10-11-a
-N_MUNIC_EXPECTED      <- 502L        # D-2026-10-05-l; task 1.1
-N_SAMPLE_COLS_EXPECTED <- 80L        # script 05 output; 82 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e) + 2 muni_* (D-2026-10-23-f) + 3 counts (D-2026-10-28-a)
+N_MUNIC_EXPECTED      <- 807L        # D-2026-10-29-a (808 of the nine states), D-2026-10-05-l (Mojuí dropped)
+N_SAMPLE_COLS_EXPECTED <- 82L        # script 05 output; 80 at step 2.8 + 2 flags (D-2026-10-29-a)
 # panel-outcome.qmd Q2: Afuá and Santa Cruz do Arari (short window), Santa
 # Cruz do Arari (main window); none in the at-risk sample.
 N_DEGENERATE_SHORT_EXPECTED <- 2L

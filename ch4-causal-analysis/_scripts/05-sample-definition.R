@@ -11,12 +11,13 @@
 #           _data/interim/ibge_pop_2000_2022.rds       03-controls-gdp.R
 #
 # OUTPUTS   _data/interim/panel_amz_2000_2020_sample.rds / .csv
-#                           panel, 502 municipalities x 2000-2020, with the
+#                           panel, 807 municipalities x 2000-2020, with the
 #                           three sample flags, three pressure scores and
 #                           three treatment flags appended
 #           _data/interim/panel_amz_baseline.rds / .csv
-#                           one row per municipality: baseline summaries,
-#                           flags and scores, and the census anchors of
+#                           one row per municipality: the biome and Legal
+#                           Amazon flags, baseline summaries, sample flags
+#                           and scores, and the census anchors of
 #                           PIA, PEA, informality and population as read
 #                           (`_c2000`, `_c2010`, `_c2022`)
 #
@@ -30,8 +31,11 @@
 #                   NA where the municipality has no baseline value.
 #   D-2026-10-12-b  Treatment flags defined on the analysis window
 #                   (2004-2010 main, 2004-2012 robust, full panel ever).
-#   D-2026-10-12-c  Pressure scores z-scored across the 502 municipalities;
-#                   flagged for the storage audit (task 2.2).
+#   D-2026-10-12-c  Pressure scores z-scored across the 502 biome
+#                   municipalities; flagged for the storage audit (task
+#                   2.2). From phase 2, step 2.9 the 502 are the reference
+#                   population and the scores are applied to every
+#                   municipality of the nine states (D-2026-10-29-c).
 #   D-2026-10-12-d  Santa Cruz do Arari enters the availability floor with
 #                   its restored area (reference: FALSE).
 #   D-2026-10-12-e  Task 1.10 at script 05: typed output; the diagnostics
@@ -51,6 +55,11 @@
 #   D-2026-10-28-g  forest_share_2000 and the cattle term of pressure_agri
 #                   divide by the 2022 municipal area (phase 2, step 2.7),
 #                   the MapBiomas mesh; Nova Ubiratã pre-split.
+#   D-2026-10-29-a  The nine-state sample (phase 2, step 2.9): 808
+#                   municipalities in, 807 out; biome_amazon and
+#                   legal_amazon carried into the municipality store. The
+#                   gates and treatment flags apply to every municipality.
+#   D-2026-10-29-c  Pressure scores: reference population biome_amazon == 1.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   Task 2.2  The cross-sectional standardisation of the pressure scores is
@@ -72,22 +81,34 @@ MOJUI_GEOCODE             <- "1504752"   # D-2026-10-05-l
 CENSUS_YEARS              <- c(2000L, 2010L, 2022L)   # D-2026-10-26-a
 ANCHOR_VARS               <- c("pia", "pea", "informal", "population")
 POP_CENSUS_SOURCE         <- "census"    # pop_source of 03-controls-gdp.R
-# panel-sample.qmd Q9: the nine Mato Grosso municipalities installed after
-# the 2000 census have no 2000 anchor (D-2026-10-23-d).
-N_ANCHOR_NA_2000_EXPECTED <- 9L
-N_MUNIC_IN_EXPECTED       <- 503L        # script 04 output; task 1.1
-N_MUNIC_EXPECTED          <- 502L        # D-2026-10-05-l; task 1.1
-N_PANEL_COLS_EXPECTED     <- 71L   # 73 + bf_regime (D-2026-10-22-b) - 8 elec_*_gov (D-2026-10-22-e) + 2 muni_* (D-2026-10-23-f) + 3 counts (D-2026-10-28-a)
-# panel-sample.qmd Q3-Q4: cohorts 2008-2009 in the main window, 2011-2012
-# added in the robust window; every treated municipality is at risk.
+# panel-sample.qmd Q9, Q10: the fifteen Mato Grosso municipalities installed
+# after the 2000 census have no 2000 anchor (D-2026-10-23-d, D-2026-10-29-b).
+N_ANCHOR_NA_2000_EXPECTED <- 15L
+# ---- Fix (D-2026-10-29-a, -c; phase 2, step 2.9) -----------------------------
+# The nine-state sample of script 04; Mojuí dos Campos dropped here
+# (D-2026-10-05-l). The 502 biome municipalities are the reference
+# population of the pressure scores.
+N_MUNIC_IN_EXPECTED       <- 808L        # script 04 output
+N_MUNIC_EXPECTED          <- 807L
+N_MUNIC_BIOME_EXPECTED    <- 502L
+N_MUNIC_LEGAL_EXPECTED    <- 771L
+FLAG_COLS                 <- c("biome_amazon", "legal_amazon")
+Z_REF_FLAG                <- "biome_amazon"
+N_PANEL_COLS_EXPECTED     <- 73L   # 71 at step 2.8 + 2 flags (D-2026-10-29-a)
+# panel-sample.qmd Q3-Q4, Q10: cohorts 2008-2009 in the main window,
+# 2011-2012 added in the robust window (Grajaú, MA, listed 2011, the one
+# treated municipality outside the biome); every treated municipality is
+# at risk.
 N_TREATED_MAIN_EXPECTED   <- 43L
-N_TREATED_ROBUST_EXPECTED <- 51L
-N_TREATED_EVER_EXPECTED   <- 61L
-# panel-sample.qmd Q2, Q4: 500 above the floor (D-2026-10-12-d), 468 and
-# 408 in the broad and narrow gates.
-N_AVAIL_EXPECTED          <- 500L
-N_BROAD_EXPECTED          <- 468L
-N_NARROW_EXPECTED         <- 408L
+N_TREATED_ROBUST_EXPECTED <- 52L
+N_TREATED_EVER_EXPECTED   <- 62L
+# panel-sample.qmd Q2, Q4, Q10: 500 of the 502 biome municipalities above
+# the floor (D-2026-10-12-d) and all 305 others; 468 + 288 and 408 + 238
+# in the broad and narrow gates.
+N_AVAIL_EXPECTED          <- 805L
+N_BROAD_EXPECTED          <- 756L
+N_NARROW_EXPECTED         <- 646L
+# ---- end fix -----------------------------------------------------------------
 # panel-sample.qmd Q2: Ipiranga do Norte, Itanhangá, Santa Cruz do Arari.
 N_AGRI_NA_EXPECTED        <- 3L
 Z_TOL                     <- 1e-6
@@ -100,7 +121,7 @@ SAMPLE_INT_COLS <- c("ppcdam_main", "ppcdam_robust",
                      "ppcdam_ever_full")                      # D-2026-10-12-e
 ANCHOR_COLS <- paste0(rep(ANCHOR_VARS, each = length(CENSUS_YEARS)), "_c",
                       rep(CENSUS_YEARS, times = length(ANCHOR_VARS)))
-MUNI_COLS <- c("geocode", "municipality", "state_abbreviation",
+MUNI_COLS <- c("geocode", "municipality", "state_abbreviation", FLAG_COLS,
                "defor_area_b", "defor_rate_b", "cattle_dens_b",
                "crop_share_b", "forest_share_2000", "forest_km2_2000",
                "log_defor_area_b", "log_cattle_dens_b", "log_crop_share_b",
@@ -128,6 +149,7 @@ stopifnot(
   !anyNA(panel_in$munic_area_km2),
   !any(SAMPLE_COLS %in% names(panel_in)),
   !any(ANCHOR_COLS %in% names(panel_in)),
+  all(FLAG_COLS %in% names(panel_in)),
   # panel-sample.qmd Q9: one anchor row per municipality and census year,
   # the population anchors marked in the population file.
   setequal(census_anchors$year, CENSUS_YEARS),
@@ -144,14 +166,19 @@ panel <- panel_in %>% filter(geocode != MOJUI_GEOCODE)   # D-2026-10-05-l
 # A municipality with no baseline value in a source gets NA, not NaN
 # (D-2026-10-12-a).
 mean_base <- function(x) if (all(is.na(x))) NA_real_ else mean(x, na.rm = TRUE)
-z_cross <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+# Cross-sectional z-score with the centre and spread of a reference
+# population (D-2026-10-12-c; D-2026-10-29-c).
+z_cross <- function(x, ref) {
+  (x - mean(x[ref], na.rm = TRUE)) / sd(x[ref], na.rm = TRUE)
+}
 
 baseline <- panel %>%
   filter(year %in% SAMPLE_BASE_YEARS) %>%
   mutate(crop_share_all = crop_soy_munic_area_share +
            crop_corn_munic_area_share + crop_rice_munic_area_share +
            crop_cotton_munic_area_share) %>%
-  group_by(geocode, municipality, state_abbreviation) %>%
+  group_by(geocode, municipality, state_abbreviation,
+           across(all_of(FLAG_COLS))) %>%
   summarise(
     defor_area_b  = mean_base(deforestation_area_km2),
     defor_rate_b  = mean_base(deforestation_forest_rate),
@@ -207,15 +234,17 @@ muni <- baseline %>%
   left_join(anchors, by = "geocode") %>%
   # Right-skewed baselines are logged before the cross-sectional z-scores;
   # pressure_agri is a half-half mix of two z-scores and is not
-  # re-standardised (D-2026-10-12-c).
+  # re-standardised (D-2026-10-12-c). The reference population is the
+  # biome sample (D-2026-10-29-c).
   mutate(
+    z_ref             = .data[[Z_REF_FLAG]] == 1L,
     log_defor_area_b  = log1p(defor_area_b),
     log_cattle_dens_b = log1p(cattle_dens_b),
     log_crop_share_b  = log1p(crop_share_b),
-    pressure_defor    = z_cross(log_defor_area_b),
-    pressure_agri     = 0.5 * z_cross(log_cattle_dens_b) +
-      0.5 * z_cross(log_crop_share_b),
-    pressure_score    = z_cross(pressure_defor + pressure_agri),
+    pressure_defor    = z_cross(log_defor_area_b, z_ref),
+    pressure_agri     = 0.5 * z_cross(log_cattle_dens_b, z_ref) +
+      0.5 * z_cross(log_crop_share_b, z_ref),
+    pressure_score    = z_cross(pressure_defor + pressure_agri, z_ref),
     # Absolute baseline clearing, not the rate: listing is assigned on
     # area, so the gate preserves overlap with treatment (D-2026-10-05-h).
     avail_ok          = forest_share_2000 >= SAMPLE_FOREST_SHARE_FLOOR,
@@ -246,7 +275,14 @@ anchor_vs_panel <- panel %>%
                                 population_c2010))
 anchor_2000_cols <- ANCHOR_COLS[str_detect(ANCHOR_COLS, "_c2000$")]
 anchor_later_cols <- setdiff(ANCHOR_COLS, anchor_2000_cols)
+muni_ref <- muni[[Z_REF_FLAG]] == 1L
 stopifnot(
+  # D-2026-10-29-a: the flags in the store, 502 biome and 771 Legal Amazon
+  # municipalities once Mojuí dos Campos is dropped.
+  all(map_lgl(muni[FLAG_COLS], ~ is.integer(.x) && all(.x %in% 0:1))),
+  sum(muni$biome_amazon) == N_MUNIC_BIOME_EXPECTED,
+  sum(muni$legal_amazon) == N_MUNIC_LEGAL_EXPECTED,
+  all(muni$biome_amazon <= muni$legal_amazon),
   setequal(panel$year[panel$year %in% CENSUS_YEARS], CENSUS_YEARS[1:2]),
   same_or_na(anchor_vs_panel$pea, anchor_vs_panel$pea_c),
   same_or_na(anchor_vs_panel$informal, anchor_vs_panel$informal_c),
@@ -281,9 +317,10 @@ stopifnot(
   all(muni$ppcdam_robust <= muni$ppcdam_ever_full),
   # The gates remove controls only: every treated municipality survives.
   all(muni$at_risk_narrow[muni$ppcdam_robust == 1L]),
-  all(abs(map_dbl(muni[c("pressure_defor", "pressure_score")],
+  # D-2026-10-29-c: mean 0 and sd 1 over the reference population.
+  all(abs(map_dbl(muni[muni_ref, c("pressure_defor", "pressure_score")],
                   mean, na.rm = TRUE)) < Z_TOL),
-  all(abs(map_dbl(muni[c("pressure_defor", "pressure_score")],
+  all(abs(map_dbl(muni[muni_ref, c("pressure_defor", "pressure_score")],
                   sd, na.rm = TRUE) - 1) < Z_TOL),
   # Every appended column is constant within municipality.
   all(map_lgl(panel[SAMPLE_COLS],

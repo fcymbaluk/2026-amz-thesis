@@ -422,3 +422,76 @@ quantities from here (memo
 **Assertion.** `05-sample-definition.R`, raw-state block (anchor years and
 coverage) and output block (`same_or_na` against the panel at the census
 years; `N_ANCHOR_NA_2000_EXPECTED`; no NA in the later vintages).
+
+## Q10. How do the added municipalities fall through the gates, and what do the pressure scores measure on the extended sample? (phase 2, step 2.9, 2026-10-29)
+
+What is checked: the 807 municipalities of the sample panel (the 808 of
+the nine states less Mojuí dos Campos; task 1.1, D-2026-10-29-a) by
+flag; the availability floor, the two at-risk gates and the three
+treatment flags by biome and Legal Amazon status; Grajaú, the one treated
+municipality outside the biome; the 2000 anchors of the six Cerrado
+municipalities added to the lookup (D-2026-10-29-b); the baseline medians
+of the added municipalities against the biome's; and the moments of the
+pressure scores inside and outside their reference population, the 502
+biome municipalities (D-2026-10-29-c).
+
+```{r q10-gates}
+muni %>%
+  group_by(biome_amazon, legal_amazon) %>%
+  summarise(municipalities = n(), avail_ok = sum(avail_ok),
+            at_risk_broad = sum(at_risk_broad), at_risk_narrow = sum(at_risk_narrow),
+            ppcdam_main = sum(ppcdam_main), ppcdam_robust = sum(ppcdam_robust),
+            ppcdam_ever_full = sum(ppcdam_ever_full), .groups = "drop")
+muni %>%
+  filter(ppcdam_ever_full == 1L, biome_amazon == 0L) %>%
+  select(municipality, state_abbreviation, defor_area_b, forest_share_2000,
+         at_risk_narrow, ppcdam_main, ppcdam_robust, pressure_score)
+muni %>% filter(is.na(pia_c2000)) %>% count(biome_amazon)
+```
+
+```{r q10-baselines}
+muni %>%
+  group_by(biome_amazon) %>%
+  summarise(across(c(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
+                     forest_share_2000),
+                   ~ round(median(.x, na.rm = TRUE), 3)), .groups = "drop")
+muni %>%
+  group_by(biome_amazon) %>%
+  summarise(across(c(pressure_defor, pressure_agri, pressure_score),
+                   list(mean = ~ mean(.x, na.rm = TRUE), sd = ~ sd(.x, na.rm = TRUE),
+                        max = ~ max(.x, na.rm = TRUE))), .groups = "drop") %>%
+  pivot_longer(-biome_amazon) %>%
+  pivot_wider(names_from = biome_amazon, values_from = value, names_prefix = "biome_") %>%
+  mutate(across(where(is.double), ~ round(.x, 3)))
+```
+
+**Finding.** The sample panel holds 807 municipalities, 502 in the biome,
+269 in the Legal Amazon outside it and 36 outside both. The gates keep
+most of the added municipalities: all 305 clear the 10 percent forest
+floor (their 2000 forest share is at least 0.22 on the MapBiomas
+vegetation aggregate), 288 clear the broad gate and 238 the narrow one,
+against 500, 468 and 408 of the 502; the 36 municipalities outside the
+Legal Amazon are 22 broad and 7 narrow. Grajaú (MA), listed in 2011, is
+the one treated municipality outside the biome: 105 km² of baseline
+clearing a year, a 2000 forest share of 0.84, inside the narrow gate,
+treated in the robust and ever windows and a not-yet-treated control in
+the main window, so the treated counts become 43, 52 and 62. The six
+Cerrado municipalities added to the lookup have no 2000 anchor
+(fifteen municipalities in all). The added municipalities clear less
+(median baseline 14 km² a year against 25.5) at a slightly lower rate,
+carry denser cattle (20 against 13 head per km²) and more crop land
+(1.6 against 0.6 percent of the territory). The pressure scores keep the
+502 as reference population: mean 0 and sd 1 there; outside the biome
+`pressure_defor` averages -0.29 and `pressure_agri` 0.65 with a maximum
+of 10 standard deviations (the soy municipalities of Mato Grosso's
+Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain
+the sample-dependent variables Q7 describes, now read on the biome
+metric for every municipality, pending task 2.2.
+**Decision.** D-2026-10-29-a (807 municipalities, flags in the store, the
+gates and treatment flags for every municipality), D-2026-10-29-c (the
+reference population).
+**Assertion.** `05-sample-definition.R`, raw-state block (808 in, the two
+flags present) and output block (807 out; flags 0/1 with 502 and 771;
+805 above the floor, 756 broad, 646 narrow; 43, 52 and 62 treated; 15
+municipalities without a 2000 anchor; pressure moments on the reference
+rows).

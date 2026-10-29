@@ -2220,6 +2220,7 @@ vertical-align: -.125em;
   <li><a href="#q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample" id="toc-q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample" class="nav-link" data-scroll-target="#q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample">Q7. Are the pressure scores standardized, and how much do they depend on the sample?</a></li>
   <li><a href="#q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel" id="toc-q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel" class="nav-link" data-scroll-target="#q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel">Q8. Why does Santa Cruz do Arari’s availability flag differ from the recovered panel?</a></li>
   <li><a href="#q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" id="toc-q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" class="nav-link" data-scroll-target="#q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel">Q9. Which census anchors does the municipality store carry, and do they agree with the panel?</a></li>
+  <li><a href="#q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29" id="toc-q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29" class="nav-link" data-scroll-target="#q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29">Q10. How do the added municipalities fall through the gates, and what do the pressure scores measure on the extended sample? (phase 2, step 2.9, 2026-10-29)</a></li>
   </ul>
 </nav>
 </div>
@@ -2296,7 +2297,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 2
   years     n
   &lt;int&gt; &lt;int&gt;
-1     4   502</code></pre>
+1     4   807</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The drop removes Mojuí’s 21 rows (503 to 502 municipalities). Over 2000-2003 the municipality carries deforestation, forest, area and the PPCDAm indicator (never listed) but no cattle or crop values, so its baseline clearing would exist while its agricultural pressure would not; the substantive reason for the drop is the absence of every social and economic series before 2013 (<code>_audit/panel.qmd</code> Q7). Every remaining municipality has four baseline years of deforestation area. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (Mojuí present in the input, no NA in the deforestation, forest and area columns) and output block (502 municipalities, Mojuí absent).</p>
@@ -2363,11 +2364,11 @@ vertical-align: -.125em;
 <pre><code># A tibble: 5 × 6
   baseline            min   p10 median     p90      max
   &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
-1 cattle_dens_b     0     0.351 13.3    78.6    138.   
-2 crop_share_b      0     0      0.006   0.035    0.552
-3 defor_area_b      0     1.89  25.5   126.    1126.   
-4 defor_rate_b      0     0.028  2.35    8.54    23.6  
-5 forest_share_2000 0.085 0.302  0.745   0.966    1.18 </code></pre>
+1 cattle_dens_b     0     0.94  16.3    64.8    180.   
+2 crop_share_b      0     0      0.01    0.059    0.798
+3 defor_area_b      0     2.41  19.7   103.    1126.   
+4 defor_rate_b      0     0.001  0.019   0.069    0.236
+5 forest_share_2000 0.085 0.351  0.748   0.964    0.998</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Three municipalities have no agricultural baseline: Ipiranga do Norte and Itanhangá (MT) have no PAM or PPM rows before their first survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop series at all (D-2026-10-10-i). Their <code>pressure_agri</code> and <code>pressure_score</code> are NA; their flags are defined because the flags read only clearing and forest share. The baselines are right-skewed, which is why the pressure scores log them first. The 2000 forest share exceeds 1 for one municipality, Nova Ubiratã (1.18), the mesh-vintage mismatch of <code>_audit/panel.qmd</code> Q3 (task 1.8); it passes the floor either way. <strong>Decision.</strong> D-2026-10-12-a (NA, never NaN, where a source has no baseline value). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AGRI_NA_EXPECTED</code> = 3, no NA in clearing and forest share, flags never NA).</p>
@@ -2390,7 +2391,7 @@ vertical-align: -.125em;
   &lt;int&gt;       &lt;int&gt;
 1  2008          36
 2  2009           7
-3  2011           6
+3  2011           7
 4  2012           2
 5  2017           8
 6  2018           2</code></pre>
@@ -2432,7 +2433,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 3
    main robust ever_full
   &lt;int&gt;  &lt;int&gt;     &lt;int&gt;
-1    43     51        61</code></pre>
+1    43     52        62</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Listing starts in 2008 (36 municipalities) with a second cohort in 2009 (7), so the main window holds 43 treated municipalities and no exit; 2011 and 2012 add 8, so the robust window holds 51, and six of its treated municipalities (four in Pará, two in Mato Grosso) have left the list by 2012. Later cohorts (2017, 2018) bring the full-panel count to 61. A municipality first listed after a window’s end is a control in that design. <strong>Decision.</strong> D-2026-10-12-b. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (43, 51, 61; main within robust within ever).</p>
@@ -2461,14 +2462,14 @@ vertical-align: -.125em;
 <pre><code># A tibble: 8 × 5
   window sample     n treated control
   &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
-1 main   full     502      43     459
-2 main   avail    500      43     457
-3 main   broad    468      43     425
-4 main   narrow   408      43     365
-5 robust full     502      51     451
-6 robust avail    500      51     449
-7 robust broad    468      51     417
-8 robust narrow   408      51     357</code></pre>
+1 main   full     807      43     764
+2 main   avail    805      43     762
+3 main   broad    756      43     713
+4 main   narrow   646      43     603
+5 robust full     807      52     755
+6 robust avail    805      52     753
+7 robust broad    756      52     704
+8 robust narrow   646      52     594</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Under both windows every treated municipality survives the floor and both gates; the restriction removes controls only, from 459 to 425 (broad) and 365 (narrow) in the main window and from 451 to 417 and 357 in the robust window. The floor alone removes two never-listed Tocantins municipalities (Arapoema and Bernardo Sayão, forest share below 0.09). <strong>Decision.</strong> D-2026-10-05-h (gates as inherited). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (500, 468, 408; every robust-window treated municipality in the narrow sample).</p>
@@ -2506,21 +2507,21 @@ vertical-align: -.125em;
 <pre><code># A tibble: 15 × 5
    sample covariate         mean_treated mean_control    smd
    &lt;chr&gt;  &lt;chr&gt;                    &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
- 1 full   forest_share_2000        0.814        0.672  0.714
- 2 full   defor_area_b           233.          35.9    1.59 
- 3 full   defor_rate_b             2.37         3.49  -0.389
- 4 full   cattle_dens_b           17.1         28.3   -0.433
- 5 full   crop_share_b             0.013        0.015 -0.059
- 6 broad  forest_share_2000        0.814        0.66   0.781
- 7 broad  defor_area_b           233.          38.7    1.57 
- 8 broad  defor_rate_b             2.37         3.72  -0.471
- 9 broad  cattle_dens_b           17.1         29.7   -0.485
-10 broad  crop_share_b             0.013        0.016 -0.096
-11 narrow forest_share_2000        0.814        0.64   0.895
-12 narrow defor_area_b           233.          44.6    1.52 
-13 narrow defor_rate_b             2.37         4.15  -0.613
-14 narrow cattle_dens_b           17.1         32.6   -0.59 
-15 narrow crop_share_b             0.013        0.018 -0.156</code></pre>
+ 1 full   forest_share_2000        0.806        0.693  0.627
+ 2 full   defor_area_b           233.          32.4    1.62 
+ 3 full   defor_rate_b             0.024        0.028 -0.181
+ 4 full   cattle_dens_b           17.1         26.8   -0.422
+ 5 full   crop_share_b             0.012        0.028 -0.329
+ 6 broad  forest_share_2000        0.806        0.682  0.69 
+ 7 broad  defor_area_b           233.          34.7    1.60 
+ 8 broad  defor_rate_b             0.024        0.03  -0.249
+ 9 broad  cattle_dens_b           17.1         28.0   -0.471
+10 broad  crop_share_b             0.012        0.029 -0.351
+11 narrow forest_share_2000        0.806        0.661  0.824
+12 narrow defor_area_b           233.          40.4    1.55 
+13 narrow defor_rate_b             0.024        0.033 -0.384
+14 narrow cattle_dens_b           17.1         30.0   -0.563
+15 narrow crop_share_b             0.012        0.031 -0.373</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2530,21 +2531,21 @@ vertical-align: -.125em;
 <pre><code># A tibble: 15 × 5
    sample covariate         mean_treated mean_control    smd
    &lt;chr&gt;  &lt;chr&gt;                    &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
- 1 full   forest_share_2000        0.816        0.67   0.734
- 2 full   defor_area_b           209.          35.1    1.44 
- 3 full   defor_rate_b             2.34         3.51  -0.408
- 4 full   cattle_dens_b           16.3         28.6   -0.473
- 5 full   crop_share_b             0.025        0.014  0.191
- 6 broad  forest_share_2000        0.816        0.656  0.804
- 7 broad  defor_area_b           209.          37.9    1.41 
- 8 broad  defor_rate_b             2.34         3.75  -0.491
- 9 broad  cattle_dens_b           16.3         30.1   -0.527
-10 broad  crop_share_b             0.025        0.015  0.172
-11 narrow forest_share_2000        0.816        0.635  0.924
-12 narrow defor_area_b           209.          43.8    1.36 
-13 narrow defor_rate_b             2.34         4.19  -0.637
-14 narrow cattle_dens_b           16.3         33.0   -0.635
-15 narrow crop_share_b             0.025        0.017  0.142</code></pre>
+ 1 full   forest_share_2000        0.809        0.691  0.652
+ 2 full   defor_area_b           207.          31.8    1.46 
+ 3 full   defor_rate_b             0.023        0.028 -0.206
+ 4 full   cattle_dens_b           16.2         27.0   -0.471
+ 5 full   crop_share_b             0.024        0.027 -0.048
+ 6 broad  forest_share_2000        0.809        0.681  0.717
+ 7 broad  defor_area_b           207.          34.0    1.44 
+ 8 broad  defor_rate_b             0.023        0.03  -0.275
+ 9 broad  cattle_dens_b           16.2         28.2   -0.521
+10 broad  crop_share_b             0.024        0.029 -0.068
+11 narrow forest_share_2000        0.809        0.659  0.856
+12 narrow defor_area_b           207.          39.8    1.39 
+13 narrow defor_rate_b             0.023        0.034 -0.411
+14 narrow cattle_dens_b           16.2         30.3   -0.616
+15 narrow crop_share_b             0.024        0.03  -0.086</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Listed municipalities have far higher baseline clearing area (smd about 1.5 in the main window, 1.4 in the robust one), are more forested (0.7 to 0.9) and have lower clearing rate and cattle density (about -0.4 to -0.6); the imbalance does not shrink as the sample narrows. Crop share is balanced in the main window and tilts towards the treated group (0.14 to 0.19) in the robust window, whose 2011-2012 cohorts are more crop-oriented. These are the covariates the estimator conditions on. <strong>Decision.</strong> none required; evidence for the chapter’s methods section. <strong>Assertion.</strong> none.</p>
@@ -2584,9 +2585,9 @@ vertical-align: -.125em;
 <pre><code># A tibble: 3 × 9
   sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
   &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
-1 full     499      43      0.088       0.92                  14                 410             0.693
-2 broad    466      43      0.088       0.92                  14                 377             0.693
-3 narrow   406      43      0.088       0.92                  14                 317             0.693
+1 full     804      43      0.068      0.892                  14                 705             0.614
+2 broad    754      43      0.068      0.892                  14                 655             0.614
+3 narrow   644      43      0.068      0.892                  14                 545             0.614
 # ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
@@ -2597,9 +2598,9 @@ vertical-align: -.125em;
 <pre><code># A tibble: 3 × 9
   sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
   &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
-1 full     499      51      0.035      0.909                  12                 357             0.668
-2 broad    466      51      0.035      0.909                  12                 324             0.668
-3 narrow   406      51      0.035      0.909                  12                 264             0.668
+1 full     804      52      0.026      0.884                  12                 616             0.592
+2 broad    754      52      0.026      0.884                  12                 566             0.592
+3 narrow   644      52      0.026      0.884                  12                 456             0.591
 # ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
 </div>
 </div>
@@ -2624,9 +2625,9 @@ vertical-align: -.125em;
 <pre><code># A tibble: 3 × 3
   score             mean    sd
   &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt;
-1 pressure_defor  0      1    
-2 pressure_agri  -0.0007 0.806
-3 pressure_score  0      1    </code></pre>
+1 pressure_defor -0.111  0.941
+2 pressure_agri   0.244  1.08 
+3 pressure_score  0.0905 1.07 </code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2650,7 +2651,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 3
   max_shift_defor max_shift_agri max_shift_score
             &lt;dbl&gt;          &lt;dbl&gt;           &lt;dbl&gt;
-1           0.401          0.235           0.386</code></pre>
+1           0.527           5.18            3.12</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> <code>pressure_defor</code> and <code>pressure_score</code> have mean 0 and sd 1 over the 502 municipalities; <code>pressure_agri</code> is a half-half mix of two z-scores and has sd below 1 by construction. Restandardizing on the broad at-risk sample moves the scores by up to 0.4 standard deviations, which is the sample dependence the governing rule for derived variables excludes from the panel. <strong>Decision.</strong> D-2026-10-12-c (reproduced as inherited; flagged for the storage audit, task 2.2). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (moments of <code>pressure_defor</code> and <code>pressure_score</code> within <code>Z_TOL</code>).</p>
@@ -2693,10 +2694,10 @@ vertical-align: -.125em;
 <pre><code># A tibble: 4 × 2
   column            n_na
   &lt;chr&gt;            &lt;int&gt;
-1 pia_c2000            9
-2 pea_c2000            9
-3 informal_c2000       9
-4 population_c2000     9</code></pre>
+1 pia_c2000           15
+2 pea_c2000           15
+3 informal_c2000      15
+4 population_c2000    15</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2705,18 +2706,24 @@ vertical-align: -.125em;
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, pia_c2010, population_c2010)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 5
-  geocode municipality          state_abbreviation pia_c2010 population_c2010
-  &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;                  &lt;dbl&gt;            &lt;dbl&gt;
-1 5101852 Bom Jesus do Araguaia MT                      3913             5314
-2 5103254 Colniza               MT                     18790            26381
-3 5103361 Conquista D&#39;Oeste     MT                      2545             3385
-4 5103437 Curvelândia           MT                      3726             4866
-5 5104526 Ipiranga do Norte     MT                      3822             5123
-6 5104542 Itanhangá             MT                      3914             5276
-7 5106190 Nova Santa Helena     MT                      2656             3468
-8 5107578 Rondolândia           MT                      2517             3604
-9 5107743 Santa Cruz do Xingu   MT                      1400             1900</code></pre>
+<pre><code># A tibble: 15 × 5
+   geocode municipality            state_abbreviation pia_c2010 population_c2010
+   &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;                  &lt;dbl&gt;            &lt;dbl&gt;
+ 1 5101852 Bom Jesus do Araguaia   MT                      3913             5314
+ 2 5103254 Colniza                 MT                     18790            26381
+ 3 5103361 Conquista D&#39;Oeste       MT                      2545             3385
+ 4 5103437 Curvelândia             MT                      3726             4866
+ 5 5104526 Ipiranga do Norte       MT                      3822             5123
+ 6 5104542 Itanhangá               MT                      3914             5276
+ 7 5106174 Nova Nazaré             MT                      1977             3029
+ 8 5106190 Nova Santa Helena       MT                      2656             3468
+ 9 5106315 Novo Santo Antônio      MT                      1477             2005
+10 5107578 Rondolândia             MT                      2517             3604
+11 5107743 Santa Cruz do Xingu     MT                      1400             1900
+12 5107768 Santa Rita do Trivelato MT                      1850             2491
+13 5107792 Santo Antônio do Leste  MT                      2738             3754
+14 5107883 Serra Nova Dourada      MT                      1030             1365
+15 5108352 Vale de São Domingos    MT                      2329             3052</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2753,16 +2760,108 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> informal_points_from_2000 population_ratio_to_2000
- Min.   :-13.986989        Min.   :0.7904          
- 1st Qu.: -4.189639        1st Qu.:1.0257          
- Median : -1.887057        Median :1.0819          
- Mean   : -2.123689        Mean   :1.1013          
- 3rd Qu.: -0.003054        3rd Qu.:1.1552          
- Max.   : 11.173078        Max.   :1.7591          
- NAs    :9                 NAs    :9               </code></pre>
+ Min.   :-0.182577         Min.   :0.7904          
+ 1st Qu.:-0.049375         1st Qu.:1.0195          
+ Median :-0.026179         Median :1.0701          
+ Mean   :-0.027122         Mean   :1.0906          
+ 3rd Qu.:-0.004502         3rd Qu.:1.1366          
+ Max.   : 0.125641         Max.   :1.7591          
+ NAs    :15                NAs    :15              </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The store carries the twelve anchors for the 502 municipalities; only the nine Mato Grosso municipalities installed after the 2000 census are NA, in the 2000 vintage of all four variables, and every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the panel’s values in those years exactly, with the same NA pattern, which confirms that the interpolated series pass through the census values and that the store adds no new information for those years; what it adds is the clean value for the intercensal baseline: the 2002-2007 mean of the interpolated informality share sits below the 2000 census for most municipalities, and the population mean above it, by the blend documented in <code>_audit/census.qmd</code> Q8. Analysis scripts take baseline census quantities from here (memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>). <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (anchor years and coverage) and output block (<code>same_or_na</code> against the panel at the census years; <code>N_ANCHOR_NA_2000_EXPECTED</code>; no NA in the later vintages).</p>
+</section>
+<section id="q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29" class="level2">
+<h2 class="anchored" data-anchor-id="q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29">Q10. How do the added municipalities fall through the gates, and what do the pressure scores measure on the extended sample? (phase 2, step 2.9, 2026-10-29)</h2>
+<p>What is checked: the 807 municipalities of the sample panel (the 808 of the nine states less Mojuí dos Campos; task 1.1, D-2026-10-29-a) by flag; the availability floor, the two at-risk gates and the three treatment flags by biome and Legal Amazon status; Grajaú, the one treated municipality outside the biome; the 2000 anchors of the six Cerrado municipalities added to the lookup (D-2026-10-29-b); the baseline medians of the added municipalities against the biome’s; and the moments of the pressure scores inside and outside their reference population, the 502 biome municipalities (D-2026-10-29-c).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon, legal_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">avail_ok =</span> <span class="fu">sum</span>(avail_ok),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">at_risk_broad =</span> <span class="fu">sum</span>(at_risk_broad), <span class="at">at_risk_narrow =</span> <span class="fu">sum</span>(at_risk_narrow),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">ppcdam_main =</span> <span class="fu">sum</span>(ppcdam_main), <span class="at">ppcdam_robust =</span> <span class="fu">sum</span>(ppcdam_robust),</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">ppcdam_ever_full =</span> <span class="fu">sum</span>(ppcdam_ever_full), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 9
+  biome_amazon legal_amazon municipalities avail_ok at_risk_broad at_risk_narrow ppcdam_main ppcdam_robust
+         &lt;int&gt;        &lt;int&gt;          &lt;int&gt;    &lt;int&gt;         &lt;int&gt;          &lt;int&gt;       &lt;int&gt;         &lt;int&gt;
+1            0            0             36       36            22              7           0             0
+2            0            1            269      269           266            231           0             1
+3            1            1            502      500           468            408          43            51
+# ℹ 1 more variable: ppcdam_ever_full &lt;int&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ppcdam_ever_full <span class="sc">==</span> <span class="dv">1</span>L, biome_amazon <span class="sc">==</span> <span class="dv">0</span>L) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, state_abbreviation, defor_area_b, forest_share_2000,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>         at_risk_narrow, ppcdam_main, ppcdam_robust, pressure_score)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 8
+  municipality state_abbreviation defor_area_b forest_share_2000 at_risk_narrow ppcdam_main ppcdam_robust
+  &lt;chr&gt;        &lt;chr&gt;                     &lt;dbl&gt;             &lt;dbl&gt; &lt;lgl&gt;                &lt;int&gt;         &lt;int&gt;
+1 Grajaú       MA                         105.             0.836 TRUE                     0             1
+# ℹ 1 more variable: pressure_score &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(pia_c2000)) <span class="sc">%&gt;%</span> <span class="fu">count</span>(biome_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  biome_amazon     n
+         &lt;int&gt; &lt;int&gt;
+1            0     6
+2            1     9</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                     forest_share_2000),</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">round</span>(<span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">3</span>)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 6
+  biome_amazon defor_area_b defor_rate_b cattle_dens_b crop_share_b forest_share_2000
+         &lt;int&gt;        &lt;dbl&gt;        &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;             &lt;dbl&gt;
+1            0         14.0        0.016          20.4        0.016             0.748
+2            1         25.5        0.023          13.3        0.006             0.749</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(pressure_defor, pressure_agri, pressure_score),</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max =</span> <span class="sc">~</span> <span class="fu">max</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>biome_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> biome_amazon, <span class="at">values_from =</span> value, <span class="at">names_prefix =</span> <span class="st">&quot;biome_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.double), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 3
+  name                biome_0 biome_1
+  &lt;chr&gt;                 &lt;dbl&gt;   &lt;dbl&gt;
+1 pressure_defor_mean  -0.294   0    
+2 pressure_defor_sd     0.804   1    
+3 pressure_defor_max    1.78    2.73 
+4 pressure_agri_mean    0.645  -0.001
+5 pressure_agri_sd      1.33    0.808
+6 pressure_agri_max    10.2     7.95 
+7 pressure_score_mean   0.239   0    
+8 pressure_score_sd     1.17    1    
+9 pressure_score_max    7.17    6.19 </code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The sample panel holds 807 municipalities, 502 in the biome, 269 in the Legal Amazon outside it and 36 outside both. The gates keep most of the added municipalities: all 305 clear the 10 percent forest floor (their 2000 forest share is at least 0.22 on the MapBiomas vegetation aggregate), 288 clear the broad gate and 238 the narrow one, against 500, 468 and 408 of the 502; the 36 municipalities outside the Legal Amazon are 22 broad and 7 narrow. Grajaú (MA), listed in 2011, is the one treated municipality outside the biome: 105 km² of baseline clearing a year, a 2000 forest share of 0.84, inside the narrow gate, treated in the robust and ever windows and a not-yet-treated control in the main window, so the treated counts become 43, 52 and 62. The six Cerrado municipalities added to the lookup have no 2000 anchor (fifteen municipalities in all). The added municipalities clear less (median baseline 14 km² a year against 25.5) at a slightly lower rate, carry denser cattle (20 against 13 head per km²) and more crop land (1.6 against 0.6 percent of the territory). The pressure scores keep the 502 as reference population: mean 0 and sd 1 there; outside the biome <code>pressure_defor</code> averages -0.29 and <code>pressure_agri</code> 0.65 with a maximum of 10 standard deviations (the soy municipalities of Mato Grosso’s Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain the sample-dependent variables Q7 describes, now read on the biome metric for every municipality, pending task 2.2. <strong>Decision.</strong> D-2026-10-29-a (807 municipalities, flags in the store, the gates and treatment flags for every municipality), D-2026-10-29-c (the reference population). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (808 in, the two flags present) and output block (807 out; flags 0/1 with 502 and 771; 805 above the floor, 756 broad, 646 narrow; 43, 52 and 62 treated; 15 municipalities without a 2000 anchor; pressure moments on the reference rows).</p>
 </section>
 
 </main>

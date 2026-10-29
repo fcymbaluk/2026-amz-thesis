@@ -188,7 +188,7 @@ Supersedes: none
 
 ## D-2026-10-05-m  Legal Amazon extension via `biome_amazon` and `legal_amazon` flags
 
-Status: open (Task 1.1; phase 2 step 2.9)
+Status: closed (phase 2, step 2.9, branch phase2-2.9-legal-amazon, 2026-10-29; implemented as D-2026-10-29-a to -d, which hold the detail)
 Scope: scripts 01, 04, 05; all N_MUNIC_EXPECTED assertions
 Context: the panel covers the 502 municipalities of the Amazon biome; the
          Legal Amazon adds the non-biome municipalities of the nine states.
@@ -290,7 +290,7 @@ Supersedes: none
 
 ## D-2026-10-06-c  Sample rule in script 01: nine states, then IBGE predominant biome Amazônia
 
-Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 91, 376; refactored in phase 1, script 01); reopened by D-2026-10-05-m (task 1.1)
+Status: closed (pre-rebuild; script 01 at tag pre-reorg, lines 91, 376; refactored in phase 1, script 01); reopened by D-2026-10-05-m (task 1.1); superseded by D-2026-10-29-a (phase 2, step 2.9, 2026-10-29: the biome filter becomes the biome_amazon flag)
 Scope: 01-env-deforestation.R (AMZ_STATES, BIOME_KEEP, N_MUNIC_*_EXPECTED)
 Context: MapBiomas covers all 5,571 municipalities; the study population is
          the Amazon.
@@ -2288,3 +2288,131 @@ Reason: one value per row from a short vocabulary (text, year, 0/1,
 Evidence: _audit/panel.qmd Q10 (every column's range against its unit)
 Affects: codebook only
 Supersedes: none
+
+## D-2026-10-29-a  Sample extended to the 808 municipalities of the nine Legal Amazon states; biome_amazon and legal_amazon as constant flags
+
+Status: closed (phase 2, step 2.9, branch phase2-2.9-legal-amazon, 2026-10-29; comparator report in the commit message)
+Scope: 01-env-deforestation.R (biome filter removed, LEGAL_AMAZON_FILE, the two flags, N_MUNIC_* assertions, the one name mismatch); 04-panel-assemble.R (N_MUNIC_EXPECTED 808, FLAG_COLS, no PPCDAm municipality outside the sample, NA counts); 05-sample-definition.R (808 in, 807 out, flags in the municipality store); 06-normalized-outcome.R (807); _data/raw/ibge/Municipios_da_Amazonia_Legal_2022.xlsx (new raw source, provenance row); codebook rows biome_amazon and legal_amazon; the row set of every downstream dataset
+Context: the panel held the 503 municipalities whose predominant biome is
+         Amazônia (D-2026-10-06-c), 502 after Mojuí dos Campos. Task 1.1
+         asks for the nine states in full, with the biome and the Legal
+         Amazon as flags, so a Legal-Amazon-versus-biome robustness check
+         and generalisability checks become possible; the one ever-listed
+         municipality outside the biome within 2004-2020 is Grajaú (MA,
+         listed 2011), so the step adds infrastructure, not power. Every
+         interim source already covered the 808 (the RAIS, TSE and SICONFI
+         extracts are nine-state; the IBGE, MDS, PAM/PPM and Pink Sheet
+         sources are national), only the MapBiomas interim was filtered, so
+         the extension is one block of script 01 plus the counts.
+Reason: the sample is the nine-state subset of MapBiomas (808
+        municipalities: 503 Amazônia, 301 Cerrado, 4 Pantanal).
+        biome_amazon = 1 for the 503 of IBGE's predominant-biome list;
+        legal_amazon = 1 for the 772 of IBGE's Municípios da Amazônia
+        Legal 2022, the list on the 2022 mesh (geoftp, downloaded
+        2026-10-29, placed in the raw layer by the author), which is the
+        official definition and lies within the nine states. The 36
+        municipalities with legal_amazon = 0 are Maranhão's Cerrado east of
+        the 44th meridian; every biome municipality is in the Legal
+        Amazon, so biome_amazon implies legal_amazon (asserted). Both
+        flags are integers, time-invariant, appended after the step 2.7
+        columns of the panel and placed after state_abbreviation in the
+        municipality store. Mojuí dos Campos is still dropped in script 05
+        (D-2026-10-05-l), so the sample panel has 807 municipalities. The
+        gates and treatment flags apply to every municipality, nothing is
+        restricted downstream: the analysis scripts choose the sample
+        through the flags. Municipality names keep the MapBiomas
+        spelling; IBGE's 2022 release spells Santo Antônio de Leverger
+        (MT) "do Leverger", the one mismatch, asserted by geocode. The
+        interim file keeps its name mapbiomas_deforestation_amz_1987_2023,
+        "amz" now reading as the Legal Amazon states.
+Evidence: _audit/mapbiomas.qmd Q10; _audit/panel.qmd Q11; _audit/panel-sample.qmd Q10; compare_outputs in the commit message
+Affects: every dataset downstream of script 01 gains 305 municipalities (6,405 municipality-years in 2000-2020) and two columns; among the 502, one value moves, muni_parent_split of São Félix do Araguaia (D-2026-10-29-b); the sample gates: 805 above the floor, 756 broad, 646 narrow; treated 43, 52 and 62 (Grajaú in the robust and ever windows)
+Supersedes: D-2026-10-06-c (the biome filter); closes D-2026-10-05-m
+
+## D-2026-10-29-b  Six Cerrado municipalities of Mato Grosso installed in 2001 added to the post-2000 lookup
+
+Status: closed (phase 2, step 2.9, branch phase2-2.9-legal-amazon, 2026-10-29; comparator report in the commit message)
+Scope: _data/aux/munic_post2000.csv (16 rows; provenance row updated); 03-controls-gdp.R (N_EST_INTERP_EXPECTED 15); 04-panel-assemble.R (N_POST2000_EXPECTED 16, N_PARENT_EXPECTED 17, N_EMP_GAP_POST_INSTALL_EXPECTED 2); 05-sample-definition.R (N_ANCHOR_NA_2000_EXPECTED 15); population 2001-2009 of the six; muni_new_post2000, muni_parent_split
+Context: D-2026-10-23-f built the lookup for the nine Mato Grosso
+         municipalities of the biome sample without a 2000 census anchor
+         and foresaw the six others at step 2.9. Among the 808 exactly
+         sixteen municipalities lack a 2000 population anchor: the ten of
+         the lookup and Nova Nazaré, Novo Santo Antônio, Santa Rita do
+         Trivelato, Santo Antônio do Leste, Serra Nova Dourada and Vale de
+         São Domingos (MT, Cerrado), created by state laws of 1998-1999 and
+         installed on 2001-01-01 per IBGE's register (Cadastro de Cidades e
+         Vilas, formação administrativa, consulted 2026-10-29).
+Reason: the same lookup and the same rules apply (D-2026-10-23-d, -e,
+        -f; D-2026-10-28-d): installation year 2001; parents from the
+        register (Água Boa; São Félix do Araguaia and Cocalinho; Nova
+        Mutum; Novo São Joaquim; Alto Boa Vista and São Félix do Araguaia;
+        Pontes e Lacerda); official estimates for 2001-2009 with the 2007
+        count year interpolated (fifteen interpolated cells in all);
+        census anchors NA in 2000; the installation rule asserted. Two
+        consequences reach the audited sample: São Félix do Araguaia
+        (biome) becomes a parent (muni_parent_split 0 to 1, 21 cells), the
+        only value that moves among the 502 at this step; and the parent
+        flag now marks seventeen municipalities, six outside the biome
+        (Água Boa, Cáceres, Cocalinho, Nova Mutum, Novo São Joaquim,
+        Ribeirão Cascalheira). One source gap after installation: Serra
+        Nova Dourada has no RAIS bond in 2001-2002, a reporting gap of the
+        kind D-2026-10-28-b leaves NA; the installation rule now admits the
+        documented RAIS gaps, their count asserted (2), and stays strict
+        for crops, cattle, population and GDP. The register's formação
+        administrativa dates Serra Nova Dourada's law 29-09-1999 where its
+        history text says 30-09-1999; the formação field is used, noted in
+        the lookup, as is its spelling "Alto da Boa Vista" for the parent
+        Alto Boa Vista.
+Evidence: _audit/panel.qmd Q11 (lookup rows, RAIS gaps, parents); _audit/ibge_pib.qmd Q7 and _audit/census.qmd Q7 at the post-2.9 re-render
+Affects: population and pop_source 2001-2009 of the six (54 cells of the interim population file); their pea, informal and pia NA before 2010 (60 panel cells); muni_new_post2000 for the six; muni_parent_split for seven municipalities, one in the biome
+Supersedes: none (extends D-2026-10-23-f)
+
+## D-2026-10-29-c  Reference population of the pooled z-scores and the pressure scores kept at the biome sample
+
+Status: closed (phase 2, step 2.9, branch phase2-2.9-legal-amazon, 2026-10-29; comparator report in the commit message)
+Scope: 04-panel-assemble.R (Z_REF_FLAG, z_ref in the standardisation and its assertion); 05-sample-definition.R (z_cross with a reference population, Z_REF_FLAG); price_index_crop_z, price_index_crop_lag1_z, price_index_cattle_z, price_index_cattle_lag1_z, pressure_defor, pressure_agri, pressure_score; the codebook units of the seven rows
+Context: the four z-scores are centred and scaled on the pooled panel
+         (D-2026-10-11-d) and the three pressure scores on the
+         cross-section of municipalities (D-2026-10-12-c); both are flagged
+         for the storage audit (task 2.2) as sample-dependent. Pooling over
+         the 808 would move every z cell of the audited 502 and re-centre
+         their pressure scores, so the step's diff would no longer read as
+         rows added, for no analytical gain before task 2.2 decides where
+         these columns live.
+Reason: the reference population stays the biome municipalities
+        (biome_amazon == 1): centre and spread are computed on them and
+        applied to every row, so the 502 keep their values exactly and the
+        305 added municipalities read on the biome metric (crop z-score
+        mean 0.96 and sd 2.7 outside the biome, where crop shares are
+        larger; pressure_score mean 0.24, sd 1.17, maximum 7.2). The
+        assertions of mean 0 and sd 1 apply to the reference rows. This is
+        a holding rule: task 2.2 decides whether these columns stay in the
+        panel, and an analysis on the Legal Amazon sample should
+        restandardise on its own estimation sample. Alternative rejected:
+        pooling over all 808 municipality-years (moves four columns in
+        10,542 cells and the three scores of every biome municipality).
+Evidence: _audit/panel.qmd Q11 (z moments by flag); _audit/panel-sample.qmd Q10 (pressure moments by flag)
+Affects: no cell of the 502; the z-scores and pressure scores of the 305 added municipalities
+Supersedes: none (qualifies D-2026-10-11-d and D-2026-10-12-c)
+
+## D-2026-10-29-d  Bonds-per-PIA rates above one stored as computed; the 0-1 guard applies to shares and the clearing rate
+
+Status: closed (phase 2, step 2.9, branch phase2-2.9-legal-amazon, 2026-10-29; comparator report in the commit message)
+Scope: 04-panel-assemble.R (PIA_RATE_COLS, N_PIA_RATE_OVER_1_EXPECTED, SHARE_RATE_COLS); emp_pia_rate_total, emp_pia_rate_agric, emp_pia_rate_low, emp_pia_rate_mid, emp_pia_rate_high; the codebook unit of the five rows
+Context: step 2.8 asserted every share and rate of the panel on 0-1
+         (D-2026-10-28-h, -i) and the five emp_pia_rate_* columns were in
+         the guard. On the 808 three cells exceed one: Santo Antônio de
+         Leverger (MT) in 2000 (1.01) and 2001 (1.21) and São Salvador do
+         Tocantins (TO) in 2007 (1.19). RAIS counts bonds at the
+         establishment, the census counts residents of working age, and a
+         worker can hold more than one bond, so the quotient is bounded in
+         practice only.
+Reason: the values are kept as computed (a cap would recode a source
+        value); the five columns move from the 0-1 guard to a
+        non-negativity guard, with the number of cells above one asserted
+        and each bracket rate bounded by the total; the codebook unit
+        becomes "ratio (bonds per working-age resident)". No cell of the
+        biome sample is affected.
+Evidence: _audit/panel.qmd Q11
+Affects: none in the biome sample; three cells of two added municipalities carry values above one
+Supersedes: none (qualifies the guard of D-2026-10-28-i, not its scale)

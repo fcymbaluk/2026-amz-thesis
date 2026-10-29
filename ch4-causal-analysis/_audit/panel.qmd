@@ -489,3 +489,125 @@ construction), D-2026-10-28-k (the unit column).
 **Assertion.** `04-panel-assemble.R`, output block (`SHARE_RATE_COLS`
 on 0-1); `01-env-deforestation.R` and `02-social-census.R`, output
 blocks (the rate and the informality share on 0-1).
+
+## Q11. What does the nine-state extension add to the panel, and where are the added municipalities' gaps? (phase 2, step 2.9, 2026-10-29)
+
+What is checked: the 808-municipality panel against the 503 of the biome
+sample (task 1.1; D-2026-10-29-a to -d): the two flags; the PPCDAm
+municipalities the biome join used to drop (Q2); the source coverage of
+the 305 added municipalities block by block; the RAIS municipality-years
+missing after installation and the post-2000 municipality-years without
+a governing election; the six Mato Grosso municipalities added to the
+post-2000 lookup and the parents they add; the pooled z-scores inside
+and outside their reference population; and the bonds-per-PIA rates
+above one.
+
+```{r q11-flags}
+panel %>% filter(year == 2000) %>% count(biome_amazon, legal_amazon)
+listed_years <- ppcdam %>%
+  filter(ppcdam_list == 1L) %>%
+  group_by(geocode) %>%
+  summarise(listed = paste(range(year), collapse = "-"), .groups = "drop")
+panel %>%
+  filter(year == 2000, biome_amazon == 0L, geocode %in% listed_years$geocode) %>%
+  select(geocode, municipality, state_abbreviation, legal_amazon) %>%
+  left_join(listed_years, by = "geocode")
+```
+
+```{r q11-coverage}
+added <- panel %>% filter(biome_amazon == 0L)
+blocks <- c(ppcdam = "ppcdam_list", bf = "bf_families_n", rais = "emp_workers_n",
+            census = "pia", population = "population", gdp = "gdp_brl",
+            tse = "elec_enc", area = "munic_area_km2",
+            pam = "crop_soy_area_planted_km2", ppm = "cattle_heads",
+            prices = "price_index_crop")
+yr_range <- function(y) if (length(y) == 0) "" else paste(range(y), collapse = "-")
+added %>%
+  select(geocode, year, all_of(unname(blocks))) %>%
+  pivot_longer(-c(geocode, year), names_to = "column") %>%
+  group_by(column) %>%
+  summarise(na_cells = sum(is.na(value)),
+            municipalities = n_distinct(geocode[is.na(value)]),
+            years = yr_range(year[is.na(value)]), .groups = "drop")
+```
+
+```{r q11-gaps}
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+post2000 %>%
+  filter(consulted == "2026-10-29") %>%
+  select(geocode, municipality, install_year, parent_names, law, law_date)
+emp_absent <- added %>%
+  filter(is.na(emp_workers_n)) %>%
+  left_join(post2000 %>% select(geocode, install_year), by = "geocode") %>%
+  mutate(kind = if_else(!is.na(install_year) & year < install_year,
+                        "before installation", "gap"))
+emp_absent %>% count(kind)
+emp_absent %>%
+  filter(kind == "gap") %>%
+  group_by(municipality, state_abbreviation) %>%
+  summarise(years = paste(year, collapse = ", "), .groups = "drop") %>%
+  arrange(desc(nchar(years)))
+added %>%
+  filter(year > 2000, is.na(elec_enc)) %>%
+  group_by(municipality, state_abbreviation) %>%
+  summarise(years = yr_range(year), .groups = "drop")
+panel %>%
+  filter(year == 2000, muni_parent_split == 1L) %>%
+  select(geocode, municipality, state_abbreviation, biome_amazon) %>%
+  arrange(geocode)
+```
+
+```{r q11-zscores}
+panel %>%
+  group_by(biome_amazon) %>%
+  summarise(across(c(price_index_crop_z, price_index_cattle_z),
+                   list(mean = ~ mean(.x, na.rm = TRUE), sd = ~ sd(.x, na.rm = TRUE))),
+            .groups = "drop") %>%
+  mutate(across(where(is.double), ~ round(.x, 3)))
+panel %>%
+  filter(emp_pia_rate_total > 1) %>%
+  select(municipality, state_abbreviation, year, emp_workers_n, pia, emp_pia_rate_total)
+```
+
+**Finding.** The panel has 808 municipalities: 503 in the biome, 269 in
+the Legal Amazon outside the biome and 36 outside both (Maranhão's
+Cerrado east of the 44th meridian). The four PPCDAm municipalities the
+biome join dropped (Q2) are now in the panel, all in the Legal Amazon:
+Grajaú (MA, listed 2011-2020) and Comodoro, Paranatinga and Ribeirão
+Cascalheira (MT, listed 2023-2024, outside the window). Every source
+covers the 305 added municipalities within its window: the gaps are
+Bolsa Família before 2004, GDP before 2002, the census-anchored series
+before 2010 for the six Mato Grosso municipalities without a 2000
+census (60 cells of `pia`), their population in 2000 (6 cells), 35 RAIS
+municipality-years (6 before installation, 29 reporting gaps of small
+Maranhão and Tocantins municipalities, mostly 2000, plus Serra Nova
+Dourada 2001-2002, the only gap after installation in the lookup),
+elections for Humberto de Campos 2001-2004, Paranatinga 2009-2012 and
+Sambaíba 2017-2020 (no governing election in the file, as for the biome
+cases of Q5), and seven crop and six cattle cells before installation.
+The six municipalities added to the lookup (D-2026-10-29-b) were created
+by Mato Grosso laws of 1998-1999 and installed on 2001-01-01; they bring
+the lookup to sixteen rows and the parent flags to seventeen
+municipalities, six of them outside the biome; São Félix do Araguaia,
+inside the biome, becomes a parent (of Novo Santo Antônio and Serra Nova
+Dourada), the one value that moves among the 502 at this step. The
+pooled z-scores keep the biome municipality-years as their reference
+(D-2026-10-29-c): mean 0 and sd 1 there; outside the biome the crop
+z-score has mean 0.96 and sd 2.7, the Cerrado municipalities having
+larger crop shares, and the cattle z-score mean -0.07 and sd 0.68. Three cells carry more formal bonds than working-age residents
+(Santo Antônio de Leverger, MT, 2000 and 2001; São Salvador do
+Tocantins, TO, 2007), so the bonds-per-PIA rates are not bounded by one
+and leave the 0-1 guard (D-2026-10-29-d).
+**Decision.** D-2026-10-29-a (the sample and the flags), D-2026-10-29-b
+(the six lookup municipalities, the RAIS gap after installation),
+D-2026-10-29-c (the reference population of the z-scores),
+D-2026-10-29-d (the bonds-per-PIA rates above one).
+**Assertion.** `04-panel-assemble.R`, raw-state block (808 geocodes with
+the two flags, no PPCDAm municipality outside the sample) and output
+block (808 × 21 rows; flags constant, biome inside Legal Amazon, 503 and
+772; 99 RAIS NA cells; 171 `pia` NA cells; 40 post-2000 election NA
+cells; 16 lookup and 17 parent municipalities; the installation rule
+with two admitted RAIS gaps; z moments on the reference rows; the five
+bonds-per-PIA rates non-negative, three cells above one, the bracket
+rates below the total).

@@ -344,3 +344,89 @@ denominator (2026-10-28); the codebook records the timing. A change,
 should a design need the start-of-year stock, is a definition change
 with its own entry.
 **Assertion.** `01-env-deforestation.R`, output block (the rate on 0-1).
+
+## Q10. Which municipalities does the nine-state sample add, and do the two flags partition it as expected? (phase 2, step 2.9, 2026-10-29)
+
+What is checked: the biome filter of D-2026-10-06-c becomes two constant
+flags (task 1.1; D-2026-10-29-a). The interim output now carries every
+municipality of the nine Legal Amazon states; `biome_amazon` marks IBGE's
+predominant biome Amazônia and `legal_amazon` marks IBGE's list of the
+Legal Amazon municipalities on the 2022 mesh
+(`_data/raw/ibge/Municipios_da_Amazonia_Legal_2022.xlsx`, 772 rows).
+Checked here: the composition of the 808 by state, biome and flag; the
+agreement of municipality names between MapBiomas and the IBGE list;
+whether any added municipality has a zero forest stock or no clearing in
+the panel window; and how the added municipalities' 2000 forest stocks
+and shares compare with the biome sample's.
+
+```{r q10-composition}
+flags <- defor %>%
+  distinct(geocode, municipality, state_abbreviation, biome, biome_amazon, legal_amazon)
+flags %>% count(biome, biome_amazon, legal_amazon)
+flags %>%
+  count(state_abbreviation, biome) %>%
+  pivot_wider(names_from = biome, values_from = n, values_fill = 0)
+flags %>% filter(legal_amazon == 0L) %>% count(state_abbreviation, biome)
+```
+
+```{r q10-names}
+nine %>%
+  distinct(geocode = as.character(geocode), municipality) %>%
+  inner_join(biome, by = c("geocode" = "Geocódigo")) %>%
+  filter(municipality != `Nome do município`) %>%
+  select(geocode, mapbiomas = municipality, ibge = `Nome do município`, `Sigla da UF`)
+```
+
+```{r q10-coverage}
+area <- read_rds("_data/interim/pam_ppm_munic_area_2022.rds")
+window <- defor %>% filter(year %in% 2000:2020)
+window %>%
+  group_by(biome_amazon) %>%
+  summarise(municipalities = n_distinct(geocode),
+            zero_forest_cells = sum(forest_area_km2 == 0),
+            zero_clearing_cells = sum(deforestation_area_km2 == 0),
+            all_zero_clearing_munic = sum(tapply(deforestation_area_km2, geocode,
+                                                 function(x) all(x == 0))),
+            .groups = "drop")
+q <- function(x) {
+  tibble(p = c("p05", "p50", "p95"), value = round(quantile(x, c(.05, .5, .95)), 3))
+}
+window %>%
+  filter(year == 2000) %>%
+  left_join(area, by = "geocode") %>%
+  mutate(forest_share = forest_area_km2 / munic_area_km2) %>%
+  group_by(biome_amazon) %>%
+  reframe(bind_rows(forest_km2 = q(forest_area_km2), forest_share = q(forest_share),
+                    .id = "measure")) %>%
+  pivot_wider(names_from = p, values_from = value)
+```
+
+**Finding.** The nine states hold 808 municipalities: 503 with Amazônia as
+predominant biome (all nine states), 301 Cerrado (Maranhão 124, Tocantins
+116, Mato Grosso 61) and 4 Pantanal (Mato Grosso). IBGE's 2022 list has
+772 Legal Amazon municipalities, every one in the nine states and every
+biome municipality among them; the 36 municipalities of the nine states
+outside it are Maranhão's Cerrado east of the 44th meridian, so
+`biome_amazon` implies `legal_amazon` and the three groups are 503, 269
+and 36. One name differs between MapBiomas and IBGE's 2022 release:
+Santo Antônio de Leverger (MT), which IBGE now spells "do Leverger"; the
+panel keeps the MapBiomas spelling for every municipality. No
+municipality-year of 2000-2020 has a zero forest stock, so the clearing
+rate and the log exposure offset are defined everywhere; the one
+municipality without clearing over the window is Santa Cruz do Arari,
+inside the biome and known (Q7). The added municipalities are smaller
+but, on this aggregate, as vegetated as the biome's: a median 2000 stock
+of 1,181 km² against 1,926 km², a 95th percentile of 8,522 km² against
+31,961 km², and a median forest share of 0.75 of the municipal area in
+both groups (5th percentiles 0.39 and 0.23), because MapBiomas's
+vegetation classes include the Cerrado's natural formations. The
+"forest" of the added municipalities is therefore a different object,
+which the biome flag keeps separable in every analysis.
+**Decision.** D-2026-10-29-a (the nine-state sample, the two flags, the
+IBGE list as the Legal Amazon source, the MapBiomas spelling kept);
+supersedes D-2026-10-06-c.
+**Assertion.** `01-env-deforestation.R`, raw-state block (808 geocodes,
+772 in the list and all inside the nine states, 503 biome municipalities
+all listed, 36 outside the list all Maranhão Cerrado, one name
+mismatch) and output block (808 × 37 rows; flags 0/1, constant within
+municipality, biome inside Legal Amazon, 503 and 772).
