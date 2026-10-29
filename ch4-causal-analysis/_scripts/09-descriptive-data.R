@@ -21,6 +21,11 @@
 # Status    2026-10-15, sprint day 3. Decisions D-2026-10-15-a onward in
 #           DECISIONS.md; evidence in _audit/atlas.qmd, ibge_pib.qmd,
 #           siconfi.qmd.
+#           SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
+#           carries 807 municipalities (nine states); this script selects no
+#           sample and scripts 10-11 inherit its output. Do not rerun before
+#           filtering on biome_amazon == 1 (the chapter's sample) or
+#           legal_amazon == 1 (rebuild/tasks.md 1.12).
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
 library(readxl)

@@ -75,9 +75,10 @@ N_MUNIC_PIB_EXPECTED      <- 5570L
 N_MUNIC_POP_2010_EXPECTED <- 5566L  # 2010 grid plus Cococi (CE), extinct
 N_MUNIC_POP_2022_EXPECTED <- 5570L
 N_GDP_NEGATIVE_EXPECTED   <- 1L     # Guamaré (RN) 2012, as served by IBGE
-# ibge_pib.qmd Q7: the nine Mato Grosso municipalities of the lookup carry
-# an interpolated 2007; Mojuí dos Campos (installed 2013) has no gap.
-N_EST_INTERP_EXPECTED     <- 9L
+# ibge_pib.qmd Q7: the fifteen Mato Grosso municipalities of the lookup
+# carry an interpolated 2007 (nine at step 2.5, six more at step 2.9,
+# D-2026-10-29-b); Mojuí dos Campos (installed 2013) has no gap.
+N_EST_INTERP_EXPECTED     <- 15L    # phase 2, step 2.9: the six Cerrado municipalities of the lookup (D-2026-10-29-b)
 
 # ---- Read -------------------------------------------------------------------
 pib_raw <- map_dfr(list.files(SIDRA_DIR, pattern = "^sidra_5938_pib_",
