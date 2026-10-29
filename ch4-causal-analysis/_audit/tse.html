@@ -2512,12 +2512,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 7
    year     n mean_candidates mean_enc median_mov share_competitive share_uncontested
   &lt;int&gt; &lt;int&gt;           &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1  2004   498            3.04     2.37      0.118             0.444            0.0100
-2  2008   502            3.07     2.43      0.101             0.495            0.0139
-3  2012   502            3.03     2.31      0.106             0.488            0.0398
-4  2016   503            3.04     2.36      0.101             0.497            0.0239
-5  2020   503            3.33     2.44      0.120             0.430            0.0239
-6  2024   502            3.91     2.53      0.123             0.437            0.0199</code></pre>
+1  2004   802            2.85     2.28      0.117             0.439            0.0125
+2  2008   807            2.92     2.35      0.106             0.474            0.0124
+3  2012   806            2.88     2.24      0.110             0.463            0.0360
+4  2016   808            2.94     2.31      0.101             0.497            0.0235
+5  2020   807            3.09     2.34      0.115             0.447            0.0248
+6  2024   807            3.60     2.41      0.124             0.429            0.0198</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Three candidates and 2.3 to 2.5 effective candidates on average, a median margin of 10 to 12 points, and 43 to 49 percent of the races below the ten-point threshold; the measures move little across elections, with a rise in candidacies in 2020. <strong>Decision.</strong> none required.</p>
@@ -2623,14 +2623,17 @@ vertical-align: -.125em;
 <span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 5
+<pre><code># A tibble: 8 × 5
   geocode municipality         state_abbreviation years         n
   &lt;chr&gt;   &lt;chr&gt;                &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;
 1 1504752 Mojuí dos Campos     PA                 2001-2012    12
 2 2100402 Altamira do Maranhão MA                 2001-2004     4
 3 2102150 Brejo de Areia       MA                 2001-2004     4
-4 5104526 Ipiranga do Norte    MT                 2001-2004     4
-5 5104542 Itanhangá            MT                 2001-2004     4</code></pre>
+4 2105005 Humberto de Campos   MA                 2001-2004     4
+5 2109700 Sambaíba             MA                 2017-2020     4
+6 5104526 Ipiranga do Norte    MT                 2001-2004     4
+7 5104542 Itanhangá            MT                 2001-2004     4
+8 5106307 Paranatinga          MT                 2009-2012     4</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2720,8 +2723,8 @@ vertical-align: -.125em;
 <pre><code># A tibble: 2 × 2
    year     n
   &lt;int&gt; &lt;int&gt;
-1  2012    40
-2  2020     1</code></pre>
+1  2012    54
+2  2020     2</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2734,33 +2737,38 @@ vertical-align: -.125em;
 <span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, n_valid)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 7 × 3
+<pre><code># A tibble: 8 × 3
    year n_valid     n
   &lt;int&gt;   &lt;int&gt; &lt;int&gt;
-1  2012       1     8
+1  2012       1    12
 2  2012       2     9
-3  2012       3    11
-4  2012       4     4
-5  2012       5     4
+3  2012       3    15
+4  2012       4     9
+5  2012       5     5
 6  2012       6     1
-7  2020       6     1</code></pre>
+7  2020       4     1
+8  2020       6     1</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_valid <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(municipality, state_abbreviation, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 8 × 3
-  municipality state_abbreviation  year
-  &lt;chr&gt;        &lt;chr&gt;              &lt;int&gt;
-1 Borba        AM                  2012
-2 Tonantins    AM                  2012
-3 Uarini       AM                  2012
-4 Breves       PA                  2012
-5 Vigia        PA                  2012
-6 Aragominas   TO                  2012
-7 Itaúba       MT                  2012
-8 Matupá       MT                  2012</code></pre>
+<pre><code># A tibble: 12 × 3
+   municipality  state_abbreviation  year
+   &lt;chr&gt;         &lt;chr&gt;              &lt;int&gt;
+ 1 Borba         AM                  2012
+ 2 Tonantins     AM                  2012
+ 3 Uarini        AM                  2012
+ 4 Breves        PA                  2012
+ 5 Vigia         PA                  2012
+ 6 Aragominas    TO                  2012
+ 7 Cachoeirinha  TO                  2012
+ 8 Palmeirópolis TO                  2012
+ 9 Silvanópolis  TO                  2012
+10 Mirador       MA                  2012
+11 Itaúba        MT                  2012
+12 Matupá        MT                  2012</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2775,7 +2783,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 4
   cells uncontested mov_na enc_one
   &lt;int&gt;       &lt;int&gt;  &lt;int&gt;   &lt;int&gt;
-1    32          32     32      32</code></pre>
+1    48          48     48      48</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> All 56 zero-vote candidates (54 in 2012, 2 in 2020) are recorded as “não eleito”, so the file carries no marker of the refused candidacy beyond the zero. In the sample they sit in 37 elections of 2012 and in Magalhães Barata 2020; in eight 2012 races (Borba, Tonantins, Uarini, Breves, Vigia, Aragominas, Itaúba, Matupá) the zero-vote candidate was the only opponent. Excluding them leaves the ENC and the winner’s share unchanged (a zero share adds nothing), lowers <code>elec_n_candidates</code> in 148 cells of the final panel (37 municipalities, 2013-2016) and makes the eight races uncontested, so their margin and competitive flag are NA and <code>elec_uncontested</code> is 1 over 2013-2016 (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-e. <strong>Assertion.</strong> <code>03-controls-elections.R</code>, output block (56 zero-vote candidates dropped, every remaining candidate has votes, no election lost).</p>

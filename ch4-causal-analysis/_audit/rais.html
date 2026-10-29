@@ -2554,23 +2554,26 @@ vertical-align: -.125em;
 <pre><code># A tibble: 2 × 2
   kind                    n
   &lt;chr&gt;               &lt;int&gt;
-1 before installation    30
-2 gap                    34</code></pre>
+1 before installation    36
+2 gap                    63</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>absent <span class="sc">%&gt;%</span> <span class="fu">filter</span>(kind <span class="sc">==</span> <span class="st">&quot;gap&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 2
+<pre><code># A tibble: 9 × 2
    year     n
   &lt;int&gt; &lt;int&gt;
-1  2000    15
-2  2001     9
-3  2002     5
+1  2000    30
+2  2001    13
+3  2002    10
 4  2003     2
 5  2004     1
-6  2005     2</code></pre>
+6  2005     2
+7  2008     3
+8  2009     1
+9  2015     1</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2585,43 +2588,50 @@ vertical-align: -.125em;
 <span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">40</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 34 × 5
-   municipality            state_abbreviation  year bonds_before bonds_after
-   &lt;chr&gt;                   &lt;chr&gt;              &lt;int&gt;        &lt;int&gt;       &lt;int&gt;
- 1 Serrano do Maranhão     MA                  2005          211         209
- 2 Central do Maranhão     MA                  2000           NA         102
- 3 São João da Ponta       PA                  2000           86         170
- 4 Bacurituba              MA                  2000           NA          84
- 5 Centro do Guilherme     MA                  2000           NA          60
- 6 Junco do Maranhão       MA                  2002           NA          55
- 7 Pedro do Rosário        MA                  2001           NA          38
- 8 Presidente Médici       MA                  2001           NA          14
- 9 Amapá do Maranhão       MA                  2001           10         157
-10 Araguanã                MA                  2000            6           6
-11 Presidente Médici       MA                  2000            5          NA
-12 Caroebe                 RR                  2000            4           9
-13 Olinda Nova do Maranhão MA                  2001          121           4
-14 Uiramutã                RR                  2002           NA           1
-15 Apicum-Açu              MA                  2003           NA           1
-16 Apicum-Açu              MA                  2005            1         198
-17 Brejo de Areia          MA                  2003           NA           1
-18 Governador Newton Bello MA                  2000           28           1
-19 Igarapé do Meio         MA                  2000           12           1
-20 Maranhãozinho           MA                  2001            5           1
-21 São João do Carú        MA                  2002            1           1
-22 Tufilândia              MA                  2000           NA           1
-23 Tufilândia              MA                  2004            1          72
-24 Uiramutã                RR                  2000           NA          NA
-25 Uiramutã                RR                  2001           NA          NA
-26 Apicum-Açu              MA                  2000           NA          NA
-27 Apicum-Açu              MA                  2001           NA          NA
-28 Apicum-Açu              MA                  2002           NA          NA
-29 Brejo de Areia          MA                  2000           NA          NA
-30 Brejo de Areia          MA                  2001           NA          NA
-31 Brejo de Areia          MA                  2002           NA          NA
-32 Junco do Maranhão       MA                  2000           NA          NA
-33 Junco do Maranhão       MA                  2001           NA          NA
-34 Pedro do Rosário        MA                  2000           NA          NA</code></pre>
+<pre><code># A tibble: 63 × 5
+   municipality               state_abbreviation  year bonds_before bonds_after
+   &lt;chr&gt;                      &lt;chr&gt;              &lt;int&gt;        &lt;int&gt;       &lt;int&gt;
+ 1 Jatobá                     MA                  2001          253          NA
+ 2 Serrano do Maranhão        MA                  2005          211         209
+ 3 São Roberto                MA                  2009           NA         191
+ 4 Marajá do Sena             MA                  2015          167         195
+ 5 Serra Nova Dourada         MT                  2002           NA         117
+ 6 São Roberto                MA                  2008          112          NA
+ 7 Marajá do Sena             MA                  2002           NA         105
+ 8 Milagres do Maranhão       MA                  2000           NA         103
+ 9 Central do Maranhão        MA                  2000           NA         102
+10 São João da Ponta          PA                  2000           86         170
+11 Bacurituba                 MA                  2000           NA          84
+12 Belágua                    MA                  2008          137          81
+13 Belágua                    MA                  2001           NA          60
+14 Centro do Guilherme        MA                  2000           NA          60
+15 Junco do Maranhão          MA                  2002           NA          55
+16 Lagoa Grande do Maranhão   MA                  2000           50          86
+17 Paulino Neves              MA                  2000           NA          40
+18 Paulino Neves              MA                  2002           40          45
+19 São Pedro dos Crentes      MA                  2000           NA          39
+20 Governador Luiz Rocha      MA                  2000           38          44
+21 Pedro do Rosário           MA                  2001           NA          38
+22 Fernando Falcão            MA                  2000           NA          30
+23 Mateiros                   TO                  2000           22          17
+24 Presidente Médici          MA                  2001           NA          14
+25 Formosa da Serra Negra     MA                  2000           70          12
+26 Amapá do Maranhão          MA                  2001           10         157
+27 Araguanã                   MA                  2000            6           6
+28 Jatobá                     MA                  2002           NA           6
+29 São Roberto                MA                  2000           NA           6
+30 São Roberto                MA                  2002            6         123
+31 Presidente Médici          MA                  2000            5          NA
+32 Caroebe                    RR                  2000            4           9
+33 Olinda Nova do Maranhão    MA                  2001          121           4
+34 São Félix do Tocantins     TO                  2000           NA           2
+35 Santa Filomena do Maranhão MA                  2008           92           2
+36 Santana do Maranhão        MA                  2000           NA           2
+37 Uiramutã                   RR                  2002           NA           1
+38 Lavandeira                 TO                  2000           NA           1
+39 Apicum-Açu                 MA                  2003           NA           1
+40 Apicum-Açu                 MA                  2005            1         198
+# ℹ 23 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2667,7 +2677,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 4
   zero_workers_agri_low zero_workers_agri_mid zero_workers_agri_high no_agri
                   &lt;int&gt;                 &lt;int&gt;                  &lt;int&gt;   &lt;int&gt;
-1                  1925                  2550                   7888    1606</code></pre>
+1                  2711                  3899                  12639    2270</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Of the 64 absent municipality-years, 30 are years before the installation of the ten lookup municipalities (Mojuí dos Campos 2000-2012, seven Mato Grosso municipalities in 2000, Ipiranga do Norte and Itanhangá 2000-2004) and 34 are gaps of 2000-2005 in twenty small Maranhão and Roraima municipalities. Several gaps sit between years with substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209 after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10 and 157), so absence is a reporting gap, not a year without bonds; the rows stay NA. After the fix the three agricultural bracket counts are never NA and add up to the agricultural total in every row; the three agricultural shares are NA exactly where no agricultural bond exists (0 / 0) and 0 where the bracket is empty. Against the pre-step output the fix moved 541 cells of <code>emp_share_agri_high_workers</code> (163 municipalities) and 19 of <code>emp_share_agri_mid_workers</code> from NA to 0 in the final panel, none of <code>emp_share_agri_low_workers</code> (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-a (bracket counts 0, the counts <code>workers_total</code>, <code>workers_agric</code> and <code>pia</code> carried into the panel as <code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>), D-2026-10-28-b (absent municipality-years NA). <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (bracket counts never NA and adding up; agricultural shares NA iff <code>workers_agric == 0</code>); <code>04-panel-assemble.R</code>, output block (64 NA cells of <code>emp_workers_n</code>, shared by every <code>emp_*</code> column).</p>
