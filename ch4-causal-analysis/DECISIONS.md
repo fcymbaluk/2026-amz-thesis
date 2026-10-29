@@ -2193,3 +2193,98 @@ Reason: author decision 2026-10-28: IBGE's 2022 release
 Evidence: _audit/pam_ppm.qmd Q3, Q7; _audit/panel.qmd Q3; compare_outputs in the commit message
 Affects: munic_area_km2 and every column divided by it, the price indices and z-scores, pressure_* and forest_share_2000 (see the comparator report)
 Supersedes: D-2026-10-10-f in the area vintage only; D-2026-10-10-i unchanged in substance (the area is stored for every municipality of the grid)
+
+## D-2026-10-28-h  deforestation_forest_rate on 0-1; the contemporaneous denominator kept
+
+Status: closed (phase 2, step 2.8, branch phase2-2.8-units, 2026-10-28; comparator report in the commit message)
+Scope: 01-env-deforestation.R (transmute block, output assertion); 04-panel-assemble.R (SHARE_RATE_COLS guard); defor_rate_b of 05-sample-definition.R inherits; codebook unit and construction of deforestation_forest_rate; 11-correlations.R label
+Context: the rate was stored on 0-100 (D-2026-10-06-d, inherited from
+         the lost script) while every other share and rate of the panel
+         is on 0-1; naming-convention.md §3.4 (author, 2026-10-05)
+         admits no percent storage and the crosswalk already names the
+         column env_defor_forest_share. The mixed scale had reached the
+         delivered descriptive table: 10-descriptive-figures.R labels
+         the column "share of remaining forest" over values up to 36.7,
+         beside formal employment on 0-1. Task 1.9 also asks that the
+         denominator timing be recorded; the reopened D-2026-10-06-d
+         says the same year's stock (contemporaneous).
+Reason: the rate is the plain quotient deforestation_area_km2 /
+        forest_area_km2, NA where the stock is zero, asserted on 0-1.
+        The author kept the contemporaneous denominator on 2026-10-28
+        on the evidence of mapbiomas.qmd Q9: over the 2000-2020 cells
+        the contemporaneous and the lagged-stock quotients rank the
+        cells identically (Spearman 0.9999, Pearson 0.997), the median
+        relative gap is 0.4 percent and the 99th percentile 11 percent,
+        neither exceeds 1 anywhere (maxima 0.367 and 0.270), and the
+        lagged stock is not a closed balance either (the forest area
+        rises on the previous year in 2,868 cells through secondary
+        vegetation, and start-of-year stock and previous-year stock
+        differ by more than 5 percent in 450), so no bounded stock at
+        risk is available from these aggregates and the change would
+        buy nothing. The codebook states the timing. A change of
+        denominator, should a design need it, is a definition change
+        with its own entry.
+Evidence: _audit/mapbiomas.qmd Q8, Q9; _audit/panel.qmd Q10
+Affects: deforestation_forest_rate, every cell (divided by 100); defor_rate_b in the store likewise; no other panel column
+Supersedes: D-2026-10-06-d in the scale only (closed again here); closes the task 1.9 rate item
+
+## D-2026-10-28-i  informal on 0-1, at construction
+
+Status: closed (phase 2, step 2.8, branch phase2-2.8-units, 2026-10-28; comparator report in the commit message)
+Scope: 02-social-census.R (informal_anchor, INFORMAL_SCALE retired, output assertion); census_pea_informal_2000_2022 and census_anchors_2000_2022; informal_c2000/_c2010/_c2022 of the store; 04-panel-assemble.R (SHARE_RATE_COLS guard); codebook unit and construction
+Context: D-2026-10-07-c kept the 0-100 scale of the lost extract so that
+         phase 1 could reproduce the recovered panel; the convention
+         (§3.4) admits no percent storage and names the column
+         lab_informal_share at the rename.
+Reason: the anchor is (occupied - formal) / occupied at each census,
+        interpolated as before, asserted on 0-1; the annual series and
+        the stored anchors follow. Downstream: the baseline covariate
+        informal0 of 08-data-analysis-2WFE-CS.R changes scale, not the
+        fit or the residualisation, and is rebuilt at the stage 10
+        rerun; census.qmd Q3 recomputes the share on 0-1.
+Evidence: _audit/census.qmd Q3; _audit/panel.qmd Q10
+Affects: informal, every non-NA cell (divided by 100); informal_c2000, informal_c2010, informal_c2022 in the store; the two interim files; no other column
+Supersedes: D-2026-10-07-c in the scale only; closes the task 1.9 informality item
+
+## D-2026-10-28-j  Hectares to km2 at construction in script 01; the interim columns carry their panel names
+
+Status: closed (phase 2, step 2.8, branch phase2-2.8-units, 2026-10-28; comparator report in the commit message)
+Scope: 01-env-deforestation.R (HA_PER_KM2, transmute, select, output assertions); 04-panel-assemble.R (HA_PER_KM2 retired, select instead of transmute); _audit/mapbiomas.qmd
+Context: D-2026-10-11-c converted at the join because phase 1 had to
+         hand script 04 the input it had; the convention puts the unit
+         in the name at construction, and task 1.9 asks for the move.
+Reason: area_forest and area_deforestation (hectares) leave script 01
+        as forest_area_km2 and deforestation_area_km2, and
+        deforestation_rate as deforestation_forest_rate, so the interim
+        file carries the panel names and units and script 04 only
+        selects. deforestation_mean and deforestation_sd are now in km2
+        and deforestation_z is unchanged (scale-invariant); whether the
+        three stay in the interim file is task 2.2's call
+        (D-2026-10-06-e). Interim schema change: three columns renamed,
+        five columns divided by 100.
+Evidence: _audit/mapbiomas.qmd Q4, Q8; _audit/panel.qmd Q3
+Affects: the interim file only (names and scale); forest_area_km2 and deforestation_area_km2 in the panel unchanged
+Supersedes: D-2026-10-11-c
+
+## D-2026-10-28-k  Codebook column unit filled for every row
+
+Status: closed (phase 2, step 2.8, branch phase2-2.8-units, 2026-10-28)
+Scope: _data/aux/codebook.csv (unit, every row; construction of deforestation_forest_rate and informal)
+Context: unit was empty except for the three rows of step 2.7; task 1.9
+         asks that the unit of every column be recorded, and §3.4 of
+         the convention that a rescaled column record its source's
+         original scale.
+Reason: one value per row from a short vocabulary (text, year, 0/1,
+        TRUE/FALSE, count, km2, head per km2, share (0-1), rate (0-1),
+        ratio, BRL, BRL 2024 and their per-capita and log forms, index
+        with its base stated, SD with its reference population stated,
+        log km2). The two rescaled rows record the 0-100 scale of phase
+        1. Not done here, flagged: label, role, type, source, years and
+        construction stay empty for most rows until the codebook
+        render of stage 10, and the store's baseline summaries
+        (defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
+        forest_share_2000, forest_km2_2000 and the three logs) still
+        have no codebook rows, pending the storage audit (task 2.2).
+Evidence: _audit/panel.qmd Q10 (every column's range against its unit)
+Affects: codebook only
+Supersedes: none

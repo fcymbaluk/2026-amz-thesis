@@ -1,96 +1,96 @@
 variable,label,role,type,unit,source,years,construction,script,interpolated,anchor_years,missing_rule
-geocode,,,,,,,,,FALSE,,never NA
-municipality,,,,,,,,,FALSE,,never NA
-state,,,,,,,,,FALSE,,never NA
-state_abbreviation,,,,,,,,,FALSE,,never NA
-year,,,,,,,,,FALSE,,never NA
-ppcdam_list,,,,,,,,,FALSE,,"never NA; 0 = not on the list in that year, including every year before 2008 (D-2026-10-11-b)"
-forest_area_km2,,,,,,,,,FALSE,,never NA; 0 does not occur in the sample
-deforestation_area_km2,,,,,,,,,FALSE,,never NA; 0 = no deforestation mapped in the year
-deforestation_forest_rate,,,,,,,,,FALSE,,never NA; 0 as deforestation_area_km2
-bf_families_n,,,,,,,,,FALSE,,"NA before 2004, in 2022 and for the Auxilio Brasil months (no file or no programme; D-2026-10-22-a), before a municipality's installation and for the code absent from the 2023-2024 layout; 0 = no family paid in the reference month, rollout years 2004-2006 only (D-2026-10-28-c)"
-bf_quota,,,,,,,,,FALSE,,"NA before 2004, after 2021 (D-2026-10-22-c) and for municipalities absent from the LAI workbook; 0 = zero estimate in the workbook's first period (Ipiranga do Norte and Itanhanga, 2004-2005)"
-bf_transfers_total_brl_2024,,,,,,,,,FALSE,,"NA as bf_families_n; 0 = nothing disbursed: with 0 families in 2004-2006, with positive families in June 2020 only (emergency-aid substitution, D-2026-10-22-b)"
-bf_transfers_avg_brl_2024,,,,,,,,,FALSE,,"NA as bf_families_n and where bf_families_n is 0 (0 / 0); 0 = positive families with zero transfers, June 2020 only"
-bf_families_quota_ratio,,,,,,,,,FALSE,,"NA as bf_families_n and where bf_quota is NA or 0; 0 = zero families against a positive quota, rollout years 2004-2006 only (D-2026-10-28-c)"
-bf_transfers_pea_brl_2024,,,,,,,,,TRUE,2000/2010/2022,NA as bf_transfers_total_brl_2024 and where pea is NA; 0 as bf_transfers_total_brl_2024
-bf_transfers_quota_brl_2024,,,,,,,,,FALSE,,NA as bf_families_quota_ratio; 0 as bf_transfers_total_brl_2024
-emp_pia_rate_total,,,,,,,,,TRUE,2000/2010/2022,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where pia is NA; 0 does not occur (an exported municipality-year has at least one bond)"
-emp_pia_rate_agric,,,,,,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no agricultural bond
-emp_pia_rate_low,,,,,,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
-emp_pia_rate_mid,,,,,,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
-emp_pia_rate_high,,,,,,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
-emp_share_low_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
-emp_share_mid_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
-emp_share_high_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
-emp_share_agri_low_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
-emp_share_agri_mid_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
-emp_share_agri_high_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
-emp_share_agri_workers,,,,,,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no agricultural bond"
-pea,,,,,,,,,TRUE,2000/2010/2022,NA before 2010 for the nine municipalities installed after the 2000 census (no 2000 anchor; D-2026-10-23-d); 0 does not occur
-informal,,,,,,,,,TRUE,2000/2010/2022,NA as pea; 0 does not occur
-population,,,,,,,,,TRUE,2000/2010/2022,NA before installation (D-2026-10-23-e); 0 does not occur
-gdp_brl,,,,,,,,,FALSE,,NA before 2002 (series start) and before installation; 0 does not occur
-gdp_per_capita,,,,,,,,,TRUE,2000/2010/2022,NA as gdp_brl; 0 does not occur
-gdp_per_capita_log,,,,,,,,,TRUE,2000/2010/2022,NA as gdp_brl
-gdp_brl_2024,,,,,,,,,FALSE,,NA as gdp_brl; 0 does not occur
-gdp_per_capita_2024,,,,,,,,,TRUE,2000/2010/2022,NA as gdp_brl; 0 does not occur
-gdp_per_capita_2024_log,,,,,,,,,TRUE,2000/2010/2022,NA as gdp_brl
-elec_enc,,,,,,,,,FALSE,,NA in 2000 (the 1996 election is outside the data) and in years without a governing election in the data (D-2026-10-22-d); 1 = uncontested; 0 does not occur
-elec_mov,,,,,,,,,FALSE,,"NA as elec_enc and in uncontested races (D-2026-10-10-d; after the zero-vote exclusion, D-2026-10-28-e); 0 = first and second candidates with equal shares (four 2004 elections)"
-elec_winner_share,,,,,,,,,FALSE,,NA as elec_enc; 1 = uncontested; 0 does not occur
-elec_n_candidates,,,,,,,,,FALSE,,NA as elec_enc; counts candidates with at least one valid vote (D-2026-10-28-e); 0 does not occur
-elec_winner_party,,,,,,,,,FALSE,,NA as elec_enc
-elec_winner_id,,,,,,,,,FALSE,,NA as elec_enc
-elec_competitive,,,,,,,,,FALSE,,NA as elec_mov; 0 = margin at or above 10 points
-elec_uncontested,,,,,,,,,FALSE,,NA as elec_enc; 0 = two or more candidates with valid votes (D-2026-10-28-e)
-election_year,,,,,,,,,FALSE,,never NA; 0 = not an election year
-munic_area_km2,,,,,,,,,FALSE,,never NA; 0 does not occur
-crop_soy_area_planted_km2,,,,,,,,,FALSE,,"NA where PAM did not report the municipality in the year (""..."": before installation, or a survey gap; D-2026-10-10-g, D-2026-10-28-d) and for Santa Cruz do Arari (D-2026-10-10-i); 0 = PAM ""-"", no planted area"
-crop_corn_area_planted_km2,,,,,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
-crop_rice_area_planted_km2,,,,,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
-crop_cotton_area_planted_km2,,,,,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
-crop_soy_munic_area_share,,,,,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
-crop_corn_munic_area_share,,,,,,,,,FALSE,,NA and 0 as crop_corn_area_planted_km2
-crop_rice_munic_area_share,,,,,,,,,FALSE,,NA and 0 as crop_rice_area_planted_km2
-crop_cotton_munic_area_share,,,,,,,,,FALSE,,NA and 0 as crop_cotton_area_planted_km2
-cattle_heads,,,,,,,,,FALSE,,"NA where PPM did not report the municipality (""..."": in the sample, only before installation; D-2026-10-10-g, D-2026-10-28-d); 0 = PPM ""-"", no herd"
-cattle_per_km2,,,,,,,,,FALSE,,NA and 0 as cattle_heads
-price_index_crop,,,,,,,,,FALSE,,"NA where the 2000-2002 base-window weight is NA (no crop series in the window: Santa Cruz do Arari, Ipiranga do Norte, Itanhanga; D-2026-10-10-f); 0 in every year where the base-window planted area is 0"
-price_index_cattle,,,,,,,,,FALSE,,"NA where the 2000-2002 base-window weight is NA (Ipiranga do Norte, Itanhanga); 0 where the base-window herd is 0"
-price_index_crop_lag1,,,,,,,,,FALSE,,NA as price_index_crop and in 2000 (first panel year); 0 as price_index_crop
-price_index_crop_z,,,,,,,,,FALSE,,NA as price_index_crop; 0 does not occur
-price_index_crop_lag1_z,,,,,,,,,FALSE,,NA as price_index_crop_lag1; 0 does not occur
-price_index_cattle_z,,,,,,,,,FALSE,,NA as price_index_cattle; 0 does not occur
-price_index_cattle_lag1_z,,,,,,,,,FALSE,,NA as price_index_cattle and in 2000; 0 does not occur
-bf_transfers_pc_brl_2024,,,,,,,,,TRUE,2000/2010/2022,NA as bf_transfers_total_brl_2024 and where population is NA or 0 (D-2026-10-11-f); 0 as bf_transfers_total_brl_2024
-bf_regime,,,,,,,,,FALSE,,"NA before 2004, when the programme did not exist (D-2026-10-22-b)"
-muni_new_post2000,,,,,,,,,FALSE,,never NA; 0 = installed by the 2000 census (D-2026-10-23-f)
-muni_parent_split,,,,,,,,,FALSE,,never NA; 0 = ceded no territory to a post-2000 municipality (D-2026-10-23-f)
+geocode,,,,text,,,,,FALSE,,never NA
+municipality,,,,text,,,,,FALSE,,never NA
+state,,,,text,,,,,FALSE,,never NA
+state_abbreviation,,,,text,,,,,FALSE,,never NA
+year,,,,year,,,,,FALSE,,never NA
+ppcdam_list,,,,0/1,,,,,FALSE,,"never NA; 0 = not on the list in that year, including every year before 2008 (D-2026-10-11-b)"
+forest_area_km2,,,,km2,,,,,FALSE,,never NA; 0 does not occur in the sample
+deforestation_area_km2,,,,km2,,,,,FALSE,,never NA; 0 = no deforestation mapped in the year
+deforestation_forest_rate,,,,"share (0-1; stored on 0-100 until phase 2 step 2.8, D-2026-10-28-h)",,,"deforestation_area_km2 / forest_area_km2 of the same year (contemporaneous denominator, D-2026-10-06-d, confirmed D-2026-10-28-h); NA where the stock is zero",,FALSE,,never NA; 0 as deforestation_area_km2
+bf_families_n,,,,count,,,,,FALSE,,"NA before 2004, in 2022 and for the Auxilio Brasil months (no file or no programme; D-2026-10-22-a), before a municipality's installation and for the code absent from the 2023-2024 layout; 0 = no family paid in the reference month, rollout years 2004-2006 only (D-2026-10-28-c)"
+bf_quota,,,,count,,,,,FALSE,,"NA before 2004, after 2021 (D-2026-10-22-c) and for municipalities absent from the LAI workbook; 0 = zero estimate in the workbook's first period (Ipiranga do Norte and Itanhanga, 2004-2005)"
+bf_transfers_total_brl_2024,,,,BRL 2024,,,,,FALSE,,"NA as bf_families_n; 0 = nothing disbursed: with 0 families in 2004-2006, with positive families in June 2020 only (emergency-aid substitution, D-2026-10-22-b)"
+bf_transfers_avg_brl_2024,,,,BRL 2024 per family,,,,,FALSE,,"NA as bf_families_n and where bf_families_n is 0 (0 / 0); 0 = positive families with zero transfers, June 2020 only"
+bf_families_quota_ratio,,,,ratio,,,,,FALSE,,"NA as bf_families_n and where bf_quota is NA or 0; 0 = zero families against a positive quota, rollout years 2004-2006 only (D-2026-10-28-c)"
+bf_transfers_pea_brl_2024,,,,BRL 2024 per PEA member,,,,,TRUE,2000/2010/2022,NA as bf_transfers_total_brl_2024 and where pea is NA; 0 as bf_transfers_total_brl_2024
+bf_transfers_quota_brl_2024,,,,BRL 2024 per quota slot,,,,,FALSE,,NA as bf_families_quota_ratio; 0 as bf_transfers_total_brl_2024
+emp_pia_rate_total,,,,rate (0-1),,,,,TRUE,2000/2010/2022,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where pia is NA; 0 does not occur (an exported municipality-year has at least one bond)"
+emp_pia_rate_agric,,,,rate (0-1),,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no agricultural bond
+emp_pia_rate_low,,,,rate (0-1),,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
+emp_pia_rate_mid,,,,rate (0-1),,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
+emp_pia_rate_high,,,,rate (0-1),,,,,TRUE,2000/2010/2022,NA as emp_pia_rate_total; 0 = no bond in the bracket
+emp_share_low_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
+emp_share_mid_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
+emp_share_high_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no bond in the bracket"
+emp_share_agri_low_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
+emp_share_agri_mid_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
+emp_share_agri_high_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b) or where emp_agri_workers_n is 0 (0 / 0); 0 = no agricultural bond in the bracket (D-2026-10-28-a)"
+emp_share_agri_workers,,,,share (0-1),,,,,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 = no agricultural bond"
+pea,,,,count,,,,,TRUE,2000/2010/2022,NA before 2010 for the nine municipalities installed after the 2000 census (no 2000 anchor; D-2026-10-23-d); 0 does not occur
+informal,,,,"share (0-1; stored on 0-100 until phase 2 step 2.8, D-2026-10-28-i)",,,"(occupied - formal) / occupied at each census (02-social-census.R; D-2026-10-07-c), linear interpolation between 2000, 2010 and 2022 (D-2026-10-05-f); on 0-1 from D-2026-10-28-i",,TRUE,2000/2010/2022,NA as pea; 0 does not occur
+population,,,,count,,,,,TRUE,2000/2010/2022,NA before installation (D-2026-10-23-e); 0 does not occur
+gdp_brl,,,,BRL (nominal),,,,,FALSE,,NA before 2002 (series start) and before installation; 0 does not occur
+gdp_per_capita,,,,BRL (nominal) per capita,,,,,TRUE,2000/2010/2022,NA as gdp_brl; 0 does not occur
+gdp_per_capita_log,,,,log BRL (nominal) per capita,,,,,TRUE,2000/2010/2022,NA as gdp_brl
+gdp_brl_2024,,,,BRL 2024,,,,,FALSE,,NA as gdp_brl; 0 does not occur
+gdp_per_capita_2024,,,,BRL 2024 per capita,,,,,TRUE,2000/2010/2022,NA as gdp_brl; 0 does not occur
+gdp_per_capita_2024_log,,,,log BRL 2024 per capita,,,,,TRUE,2000/2010/2022,NA as gdp_brl
+elec_enc,,,,index (effective number of candidates),,,,,FALSE,,NA in 2000 (the 1996 election is outside the data) and in years without a governing election in the data (D-2026-10-22-d); 1 = uncontested; 0 does not occur
+elec_mov,,,,share (0-1),,,,,FALSE,,"NA as elec_enc and in uncontested races (D-2026-10-10-d; after the zero-vote exclusion, D-2026-10-28-e); 0 = first and second candidates with equal shares (four 2004 elections)"
+elec_winner_share,,,,share (0-1),,,,,FALSE,,NA as elec_enc; 1 = uncontested; 0 does not occur
+elec_n_candidates,,,,count,,,,,FALSE,,NA as elec_enc; counts candidates with at least one valid vote (D-2026-10-28-e); 0 does not occur
+elec_winner_party,,,,text,,,,,FALSE,,NA as elec_enc
+elec_winner_id,,,,text,,,,,FALSE,,NA as elec_enc
+elec_competitive,,,,0/1,,,,,FALSE,,NA as elec_mov; 0 = margin at or above 10 points
+elec_uncontested,,,,0/1,,,,,FALSE,,NA as elec_enc; 0 = two or more candidates with valid votes (D-2026-10-28-e)
+election_year,,,,0/1,,,,,FALSE,,never NA; 0 = not an election year
+munic_area_km2,,,,km2,,,,,FALSE,,never NA; 0 does not occur
+crop_soy_area_planted_km2,,,,km2,,,,,FALSE,,"NA where PAM did not report the municipality in the year (""..."": before installation, or a survey gap; D-2026-10-10-g, D-2026-10-28-d) and for Santa Cruz do Arari (D-2026-10-10-i); 0 = PAM ""-"", no planted area"
+crop_corn_area_planted_km2,,,,km2,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
+crop_rice_area_planted_km2,,,,km2,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
+crop_cotton_area_planted_km2,,,,km2,,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
+crop_soy_munic_area_share,,,,share (0-1),,,,,FALSE,,NA and 0 as crop_soy_area_planted_km2
+crop_corn_munic_area_share,,,,share (0-1),,,,,FALSE,,NA and 0 as crop_corn_area_planted_km2
+crop_rice_munic_area_share,,,,share (0-1),,,,,FALSE,,NA and 0 as crop_rice_area_planted_km2
+crop_cotton_munic_area_share,,,,share (0-1),,,,,FALSE,,NA and 0 as crop_cotton_area_planted_km2
+cattle_heads,,,,count (head),,,,,FALSE,,"NA where PPM did not report the municipality (""..."": in the sample, only before installation; D-2026-10-10-g, D-2026-10-28-d); 0 = PPM ""-"", no herd"
+cattle_per_km2,,,,head per km2,,,,,FALSE,,NA and 0 as cattle_heads
+price_index_crop,,,,"index (base-window crop shares x real price relative to 2000; the 2000 value is the exposure, D-2026-10-23-a)",,,,,FALSE,,"NA where the 2000-2002 base-window weight is NA (no crop series in the window: Santa Cruz do Arari, Ipiranga do Norte, Itanhanga; D-2026-10-10-f); 0 in every year where the base-window planted area is 0"
+price_index_cattle,,,,"index (base-window cattle density x real beef price relative to 2000; the 2000 value is the exposure, D-2026-10-23-a)",,,,,FALSE,,"NA where the 2000-2002 base-window weight is NA (Ipiranga do Norte, Itanhanga); 0 where the base-window herd is 0"
+price_index_crop_lag1,,,,"index (base-window crop shares x real price relative to 2000; the 2000 value is the exposure, D-2026-10-23-a)",,,,,FALSE,,NA as price_index_crop and in 2000 (first panel year); 0 as price_index_crop
+price_index_crop_z,,,,"SD (pooled panel, D-2026-10-11-d)",,,,,FALSE,,NA as price_index_crop; 0 does not occur
+price_index_crop_lag1_z,,,,"SD (pooled panel, D-2026-10-11-d)",,,,,FALSE,,NA as price_index_crop_lag1; 0 does not occur
+price_index_cattle_z,,,,"SD (pooled panel, D-2026-10-11-d)",,,,,FALSE,,NA as price_index_cattle; 0 does not occur
+price_index_cattle_lag1_z,,,,"SD (pooled panel, D-2026-10-11-d)",,,,,FALSE,,NA as price_index_cattle and in 2000; 0 does not occur
+bf_transfers_pc_brl_2024,,,,BRL 2024 per capita,,,,,TRUE,2000/2010/2022,NA as bf_transfers_total_brl_2024 and where population is NA or 0 (D-2026-10-11-f); 0 as bf_transfers_total_brl_2024
+bf_regime,,,,text,,,,,FALSE,,"NA before 2004, when the programme did not exist (D-2026-10-22-b)"
+muni_new_post2000,,,,0/1,,,,,FALSE,,never NA; 0 = installed by the 2000 census (D-2026-10-23-f)
+muni_parent_split,,,,0/1,,,,,FALSE,,never NA; 0 = ceded no territory to a post-2000 municipality (D-2026-10-23-f)
 emp_workers_n,Formal bonds (RAIS),,integer,count,RAIS,2000-2020,"formal bonds on 31 December, all wage brackets (workers_total of 02-social-rais.R; D-2026-10-28-a)",02,FALSE,,"NA where the municipality-year is absent from the RAIS export (not observed, never 0; D-2026-10-28-b); 0 does not occur"
 emp_agri_workers_n,Agricultural formal bonds (RAIS),,integer,count,RAIS,2000-2020,formal bonds in agricultural occupations (workers_agric of 02-social-rais.R; D-2026-10-28-a),02,FALSE,,NA as emp_workers_n; 0 = no agricultural bond in the year (D-2026-10-28-a)
 pia,Working-age population (interpolated),,double,count,IBGE census,2000-2020,"linear interpolation between the 2000, 2010 and 2022 censuses (02-social-census.R; D-2026-10-05-f); joined by 04 from census_pia_1999_2024 (D-2026-10-28-a)",02,TRUE,2000/2010/2022,NA before 2010 for the nine municipalities installed after the 2000 census (no 2000 anchor; D-2026-10-23-d); 0 does not occur
-pressure_defor,,,,,,,,,FALSE,,"never NA (time-invariant, 2000-2003 window; D-2026-10-12-a)"
-pressure_agri,,,,,,,,,FALSE,,"NA where the 2000-2003 base-window cattle density or crop share is NA: Ipiranga do Norte and Itanhanga, installed 2005 (D-2026-10-28-d), Santa Cruz do Arari without a crop series (D-2026-10-10-i); never imputed; time-invariant"
-pressure_score,,,,,,,,,FALSE,,NA as pressure_agri; time-invariant
-avail_ok,,,,,,,,,FALSE,,never NA; FALSE = 2000 forest share below the floor (D-2026-10-05-h)
-at_risk_broad,,,,,,,,,FALSE,,never NA; FALSE = fails avail_ok or the broad deforestation cut
-at_risk_narrow,,,,,,,,,FALSE,,never NA; FALSE = fails avail_ok or the narrow deforestation cut
-ppcdam_main,,,,,,,,,FALSE,,never NA; 0 = not listed in the 2004-2010 window (D-2026-10-12-b)
-ppcdam_robust,,,,,,,,,FALSE,,never NA; 0 = not listed in the 2004-2012 window (D-2026-10-12-b)
-ppcdam_ever_full,,,,,,,,,FALSE,,never NA; 0 = never listed 2004-2024
-defor_norm_ref0003,,,,,,,,,FALSE,,"NA where the 2000-2003 reference sd is below the floor (Afua, Santa Cruz do Arari; D-2026-10-12-f); 0 does not occur"
-defor_norm_ref0007,,,,,,,,,FALSE,,NA where the 2000-2007 reference sd is below the floor (Santa Cruz do Arari; D-2026-10-12-f); 0 does not occur
-log_forest_exposure,,,,,,,,,FALSE,,"NA in 2000 (lagged forest area, first panel year); 0 does not occur"
-pia_c2000,,,double,,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
-pia_c2010,,,double,,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-pia_c2022,,,double,,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-pea_c2000,,,double,,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
-pea_c2010,,,double,,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-pea_c2022,,,double,,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-informal_c2000,,,double,,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
-informal_c2010,,,double,,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-informal_c2022,,,double,,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-population_c2000,,,double,,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
-population_c2010,,,double,,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
-population_c2022,,,double,,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+pressure_defor,,,,"SD (cross-section of the 502 municipalities, D-2026-10-12-c)",,,,,FALSE,,"never NA (time-invariant, 2000-2003 window; D-2026-10-12-a)"
+pressure_agri,,,,"SD (cross-section of the 502 municipalities, D-2026-10-12-c)",,,,,FALSE,,"NA where the 2000-2003 base-window cattle density or crop share is NA: Ipiranga do Norte and Itanhanga, installed 2005 (D-2026-10-28-d), Santa Cruz do Arari without a crop series (D-2026-10-10-i); never imputed; time-invariant"
+pressure_score,,,,"SD (cross-section of the 502 municipalities, D-2026-10-12-c)",,,,,FALSE,,NA as pressure_agri; time-invariant
+avail_ok,,,,TRUE/FALSE,,,,,FALSE,,never NA; FALSE = 2000 forest share below the floor (D-2026-10-05-h)
+at_risk_broad,,,,TRUE/FALSE,,,,,FALSE,,never NA; FALSE = fails avail_ok or the broad deforestation cut
+at_risk_narrow,,,,TRUE/FALSE,,,,,FALSE,,never NA; FALSE = fails avail_ok or the narrow deforestation cut
+ppcdam_main,,,,0/1,,,,,FALSE,,never NA; 0 = not listed in the 2004-2010 window (D-2026-10-12-b)
+ppcdam_robust,,,,0/1,,,,,FALSE,,never NA; 0 = not listed in the 2004-2012 window (D-2026-10-12-b)
+ppcdam_ever_full,,,,0/1,,,,,FALSE,,never NA; 0 = never listed 2004-2024
+defor_norm_ref0003,,,,"SD (own 2000-2003 reference, D-2026-10-12-f)",,,,,FALSE,,"NA where the 2000-2003 reference sd is below the floor (Afua, Santa Cruz do Arari; D-2026-10-12-f); 0 does not occur"
+defor_norm_ref0007,,,,"SD (own 2000-2007 reference, D-2026-10-12-f)",,,,,FALSE,,NA where the 2000-2007 reference sd is below the floor (Santa Cruz do Arari; D-2026-10-12-f); 0 does not occur
+log_forest_exposure,,,,log km2,,,,,FALSE,,"NA in 2000 (lagged forest area, first panel year); 0 does not occur"
+pia_c2000,,,double,count,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
+pia_c2010,,,double,count,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+pia_c2022,,,double,count,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+pea_c2000,,,double,count,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
+pea_c2010,,,double,count,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+pea_c2022,,,double,count,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+informal_c2000,,,double,"share (0-1; stored on 0-100 until phase 2 step 2.8, D-2026-10-28-i)",IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
+informal_c2010,,,double,"share (0-1; stored on 0-100 until phase 2 step 2.8, D-2026-10-28-i)",IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+informal_c2022,,,double,"share (0-1; stored on 0-100 until phase 2 step 2.8, D-2026-10-28-i)",IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+population_c2000,,,double,count,IBGE census,2000,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,"NA for the nine municipalities installed after the 2000 census, absent from that census (D-2026-10-23-d, D-2026-10-26-a)"
+population_c2010,,,double,count,IBGE census,2010,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
+population_c2022,,,double,count,IBGE census,2022,"census value as read, panel_amz_baseline store (D-2026-10-26-a)",05,FALSE,,never NA in the sample; 0 does not occur
