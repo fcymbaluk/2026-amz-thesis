@@ -2412,18 +2412,24 @@ vertical-align: -.125em;
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(munic_id, munic, <span class="st">`</span><span class="at">2000</span><span class="st">`</span>, <span class="st">`</span><span class="at">2010</span><span class="st">`</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 4
-  munic_id munic                      `2000` `2010`
-  &lt;chr&gt;    &lt;chr&gt;                      &lt;chr&gt;  &lt;chr&gt; 
-1 5101852  Bom Jesus do Araguaia (MT) ...    5314  
-2 5103254  Colniza (MT)               ...    26381 
-3 5103361  Conquista D&#39;Oeste (MT)     ...    3385  
-4 5103437  Curvelândia (MT)           ...    4866  
-5 5104526  Ipiranga do Norte (MT)     ...    5123  
-6 5104542  Itanhangá (MT)             ...    5276  
-7 5106190  Nova Santa Helena (MT)     ...    3468  
-8 5107578  Rondolândia (MT)           ...    3604  
-9 5107743  Santa Cruz do Xingu (MT)   ...    1900  </code></pre>
+<pre><code># A tibble: 15 × 4
+   munic_id munic                        `2000` `2010`
+   &lt;chr&gt;    &lt;chr&gt;                        &lt;chr&gt;  &lt;chr&gt; 
+ 1 5101852  Bom Jesus do Araguaia (MT)   ...    5314  
+ 2 5103254  Colniza (MT)                 ...    26381 
+ 3 5103361  Conquista D&#39;Oeste (MT)       ...    3385  
+ 4 5103437  Curvelândia (MT)             ...    4866  
+ 5 5104526  Ipiranga do Norte (MT)       ...    5123  
+ 6 5104542  Itanhangá (MT)               ...    5276  
+ 7 5106174  Nova Nazaré (MT)             ...    3029  
+ 8 5106190  Nova Santa Helena (MT)       ...    3468  
+ 9 5106315  Novo Santo Antônio (MT)      ...    2005  
+10 5107578  Rondolândia (MT)             ...    3604  
+11 5107743  Santa Cruz do Xingu (MT)     ...    1900  
+12 5107768  Santa Rita do Trivelato (MT) ...    2491  
+13 5107792  Santo Antônio do Leste (MT)  ...    3754  
+14 5107883  Serra Nova Dourada (MT)      ...    1365  
+15 5108352  Vale de São Domingos (MT)    ...    3052  </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The 1970-2010 workbook has one row per municipality of the 2010 grid plus Cococi (CE), an extinct municipality with no value; “…” marks the censuses before a municipality existed, 59 cells in 2000. The 2022 workbook (Tabela 4709) has four header rows, a Brasil row, 5,570 municipal rows and a source footer; five municipalities installed in 2013 appear only there, Mojuí dos Campos among them. In the sample the nine Mato Grosso municipalities of task 1.6 have no 2000 value. <strong>Decision.</strong> D-2026-10-05-f (interpolation between the anchors); D-2026-10-05-k (consequence for the nine); D-2026-10-10-g. <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, raw-state block (column names, 5,566 rows, 2022 header cells, 5,570 municipalities in 2022, anchors positive).</p>
@@ -2556,24 +2562,24 @@ vertical-align: -.125em;
 <pre><code># A tibble: 18 × 5
     year     n median_rel     p10    p90
    &lt;int&gt; &lt;int&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
- 1  2002   500   0.00515  -0.0553 0.0934
- 2  2003   500   0.00887  -0.0785 0.134 
- 3  2004   500  -0.00229  -0.126  0.171 
- 4  2005   502  -0.000850 -0.150  0.217 
- 5  2006   502  -0.000226 -0.170  0.251 
- 6  2008   502   0        -0.0790 0.112 
- 7  2009   502   0        -0.0817 0.127 
- 8  2011   502  -0.00577  -0.0288 0.0117
- 9  2012   502  -0.0111   -0.0558 0.0238
-10  2013   503  -0.0345   -0.112  0.0313
-11  2014   503  -0.0412   -0.135  0.0459
-12  2015   503  -0.0465   -0.160  0.0583
-13  2016   503  -0.0515   -0.182  0.0710
-14  2017   503  -0.0560   -0.200  0.0830
-15  2018   503  -0.0552   -0.210  0.0762
-16  2019   503  -0.0591   -0.230  0.0864
-17  2020   503  -0.0629   -0.247  0.0978
-18  2021   503  -0.0667   -0.264  0.110 </code></pre>
+ 1  2002   805    0.00617 -0.0451 0.0838
+ 2  2003   805    0.00898 -0.0627 0.118 
+ 3  2004   805    0.00178 -0.108  0.155 
+ 4  2005   807    0.00216 -0.122  0.189 
+ 5  2006   807    0.00399 -0.141  0.225 
+ 6  2008   807    0       -0.0745 0.106 
+ 7  2009   807    0       -0.0804 0.120 
+ 8  2011   807   -0.00555 -0.0262 0.0122
+ 9  2012   807   -0.0109  -0.0506 0.0233
+10  2013   808   -0.0325  -0.0985 0.0308
+11  2014   808   -0.0373  -0.121  0.0445
+12  2015   808   -0.0432  -0.139  0.0566
+13  2016   808   -0.0476  -0.158  0.0669
+14  2017   808   -0.0511  -0.176  0.0766
+15  2018   808   -0.0523  -0.186  0.0706
+16  2019   808   -0.0554  -0.202  0.0822
+17  2020   808   -0.0592  -0.219  0.0906
+18  2021   808   -0.0613  -0.235  0.103 </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Through 2009 the median deviation stays within one percent, with the 10-90 range widening to about -17/+26 percent in the middle of the decade, where a straight line between censuses departs most from the estimated path. From 2011 the median drifts to -6.7 percent by 2021: the line toward the 2022 census, which came in below the projected estimates, runs under them, and the range reaches -26/+11 percent. The deviation is the cost of D-2026-10-05-f, kept at step 2.5: the estimates enter only where a municipality has no 2000 anchor (D-2026-10-23-e); the anchors are stored at task 1.7. <strong>Decision.</strong> D-2026-10-05-f (interpolation kept); D-2026-10-23-e.</p>
@@ -2598,20 +2604,20 @@ vertical-align: -.125em;
 <pre><code># A tibble: 14 × 7
     year     n population_na census census_interp ibge_estimate estimate_interp
    &lt;int&gt; &lt;int&gt;         &lt;int&gt;  &lt;int&gt;         &lt;int&gt;         &lt;int&gt;           &lt;int&gt;
- 1  2000   503            10    493             0             0               0
- 2  2001   503             3      0           493             7               0
- 3  2002   503             3      0           493             7               0
- 4  2003   503             3      0           493             7               0
- 5  2004   503             3      0           493             7               0
- 6  2005   503             1      0           493             9               0
- 7  2006   503             1      0           493             9               0
- 8  2007   503             1      0           493             0               9
- 9  2008   503             1      0           493             9               0
-10  2009   503             1      0           493             9               0
-11  2010   503             1    502             0             0               0
-12  2020   503             0      0           502             1               0
-13  2021   503             0      0           502             1               0
-14  2022   503             0    503             0             0               0</code></pre>
+ 1  2000   808            16    792             0             0               0
+ 2  2001   808             3      0           792            13               0
+ 3  2002   808             3      0           792            13               0
+ 4  2003   808             3      0           792            13               0
+ 5  2004   808             3      0           792            13               0
+ 6  2005   808             1      0           792            15               0
+ 7  2006   808             1      0           792            15               0
+ 8  2007   808             1      0           792             0              15
+ 9  2008   808             1      0           792            15               0
+10  2009   808             1      0           792            15               0
+11  2010   808             1    807             0             0               0
+12  2020   808             0      0           807             1               0
+13  2021   808             0      0           807             1               0
+14  2022   808             0    808             0             0               0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2626,12 +2632,12 @@ vertical-align: -.125em;
 <pre><code># A tibble: 6 × 4
    year     n gdp_na per_capita_na
   &lt;int&gt; &lt;int&gt;  &lt;int&gt;         &lt;int&gt;
-1  2002   503      3             3
-2  2003   503      3             3
-3  2004   503      3             3
-4  2020   503      0             0
-5  2021   503      0             0
-6  2022   503      0             0</code></pre>
+1  2002   808      3             3
+2  2003   808      3             3
+3  2004   808      3             3
+4  2020   808      0             0
+5  2021   808      0             0
+6  2022   808      0             0</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Since phase 2, step 2.5 (2026-10-23) population is its own series, 2000-2022 for every municipality, with the source of each cell; until then it rode on the GDP rows and the panel had no population in 2000-2001 (D-2026-10-10-k). In the biome sample the only NA cells are the post-2000 municipalities before installation (ten in 2000, three in 2001, two through 2004: Mojuí dos Campos through 2012); GDP per capita is NA only where GDP is. The 2023 GDP release is read and dropped by the year cap; 2023-2024 population belongs to the anchor work of task 1.7. <strong>Decision.</strong> D-2026-10-23-e (closes D-2026-10-10-k for 2000-2022). <strong>Assertion.</strong> <code>03-controls-gdp.R</code>, output block (5,570 x 23 rows, source NA exactly where population is, per-capita NA pattern).</p>
@@ -2651,7 +2657,7 @@ vertical-align: -.125em;
 <span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, install_year, <span class="fu">starts_with</span>(<span class="st">&quot;population_&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10 × 15
+<pre><code># A tibble: 16 × 15
    municipality   install_year population_2000 population_2001 population_2002 population_2003 population_2004
    &lt;chr&gt;                 &lt;int&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;           &lt;dbl&gt;
  1 Mojuí dos Cam…         2013              NA              NA              NA              NA              NA
@@ -2661,9 +2667,15 @@ vertical-align: -.125em;
  5 Curvelândia            2001              NA            4591            4650            4709            4831
  6 Ipiranga do N…         2005              NA              NA              NA              NA              NA
  7 Itanhangá              2005              NA              NA              NA              NA              NA
- 8 Nova Santa He…         2001              NA            3292            3353            3412            3535
- 9 Rondolândia            2001              NA            3352            3500            3657            3985
-10 Santa Cruz do…         2001              NA            1109            1166            1225            1348
+ 8 Nova Nazaré            2001              NA            1984            1989            1991            1996
+ 9 Nova Santa He…         2001              NA            3292            3353            3412            3535
+10 Novo Santo An…         2001              NA            1184            1181            1178            1171
+11 Rondolândia            2001              NA            3352            3500            3657            3985
+12 Santa Cruz do…         2001              NA            1109            1166            1225            1348
+13 Santa Rita do…         2001              NA            1291            1350            1415            1613
+14 Santo Antônio…         2001              NA            1930            1975            2020            2113
+15 Serra Nova Do…         2001              NA            1066            1107            1151            1244
+16 Vale de São D…         2001              NA            3299            3353            3413            3212
 # ℹ 8 more variables: population_2005 &lt;dbl&gt;, population_2006 &lt;dbl&gt;, population_2007 &lt;dbl&gt;,
 #   population_2008 &lt;dbl&gt;, population_2009 &lt;dbl&gt;, population_2010 &lt;dbl&gt;, population_2011 &lt;dbl&gt;,
 #   population_2012 &lt;dbl&gt;</code></pre>
@@ -2678,7 +2690,7 @@ vertical-align: -.125em;
 <span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> <span class="fu">c</span>(population, estimate), <span class="at">names_vary =</span> <span class="st">&quot;slowest&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 28 × 12
+<pre><code># A tibble: 46 × 12
    municipality         pop_source population_2006 estimate_2006 population_2007 estimate_2007 population_2008
    &lt;chr&gt;                &lt;chr&gt;                &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;
  1 Mojuí dos Campos     &lt;NA&gt;                    NA            NA             NA             NA              NA
@@ -2691,7 +2703,7 @@ vertical-align: -.125em;
  8 Conquista D&#39;Oeste    ibge_esti…            2947          2947             NA             NA            3226
  9 Conquista D&#39;Oeste    estimate_…              NA            NA           3086.            NA              NA
 10 Conquista D&#39;Oeste    census                  NA            NA             NA             NA              NA
-# ℹ 18 more rows
+# ℹ 36 more rows
 # ℹ 5 more variables: estimate_2008 &lt;dbl&gt;, population_2009 &lt;dbl&gt;, estimate_2009 &lt;dbl&gt;, population_2010 &lt;dbl&gt;,
 #   estimate_2010 &lt;dbl&gt;</code></pre>
 </div>

@@ -2328,26 +2328,20 @@ vertical-align: -.125em;
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">all_four_crops =</span> <span class="fu">all</span>(crops <span class="sc">==</span> <span class="dv">4</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 17 × 6
-   geocode municipality          state_abbreviation years     n_years all_four_crops
-   &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;              &lt;chr&gt;       &lt;int&gt; &lt;lgl&gt;         
- 1 1500305 Afuá                  PA                 2004-2015       8 TRUE          
- 2 1500800 Ananindeua            PA                 2002-2008       6 TRUE          
- 3 1501402 Belém                 PA                 2002-2016       9 TRUE          
- 4 1501501 Benevides             PA                 2002-2016      12 TRUE          
- 5 1502509 Chaves                PA                 2004-2015       8 TRUE          
- 6 1504422 Marituba              PA                 2002-2020      17 TRUE          
- 7 1504752 Mojuí dos Campos      PA                 2000-2012      13 TRUE          
- 8 5101852 Bom Jesus do Araguaia MT                 2000-2000       1 TRUE          
- 9 5103254 Colniza               MT                 2000-2000       1 TRUE          
-10 5103361 Conquista D&#39;Oeste     MT                 2000-2000       1 TRUE          
-11 5103437 Curvelândia           MT                 2000-2000       1 TRUE          
-12 5103858 Gaúcha do Norte       MT                 2002-2002       1 TRUE          
-13 5104526 Ipiranga do Norte     MT                 2000-2004       5 TRUE          
-14 5104542 Itanhangá             MT                 2000-2004       5 TRUE          
-15 5106190 Nova Santa Helena     MT                 2000-2000       1 TRUE          
-16 5107578 Rondolândia           MT                 2000-2000       1 TRUE          
-17 5107743 Santa Cruz do Xingu   MT                 2000-2000       1 TRUE          </code></pre>
+<pre><code># A tibble: 24 × 6
+   geocode municipality           state_abbreviation years     n_years all_four_crops
+   &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;              &lt;chr&gt;       &lt;int&gt; &lt;lgl&gt;         
+ 1 1500305 Afuá                   PA                 2004-2015       8 TRUE          
+ 2 1500800 Ananindeua             PA                 2002-2008       6 TRUE          
+ 3 1501402 Belém                  PA                 2002-2016       9 TRUE          
+ 4 1501501 Benevides              PA                 2002-2016      12 TRUE          
+ 5 1502509 Chaves                 PA                 2004-2015       8 TRUE          
+ 6 1504422 Marituba               PA                 2002-2020      17 TRUE          
+ 7 1504752 Mojuí dos Campos       PA                 2000-2012      13 TRUE          
+ 8 1720150 São Félix do Tocantins TO                 2014-2014       1 TRUE          
+ 9 5101852 Bom Jesus do Araguaia  MT                 2000-2000       1 TRUE          
+10 5103254 Colniza                MT                 2000-2000       1 TRUE          
+# ℹ 14 more rows</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Each crop has one series per municipality for 1988-2025, in hectares, for 5,564 of the 5,570 municipalities; the categories are 40099 (algodão herbáceo), 40102 (arroz), 40122 (milho) and 40124 (soja). The only symbols are “-” (the SIDRA zero) and “…” (not available). Seven municipalities have no series at all: Santa Cruz do Arari (PA), in the biome sample, and six urban municipalities of Rio de Janeiro and São Paulo. In the sample, “…” always covers the four crops of a municipality-year at once: the nine Mato Grosso municipalities installed after 2000 before their first survey year (task 1.6), Mojuí dos Campos before 2013, one Mato Grosso municipality in 2002, and six Pará municipalities (Belém and Marituba among them) in scattered years between 2002 and 2020, where the survey did not report them. <strong>Decision.</strong> D-2026-10-10-g (symbol rule); D-2026-10-10-i (Santa Cruz do Arari). <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (category ids, year set, 5,564 series, symbols, Santa Cruz do Arari absent).</p>
@@ -2391,19 +2385,25 @@ vertical-align: -.125em;
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10 × 5
-   geocode municipality.y        state_abbreviation years         n
-   &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;
- 1 1504752 Mojuí dos Campos      PA                 2000-2012    13
- 2 5101852 Bom Jesus do Araguaia MT                 2000-2000     1
- 3 5103254 Colniza               MT                 2000-2000     1
- 4 5103361 Conquista D&#39;Oeste     MT                 2000-2000     1
- 5 5103437 Curvelândia           MT                 2000-2000     1
- 6 5104526 Ipiranga do Norte     MT                 2000-2004     5
- 7 5104542 Itanhangá             MT                 2000-2004     5
- 8 5106190 Nova Santa Helena     MT                 2000-2000     1
- 9 5107578 Rondolândia           MT                 2000-2000     1
-10 5107743 Santa Cruz do Xingu   MT                 2000-2000     1</code></pre>
+<pre><code># A tibble: 16 × 5
+   geocode municipality.y          state_abbreviation years         n
+   &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;              &lt;chr&gt;     &lt;int&gt;
+ 1 1504752 Mojuí dos Campos        PA                 2000-2012    13
+ 2 5101852 Bom Jesus do Araguaia   MT                 2000-2000     1
+ 3 5103254 Colniza                 MT                 2000-2000     1
+ 4 5103361 Conquista D&#39;Oeste       MT                 2000-2000     1
+ 5 5103437 Curvelândia             MT                 2000-2000     1
+ 6 5104526 Ipiranga do Norte       MT                 2000-2004     5
+ 7 5104542 Itanhangá               MT                 2000-2004     5
+ 8 5106174 Nova Nazaré             MT                 2000-2000     1
+ 9 5106190 Nova Santa Helena       MT                 2000-2000     1
+10 5106315 Novo Santo Antônio      MT                 2000-2000     1
+11 5107578 Rondolândia             MT                 2000-2000     1
+12 5107743 Santa Cruz do Xingu     MT                 2000-2000     1
+13 5107768 Santa Rita do Trivelato MT                 2000-2000     1
+14 5107792 Santo Antônio do Leste  MT                 2000-2000     1
+15 5107883 Serra Nova Dourada      MT                 2000-2000     1
+16 5108352 Vale de São Domingos    MT                 2000-2000     1</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> One bovine herd series per municipality for 1974-2025, in heads, for 5,568 municipalities (three urban municipalities of RJ and SP are absent; Santa Cruz do Arari is present). Symbols as in PAM. In the sample, “…” occurs for the nine post-2000 Mato Grosso municipalities in 2000-2004 only. <strong>Decision.</strong> D-2026-10-10-g. <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (category 2670, year set, 5,568 series, symbols).</p>
@@ -2489,7 +2489,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 4
       n min_km2 median_km2 max_km2
   &lt;int&gt;   &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;
-1   503    79.2      3076. 159533.</code></pre>
+1   808    79.2      2132. 159533.</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The 2022 workbook carries IBGE’s own column names (<code>ID</code>, <code>CD_MUN</code>, <code>AR_MUN_2022</code>), 5,572 coded rows and three trailing rows without a code (two blank, one note saying the areas were computed from the BR_Municipios_2022 file of the Malha Municipal Digital, the mesh MapBiomas Collection 9 maps). The coded rows are the 2022 grid: the 5,570 municipalities of the 2022 census and the two operational areas of Lagoa dos Patos and Lagoa Mirim (4300001, 4300002), which are not municipalities. Santa Cruz do Arari has 1076.652 km², as in the 2025 release. Boa Esperança do Norte (MT, 5101837, installed 2025), which PAM and PPM report, is the one surveyed municipality without a 2022 area; its crop shares, cattle density and base-window weights are NA and it stays in the interim files, outside the biome sample. Until 2026-10-28 the pipeline read the 2025 release (5,573 coded rows plus two trailing rows: the same grid plus Boa Esperança do Norte, with the hand-renamed <code>geocode</code> and <code>Area km2</code> of the lost file replaced by IBGE’s names), so the parents of the split carried post-split areas in every year; Q7 compares the two vintages. <strong>Decision.</strong> D-2026-10-10-i (the area is stored for every municipality of the grid, independently of PAM); D-2026-10-28-g (the 2022 release in all years, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (column names, 5,572 coded rows plus three, Boa Esperança do Norte the only PAM/PPM code without an area, Santa Cruz do Arari present) and output block (5,570 municipalities; NA shares and density for Boa Esperança do Norte only).</p>
@@ -2510,16 +2510,16 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 6
-  variable                      n_na      p50        p99       max above_1
-  &lt;chr&gt;                        &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;   &lt;int&gt;
-1 crop_corn_area_planted_km2      91 5         588.      3150         7974
-2 crop_corn_munic_area_share      91 0.00237     0.0984     0.438        0
-3 crop_cotton_area_planted_km2    91 0          40.0      362.         271
-4 crop_cotton_munic_area_share    91 0           0.00605    0.0807       0
-5 crop_rice_area_planted_km2      91 2.2       125.       912.        6114
-6 crop_rice_munic_area_share      91 0.000778    0.0400     0.241        0
-7 crop_soy_area_planted_km2       91 0        1464.      3960         2074
-8 crop_soy_munic_area_share       91 0           0.242      0.658        0</code></pre>
+  variable                      n_na     p50       p99      max above_1
+  &lt;chr&gt;                        &lt;int&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;   &lt;int&gt;
+1 crop_corn_area_planted_km2      98 6        886.     5293.      13524
+2 crop_corn_munic_area_share      98 0.00334    0.147     0.570       0
+3 crop_cotton_area_planted_km2    98 0        200.     2041.       1008
+4 crop_cotton_munic_area_share    98 0          0.0397    0.208       0
+5 crop_rice_area_planted_km2      98 3.5      135.      912.      11062
+6 crop_rice_munic_area_share      98 0.00158    0.0602    0.241       0
+7 crop_soy_area_planted_km2       98 0       2237.     6350        5116
+8 crop_soy_munic_area_share       98 0          0.361     0.698       0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2534,7 +2534,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 5
    n_na p50_heads max_heads p50_density max_density
   &lt;int&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
-1    30     46676   2361887        18.9        221.</code></pre>
+1    36    38182.   2361887        21.4        272.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2566,13 +2566,13 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 4
-  weight         zero      p50      max
-  &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-1 crop_w_soy      430  0         0.300 
-2 crop_w_corn       5  0.00281   0.0825
-3 crop_w_rice      30  0.00214   0.107 
-4 crop_w_cotton   426  0         0.0119
-5 cattle_weight     3 12.9     138.    </code></pre>
+  weight         zero      p50     max
+  &lt;chr&gt;         &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+1 crop_w_soy      632  0         0.467
+2 crop_w_corn       5  0.00345   0.246
+3 crop_w_rice      31  0.00364   0.107
+4 crop_w_cotton   680  0         0.109
+5 cattle_weight     3 15.4     170.   </code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Shares are small for most municipalities; where they exceed 1 it is the double-cropping signature IBGE documents (successive crops are counted twice). Cattle densities reach a few hundred heads per km2. The base window is empty for the municipalities installed after 2002 (Ipiranga do Norte and Itanhangá, MT: crop and cattle weights NA), for Mojuí dos Campos (installed 2013) and for Santa Cruz do Arari (crop weights NA, no PAM series; cattle weight present); the other post-2000 MT municipalities have a window value because PAM and PPM report them from 2001. <strong>Decision.</strong> D-2026-10-10-f (window 2000-2002, NA for an empty window). <strong>Assertion.</strong> <code>03-controls-agro.R</code>, output block (shares and densities non-negative, weights never NaN).</p>
@@ -2650,7 +2650,7 @@ vertical-align: -.125em;
 <span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(source, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 20 × 6
+<pre><code># A tibble: 32 × 6
    municipality          install_year dots      first_reported dash_or_number_before source 
    &lt;chr&gt;                        &lt;int&gt; &lt;chr&gt;              &lt;int&gt;                 &lt;int&gt; &lt;chr&gt;  
  1 Bom Jesus do Araguaia         2001 2000-2000           2001                     0 PAM soy
@@ -2660,19 +2660,10 @@ vertical-align: -.125em;
  5 Ipiranga do Norte             2005 2000-2004           2005                     0 PAM soy
  6 Itanhangá                     2005 2000-2004           2005                     0 PAM soy
  7 Mojuí dos Campos              2013 2000-2012           2013                     0 PAM soy
- 8 Nova Santa Helena             2001 2000-2000           2001                     0 PAM soy
- 9 Rondolândia                   2001 2000-2000           2001                     0 PAM soy
-10 Santa Cruz do Xingu           2001 2000-2000           2001                     0 PAM soy
-11 Bom Jesus do Araguaia         2001 2000-2000           2001                     0 PPM    
-12 Colniza                       2001 2000-2000           2001                     0 PPM    
-13 Conquista D&#39;Oeste             2001 2000-2000           2001                     0 PPM    
-14 Curvelândia                   2001 2000-2000           2001                     0 PPM    
-15 Ipiranga do Norte             2005 2000-2004           2005                     0 PPM    
-16 Itanhangá                     2005 2000-2004           2005                     0 PPM    
-17 Mojuí dos Campos              2013 2000-2012           2013                     0 PPM    
-18 Nova Santa Helena             2001 2000-2000           2001                     0 PPM    
-19 Rondolândia                   2001 2000-2000           2001                     0 PPM    
-20 Santa Cruz do Xingu           2001 2000-2000           2001                     0 PPM    </code></pre>
+ 8 Nova Nazaré                   2001 2000-2000           2001                     0 PAM soy
+ 9 Nova Santa Helena             2001 2000-2000           2001                     0 PAM soy
+10 Novo Santo Antônio            2001 2000-2000           2001                     0 PAM soy
+# ℹ 22 more rows</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2683,16 +2674,17 @@ vertical-align: -.125em;
 <span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(year, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 7 × 3
-  municipality    state_abbreviation years                                                                    
-  &lt;chr&gt;           &lt;chr&gt;              &lt;chr&gt;                                                                    
-1 Afuá            PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                           
-2 Ananindeua      PA                 2002, 2003, 2004, 2005, 2006, 2008                                       
-3 Belém           PA                 2002, 2003, 2004, 2005, 2008, 2009, 2010, 2015, 2016                     
-4 Benevides       PA                 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2013, 2014, 2015, 2016   
-5 Chaves          PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                           
-6 Gaúcha do Norte MT                 2002                                                                     
-7 Marituba        PA                 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, …</code></pre>
+<pre><code># A tibble: 8 × 3
+  municipality           state_abbreviation years                                                             
+  &lt;chr&gt;                  &lt;chr&gt;              &lt;chr&gt;                                                             
+1 Afuá                   PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                    
+2 Ananindeua             PA                 2002, 2003, 2004, 2005, 2006, 2008                                
+3 Belém                  PA                 2002, 2003, 2004, 2005, 2008, 2009, 2010, 2015, 2016              
+4 Benevides              PA                 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2013, 2014, 2015,…
+5 Chaves                 PA                 2004, 2005, 2006, 2008, 2009, 2010, 2014, 2015                    
+6 Gaúcha do Norte        MT                 2002                                                              
+7 Marituba               PA                 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012, 2013,…
+8 São Félix do Tocantins TO                 2014                                                              </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2703,7 +2695,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 3
    dash  dots dots_outside_lookup
   &lt;int&gt; &lt;int&gt;               &lt;int&gt;
-1    22    30                   0</code></pre>
+1    22    36                   0</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> For the ten lookup municipalities “…” covers exactly the years before installation and the first reported value (a number, or “-” where no soy was planted) appears in the installation year, in both surveys; nothing is reported before it. The remaining “…” cells of PAM are six Pará municipalities (Afuá, Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT, 2002) in scattered years, where the survey did not report the municipality; PPM has no “…” outside the lookup set. The symbol rule of D-2026-10-10-g (“-” zero, “…” NA) stands, and NA before installation is a property of every source, asserted in script 04 against the lookup. <strong>Decision.</strong> D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA before the installation year and observed from it in crops, cattle, employment, population and GDP).</p>
@@ -2741,7 +2733,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 7
       n within_1pct_2022 within_1pct_2025 over_2pct_2022 over_2pct_2025 releases_differ differ_over_1pct
   &lt;int&gt;            &lt;int&gt;            &lt;int&gt;          &lt;int&gt;          &lt;int&gt;           &lt;int&gt;            &lt;int&gt;
-1   503              486              459              7             20             300               31</code></pre>
+1   808              791              757              7             27             393               38</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2778,20 +2770,20 @@ vertical-align: -.125em;
 <span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">ratio_2022 =</span> <span class="fu">round</span>(ratio_2022, <span class="dv">3</span>), <span class="at">ratio_2025 =</span> <span class="fu">round</span>(ratio_2025, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 29 × 8
+<pre><code># A tibble: 37 × 8
    geocode municipality          state_abbreviation mapped_total_km2 area_2022 area_2025 ratio_2022 ratio_2025
    &lt;chr&gt;   &lt;chr&gt;                 &lt;chr&gt;                         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
  1 5106240 Nova Ubiratã          MT                           12461.    12461.     8721.      1          1.43 
- 2 1100320 São Miguel do Guaporé RO                            7460.     7460.     6790.      1          1.10 
- 3 1101500 Seringueiras          RO                            3774.     3774.     4444       1          0.849
- 4 1300144 Apuí                  AM                           54241.    54240.    53617.      1          1.01 
- 5 1303809 São Gabriel da Cacho… AM                          108648.   109193.   108700.      0.995      1    
- 6 1302306 Jutaí                 AM                           69457.    69457.    68971.      1          1.01 
- 7 1303536 Presidente Figueiredo AM                           25459     25459.    25028.      1          1.02 
- 8 1300805 Borba                 AM                           44236.    44236.    44644       1          0.991
- 9 1300607 Benjamin Constant     AM                            8696.     8705.     9100.      0.999      0.956
-10 1301308 Codajás               AM                           18701.    18701.    19038.      1          0.982
-# ℹ 19 more rows</code></pre>
+ 2 5107925 Sorriso               MT                            9294.     9294.     8455.      1          1.10 
+ 3 1100320 São Miguel do Guaporé RO                            7460.     7460.     6790.      1          1.10 
+ 4 1101500 Seringueiras          RO                            3774.     3774.     4444       1          0.849
+ 5 1300144 Apuí                  AM                           54241.    54240.    53617.      1          1.01 
+ 6 2101400 Balsas                MA                           13141.    13141.    12602       1          1.04 
+ 7 2109700 Sambaíba              MA                            2476.     2476.     3015.      1          0.821
+ 8 1303809 São Gabriel da Cacho… AM                          108648.   109193.   108700.      0.995      1    
+ 9 1302306 Jutaí                 AM                           69457.    69457.    68971.      1          1.01 
+10 1303536 Presidente Figueiredo AM                           25459     25459.    25028.      1          1.02 
+# ℹ 27 more rows</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The 2022 area lies within 1 percent of the mapped total for 486 of the 503 municipalities (485 of the 502 of the sample) against 459 (458) for the 2025 release, and differs from it by more than 2 percent in 7 against 20. The seven are coastal municipalities of Maranhão and Pará (Raposa, Godofredo Viana, Porto Rico do Maranhão, São João de Pirabas, Cururupu, Augusto Corrêa, Luís Domingues) where the mapped total falls short of the area in both releases alike: MapBiomas’ own coverage of the coast, not the mesh. The two releases differ in 300 municipalities, 31 by more than 1 percent. The large differences are the mesh: Nova Ubiratã (12,460.7 km² in 2022 against 8,720.8 in 2025; ratio 1.000 against 1.429), the Seringueiras-São Miguel do Guaporé (RO) boundary swap (3,773.5 and 7,460.1 km² in 2022; ratios 1.000 against 0.849 and 1.099) and boundary revisions of 400-630 km² in Amazonas (Apuí, São Gabriel da Cachoeira, Jutaí, Presidente Figueiredo, Borba), all of which the 2022 release puts on the mapped mesh. With it no forest area exceeds the municipal area (panel.qmd Q3). <strong>Decision.</strong> D-2026-10-28-g. <strong>Assertion.</strong> <code>03-controls-agro.R</code>, raw-state block (the 2022 file, sheet and column; grid counts); <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>

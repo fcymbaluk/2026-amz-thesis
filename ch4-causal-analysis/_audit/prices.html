@@ -2363,8 +2363,8 @@ vertical-align: -.125em;
 <pre><code># A tibble: 2 × 5
   index               n_na   min      p50     max
   &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
-1 price_index_crop       4     0  0.00572   0.494
-2 price_index_cattle     3     0 12.9     138.   </code></pre>
+1 price_index_crop       4     0  0.00957   0.749
+2 price_index_cattle     3     0 15.4     170.   </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2397,11 +2397,11 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 6
-  index                  n_na   min      p50    max      sd
-  &lt;chr&gt;                 &lt;int&gt; &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
-1 price_index_cattle       63     0 18.4     273.   48.0   
-2 price_index_crop         84     0  0.00878   1.03  0.0470
-3 price_index_crop_lag1   583     0  0.00874   1.03  0.0468</code></pre>
+  index                  n_na   min     p50    max      sd
+  &lt;chr&gt;                 &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+1 price_index_cattle       63     0 22.3    336.   42.8   
+2 price_index_crop         84     0  0.0136   1.60  0.0892
+3 price_index_crop_lag1   888     0  0.0135   1.60  0.0890</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> The cattle index is three orders of magnitude larger than the crop index and both carry the cross-sectional scale of the weights (a share of the territory against heads per km²), so the two coefficients are not comparable in raw units; script 04 standardises them. The scale difference is the unit of the exposures, not an error, and is left as is (D-2026-10-23-a); a pasture-share exposure for cattle would put both on the 0-1 scale (D-2026-10-23-c, Q7). <strong>Decision.</strong> D-2026-10-23-a; D-2026-10-23-c open.</p>
@@ -2424,8 +2424,8 @@ vertical-align: -.125em;
   geocode municipality           state_abbreviation price_index_crop price_index_cattle crop_w_soy crop_w_corn
   &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;                         &lt;dbl&gt;              &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
 1 1300409 Barcelos               AM                                0            0.00197          0           0
-2 1303601 Santa Isabel do Rio N… AM                                0            0.00440          0           0
-3 1304260 Uarini                 AM                                0            0.0423           0           0
+2 1303601 Santa Isabel do Rio N… AM                                0            0.00438          0           0
+3 1304260 Uarini                 AM                                0            0.0425           0           0
 4 1501402 Belém                  PA                                0            0.168            0           0
 5 1504422 Marituba               PA                                0            8.01             0           0
 6 1504752 Mojuí dos Campos       PA                               NA           NA               NA          NA
@@ -2468,11 +2468,11 @@ vertical-align: -.125em;
    year crop_mean crop_sd_within_year cattle_mean cattle_range_within_year n_munic_no_crop_anchor
   &lt;int&gt;     &lt;dbl&gt;               &lt;dbl&gt;       &lt;dbl&gt;                    &lt;dbl&gt;                  &lt;dbl&gt;
 1  2000      1                  0            1                           0                      9
-2  2004      1.15               0.029        1.30                        0                      9
-3  2008      2.17               0.124        1.30                        0                      9
-4  2012      2.24               0.105        1.58                        0                      9
-5  2016      1.58               0.033        1.78                        0                      9
-6  2020      1.71               0.108        1.97                        0                      9
+2  2004      1.16               0.045        1.30                        0                      9
+3  2008      2.17               0.138        1.30                        0                      9
+4  2012      2.21               0.112        1.58                        0                      9
+5  2016      1.58               0.034        1.78                        0                      9
+6  2020      1.73               0.111        1.97                        0                      9
 # ℹ 1 more variable: n_munic_no_cattle_anchor &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
@@ -2487,7 +2487,7 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 2
   between_year_sd within_year_sd
             &lt;dbl&gt;          &lt;dbl&gt;
-1           0.381          0.071</code></pre>
+1           0.376          0.075</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Anchoring cancels the exposure. The cattle index, built on one commodity, becomes the relative beef price in every municipality with a herd (zero range within a year), a pure year series that year effects absorb; the nine municipalities of the 503 with a zero or missing 2000 crop value (eight in the sample panel, Mojuí dos Campos being dropped) and the six with a zero or missing cattle value (five) would have no anchor and become NA. The anchored crop index keeps only the crop-mix variation: a within-year sd of about 0.07 against a between-year sd of about 0.38, intensity having cancelled. The exposure form that script 03 produces is the shift-share control the design asks for, and its 2000 level is absorbed by the municipality effect. <strong>Decision.</strong> D-2026-10-23-a: no anchoring; D-2026-10-05-p closed by reinterpretation. <strong>Assertion.</strong> none; the procedure was rejected.</p>

@@ -3136,23 +3136,20 @@ vertical-align: -.125em;
 <span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(year, municipality)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 14 × 7
-   municipality         state_abbreviation  year bf_quota ratio feb_families next_june_families
-   &lt;chr&gt;                &lt;chr&gt;              &lt;int&gt;    &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;              &lt;dbl&gt;
- 1 Carmolândia          TO                  2004      211     0            0                127
- 2 Cedral               MA                  2004     1204     0            0                438
- 3 Cujubim              RO                  2004      659     0            0                169
- 4 Feliz Natal          MT                  2004      165     0            0                 83
- 5 Gaúcha do Norte      MT                  2004      197     0            0                 63
- 6 Machadinho D&#39;Oeste   RO                  2004     2622     0            0                608
- 7 Paranaíta            MT                  2004      634     0            0                395
- 8 Parecis              RO                  2004      587     0            0                 28
- 9 Pimenteiras do Oeste RO                  2004      276     0            0                 25
-10 Rondolândia          MT                  2004      273     0            0                  1
-11 Ipiranga do Norte    MT                  2005        0    NA            0                  0
-12 Itanhangá            MT                  2005        0    NA            0                  0
-13 Ipiranga do Norte    MT                  2006       93     0            0                 95
-14 Itanhangá            MT                  2006      100     0            0                 29</code></pre>
+<pre><code># A tibble: 30 × 7
+   municipality        state_abbreviation  year bf_quota ratio feb_families next_june_families
+   &lt;chr&gt;               &lt;chr&gt;              &lt;int&gt;    &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;              &lt;dbl&gt;
+ 1 Alto Paraguai       MT                  2004      881     0            0                540
+ 2 Aurora do Tocantins TO                  2004      444     0            0                  3
+ 3 Carmolândia         TO                  2004      211     0            0                127
+ 4 Cedral              MA                  2004     1204     0            0                438
+ 5 Chapada de Areia    TO                  2004      121     0            0                 80
+ 6 Combinado           TO                  2004      471     0            0                198
+ 7 Couto Magalhães     TO                  2004      455     0            0                233
+ 8 Cujubim             RO                  2004      659     0            0                169
+ 9 Feliz Natal         MT                  2004      165     0            0                 83
+10 Gaúcha do Norte     MT                  2004      197     0            0                 63
+# ℹ 20 more rows</code></pre>
 </div>
 </div>
 <p><strong>Finding.</strong> Zero-family rows exist only in 2004 (98 in June, 100 in February), 2005 (23, 32) and 2006 (4, 4), always with zero transfers, and never afterwards. In the sample the fourteen June rows are ten 2004 municipalities that are zero in February too and paid in June 2005, and Ipiranga do Norte and Itanhangá, installed in 2005, in 2005 (quota 0, ratio NA) and 2006 (quota 93 and 100, ratio 0), paid from 2007. This is the programme’s rollout, so a zero of the payment file is a true zero and the quota ratio is 0, not NA. Positive families with zero transfers occur only in June 2020 (42 rows), the emergency-aid substitution months of D-2026-10-22-b. No value changes. <strong>Decision.</strong> D-2026-10-28-c. <strong>Assertion.</strong> <code>02-social-bf.R</code>, output block (zero families only in <code>BF_ROLLOUT_YEARS</code> and then with zero transfers; positive families with zero transfers only in <code>BF_ZERO_TRANSFER_YEARS</code>).</p>
