@@ -201,7 +201,7 @@ informal_anchor <- function(positions, total_id, formal_ids) {
     group_by(geocode, year) %>%
     summarise(occupied = sum(value[category_id == total_id]),
               formal = sum(value[category_id %in% formal_ids]), .groups = "drop") %>%
-    mutate(informal = if_else(occupied > 0, 100 * (occupied - formal) / occupied, 0))
+    mutate(informal = if_else(occupied > 0, (occupied - formal) / occupied, NA_real_))
 }
 anchors <- bind_rows(informal_anchor(pos_2000, "0", formal_2031),
                      informal_anchor(pos_2010, "0", formal_2031),
@@ -209,8 +209,9 @@ anchors <- bind_rows(informal_anchor(pos_2000, "0", formal_2031),
 anchors %>% filter(geocode %in% sample_geo) %>% arrange(geocode, year)
 anchors %>%
   group_by(year) %>%
-  summarise(municipalities = n(), national = 100 * (1 - sum(formal) / sum(occupied)),
-            p10 = quantile(informal, .1), p50 = median(informal), p90 = quantile(informal, .9),
+  summarise(municipalities = n(), national = 1 - sum(formal) / sum(occupied),
+            p10 = quantile(informal, .1, na.rm = TRUE), p50 = median(informal, na.rm = TRUE),
+            p90 = quantile(informal, .9, na.rm = TRUE),
             zero_occupied = sum(occupied == 0))
 ```
 
@@ -232,8 +233,10 @@ roughly 300 of 502 municipalities and within 0.05 for all but 27 (max
 0.19); the lost extracts stored percentages rounded to two decimals and
 their counts differ by a few persons from today's API cells.
 **Decision.** D-2026-10-07-c: the category sets above; the share is
-stored unrounded, on the 0-100 scale the lost extract used (task 1.9
-rescales).
+stored unrounded. Phase 1 kept the 0-100 scale of the lost extract for
+the equivalence check; from phase 2, step 2.8 (D-2026-10-28-i,
+2026-10-28) the share is on 0-1 at construction, so the chunk above and
+the interim files read 0.55 where the text says 55 percent.
 **Assertion.** `02-social-census.R`, raw-state block (category ids
 present, years, "Total" in the other classifications).
 

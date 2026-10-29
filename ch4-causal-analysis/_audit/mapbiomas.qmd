@@ -100,7 +100,7 @@ in 1989. 2023 carries values.
 ## Q3. Which level-1 classes compose the four transitions the pipeline sums?
 
 What is checked: the land-cover classes (`class_level_1`) found under each
-of the four transitions in the nine states, and the share of `area_forest`
+of the four transitions in the nine states, and the share of `forest_area_km2`
 that the Forest class represents for the biome municipalities in 2020.
 
 ```{r q3}
@@ -112,7 +112,7 @@ nine %>%
 nine %>%
   filter(transition_name %in% c(FOREST_TR, DEFOR_TR),
          as.character(geocode) %in% biome_amz$Geocódigo) %>%
-  mutate(category = if_else(transition_name %in% FOREST_TR, "area_forest", "area_deforestation"),
+  mutate(category = if_else(transition_name %in% FOREST_TR, "forest_area_km2", "deforestation_area_km2"),
          class_1 = if_else(class_level_1 == "1. Forest", "Forest", "other classes")) %>%
   group_by(category, class_1) %>%
   summarise(area_2020_ha = sum(`2020`), .groups = "drop_last") %>%
@@ -124,11 +124,11 @@ nine %>%
 Natural Formation, Non vegetated area, Water and Not Observed; secondary
 vegetation rows also include Farming; the two suppression classes span
 Forest and Non Forest Natural Formation. The surviving script sums all of
-them, so `area_forest` is primary plus secondary vegetation of any class,
-not the Forest class alone, and `area_deforestation` includes suppression
+them, so `forest_area_km2` is primary plus secondary vegetation of any class,
+not the Forest class alone, and `deforestation_area_km2` includes suppression
 of non-forest natural formation. For the biome municipalities in 2020
-the Forest class accounts for 95 percent of `area_forest` and 98 percent of
-`area_deforestation`; the remainder is mostly non-forest natural formation.
+the Forest class accounts for 95 percent of `forest_area_km2` and 98 percent of
+`deforestation_area_km2`; the remainder is mostly non-forest natural formation.
 **Decision.** D-2026-10-06-b reproduces the aggregate as inherited.
 Whether the two aggregates should be restricted to class 1 (Forest) is
 `open`: a definitional question for the author, outside the phase 2 task
@@ -138,13 +138,14 @@ list.
 
 ## Q4. What do the distributions of the two areas look like, and are the tails real?
 
-What is checked: summary statistics and quantiles of `area_deforestation`
-and `area_forest` over the biome municipalities, 1987-2023; the largest
+What is checked: summary statistics and quantiles of `deforestation_area_km2`
+and `forest_area_km2` (km² from phase 2, step 2.8, D-2026-10-28-j; hectares
+before) over the biome municipalities, 1987-2023; the largest
 municipality-years; the yearly total for the biome sample.
 
 ```{r q4}
 defor %>%
-  summarise(across(c(area_deforestation, area_forest),
+  summarise(across(c(deforestation_area_km2, forest_area_km2),
                    list(min = min, p25 = ~ quantile(.x, 0.25), median = median,
                         mean = mean, p75 = ~ quantile(.x, 0.75), p95 = ~ quantile(.x, 0.95),
                         max = max))) %>%
@@ -152,20 +153,20 @@ defor %>%
   pivot_wider(names_from = stat, values_from = value)
 
 defor %>%
-  arrange(desc(area_deforestation)) %>%
-  select(geocode, municipality, state_abbreviation, year, area_deforestation, area_forest) %>%
+  arrange(desc(deforestation_area_km2)) %>%
+  select(geocode, municipality, state_abbreviation, year, deforestation_area_km2, forest_area_km2) %>%
   head(10)
 
-ggplot(defor, aes(x = area_deforestation)) +
+ggplot(defor, aes(x = deforestation_area_km2)) +
   geom_histogram(bins = 60) +
   scale_x_log10() +
-  labs(title = "area_deforestation, biome municipalities 1987-2023 (log scale)",
-       x = "hectares", y = "municipality-years") +
+  labs(title = "deforestation_area_km2, biome municipalities 1987-2023 (log scale)",
+       x = "km2", y = "municipality-years") +
   theme_minimal()
 
 defor %>%
   group_by(year) %>%
-  summarise(total_km2 = sum(area_deforestation) / 100) %>%
+  summarise(total_km2 = sum(deforestation_area_km2)) %>%
   ggplot(aes(x = year, y = total_km2)) +
   geom_col() +
   labs(title = "Deforestation, biome municipalities", x = NULL, y = "km2") +
@@ -190,8 +191,8 @@ values shown on the MapBiomas platform.
 ```{r q5}
 defor %>%
   filter(municipality %in% c("Acrelândia", "Paragominas")) %>%
-  select(municipality, year, area_deforestation, area_forest) %>%
-  pivot_wider(names_from = municipality, values_from = c(area_deforestation, area_forest)) %>%
+  select(municipality, year, deforestation_area_km2, forest_area_km2) %>%
+  pivot_wider(names_from = municipality, values_from = c(deforestation_area_km2, forest_area_km2)) %>%
   print(n = 40)
 ```
 
@@ -208,7 +209,7 @@ so that a reader can repeat it.
 defor %>%
   filter(geocode == "1504752") %>%
   summarise(years = n(), first_year = min(year), last_year = max(year),
-            years_with_forest = sum(area_forest > 0))
+            years_with_forest = sum(forest_area_km2 > 0))
 ```
 
 **Finding.** Yes: MapBiomas uses the current municipal mesh for the whole
@@ -256,10 +257,10 @@ tibble(
   expected = 503 * length(1987:2023),
   geocodes = n_distinct(defor$geocode),
   duplicate_keys = sum(duplicated(paste(defor$geocode, defor$year))),
-  na_area_forest = sum(is.na(defor$area_forest)),
-  na_area_deforestation = sum(is.na(defor$area_deforestation)),
-  na_rate = sum(is.na(defor$deforestation_rate)),
-  zero_forest_rows = sum(defor$area_forest == 0),
+  na_forest_area = sum(is.na(defor$forest_area_km2)),
+  na_deforestation_area = sum(is.na(defor$deforestation_area_km2)),
+  na_rate = sum(is.na(defor$deforestation_forest_rate)),
+  zero_forest_rows = sum(defor$forest_area_km2 == 0),
   na_z = sum(is.na(defor$deforestation_z))
 )
 ```
@@ -267,6 +268,79 @@ tibble(
 **Finding.** 18,611 rows, 503 municipalities times 37 years, with unique
 keys; no missing area; the rate is missing only where forest is zero (no
 such row in this sample); the z-score is defined for every row.
-**Decision.** none required. The rate is on 0-100 with the contemporaneous
-forest area as denominator (D-2026-10-06-d; task 1.9 rescales it).
+**Decision.** none required. The rate is the share of the same year's
+forest stock cleared in the year, on 0-1 from phase 2, step 2.8
+(D-2026-10-06-d; D-2026-10-28-h, with Q9 on the denominator timing);
+the areas leave this script in km² under their panel names
+(D-2026-10-28-j, superseding the conversion at the join).
 **Assertion.** `01-env-deforestation.R`, output block.
+
+## Q9. Does the denominator timing of the rate matter: the same year's stock or the previous year's? (phase 2, step 2.8, 2026-10-28)
+
+What is checked: `deforestation_forest_rate` divides the year's clearing
+by the same year's forest stock (D-2026-10-06-d), the stock after the
+clearing, so it is clearing over what remains; the alternative divides
+by the previous year's stock, the forest standing when the year began.
+Task 1.9 asks that the timing be recorded; before recording it, the two
+quotients are compared over the panel years, with the question whether
+the lagged stock is a closed balance (forest of t-1 = forest of t +
+clearing of t), which would make the lagged quotient a share bounded by
+one by construction.
+
+```{r q9}
+rates <- defor %>%
+  arrange(geocode, year) %>%
+  group_by(geocode) %>%
+  mutate(forest_lag_km2 = lag(forest_area_km2),
+         rate_contemp   = deforestation_forest_rate,
+         rate_lagged    = deforestation_area_km2 / forest_lag_km2,
+         stock_gap      = (forest_area_km2 + deforestation_area_km2) /
+           forest_lag_km2 - 1) %>%
+  ungroup() %>%
+  filter(year %in% 2000:2020)
+rates %>%
+  summarise(cells = n(),
+            max_contemp = max(rate_contemp), max_lagged = max(rate_lagged),
+            p50_contemp = median(rate_contemp), p50_lagged = median(rate_lagged),
+            over_one_contemp = sum(rate_contemp > 1),
+            over_one_lagged = sum(rate_lagged > 1),
+            pearson = cor(rate_contemp, rate_lagged),
+            spearman = cor(rate_contemp, rate_lagged, method = "spearman"))
+rel <- rates %>%
+  mutate(rel = rate_contemp / rate_lagged - 1) %>%
+  filter(is.finite(rel))
+quantile(rel$rel, c(.01, .1, .5, .9, .99))
+rates %>%
+  summarise(net_regrowth_cells = sum(forest_area_km2 > forest_lag_km2),
+            stock_gap_over_5pct = sum(abs(stock_gap) > 0.05))
+rel %>%
+  arrange(desc(abs(rel))) %>%
+  transmute(municipality, state_abbreviation, year,
+            forest_lag_km2 = round(forest_lag_km2),
+            forest_area_km2 = round(forest_area_km2),
+            deforestation_area_km2 = round(deforestation_area_km2, 1),
+            rate_contemp = round(rate_contemp, 3),
+            rate_lagged = round(rate_lagged, 3), rel = round(rel, 3)) %>%
+  head(8)
+```
+
+**Finding.** Over the 10,563 municipality-years of 2000-2020 the two
+quotients rank the cells identically (Spearman 0.9999, Pearson 0.997):
+the medians coincide at 0.013, the relative gap between them is 0.4
+percent at the median and 11 percent at the 99th percentile, and
+neither exceeds one anywhere (maxima 0.367 and 0.270). The lagged stock
+is not a closed balance: the forest area rises on the previous year in
+2,868 cells, because the aggregate includes secondary vegetation, which
+regrows, and the start-of-year stock reconstructed as forest plus
+clearing differs from the previous year's stock by more than 5 percent
+in 450 cells. The largest divergences are Maranhão municipalities in
+2000 with heavy secondary-vegetation turnover (Governador Nunes Freire,
+Junco do Maranhão), not frontier clearing. So a bounded "stock at risk"
+is not available from these aggregates, the lagged quotient buys no
+property the contemporaneous one lacks, and the choice does not move
+the ordering of municipality-years.
+**Decision.** D-2026-10-28-h: the author kept the contemporaneous
+denominator (2026-10-28); the codebook records the timing. A change,
+should a design need the start-of-year stock, is a definition change
+with its own entry.
+**Assertion.** `01-env-deforestation.R`, output block (the rate on 0-1).

@@ -179,7 +179,7 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `ppcdam_ever_full` | `enf_ppcdam_ever_dum` | confirmed: 0/1, ever listed over the full panel |
 | `forest_area_km2` | `env_forest_area_km2` |  |
 | `deforestation_area_km2` | `env_defor_area_km2` |  |
-| `deforestation_forest_rate` | `env_defor_forest_share` | deforested area over forest stock |
+| `deforestation_forest_rate` | `env_defor_forest_share` | deforested area over the same year's forest stock (contemporaneous denominator, D-2026-10-06-d, kept on the evidence of `_audit/mapbiomas.qmd` Q9); on 0-1 from phase 2, step 2.8 (D-2026-10-28-h) |
 | `defor_norm_ref0003` | `env_defor_area_z_bl0003` | within-municipality z, 2000–2003 baseline |
 | `defor_norm_ref0007` | `env_defor_area_z_bl0007` | within-municipality z, 2000–2007 baseline |
 | `log_forest_exposure` | `env_forest_exposure_log` |  |
@@ -207,7 +207,7 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `emp_share_agri_high_workers` | `lab_emp_formal_highwage_agri_share` | same |
 | `emp_share_agri_workers` | `lab_emp_formal_agri_share` |  |
 | `pea` | `lab_pea_n` |  |
-| `informal` | `lab_informal_share` | confirmed 2026-10-05: IBGE census informality share of the employed population, stored on a 0-100 scale and linearly interpolated between the 2000, 2010 and 2022 censuses (`02-data-cleaning-populational-social.R`); rescaled to 0-1 under task 1.9 |
+| `informal` | `lab_informal_share` | confirmed 2026-10-05: IBGE census informality share of the employed population, stored on a 0-100 scale and linearly interpolated between the 2000, 2010 and 2022 censuses (`02-data-cleaning-populational-social.R`); on 0-1 from phase 2, step 2.8 (D-2026-10-28-i) |
 | `population` | `dem_pop_n` |  |
 | `gdp_brl` | `eco_gdp_brl` | nominal |
 | `gdp_per_capita` | `eco_gdp_pc_brl` | nominal |

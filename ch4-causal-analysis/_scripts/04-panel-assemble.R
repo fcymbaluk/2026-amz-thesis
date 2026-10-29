@@ -35,8 +35,9 @@
 #   D-2026-10-11-b  ppcdam_list 0 where the list does not cover the
 #                   municipality-year; listed municipalities outside the
 #                   biome sample fall out of the join.
-#   D-2026-10-11-c  Forest and deforestation areas converted from hectares
-#                   to km2 at the join.
+#   D-2026-10-11-c  Superseded by D-2026-10-28-j (phase 2, step 2.8): the
+#                   areas arrive in km2 and the rate on 0-1 from script 01
+#                   and are carried as they are.
 #   D-2026-10-11-d  Price indices z-scored on the pooled panel; level and
 #                   lag share one centre and spread; the cattle lag is
 #                   built from the z-score; flagged for the storage audit
@@ -71,9 +72,6 @@
 #                   2.7), the mesh of MapBiomas Collection 9: no forest
 #                   area exceeds the municipal area.
 #
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.9  Areas arrive in hectares from script 01 and are converted
-#             here; the conversion moves upstream with the unit pattern.
 # RUN ORDER After every 01, 02 and 03 script. Script 05 reads the output.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
@@ -81,11 +79,24 @@ library(tidyverse)  # magrittr %>% throughout, never the native pipe
 # ---- Constants --------------------------------------------------------------
 PANEL_YEARS   <- 2000:2020                                    # D-2026-10-11-a
 BF_REF_MONTH  <- 6L                                           # D-2026-10-05-a
-HA_PER_KM2    <- 100                                          # D-2026-10-11-c
 ELEC_VARS     <- c("elec_enc", "elec_mov", "elec_winner_share",
                    "elec_n_candidates", "elec_winner_party",
                    "elec_winner_id", "elec_competitive",
                    "elec_uncontested")                        # D-2026-10-22-d
+# Unit pattern (phase 2, step 2.8; D-2026-10-28-h, -i): every share and
+# rate in the panel lies on 0-1, no percent storage.
+SHARE_RATE_COLS <- c("deforestation_forest_rate", "informal",
+                     "emp_pia_rate_total", "emp_pia_rate_agric",
+                     "emp_pia_rate_low", "emp_pia_rate_mid",
+                     "emp_pia_rate_high", "emp_share_low_workers",
+                     "emp_share_mid_workers", "emp_share_high_workers",
+                     "emp_share_agri_low_workers",
+                     "emp_share_agri_mid_workers",
+                     "emp_share_agri_high_workers", "emp_share_agri_workers",
+                     "elec_mov", "elec_winner_share",
+                     "crop_soy_munic_area_share", "crop_corn_munic_area_share",
+                     "crop_rice_munic_area_share",
+                     "crop_cotton_munic_area_share")
 PPCDAM_FIRST_LISTING_YEAR <- 2008L                            # D-2026-10-11-b
 # Mojuí dos Campos included, dropped in script 05 (D-2026-10-05-l); update
 # at task 1.1.
@@ -221,16 +232,12 @@ stopifnot(
 )
 
 # ---- Transform --------------------------------------------------------------
-# Hectares to km2 so every area in the panel shares one unit
-# (D-2026-10-11-c). deforestation_rate is a ratio and is renamed only.
+# The areas arrive in km2 and the rate on 0-1 from script 01
+# (D-2026-10-28-j, -h; phase 2, step 2.8).
 deforestation <- mapbiomas %>%
   filter(year %in% PANEL_YEARS) %>%
-  transmute(
-    geocode, municipality, state, state_abbreviation, year,
-    forest_area_km2           = area_forest / HA_PER_KM2,
-    deforestation_area_km2    = area_deforestation / HA_PER_KM2,
-    deforestation_forest_rate = deforestation_rate
-  )
+  select(geocode, municipality, state, state_abbreviation, year,
+         forest_area_km2, deforestation_area_km2, deforestation_forest_rate)
 
 # Only the columns the legacy join carried forward (D-2026-10-11-g); June
 # is the reference month (D-2026-10-05-a).
@@ -339,6 +346,9 @@ stopifnot(
   all(panel$ppcdam_list[panel$year < PPCDAM_FIRST_LISTING_YEAR] == 0L),
   sum(panel$forest_area_km2 > panel$munic_area_km2, na.rm = TRUE) ==
     N_FOREST_OVER_AREA_EXPECTED,
+  # Unit pattern (phase 2, step 2.8): every share and rate on 0-1.
+  all(map_lgl(panel[SHARE_RATE_COLS],
+              ~ all(.x >= 0 & .x <= 1, na.rm = TRUE))),
   all(abs(map_dbl(panel[z_cols], mean, na.rm = TRUE)) < Z_TOL),
   all(abs(map_dbl(panel[z_cols], sd, na.rm = TRUE) - 1) < Z_TOL),
   all(is.na(panel$price_index_cattle_lag1_z[first_year])),

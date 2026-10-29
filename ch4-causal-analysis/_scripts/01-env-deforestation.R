@@ -1,6 +1,6 @@
 # 01-env-deforestation.R
 # PURPOSE   Build the municipality-year MapBiomas forest-area and deforestation
-#           panel (hectares) for the Amazon-biome municipalities, 1987-2023,
+#           panel (km2) for the Amazon-biome municipalities, 1987-2023,
 #           with the biome attributes from the IBGE predominant-biome list.
 #
 # INPUTS    _data/raw/mapbiomas/mapbiomas_munic.xlsx
@@ -23,13 +23,16 @@
 #   D-2026-10-06-c  Sample: nine Legal Amazon states, then IBGE predominant
 #                   biome Amazônia (503 municipalities, Mojuí dos Campos
 #                   included).
-#   D-2026-10-06-d  deforestation_rate = deforestation / contemporaneous
-#                   forest x 100.
+#   D-2026-10-06-d  deforestation_forest_rate = deforestation / contemporaneous
+#                   forest; on 0-1 from phase 2, step 2.8 (D-2026-10-28-h),
+#                   the denominator timing confirmed on mapbiomas.qmd Q9.
 #   D-2026-10-06-e  Municipality mean, sd and z-score over the full window
 #                   stored.
+#   D-2026-10-28-j  Areas converted from hectares to km2 here, at
+#                   construction, and the three columns carry their panel
+#                   names (phase 2, step 2.8; supersedes D-2026-10-11-c).
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.9  deforestation_rate is stored on 0-100; rescaled to 0-1 in phase 2.
 #   Task 1.1  The biome filter becomes biome_amazon / legal_amazon flags in
 #             phase 2 step 2.9; the N_MUNIC_* constants update then.
 # RUN ORDER First script; no pipeline inputs. Feeds 04-data-panel.R.
@@ -49,7 +52,7 @@ AMZ_STATES <- c("Acre", "Amapá", "Amazonas", "Maranhão",      # D-2026-10-06-c
                 "Mato Grosso", "Pará", "Rondônia", "Roraima",
                 "Tocantins")
 BIOME_KEEP             <- "Amazônia"                          # D-2026-10-06-c
-RATE_SCALE             <- 100                    # D-2026-10-06-d; task 1.9
+HA_PER_KM2             <- 100                    # D-2026-10-28-j
 N_MUNIC_BR_EXPECTED     <- 5571L
 N_MUNIC_STATES_EXPECTED <- 808L
 # Mojuí dos Campos included, dropped downstream (D-2026-10-05-l); update at
@@ -145,18 +148,25 @@ deforestation_states <- mapbiomas_raw %>%
     values_fill = 0,
     names_prefix = "area_"
   ) %>%
-  mutate(
-    deforestation_rate = if_else(
-      area_forest > 0,
-      (area_deforestation / area_forest) * RATE_SCALE,
+  # ---- Fix (D-2026-10-28-j, -h; phase 2, step 2.8) -------------------------
+  # Hectares to km2 at construction, and the rate as a plain quotient on
+  # 0-1: the share of the same year's forest stock cleared in the year
+  # (D-2026-10-06-d; mapbiomas.qmd Q9 on the denominator timing).
+  transmute(
+    state, municipality, geocode, year,
+    forest_area_km2           = area_forest / HA_PER_KM2,
+    deforestation_area_km2    = area_deforestation / HA_PER_KM2,
+    deforestation_forest_rate = if_else(
+      forest_area_km2 > 0,
+      deforestation_area_km2 / forest_area_km2,
       NA_real_
     )
   ) %>%
   group_by(geocode) %>%
   mutate(
-    deforestation_mean = mean(area_deforestation, na.rm = TRUE),
-    deforestation_sd   = sd(area_deforestation, na.rm = TRUE),
-    deforestation_z    = (area_deforestation - deforestation_mean) /
+    deforestation_mean = mean(deforestation_area_km2, na.rm = TRUE),
+    deforestation_sd   = sd(deforestation_area_km2, na.rm = TRUE),
+    deforestation_z    = (deforestation_area_km2 - deforestation_mean) /
       deforestation_sd
   ) %>%
   ungroup()
@@ -172,7 +182,8 @@ deforestation_amz <- deforestation_states %>%
   ) %>%
   filter(biome == BIOME_KEEP) %>%
   select(geocode, municipality, state, state_abbreviation, biome, year,
-         area_forest, area_deforestation, deforestation_rate, deforestation_z,
+         forest_area_km2, deforestation_area_km2, deforestation_forest_rate,
+         deforestation_z,
          deforestation_mean, deforestation_sd) %>%
   arrange(geocode, year)
 
@@ -183,17 +194,20 @@ stopifnot(
   n_distinct(deforestation_amz$geocode) == N_MUNIC_BIOME_EXPECTED,
   !anyDuplicated(paste(deforestation_amz$geocode, deforestation_amz$year)),
   all(deforestation_amz$biome == BIOME_KEEP),
-  !anyNA(deforestation_amz$area_forest),
-  !anyNA(deforestation_amz$area_deforestation),
-  all(deforestation_amz$area_forest >= 0),
-  all(deforestation_amz$area_deforestation >= 0),
-  identical(is.na(deforestation_amz$deforestation_rate),
-            deforestation_amz$area_forest == 0),
+  !anyNA(deforestation_amz$forest_area_km2),
+  !anyNA(deforestation_amz$deforestation_area_km2),
+  all(deforestation_amz$forest_area_km2 >= 0),
+  all(deforestation_amz$deforestation_area_km2 >= 0),
+  identical(is.na(deforestation_amz$deforestation_forest_rate),
+            deforestation_amz$forest_area_km2 == 0),
+  # D-2026-10-28-h: a share on 0-1 (mapbiomas.qmd Q9).
+  all(deforestation_amz$deforestation_forest_rate >= 0 &
+        deforestation_amz$deforestation_forest_rate <= 1, na.rm = TRUE),
   is.character(deforestation_amz$geocode),
   is.integer(deforestation_amz$year),
-  is.double(deforestation_amz$area_forest),
-  is.double(deforestation_amz$area_deforestation),
-  is.double(deforestation_amz$deforestation_rate)
+  is.double(deforestation_amz$forest_area_km2),
+  is.double(deforestation_amz$deforestation_area_km2),
+  is.double(deforestation_amz$deforestation_forest_rate)
 )
 
 # ---- Write ------------------------------------------------------------------

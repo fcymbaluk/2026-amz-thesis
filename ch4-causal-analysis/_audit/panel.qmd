@@ -136,9 +136,10 @@ are recoded to 0, so the indicator is never NA and is 0 before 2008.
 **Assertion.** `04-panel-assemble.R`, raw-state block (four outside
 geocodes, values in {0, 1}) and output block (no NA, zero before 2008).
 
-## Q3. Are the areas on one unit after the hectare-to-km² conversion?
+## Q3. Are the areas on one unit?
 
-What is checked: the MapBiomas forest area, converted from hectares, as a
+What is checked: the MapBiomas forest area (in km² from script 01 since
+phase 2, step 2.8, D-2026-10-28-j; converted at the join before) as a
 share of the IBGE municipal area (the 2025 release at phase 1; the 2022
 release from phase 2, step 2.7, D-2026-10-28-g); any share above 1 is a
 unit or boundary problem. The second chunk compares the total area
@@ -215,8 +216,9 @@ boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã's
 forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is
 class composition (D-2026-10-06-b): land cleared in year t is "Antrópico"
 from t+1, so it leaves both classes.
-**Decision.** D-2026-10-11-c (conversion at the join; moves upstream with
-task 1.9); D-2026-10-28-g (the 2022 release, the mesh of Collection 9,
+**Decision.** D-2026-10-28-j (phase 2, step 2.8: hectares to km² at
+construction in script 01, the interim columns under their panel names;
+supersedes D-2026-10-11-c, the conversion at the join); D-2026-10-28-g (the 2022 release, the mesh of Collection 9,
 superseding the vintage of D-2026-10-10-f).
 **Assertion.** `04-panel-assemble.R`, output block
 (`N_FOREST_OVER_AREA_EXPECTED` = 0).
@@ -447,3 +449,43 @@ by the counts, rates and shares; 111 NA cells of `pia`, the NA set of
 `pea`; agricultural shares NA iff absent or zero agricultural bonds;
 `INSTALL_RULE_COLS` NA before the installation year and observed from
 it).
+
+## Q10. Is every share and rate on 0-1, and does each column's range fit its codebook unit? (phase 2, step 2.8, 2026-10-28)
+
+What is checked: the range of every numeric column of the final panel
+against the `unit` the codebook records for it (filled for every row at
+this step, D-2026-10-28-k); any column whose unit says `share` or `rate`
+must lie on 0-1. Before the step, `deforestation_forest_rate` and
+`informal` were on 0-100 (D-2026-10-06-d, D-2026-10-07-c) while every
+other share and rate was on 0-1.
+
+```{r q10-units}
+final <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
+codebook <- read_csv("_data/aux/codebook.csv", show_col_types = FALSE)
+ranges <- map_dfr(names(final), function(v) {
+  x <- final[[v]]
+  tibble(variable = v, class = class(x)[1],
+         min = if (is.numeric(x)) min(x, na.rm = TRUE) else NA_real_,
+         max = if (is.numeric(x)) max(x, na.rm = TRUE) else NA_real_)
+}) %>%
+  left_join(codebook %>% select(variable, unit), by = "variable") %>%
+  mutate(unit_short = str_replace(unit, " \\(.*$", ""),
+         bounded = unit_short %in% c("share", "rate"),
+         in_bounds = !bounded | (min >= 0 & max <= 1))
+ranges %>% count(unit_short, bounded)
+ranges %>% filter(bounded) %>%
+  transmute(variable, min = signif(min, 3), max = signif(max, 3), in_bounds)
+ranges %>% filter(is.na(unit) | !in_bounds)
+```
+
+**Finding.** Every column of the final panel has a codebook unit, and
+the 20 columns whose unit is a share or a rate all lie on 0-1:
+`deforestation_forest_rate` runs 0 to 0.367 and `informal` 0.286 to
+0.984 after the rescale, beside the employment rates and shares, the
+crop shares and the two electoral shares that were already on 0-1. No
+column is on a percent scale.
+**Decision.** D-2026-10-28-h, D-2026-10-28-i (the two rescales at
+construction), D-2026-10-28-k (the unit column).
+**Assertion.** `04-panel-assemble.R`, output block (`SHARE_RATE_COLS`
+on 0-1); `01-env-deforestation.R` and `02-social-census.R`, output
+blocks (the rate and the informality share on 0-1).

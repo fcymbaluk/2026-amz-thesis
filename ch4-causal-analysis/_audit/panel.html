@@ -2213,13 +2213,14 @@ vertical-align: -.125em;
   <ul>
   <li><a href="#q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel" id="toc-q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel" class="nav-link active" data-scroll-target="#q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel">Q1. Which sources cover which municipality-years of the 503 × 21 panel?</a></li>
   <li><a href="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" id="toc-q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" class="nav-link" data-scroll-target="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent">Q2. Which PPCDAm municipalities fall outside the biome sample, and how is the indicator coded where the list is silent?</a></li>
-  <li><a href="#q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" id="toc-q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" class="nav-link" data-scroll-target="#q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion">Q3. Are the areas on one unit after the hectare-to-km² conversion?</a></li>
+  <li><a href="#q3.-are-the-areas-on-one-unit" id="toc-q3.-are-the-areas-on-one-unit" class="nav-link" data-scroll-target="#q3.-are-the-areas-on-one-unit">Q3. Are the areas on one unit?</a></li>
   <li><a href="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" id="toc-q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="nav-link" data-scroll-target="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</a></li>
   <li><a href="#q5.-are-the-electoral-columns-stored-on-the-governing-years" id="toc-q5.-are-the-electoral-columns-stored-on-the-governing-years" class="nav-link" data-scroll-target="#q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</a></li>
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
   <li><a href="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags" id="toc-q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="nav-link" data-scroll-target="#q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</a></li>
   <li><a href="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" id="toc-q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</a></li>
+  <li><a href="#q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28" id="toc-q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28" class="nav-link" data-scroll-target="#q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28">Q10. Is every share and rate on 0-1, and does each column’s range fit its codebook unit? (phase 2, step 2.8, 2026-10-28)</a></li>
   </ul>
 </nav>
 </div>
@@ -2401,9 +2402,9 @@ vertical-align: -.125em;
 </div>
 <p><strong>Finding.</strong> Four listed municipalities are not in the IBGE Amazônia predominant-biome list and leave the panel at the join: Grajaú (MA, listed from 2011) and three Mato Grosso municipalities listed only in 2023-2024 (Comodoro, Paranatinga, Ribeirão Cascalheira). Grajaú is the one ever-listed municipality that the Legal Amazon extension (task 1.1) adds within the 2004-2020 window. The list file carries 0 for 2004-2007 and the join leaves NA for 2000-2003 and for every never-listed municipality; both are recoded to 0, so the indicator is never NA and is 0 before 2008. <strong>Decision.</strong> D-2026-10-11-b. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (four outside geocodes, values in {0, 1}) and output block (no NA, zero before 2008).</p>
 </section>
-<section id="q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion" class="level2">
-<h2 class="anchored" data-anchor-id="q3.-are-the-areas-on-one-unit-after-the-hectare-to-km²-conversion">Q3. Are the areas on one unit after the hectare-to-km² conversion?</h2>
-<p>What is checked: the MapBiomas forest area, converted from hectares, as a share of the IBGE municipal area (the 2025 release at phase 1; the 2022 release from phase 2, step 2.7, D-2026-10-28-g); any share above 1 is a unit or boundary problem. The second chunk compares the total area MapBiomas Collection 9 maps for each municipality (all transition classes summed, constant across years) with the IBGE area in the panel, to separate the two; the third shows the 2025 release for the three municipalities of the Boa Esperança do Norte split.</p>
+<section id="q3.-are-the-areas-on-one-unit" class="level2">
+<h2 class="anchored" data-anchor-id="q3.-are-the-areas-on-one-unit">Q3. Are the areas on one unit?</h2>
+<p>What is checked: the MapBiomas forest area (in km² from script 01 since phase 2, step 2.8, D-2026-10-28-j; converted at the join before) as a share of the IBGE municipal area (the 2025 release at phase 1; the 2022 release from phase 2, step 2.7, D-2026-10-28-g); any share above 1 is a unit or boundary problem. The second chunk compares the total area MapBiomas Collection 9 maps for each municipality (all transition classes summed, constant across years) with the IBGE area in the panel, to separate the two; the third shows the 2025 release for the three municipalities of the Boa Esperança do Norte split.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2493,7 +2494,7 @@ vertical-align: -.125em;
 3 5107925 Sorriso                              8455. TRUE        </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> With the 2022 release (phase 2, step 2.7, 2026-10-28) the forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year, and the mapped total agrees with the area within 1 percent for 486 of the 503 municipalities; the 7 that differ by more than 2 percent are coastal municipalities of Maranhão and Pará where MapBiomas maps less than the area in either release (pam_ppm.qmd Q7). At phase 1, with the 2025 release, four municipality-years broke the bound: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the municipal area by up to 18 percent. That was a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas, from the biome list and from the 2022 table. Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory, so with the post-split area its cattle density and crop shares were inflated by 43 percent in every year; the 2025 area agreed with the mapped total within 1 percent for 459 municipalities and differed by more than 2 percent in 20, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-11-c (conversion at the join; moves upstream with task 1.9); D-2026-10-28-g (the 2022 release, the mesh of Collection 9, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
+<p><strong>Finding.</strong> With the 2022 release (phase 2, step 2.7, 2026-10-28) the forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year, and the mapped total agrees with the area within 1 percent for 486 of the 503 municipalities; the 7 that differ by more than 2 percent are coastal municipalities of Maranhão and Pará where MapBiomas maps less than the area in either release (pam_ppm.qmd Q7). At phase 1, with the 2025 release, four municipality-years broke the bound: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the municipal area by up to 18 percent. That was a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas, from the biome list and from the 2022 table. Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory, so with the post-split area its cattle density and crop shares were inflated by 43 percent in every year; the 2025 area agreed with the mapped total within 1 percent for 459 municipalities and differed by more than 2 percent in 20, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-28-j (phase 2, step 2.8: hectares to km² at construction in script 01, the interim columns under their panel names; supersedes D-2026-10-11-c, the conversion at the join); D-2026-10-28-g (the 2022 release, the mesh of Collection 9, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
 </section>
 <section id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</h2>
@@ -2856,6 +2857,84 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> <code>emp_workers_n</code> and <code>emp_agri_workers_n</code> are NA in the 64 municipality-years absent from the RAIS export, 30 before installation and 34 reporting gaps, the same cells where every <code>emp_*</code> rate and share is NA; <code>pia</code>, joined from the census file and not from the RAIS rows, is NA where <code>pea</code> is: before 2010 for the nine municipalities without a 2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in the absent cells and where <code>emp_agri_workers_n</code> is 0, nowhere else. For the ten lookup municipalities every source starts in the installation year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014 for Mojuí dos Campos, whose code enters the MDS files a year late) and is NA before it. <strong>Decision.</strong> D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (64 NA cells shared by the counts, rates and shares; 111 NA cells of <code>pia</code>, the NA set of <code>pea</code>; agricultural shares NA iff absent or zero agricultural bonds; <code>INSTALL_RULE_COLS</code> NA before the installation year and observed from it).</p>
+</section>
+<section id="q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28" class="level2">
+<h2 class="anchored" data-anchor-id="q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28">Q10. Is every share and rate on 0-1, and does each column’s range fit its codebook unit? (phase 2, step 2.8, 2026-10-28)</h2>
+<p>What is checked: the range of every numeric column of the final panel against the <code>unit</code> the codebook records for it (filled for every row at this step, D-2026-10-28-k); any column whose unit says <code>share</code> or <code>rate</code> must lie on 0-1. Before the step, <code>deforestation_forest_rate</code> and <code>informal</code> were on 0-100 (D-2026-10-06-d, D-2026-10-07-c) while every other share and rate was on 0-1.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/final/panel_amz_2000_2020_final.rds&quot;</span>)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>codebook <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/codebook.csv&quot;</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>ranges <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">names</span>(final), <span class="cf">function</span>(v) {</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> final[[v]]</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">variable =</span> v, <span class="at">class =</span> <span class="fu">class</span>(x)[<span class="dv">1</span>],</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">min =</span> <span class="cf">if</span> (<span class="fu">is.numeric</span>(x)) <span class="fu">min</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="cf">else</span> <span class="cn">NA_real_</span>,</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">max =</span> <span class="cf">if</span> (<span class="fu">is.numeric</span>(x)) <span class="fu">max</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="cf">else</span> <span class="cn">NA_real_</span>)</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">%&gt;%</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(codebook <span class="sc">%&gt;%</span> <span class="fu">select</span>(variable, unit), <span class="at">by =</span> <span class="st">&quot;variable&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">unit_short =</span> <span class="fu">str_replace</span>(unit, <span class="st">&quot; </span><span class="sc">\\</span><span class="st">(.*$&quot;</span>, <span class="st">&quot;&quot;</span>),</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">bounded =</span> unit_short <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;share&quot;</span>, <span class="st">&quot;rate&quot;</span>),</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">in_bounds =</span> <span class="sc">!</span>bounded <span class="sc">|</span> (min <span class="sc">&gt;=</span> <span class="dv">0</span> <span class="sc">&amp;</span> max <span class="sc">&lt;=</span> <span class="dv">1</span>))</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>ranges <span class="sc">%&gt;%</span> <span class="fu">count</span>(unit_short, bounded)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21 × 3
+   unit_short              bounded     n
+   &lt;chr&gt;                   &lt;lgl&gt;   &lt;int&gt;
+ 1 0/1                     FALSE       9
+ 2 BRL                     FALSE       2
+ 3 BRL 2024                FALSE       2
+ 4 BRL 2024 per PEA member FALSE       1
+ 5 BRL 2024 per capita     FALSE       2
+ 6 BRL 2024 per family     FALSE       1
+ 7 BRL 2024 per quota slot FALSE       1
+ 8 SD                      FALSE       9
+ 9 TRUE/FALSE              FALSE       3
+10 count                   FALSE       9
+# ℹ 11 more rows</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>ranges <span class="sc">%&gt;%</span> <span class="fu">filter</span>(bounded) <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(variable, <span class="at">min =</span> <span class="fu">signif</span>(min, <span class="dv">3</span>), <span class="at">max =</span> <span class="fu">signif</span>(max, <span class="dv">3</span>), in_bounds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 4
+   variable                          min    max in_bounds
+   &lt;chr&gt;                           &lt;dbl&gt;  &lt;dbl&gt; &lt;lgl&gt;    
+ 1 deforestation_forest_rate    0        0.367  TRUE     
+ 2 emp_pia_rate_total           0.000104 0.858  TRUE     
+ 3 emp_pia_rate_agric           0        0.173  TRUE     
+ 4 emp_pia_rate_low             0        0.253  TRUE     
+ 5 emp_pia_rate_mid             0        0.672  TRUE     
+ 6 emp_pia_rate_high            0        0.162  TRUE     
+ 7 emp_share_low_workers        0        1      TRUE     
+ 8 emp_share_mid_workers        0        1      TRUE     
+ 9 emp_share_high_workers       0        1      TRUE     
+10 emp_share_agri_low_workers   0        1      TRUE     
+11 emp_share_agri_mid_workers   0        1      TRUE     
+12 emp_share_agri_high_workers  0        1      TRUE     
+13 emp_share_agri_workers       0        1      TRUE     
+14 informal                     0.286    0.984  TRUE     
+15 elec_mov                     0        0.994  TRUE     
+16 elec_winner_share            0.202    1      TRUE     
+17 crop_soy_munic_area_share    0        0.658  TRUE     
+18 crop_corn_munic_area_share   0        0.438  TRUE     
+19 crop_rice_munic_area_share   0        0.241  TRUE     
+20 crop_cotton_munic_area_share 0        0.0807 TRUE     </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>ranges <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(unit) <span class="sc">|</span> <span class="sc">!</span>in_bounds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 8
+# ℹ 8 variables: variable &lt;chr&gt;, class &lt;chr&gt;, min &lt;dbl&gt;, max &lt;dbl&gt;, unit &lt;chr&gt;, unit_short &lt;chr&gt;,
+#   bounded &lt;lgl&gt;, in_bounds &lt;lgl&gt;</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Every column of the final panel has a codebook unit, and the 20 columns whose unit is a share or a rate all lie on 0-1: <code>deforestation_forest_rate</code> runs 0 to 0.367 and <code>informal</code> 0.286 to 0.984 after the rescale, beside the employment rates and shares, the crop shares and the two electoral shares that were already on 0-1. No column is on a percent scale. <strong>Decision.</strong> D-2026-10-28-h, D-2026-10-28-i (the two rescales at construction), D-2026-10-28-k (the unit column). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>SHARE_RATE_COLS</code> on 0-1); <code>01-env-deforestation.R</code> and <code>02-social-census.R</code>, output blocks (the rate and the informality share on 0-1).</p>
 </section>
 
 </main>

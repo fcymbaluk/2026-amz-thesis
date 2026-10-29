@@ -65,7 +65,7 @@ CONTROL_LABELS <- c(
 )
 OUTCOME_LABELS <- c(
   y_log_km2 = "log(1 + cleared km2)",
-  y_rate    = "Clearing, percent of remaining forest",
+  y_rate    = "Clearing, share of remaining forest",
   y_norm    = "Normalized clearing (z on the own 2000-07 reference)"
 )
 LD_LABELS <- c(

@@ -33,7 +33,8 @@
 #   D-2026-10-07-b  PEA anchors: Tabela 616 (15+) for 2000 and 2010,
 #                   Tabela 6580 labour force (14+) for 2022.
 #   D-2026-10-07-c  Informality = share of the occupied population outside
-#                   the formal categories (Tabelas 2031 and 10261), unrounded.
+#                   the formal categories (Tabelas 2031 and 10261), unrounded;
+#                   on 0-1 from phase 2, step 2.8 (D-2026-10-28-i).
 #   D-2026-10-07-f  PIA extrapolated to 1999 and 2023-2024 with the slope
 #                   of the adjacent census decade; the ends of the anchor
 #                   range only (D-2026-10-23-d).
@@ -48,8 +49,6 @@
 #                   per municipality and census year (phase 2, step 2.6);
 #                   the interpolation of the annual series is unchanged.
 #
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 1.9  informal is stored on 0-100; rescaled to 0-1 in phase 2.
 # RUN ORDER First of the 02 scripts; no pipeline inputs. Feeds
 #           02-social-rais.R (pia) and 02-social-bf.R (pea).
 
@@ -84,7 +83,6 @@ INFORMAL_FORMAL_IDS_2031 <- c("96167", "96168", "96170")
 INFORMAL_TOTAL_ID_10261  <- "96165"
 INFORMAL_FORMAL_IDS_10261 <- c("31722", "79367", "79369", "79370", "79372",
                                "79375", "45934", "45936")
-INFORMAL_SCALE   <- 100                                        # task 1.9
 N_MUNIC_2000_EXPECTED <- 5507L
 # census.qmd Q5: municipalities of the 2010 grid installed after the 2000
 # census (D-2026-10-23-d).
@@ -252,9 +250,9 @@ informal_anchor <- function(positions, total_id, formal_ids) {
       .groups  = "drop"
     ) %>%
     transmute(geocode, year,
+              # Fix (D-2026-10-28-i; phase 2, step 2.8): a share on 0-1.
               informal = if_else(occupied > 0,
-                                 INFORMAL_SCALE * (occupied - formal) /
-                                   occupied,
+                                 (occupied - formal) / occupied,
                                  NA_real_))
 }
 informal_anchors <- bind_rows(
@@ -342,7 +340,7 @@ stopifnot(
                        census_pea_informal$year)),
   all(census_pea_informal$pea >= 0, na.rm = TRUE),
   all(census_pea_informal$informal >= 0 &
-        census_pea_informal$informal <= INFORMAL_SCALE, na.rm = TRUE),
+        census_pea_informal$informal <= 1, na.rm = TRUE),          # D-2026-10-28-i
   na_rule_ok(census_pea_informal, c("pea", "informal")),
   !anyNA(census_pea_informal %>%
            filter(geocode %in% grid_2000) %>%

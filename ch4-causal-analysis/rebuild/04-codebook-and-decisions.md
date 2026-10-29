@@ -14,7 +14,7 @@ Columns:
 | `label` | Short human label for tables and figures |
 | `role` | One of: `id`, `sample`, `outcome`, `treatment`, `moderator`, `covariate`, `auxiliary` |
 | `type` | R type the CSV must round-trip to: `integer`, `double`, `character`, `logical` |
-| `unit` | `km2`, `ratio`, `BRL 2024`, `SD`, `count`, `share`, `index (2000 = 1)`, ... |
+| `unit` | One value per row, filled for every row at phase 2, step 2.8 (D-2026-10-28-k): `text`, `year`, `0/1`, `TRUE/FALSE`, `count`, `km2`, `head per km2`, `share (0-1)`, `rate (0-1)`, `ratio`, `BRL (nominal)`, `BRL 2024` and their per-capita and log forms, `index (...)` with its base stated, `SD (...)` with its reference population stated, `log km2`. A column rescaled from a source on another scale records that scale in parentheses (naming-convention.md §3.4) |
 | `source` | Provider short name as used in the provenance table |
 | `years` | Years with non-missing values, e.g. `2004-2019` |
 | `construction` | One line, or `see annex §x.y` |
