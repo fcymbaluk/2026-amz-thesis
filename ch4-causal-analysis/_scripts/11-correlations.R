@@ -23,6 +23,11 @@
 #          _scripts/ and not in _scripts/models/. Sample, lag structure and
 #          variable scaling: D-2026-10-17-a; groups and windows
 #          D-2026-10-16-a; SICONFI filing screen D-2026-10-16-b.
+#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
+#          carries 807 municipalities (nine states) and this script inherits
+#          the sample of script 09, which selects none yet. Do not rerun before
+#          script 09 filters on the biome_amazon / legal_amazon flags
+#          (rebuild/tasks.md 1.12).
 
 library(tidyverse)   # magrittr %>% throughout, never the native pipe
 library(fixest)

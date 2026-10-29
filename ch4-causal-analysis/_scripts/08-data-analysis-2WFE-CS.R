@@ -3,7 +3,11 @@
 # Inputs:  _data/final/panel_amz_2000_2020_final.csv (phase 1 panel, frozen 2026-10-12)
 # Outputs: output/tables/tab-att-strata.csv, output/figures/fig-event-study-strata.png
 # Status:  legacy script (August 2026) run as-is on the phase 1 panel for the
-#          descriptive sprint; restyle deferred (updated 2026-10-14)
+#          descriptive sprint; restyle deferred (updated 2026-10-14).
+#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
+#          carries 807 municipalities (nine states); this script selects no
+#          sample. Do not rerun before filtering on biome_amazon == 1 (the
+#          chapter's sample) or legal_amazon == 1 (rebuild/tasks.md 1.12).
 
 library(tidyverse)
 library(magrittr)
