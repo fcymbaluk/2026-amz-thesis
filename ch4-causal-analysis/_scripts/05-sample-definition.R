@@ -4,7 +4,10 @@
 #           baseline, flag the forest-availability floor and the broad and
 #           narrow at-risk frontier gates, build the window-consistent
 #           PPCDAm treatment flags and the continuous pressure scores, and
-#           carry the flags and scores onto the panel.
+#           carry the sample flags and the main treatment flag onto the
+#           panel. The pressure scores and the alternative treatment flags
+#           stay in the municipality store, which is written under the
+#           naming convention (phase 2R).
 #
 # INPUTS    _data/interim/panel_amz_2000_2020.rds   04-panel-assemble.R
 #           _data/interim/census_anchors_2000_2022.rds 02-social-census.R
@@ -12,14 +15,16 @@
 #
 # OUTPUTS   _data/interim/panel_amz_2000_2020_sample.rds / .csv
 #                           panel, 807 municipalities x 2000-2020, with the
-#                           three sample flags, three pressure scores and
-#                           three treatment flags appended
+#                           three sample flags and the main treatment flag
+#                           appended (pipeline names)
 #           _data/interim/panel_amz_baseline.rds / .csv
-#                           one row per municipality: the biome and Legal
-#                           Amazon flags, baseline summaries, sample flags
-#                           and scores, and the census anchors of
-#                           PIA, PEA, informality and population as read
-#                           (`_c2000`, `_c2010`, `_c2022`)
+#                           one row per municipality, under the convention
+#                           names of _data/aux/crosswalk.csv: the biome and
+#                           Legal Amazon flags, baseline summaries, sample
+#                           flags, pressure scores, the three treatment
+#                           flags, and the census anchors of PIA, PEA,
+#                           informality and population as read (`_c2000`,
+#                           `_c2010`, `_c2022`)
 #
 # DECISIONS IMPLEMENTED
 #           (justification: annex, pending; evidence:
@@ -31,11 +36,17 @@
 #                   NA where the municipality has no baseline value.
 #   D-2026-10-12-b  Treatment flags defined on the analysis window
 #                   (2004-2010 main, 2004-2012 robust, full panel ever).
+#                   From phase 2R only the main flag reaches the panel;
+#                   the robust and ever flags stay in the store and the
+#                   analysis scripts build any window with
+#                   listed_within() (D-2026-10-30-d).
 #   D-2026-10-12-c  Pressure scores z-scored across the 502 biome
-#                   municipalities; flagged for the storage audit (task
-#                   2.2). From phase 2, step 2.9 the 502 are the reference
-#                   population and the scores are applied to every
-#                   municipality of the nine states (D-2026-10-29-c).
+#                   municipalities. From phase 2, step 2.9 the 502 are the
+#                   reference population and the scores are applied to
+#                   every municipality of the nine states (D-2026-10-29-c).
+#                   Sample-dependent, so from phase 2R they stay in the
+#                   store as diagnostics and leave the panel
+#                   (D-2026-10-30-c).
 #   D-2026-10-12-d  Santa Cruz do Arari enters the availability floor with
 #                   its restored area (reference: FALSE).
 #   D-2026-10-12-e  Task 1.10 at script 05: typed output; the diagnostics
@@ -60,13 +71,16 @@
 #                   legal_amazon carried into the municipality store. The
 #                   gates and treatment flags apply to every municipality.
 #   D-2026-10-29-c  Pressure scores: reference population biome_amazon == 1.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   Task 2.2  The cross-sectional standardisation of the pressure scores is
-#             sample-dependent (D-2026-10-12-c).
+#   D-2026-10-30-a  The municipality store is renamed through the crosswalk
+#                   and guarded at write (phase 2R); the panel keeps the
+#                   pipeline names until script 06.
+#   D-2026-10-30-c  Pressure scores store-only.
+#   D-2026-10-30-d  Robust and ever treatment flags store-only.
 # RUN ORDER After 04-panel-assemble.R. Script 06 reads the panel output.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
+source("_scripts/utils/crosswalk.R")
+source("_scripts/utils/derived_variables.R")
 
 # ---- Constants --------------------------------------------------------------
 SAMPLE_BASE_YEARS         <- 2000:2003   # D-2026-10-12-a
@@ -94,7 +108,9 @@ N_MUNIC_BIOME_EXPECTED    <- 502L
 N_MUNIC_LEGAL_EXPECTED    <- 771L
 FLAG_COLS                 <- c("biome_amazon", "legal_amazon")
 Z_REF_FLAG                <- "biome_amazon"
-N_PANEL_COLS_EXPECTED     <- 73L   # 71 at step 2.8 + 2 flags (D-2026-10-29-a)
+# 73 at step 2.9, minus the four pooled z-scores plus the cattle lag
+# (phase 2R, D-2026-10-30-b).
+N_PANEL_COLS_EXPECTED     <- 70L
 # panel-sample.qmd Q3-Q4, Q10: cohorts 2008-2009 in the main window,
 # 2011-2012 added in the robust window (Grajaú, MA, listed 2011, the one
 # treated municipality outside the biome); every treated municipality is
@@ -119,6 +135,10 @@ SAMPLE_COLS <- c("pressure_defor", "pressure_agri", "pressure_score",
 SAMPLE_LGL_COLS <- c("avail_ok", "at_risk_broad", "at_risk_narrow")
 SAMPLE_INT_COLS <- c("ppcdam_main", "ppcdam_robust",
                      "ppcdam_ever_full")                      # D-2026-10-12-e
+# Carried onto the panel (phase 2R, D-2026-10-30-c, -d): the gates and the
+# main treatment flag; the rest of SAMPLE_COLS is store-only.
+PANEL_CARRY_COLS <- c("avail_ok", "at_risk_broad", "at_risk_narrow",
+                      "ppcdam_main")
 ANCHOR_COLS <- paste0(rep(ANCHOR_VARS, each = length(CENSUS_YEARS)), "_c",
                       rep(CENSUS_YEARS, times = length(ANCHOR_VARS)))
 MUNI_COLS <- c("geocode", "municipality", "state_abbreviation", FLAG_COLS,
@@ -131,6 +151,7 @@ MUNI_COLS <- c("geocode", "municipality", "state_abbreviation", FLAG_COLS,
 panel_in       <- read_rds("_data/interim/panel_amz_2000_2020.rds")
 census_anchors <- read_rds("_data/interim/census_anchors_2000_2022.rds")
 ibge_pop       <- read_rds("_data/interim/ibge_pop_2000_2022.rds")
+xwalk          <- read_crosswalk()                            # D-2026-10-30-a
 
 # ---- Assert: raw state ------------------------------------------------------
 # panel-sample.qmd Q1: the script 04 panel is complete and typed, and
@@ -166,12 +187,6 @@ panel <- panel_in %>% filter(geocode != MOJUI_GEOCODE)   # D-2026-10-05-l
 # A municipality with no baseline value in a source gets NA, not NaN
 # (D-2026-10-12-a).
 mean_base <- function(x) if (all(is.na(x))) NA_real_ else mean(x, na.rm = TRUE)
-# Cross-sectional z-score with the centre and spread of a reference
-# population (D-2026-10-12-c; D-2026-10-29-c).
-z_cross <- function(x, ref) {
-  (x - mean(x[ref], na.rm = TRUE)) / sd(x[ref], na.rm = TRUE)
-}
-
 baseline <- panel %>%
   filter(year %in% SAMPLE_BASE_YEARS) %>%
   mutate(crop_share_all = crop_soy_munic_area_share +
@@ -209,42 +224,33 @@ anchors <- census_anchors %>%
               names_glue = "{.value}_c{year}") %>%
   select(geocode, all_of(ANCHOR_COLS))
 
-# Treated means listed at any point within the window, so a municipality
-# first listed after the window is a not-yet-treated control in that
-# design (D-2026-10-12-b).
-listed_within <- function(d, y_start, y_end, name) {
-  d %>%
-    filter(year >= y_start, year <= y_end) %>%
-    group_by(geocode) %>%
-    summarise(!!name := as.integer(max(ppcdam_list) == 1L),
-              .groups = "drop")
-}
-
+# Treated means listed at any point within the window (D-2026-10-12-b;
+# listed_within() in utils/derived_variables.R).
 muni <- baseline %>%
   left_join(forest_first, by = "geocode") %>%
-  left_join(listed_within(panel, PPCDAM_WINDOW_START,
-                          PPCDAM_WINDOW_END_MAIN, "ppcdam_main"),
+  left_join(listed_within(panel, PPCDAM_WINDOW_START:PPCDAM_WINDOW_END_MAIN,
+                          "ppcdam_main"),
             by = "geocode") %>%
-  left_join(listed_within(panel, PPCDAM_WINDOW_START,
-                          PPCDAM_WINDOW_END_ROBUST, "ppcdam_robust"),
+  left_join(listed_within(panel,
+                          PPCDAM_WINDOW_START:PPCDAM_WINDOW_END_ROBUST,
+                          "ppcdam_robust"),
             by = "geocode") %>%
-  left_join(listed_within(panel, min(PANEL_YEARS), max(PANEL_YEARS),
-                          "ppcdam_ever_full"),
+  left_join(listed_within(panel, PANEL_YEARS, "ppcdam_ever_full"),
             by = "geocode") %>%
   left_join(anchors, by = "geocode") %>%
   # Right-skewed baselines are logged before the cross-sectional z-scores;
   # pressure_agri is a half-half mix of two z-scores and is not
   # re-standardised (D-2026-10-12-c). The reference population is the
-  # biome sample (D-2026-10-29-c).
+  # biome sample (D-2026-10-29-c; z_on() in utils/derived_variables.R).
   mutate(
     z_ref             = .data[[Z_REF_FLAG]] == 1L,
     log_defor_area_b  = log1p(defor_area_b),
     log_cattle_dens_b = log1p(cattle_dens_b),
     log_crop_share_b  = log1p(crop_share_b),
-    pressure_defor    = z_cross(log_defor_area_b, z_ref),
-    pressure_agri     = 0.5 * z_cross(log_cattle_dens_b, z_ref) +
-      0.5 * z_cross(log_crop_share_b, z_ref),
-    pressure_score    = z_cross(pressure_defor + pressure_agri, z_ref),
+    pressure_defor    = z_on(log_defor_area_b, z_ref),
+    pressure_agri     = 0.5 * z_on(log_cattle_dens_b, z_ref) +
+      0.5 * z_on(log_crop_share_b, z_ref),
+    pressure_score    = z_on(pressure_defor + pressure_agri, z_ref),
     # Absolute baseline clearing, not the rate: listing is assigned on
     # area, so the gate preserves overlap with treatment (D-2026-10-05-h).
     avail_ok          = forest_share_2000 >= SAMPLE_FOREST_SHARE_FLOOR,
@@ -255,8 +261,13 @@ muni <- baseline %>%
   arrange(geocode)
 
 panel <- panel %>%
-  left_join(select(muni, geocode, all_of(SAMPLE_COLS)), by = "geocode") %>%
+  left_join(select(muni, geocode, all_of(PANEL_CARRY_COLS)),
+            by = "geocode") %>%
   arrange(geocode, year)
+
+# The store leaves under the convention names; the panel keeps the pipeline
+# names until script 06 renames it (D-2026-10-30-a).
+muni_out <- rename_through_crosswalk(muni, xwalk)
 
 # ---- Assert: output state ---------------------------------------------------
 # panel-sample.qmd Q2-Q7, Q9. The anchors agree with the panel's values at
@@ -298,7 +309,7 @@ stopifnot(
   identical(names(muni), MUNI_COLS),
   nrow(panel) == N_MUNIC_EXPECTED * length(PANEL_YEARS),
   !anyDuplicated(paste(panel$geocode, panel$year)),
-  identical(names(panel), c(names(panel_in), SAMPLE_COLS)),
+  identical(names(panel), c(names(panel_in), PANEL_CARRY_COLS)),
   !MOJUI_GEOCODE %in% panel$geocode,
   !anyNA(muni$defor_area_b), !anyNA(muni$forest_share_2000),
   sum(is.na(muni$pressure_agri)) == N_AGRI_NA_EXPECTED,
@@ -323,12 +334,18 @@ stopifnot(
   all(abs(map_dbl(muni[muni_ref, c("pressure_defor", "pressure_score")],
                   sd, na.rm = TRUE) - 1) < Z_TOL),
   # Every appended column is constant within municipality.
-  all(map_lgl(panel[SAMPLE_COLS],
-              ~ n_distinct(paste(panel$geocode, .x)) == N_MUNIC_EXPECTED))
+  all(map_lgl(panel[PANEL_CARRY_COLS],
+              ~ n_distinct(paste(panel$geocode, .x)) == N_MUNIC_EXPECTED)),
+  # D-2026-10-30-a: the store carries exactly the crosswalk's store columns
+  # under the convention names, in the pipeline's column order.
+  identical(names(muni_out),
+            xwalk$new_name[match(MUNI_COLS, xwalk$old_name)]),
+  setequal(names(muni_out), xwalk$new_name[xwalk$store]),
+  assert_naming_convention(names(muni_out))
 )
 
 # ---- Write ------------------------------------------------------------------
 write_rds(panel, "_data/interim/panel_amz_2000_2020_sample.rds")
 write_csv(panel, "_data/interim/panel_amz_2000_2020_sample.csv")
-write_rds(muni, "_data/interim/panel_amz_baseline.rds")
-write_csv(muni, "_data/interim/panel_amz_baseline.csv")
+write_rds(muni_out, "_data/interim/panel_amz_baseline.rds")
+write_csv(muni_out, "_data/interim/panel_amz_baseline.csv")

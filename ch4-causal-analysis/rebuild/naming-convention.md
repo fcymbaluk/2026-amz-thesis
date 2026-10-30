@@ -1,6 +1,6 @@
 # Variable naming convention
 
-**Project:** Dissertation Chapter 4 (causal inference), Amazon eco-social policy panel **Applies to:** `final_dataset_*.csv` (municipal panel, 2000–2020) and `outcome_atlas_poverty_geocoded.csv` (Atlas Brasil, census vintages) **Status:** version 2 (2026-10-05): all CONFIRM items of version 1 (2026-09-24) resolved at the stage 3 gate, resolutions recorded inline; dummy suffix changed from `_d` to `_dum`. Any item marked **CONFIRM** in the future requires a decision from Fernando before implementation.
+**Project:** Dissertation Chapter 4 (causal inference), Amazon eco-social policy panel **Applies to:** `final_dataset_*.csv` (municipal panel, 2000–2020) and `outcome_atlas_poverty_geocoded.csv` (Atlas Brasil, census vintages) **Status:** version 2 (2026-10-05): all CONFIRM items of version 1 (2026-09-24) resolved at the stage 3 gate, resolutions recorded inline; dummy suffix changed from `_d` to `_dum`. Any item marked **CONFIRM** in the future requires a decision from Fernando before implementation. Version 3 (2026-10-30, phase 2R): the convention applied to the final panel and the municipality store through `_data/aux/crosswalk.csv` (D-2026-10-30-a); `ecn_` replaces `eco_`; tokens added for the phase 2 columns; the one-year baseline window written `_bl0000`; the items resolved and the items left open are listed in section 9.
 
 ## 1. Purpose
 
@@ -41,7 +41,7 @@ Only tokens listed here may be used. To add a token, add it to this file and to 
 | `soc_` | Poverty, extreme poverty, vulnerability, inequality (Atlas Brasil) | Social conditions |
 | `lab_` | RAIS formal employment, wage brackets, PEA, informality | Labor market (Mechanism 4) |
 | `dem_` | Population | Demography |
-| `eco_` | GDP | Economy |
+| `ecn_` | GDP | Economy (version 3: was `eco_`, which read as ecology beside `env_` and `enf_` in a dissertation on eco-social policy) |
 | `agr_` | Crop area, cattle | Land-use drivers |
 | `mkt_` | Commodity price indices | Exogenous market shocks |
 | `pol_` | Electoral variables (mayoral) | Politics (Mechanism 3) |
@@ -91,6 +91,12 @@ Design rationale: the theory distinguishes policy instruments (`enf_`, `sop_`) f
 | `inc` | income |
 | `atrisk` | at-risk sample flag |
 | `avail` | data availability flag |
+| `regime` | Bolsa Família programme regime of the reference month (added 2026-10-30, D-2026-10-22-b) |
+| `munic` | municipality (as a concept: `geo_munic_new_dum`, `geo_munic_parent_dum`; also the denominator token of 3.3) |
+| `new` | installed after the 2000 census (added 2026-10-30, D-2026-10-23-f) |
+| `parent` | ceded territory to a post-2000 municipality (added 2026-10-30, D-2026-10-23-f) |
+| `biome`, `amazon`, `legal` | Amazon biome and Legal Amazon membership (added 2026-10-30, D-2026-10-29-a) |
+| `crop` | the four PAM crops together (`mkt_price_crop_idx`, `agr_crop_planted_munic_share_bl0003`; added 2026-10-30) |
 
 Rules for tokens: lowercase ASCII, no accents, no digits inside a concept token (digits are reserved for units, baselines and vintages). Official acronyms (`bf`, `ppcdam`, `pia`, `pea`) stay as they are because they trace directly to IBGE and MDS sources. All other roots are English. Never let two tokens mean the same thing.
 
@@ -145,7 +151,7 @@ Appended last.
 | Suffix | Meaning |
 |------------------------------------|------------------------------------|
 | `_lag1`, `_lag2` | lagged k years |
-| `_bl0607` | baseline value, window 2006–2007 (replace digits as needed) |
+| `_bl0607` | baseline value, window 2006–2007 (replace digits as needed); two two-digit years, start then end, so a one-year window at 2000 is `_bl0000` (decided 2026-10-30: the start year carries information, `_bl0007` against `_bl0207`, and a single four-digit year would lose it) |
 | `_c1991`, `_c2000`, `_c2010`, `_c2022` | census vintage (Atlas; from 2026-10-26 also the census anchors of the municipality store, `pia_c2000` etc., D-2026-10-26-a) |
 | `_term` | electoral values aligned to the governing term rather than the election year |
 
@@ -158,11 +164,13 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 3.  Do not encode analytical roles (`treat`, `mod`, `outcome`, `ctrl`) in names.
 4.  A variable with a denominator must name it. `emp_rate` is not acceptable; `emp_formal_pia_rate` is.
 5.  "avg", "total" and "mean" are not tokens. "avg" almost always hides a denominator; name the denominator instead. "total" is the default and needs no token.
-6.  Derived variables keep the full name of their parent and add suffixes. `eco_gdp_pc_brl24_log` is derived from `eco_gdp_pc_brl24`.
-7.  Baseline covariates used in analysis scripts follow the same grammar with `_blYYYY` instead of an ad hoc `0`: `gdp0`, `informal0`, `agri0` become `eco_gdp_pc_brl24_log_bl<window>`, `lab_informal_share_bl<window>`, `lab_emp_formal_agri_share_bl<window>` (parents per `08-data-analysis-2WFE-CS.R`). Decided 2026-10-05: these are built in the analysis scripts, never stored in the panel, because the baseline window is a parameter to be explored at the causal stage (governing rule for derived variables, `GUIDANCE.md`; memo `docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md`). The window digits are set by each analysis script; the current script uses 2002-2007 (`_bl0207`).
+6.  Derived variables keep the full name of their parent and add suffixes. `ecn_gdp_pc_brl24_log` is derived from `ecn_gdp_pc_brl24`.
+7.  Baseline covariates used in analysis scripts follow the same grammar with `_blYYYY` instead of an ad hoc `0`: `gdp0`, `informal0`, `agri0` become `ecn_gdp_pc_brl24_log_bl<window>`, `lab_informal_share_bl<window>`, `lab_emp_formal_agri_share_bl<window>` (parents per `08-data-analysis-2WFE-CS.R`). Decided 2026-10-05: these are built in the analysis scripts, never stored in the panel, because the baseline window is a parameter to be explored at the causal stage (governing rule for derived variables, `GUIDANCE.md`; memo `docs/decisions/2026-10-05-baseline-window-in-analysis-scripts.md`). The window digits are set by each analysis script; the current script uses 2002-2007 (`_bl0207`).
 8.  One name, one meaning, across all datasets and scripts. The crosswalk (section 6) is the single source of truth.
 
 ## 5. Crosswalk: current → proposed
+
+From 2026-10-30 (phase 2R, D-2026-10-30-a) the single source of truth is `_data/aux/crosswalk.csv`: one row per working name of the final panel and the municipality store, with the grammar slots, the `panel` and `store` flags and a note. The tables below are the version-2 record, kept for the resolutions they carry; the columns added after version 2 (`bf_regime`, the post-2000 flags, the RAIS denominators, `pia`, the biome and Legal Amazon flags, the cattle index lag) and the store appear only in the csv. The storage audit of task 2.2 (D-2026-10-30-f) removed ten columns from the panel; the csv marks them `panel = FALSE`, so the names below for the four `_z` price columns, the three pressure scores, the robust and ever treatment flags and `env_defor_area_z_bl0003` belong to the analysis scripts or the store, not to the panel.
 
 ### 5.1 Panel (`final_dataset_6.csv`)
 
@@ -209,12 +217,12 @@ Fixed order when several apply: unit → transform(s) → timing. So `mkt_price_
 | `pea` | `lab_pea_n` |  |
 | `informal` | `lab_informal_share` | confirmed 2026-10-05: IBGE census informality share of the employed population, stored on a 0-100 scale and linearly interpolated between the 2000, 2010 and 2022 censuses (`02-data-cleaning-populational-social.R`); on 0-1 from phase 2, step 2.8 (D-2026-10-28-i) |
 | `population` | `dem_pop_n` |  |
-| `gdp_brl` | `eco_gdp_brl` | nominal |
-| `gdp_per_capita` | `eco_gdp_pc_brl` | nominal |
-| `gdp_per_capita_log` | `eco_gdp_pc_brl_log` |  |
-| `gdp_brl_2024` | `eco_gdp_brl24` |  |
-| `gdp_per_capita_2024` | `eco_gdp_pc_brl24` |  |
-| `gdp_per_capita_2024_log` | `eco_gdp_pc_brl24_log` |  |
+| `gdp_brl` | `ecn_gdp_brl` | nominal |
+| `gdp_per_capita` | `ecn_gdp_pc_brl` | nominal |
+| `gdp_per_capita_log` | `ecn_gdp_pc_brl_log` |  |
+| `gdp_brl_2024` | `ecn_gdp_brl24` |  |
+| `gdp_per_capita_2024` | `ecn_gdp_pc_brl24` |  |
+| `gdp_per_capita_2024_log` | `ecn_gdp_pc_brl24_log` |  |
 | `elec_enc` | `pol_mayor_enc_idx` | confirmed: effective number of candidates (section 3.2) |
 | `elec_mov` | `pol_mayor_margin_share` |  |
 | `elec_winner_share` | `pol_mayor_winner_share` |  |
@@ -274,7 +282,7 @@ If the Atlas file is later reshaped to long format, drop the vintage suffix and 
 
 ## 6. Implementation instructions for the agent
 
-1.  **Create the crosswalk file** at `codebook/crosswalk.csv` with columns `old_name, new_name, domain, label, unit, denominator, transform, timing, source, note`. Populate it from section 5. This file is the single source of truth for both the rename and the codebook.
+1.  **Create the crosswalk file** at `_data/aux/crosswalk.csv` (auxiliary files live in `_data/aux/`, `docs/repo-conventions.md`) with columns `old_name, new_name, domain, concept, qualifier, denominator, unit, transform, timing, panel, store, note`. Labels, sources and the rest of the documentation stay in `codebook.csv`, whose `variable` column is keyed by `new_name`. This file is the single source of truth for the rename; script 06 asserts that the panel, the crosswalk and the codebook agree. Done 2026-10-30.
 
 2.  **Do not rename inside the existing pipeline scripts 01–06 during the equivalence phase.** The equivalence tests compare the rebuilt output against the frozen `final_dataset_6.csv`, which uses the old names. Either run the rename as a final step after equivalence passes, or map names through the crosswalk inside the test so both sides are compared under the same names.
 
@@ -290,7 +298,7 @@ If the Atlas file is later reshaped to long format, drop the vintage suffix and 
 
     ``` r
     keys <- c("geocode", "year", "municipality", "state", "uf")
-    prefix_ok <- grepl("^(env|enf|sop|soc|lab|dem|eco|agr|mkt|pol|geo|smp)_", names(panel))
+    prefix_ok <- grepl("^(env|enf|sop|soc|lab|dem|ecn|agr|mkt|pol|geo|smp)_", names(panel))
     stopifnot(all(names(panel) %in% keys | prefix_ok))
     stopifnot(all(nchar(names(panel)) <= 40))
     stopifnot(!any(duplicated(names(panel))))
@@ -317,3 +325,14 @@ Roughly 60 of the 85 panel columns are stored as character even though they hold
 - Do not put the data source in a name unless two sources measure the same concept.
 - Do not rename by hand in individual scripts. All renaming goes through the crosswalk.
 - Do not silently resolve a CONFIRM item.
+
+## 9. Phase 2R record (2026-10-30)
+
+Resolved with the author on 2026-10-30, applied in `_data/aux/crosswalk.csv`: `_idx` kept for the two price indices (exposure-weighted relative prices, D-2026-10-23-a); `_term` applied to the eight stored electoral columns (D-2026-10-22-e); the phase 2 columns named `sop_bf_regime_cat`, `geo_munic_new_dum`, `geo_munic_parent_dum`, `lab_emp_formal_n`, `lab_emp_formal_agri_n`, `lab_pia_n`, `geo_biome_amazon_dum`, `geo_legal_amazon_dum`; the municipality store renamed through the same file (`_bl0003` for the 2000-2003 baselines, `_bl0000` for the two 2000 values, `_log` inserted before the timing for the logged baselines, the anchors under their domain prefix); `ecn_` for GDP. Implemented by `_scripts/utils/crosswalk.R` (read, rename, guard), called by scripts 05 (store) and 06 (panel).
+
+Open items, applied as the version-2 table lists them and left for the author:
+
+- `env_forest_exposure_log`: the grammar (rule 6, slot order unit → transform → timing) would give `env_forest_area_km2_log_lag1`, since the column is the log of the previous year's forest area. The table's name was kept.
+- `lab_emp_formal_pia_rate` and the four bracket rates: `_rate` is reserved to 0-1, and the data exceed 1 in three cells of two municipalities outside the biome (D-2026-10-29-d, codebook unit "ratio (bonds per working-age resident)"); the grammar would give `_pia_ratio`. The table's names were kept.
+- `smp_avail_dum`, `smp_atrisk_broad_dum`, `smp_atrisk_narrow_dum` are stored as logical (TRUE/FALSE) while `_dum` reads 0/1; the type is unchanged at phase 2R (no value may move).
+- The three logged baselines of the store use `log1p`, recorded in the codebook `construction`; `_log` has no `log1p` variant.

@@ -1,0 +1,108 @@
+old_name,new_name,domain,concept,qualifier,denominator,unit,transform,timing,panel,store,note
+geocode,geocode,,,,,,,,TRUE,TRUE,key
+municipality,municipality,,,,,,,,TRUE,TRUE,key
+state,state,,,,,,,,TRUE,FALSE,key
+state_abbreviation,uf,,,,,,,,TRUE,TRUE,key
+year,year,,,,,,,,TRUE,FALSE,key
+ppcdam_list,enf_ppcdam_listed_dum,enf,ppcdam,listed,,dum,,,TRUE,FALSE,
+forest_area_km2,env_forest_area_km2,env,forest,area,,km2,,,TRUE,FALSE,
+deforestation_area_km2,env_defor_area_km2,env,defor,area,,km2,,,TRUE,FALSE,
+deforestation_forest_rate,env_defor_forest_share,env,defor,,forest,share,,,TRUE,FALSE,contemporaneous forest stock as denominator (D-2026-10-06-d)
+bf_families_n,sop_bf_fam_n,sop,bf,fam,,n,,,TRUE,FALSE,
+bf_quota,sop_bf_quota_n,sop,bf,quota,,n,,,TRUE,FALSE,
+bf_transfers_total_brl_2024,sop_bf_transf_brl24,sop,bf,transf,,brl24,,,TRUE,FALSE,
+bf_transfers_avg_brl_2024,sop_bf_transf_fam_brl24,sop,bf,transf,fam,brl24,,,TRUE,FALSE,per beneficiary family
+bf_families_quota_ratio,sop_bf_fam_quota_ratio,sop,bf,fam,quota,ratio,,,TRUE,FALSE,
+bf_transfers_pea_brl_2024,sop_bf_transf_pea_brl24,sop,bf,transf,pea,brl24,,,TRUE,FALSE,
+bf_transfers_quota_brl_2024,sop_bf_transf_quota_brl24,sop,bf,transf,quota,brl24,,,TRUE,FALSE,
+emp_pia_rate_total,lab_emp_formal_pia_rate,lab,emp,formal,pia,rate,,,TRUE,FALSE,bonds per working-age resident; above 1 in three cells outside the biome (D-2026-10-29-d)
+emp_pia_rate_agric,lab_emp_formal_agri_pia_rate,lab,emp,formal agri,pia,rate,,,TRUE,FALSE,
+emp_pia_rate_low,lab_emp_formal_lowwage_pia_rate,lab,emp,formal lowwage,pia,rate,,,TRUE,FALSE,
+emp_pia_rate_mid,lab_emp_formal_midwage_pia_rate,lab,emp,formal midwage,pia,rate,,,TRUE,FALSE,
+emp_pia_rate_high,lab_emp_formal_highwage_pia_rate,lab,emp,formal highwage,pia,rate,,,TRUE,FALSE,
+emp_share_low_workers,lab_emp_formal_lowwage_share,lab,emp,formal lowwage,,share,,,TRUE,FALSE,share of all formal workers
+emp_share_mid_workers,lab_emp_formal_midwage_share,lab,emp,formal midwage,,share,,,TRUE,FALSE,
+emp_share_high_workers,lab_emp_formal_highwage_share,lab,emp,formal highwage,,share,,,TRUE,FALSE,
+emp_share_agri_low_workers,lab_emp_formal_lowwage_agri_share,lab,emp,formal lowwage,agri,share,,,TRUE,FALSE,share of agricultural formal workers
+emp_share_agri_mid_workers,lab_emp_formal_midwage_agri_share,lab,emp,formal midwage,agri,share,,,TRUE,FALSE,
+emp_share_agri_high_workers,lab_emp_formal_highwage_agri_share,lab,emp,formal highwage,agri,share,,,TRUE,FALSE,
+emp_share_agri_workers,lab_emp_formal_agri_share,lab,emp,formal agri,,share,,,TRUE,FALSE,
+pea,lab_pea_n,lab,pea,,,n,,,TRUE,FALSE,
+informal,lab_informal_share,lab,informal,,,share,,,TRUE,FALSE,
+population,dem_pop_n,dem,pop,,,n,,,TRUE,FALSE,
+gdp_brl,ecn_gdp_brl,ecn,gdp,,,brl,,,TRUE,FALSE,
+gdp_per_capita,ecn_gdp_pc_brl,ecn,gdp,,pc,brl,,,TRUE,FALSE,
+gdp_per_capita_log,ecn_gdp_pc_brl_log,ecn,gdp,,pc,brl,log,,TRUE,FALSE,
+gdp_brl_2024,ecn_gdp_brl24,ecn,gdp,,,brl24,,,TRUE,FALSE,
+gdp_per_capita_2024,ecn_gdp_pc_brl24,ecn,gdp,,pc,brl24,,,TRUE,FALSE,
+gdp_per_capita_2024_log,ecn_gdp_pc_brl24_log,ecn,gdp,,pc,brl24,log,,TRUE,FALSE,
+elec_enc,pol_mayor_enc_idx_term,pol,mayor,enc,,idx,,term,TRUE,FALSE,stored on the governing years (D-2026-10-22-d)
+elec_mov,pol_mayor_margin_share_term,pol,mayor,margin,,share,,term,TRUE,FALSE,
+elec_winner_share,pol_mayor_winner_share_term,pol,mayor,winner,,share,,term,TRUE,FALSE,
+elec_n_candidates,pol_mayor_cand_n_term,pol,mayor,cand,,n,,term,TRUE,FALSE,
+elec_winner_party,pol_mayor_winner_party_cat_term,pol,mayor,winner party,,cat,,term,TRUE,FALSE,
+elec_winner_id,pol_mayor_winner_id_term,pol,mayor,winner,,id,,term,TRUE,FALSE,
+elec_competitive,pol_mayor_competitive_dum_term,pol,mayor,competitive,,dum,,term,TRUE,FALSE,
+elec_uncontested,pol_mayor_uncontested_dum_term,pol,mayor,uncontested,,dum,,term,TRUE,FALSE,
+election_year,pol_elec_year_dum,pol,elec,year,,dum,,,TRUE,FALSE,
+munic_area_km2,geo_area_km2,geo,area,,,km2,,,TRUE,FALSE,
+crop_soy_area_planted_km2,agr_soy_planted_km2,agr,soy,planted,,km2,,,TRUE,FALSE,
+crop_corn_area_planted_km2,agr_corn_planted_km2,agr,corn,planted,,km2,,,TRUE,FALSE,
+crop_rice_area_planted_km2,agr_rice_planted_km2,agr,rice,planted,,km2,,,TRUE,FALSE,
+crop_cotton_area_planted_km2,agr_cotton_planted_km2,agr,cotton,planted,,km2,,,TRUE,FALSE,
+crop_soy_munic_area_share,agr_soy_planted_munic_share,agr,soy,planted,munic,share,,,TRUE,FALSE,
+crop_corn_munic_area_share,agr_corn_planted_munic_share,agr,corn,planted,munic,share,,,TRUE,FALSE,
+crop_rice_munic_area_share,agr_rice_planted_munic_share,agr,rice,planted,munic,share,,,TRUE,FALSE,
+crop_cotton_munic_area_share,agr_cotton_planted_munic_share,agr,cotton,planted,munic,share,,,TRUE,FALSE,
+cattle_heads,agr_cattle_n,agr,cattle,,,n,,,TRUE,FALSE,
+cattle_per_km2,agr_cattle_per_km2,agr,cattle,,per_km2,,,,TRUE,FALSE,unit is the denominator token per_km2 (head per km2)
+price_index_crop,mkt_price_crop_idx,mkt,price,crop,,idx,,,TRUE,FALSE,exposure-weighted relative price (D-2026-10-23-a); _idx confirmed 2026-10-30
+price_index_cattle,mkt_price_cattle_idx,mkt,price,cattle,,idx,,,TRUE,FALSE,exposure-weighted relative price (D-2026-10-23-a); _idx confirmed 2026-10-30
+price_index_crop_lag1,mkt_price_crop_idx_lag1,mkt,price,crop,,idx,,lag1,TRUE,FALSE,
+price_index_cattle_lag1,mkt_price_cattle_idx_lag1,mkt,price,cattle,,idx,,lag1,TRUE,FALSE,added at phase 2R (D-2026-10-30-b); no old name existed
+price_index_crop_z,mkt_price_crop_idx_z,mkt,price,crop,,idx,z,,FALSE,FALSE,left the panel at phase 2R (D-2026-10-30-b): standardised in the analysis scripts on their estimation sample
+price_index_crop_lag1_z,mkt_price_crop_idx_z_lag1,mkt,price,crop,,idx,z,lag1,FALSE,FALSE,left the panel at phase 2R (D-2026-10-30-b)
+price_index_cattle_z,mkt_price_cattle_idx_z,mkt,price,cattle,,idx,z,,FALSE,FALSE,left the panel at phase 2R (D-2026-10-30-b)
+price_index_cattle_lag1_z,mkt_price_cattle_idx_z_lag1,mkt,price,cattle,,idx,z,lag1,FALSE,FALSE,left the panel at phase 2R (D-2026-10-30-b)
+bf_transfers_pc_brl_2024,sop_bf_transf_pc_brl24,sop,bf,transf,pc,brl24,,,TRUE,FALSE,
+bf_regime,sop_bf_regime_cat,sop,bf,regime,,cat,,,TRUE,FALSE,token regime added 2026-10-30
+muni_new_post2000,geo_munic_new_dum,geo,munic,new,,dum,,,TRUE,FALSE,installed after the 2000 census; token new added 2026-10-30
+muni_parent_split,geo_munic_parent_dum,geo,munic,parent,,dum,,,TRUE,FALSE,ceded territory to a post-2000 municipality; token parent added 2026-10-30
+emp_workers_n,lab_emp_formal_n,lab,emp,formal,,n,,,TRUE,FALSE,
+emp_agri_workers_n,lab_emp_formal_agri_n,lab,emp,formal agri,,n,,,TRUE,FALSE,
+pia,lab_pia_n,lab,pia,,,n,,,TRUE,FALSE,
+biome_amazon,geo_biome_amazon_dum,geo,biome,amazon,,dum,,,TRUE,TRUE,IBGE predominant biome; tokens biome and amazon added 2026-10-30
+legal_amazon,geo_legal_amazon_dum,geo,legal,amazon,,dum,,,TRUE,TRUE,IBGE Legal Amazon list 2022; token legal added 2026-10-30
+pressure_defor,env_defor_pressure_idx,env,defor,pressure,,idx,,,FALSE,TRUE,left the panel at phase 2R (D-2026-10-30-c); cross-sectional z-score kept in the store as a diagnostic
+pressure_agri,agr_pressure_idx,agr,pressure,,,idx,,,FALSE,TRUE,left the panel at phase 2R (D-2026-10-30-c)
+pressure_score,smp_pressure_idx,smp,pressure,,,idx,,,FALSE,TRUE,left the panel at phase 2R (D-2026-10-30-c)
+avail_ok,smp_avail_dum,smp,avail,,,dum,,,TRUE,TRUE,stored as logical
+at_risk_broad,smp_atrisk_broad_dum,smp,atrisk,broad,,dum,,,TRUE,TRUE,stored as logical
+at_risk_narrow,smp_atrisk_narrow_dum,smp,atrisk,narrow,,dum,,,TRUE,TRUE,stored as logical
+ppcdam_main,enf_ppcdam_listed_main_dum,enf,ppcdam,listed main,,dum,,,TRUE,TRUE,ever listed within 2004-2010 (D-2026-10-12-b); the main window stays in the panel (D-2026-10-30-d)
+ppcdam_robust,enf_ppcdam_listed_robust_dum,enf,ppcdam,listed robust,,dum,,,FALSE,TRUE,left the panel at phase 2R (D-2026-10-30-d): built by listed_within() in the analysis scripts; kept in the store
+ppcdam_ever_full,enf_ppcdam_ever_dum,enf,ppcdam,ever,,dum,,,FALSE,TRUE,left the panel at phase 2R (D-2026-10-30-d); kept in the store
+defor_norm_ref0003,env_defor_area_z_bl0003,env,defor,area,,,z,bl0003,FALSE,FALSE,left the pipeline at phase 2R (D-2026-10-30-e): built by norm_within() in the analysis scripts; unit slot empty because the z-score replaces the km2 scale
+defor_norm_ref0007,env_defor_area_z_bl0007,env,defor,area,,,z,bl0007,TRUE,FALSE,within-municipality z on the 2000-2007 reference (D-2026-10-12-f); unit slot empty because the z-score replaces the km2 scale
+log_forest_exposure,env_forest_exposure_log,env,forest,exposure,,,log,,TRUE,FALSE,log of the previous year's forest area (D-2026-10-12-g); name as listed in naming-convention.md 5.1
+defor_area_b,env_defor_area_km2_bl0003,env,defor,area,,km2,,bl0003,FALSE,TRUE,2000-2003 mean (D-2026-10-12-a)
+defor_rate_b,env_defor_forest_share_bl0003,env,defor,,forest,share,,bl0003,FALSE,TRUE,2000-2003 mean
+cattle_dens_b,agr_cattle_per_km2_bl0003,agr,cattle,,per_km2,,,bl0003,FALSE,TRUE,2000-2003 mean
+crop_share_b,agr_crop_planted_munic_share_bl0003,agr,crop,planted,munic,share,,bl0003,FALSE,TRUE,four crops summed; 2000-2003 mean; token crop added 2026-10-30
+forest_share_2000,env_forest_munic_share_bl0000,env,forest,,munic,share,,bl0000,FALSE,TRUE,2000 value; the one-year window 2000 reads bl0000 (confirmed 2026-10-30)
+forest_km2_2000,env_forest_area_km2_bl0000,env,forest,area,,km2,,bl0000,FALSE,TRUE,2000 value
+log_defor_area_b,env_defor_area_km2_log_bl0003,env,defor,area,,km2,log,bl0003,FALSE,TRUE,log1p of the 2000-2003 mean
+log_cattle_dens_b,agr_cattle_per_km2_log_bl0003,agr,cattle,,per_km2,,log,bl0003,FALSE,TRUE,log1p of the 2000-2003 mean
+log_crop_share_b,agr_crop_planted_munic_share_log_bl0003,agr,crop,planted,munic,share,log,bl0003,FALSE,TRUE,log1p of the 2000-2003 mean
+pia_c2000,lab_pia_n_c2000,lab,pia,,,n,,c2000,FALSE,TRUE,census anchor as read (D-2026-10-26-a)
+pia_c2010,lab_pia_n_c2010,lab,pia,,,n,,c2010,FALSE,TRUE,census anchor as read
+pia_c2022,lab_pia_n_c2022,lab,pia,,,n,,c2022,FALSE,TRUE,census anchor as read
+pea_c2000,lab_pea_n_c2000,lab,pea,,,n,,c2000,FALSE,TRUE,census anchor as read
+pea_c2010,lab_pea_n_c2010,lab,pea,,,n,,c2010,FALSE,TRUE,census anchor as read
+pea_c2022,lab_pea_n_c2022,lab,pea,,,n,,c2022,FALSE,TRUE,census anchor as read
+informal_c2000,lab_informal_share_c2000,lab,informal,,,share,,c2000,FALSE,TRUE,census anchor as read
+informal_c2010,lab_informal_share_c2010,lab,informal,,,share,,c2010,FALSE,TRUE,census anchor as read
+informal_c2022,lab_informal_share_c2022,lab,informal,,,share,,c2022,FALSE,TRUE,census anchor as read
+population_c2000,dem_pop_n_c2000,dem,pop,,,n,,c2000,FALSE,TRUE,census anchor as read
+population_c2010,dem_pop_n_c2010,dem,pop,,,n,,c2010,FALSE,TRUE,census anchor as read
+population_c2022,dem_pop_n_c2022,dem,pop,,,n,,c2022,FALSE,TRUE,census anchor as read

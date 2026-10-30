@@ -3,7 +3,8 @@
 #           2000-2020: the World Bank real series of soy, corn, rice,
 #           cotton and beef normalised to 2000, the crop index weighted by
 #           the base-window crop shares, the cattle index weighted by the
-#           base-window cattle density, and the crop index lag. All
+#           base-window cattle density, and the one-year lag of each
+#           index. All
 #           municipalities with a base-window weight of either kind. Each
 #           index is an exposure-weighted relative price: the world series
 #           are normalised to 2000 = 1, the index is not, and its 2000
@@ -39,6 +40,9 @@
 #                   resolved by reinterpretation).
 #   D-2026-10-23-b  A municipality whose four crop weights are all missing
 #                   has no crop index (NA, not 0).
+#   D-2026-10-30-b  The cattle index lag stored on the level (phase 2R):
+#                   the pooled z-scores leave the panel and the analysis
+#                   scripts standardise both lags on their sample.
 # RUN ORDER After 03-controls-agro.R (weights).
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
@@ -132,7 +136,8 @@ prices_index <- crop_index %>%
   full_join(cattle_index, by = c("geocode", "year")) %>%
   arrange(geocode, year) %>%
   group_by(geocode) %>%
-  mutate(price_index_crop_lag1 = lag(price_index_crop)) %>%
+  mutate(price_index_crop_lag1   = lag(price_index_crop),
+         price_index_cattle_lag1 = lag(price_index_cattle)) %>%
   ungroup()
 
 # ---- Assert: output state ---------------------------------------------------
@@ -153,6 +158,9 @@ stopifnot(
   all(is.na(prices_index$price_index_crop_lag1) ==
         (prices_index$year == PRICES_YEARS[1] |
            is.na(prices_index$price_index_crop))),
+  all(is.na(prices_index$price_index_cattle_lag1) ==
+        (prices_index$year == PRICES_YEARS[1] |
+           is.na(prices_index$price_index_cattle))),
   is.integer(prices_norm$year),
   all(map_lgl(prices_norm[-1], is.double)),
   is.character(prices_index$geocode),

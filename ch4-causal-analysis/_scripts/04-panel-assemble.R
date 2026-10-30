@@ -1,9 +1,10 @@
 # 04-panel-assemble.R
 # PURPOSE   Assemble the municipality-year panel of the nine Legal Amazon
 #           states (808 municipalities, 2000-2020) from the interim outputs of
-#           scripts 01-03, and add the two derived blocks the analysis
-#           scripts inherit: pooled z-scores of the price indices and
-#           per-capita Bolsa Família transfers.
+#           scripts 01-03, and add the derived block the analysis scripts
+#           inherit, per-capita Bolsa Família transfers. The pooled
+#           z-scores of the price indices left the panel at phase 2R
+#           (D-2026-10-30-b).
 #
 # INPUTS    _data/interim/mapbiomas_deforestation_amz_1987_2023.rds
 #                                                     01-env-deforestation.R
@@ -40,11 +41,13 @@
 #   D-2026-10-11-c  Superseded by D-2026-10-28-j (phase 2, step 2.8): the
 #                   areas arrive in km2 and the rate on 0-1 from script 01
 #                   and are carried as they are.
-#   D-2026-10-11-d  Price indices z-scored on the pooled panel; level and
-#                   lag share one centre and spread; the cattle lag is
-#                   built from the z-score; flagged for the storage audit
-#                   (task 2.2). The indices arrive on the exposure scale
-#                   and stay there (D-2026-10-23-a).
+#   D-2026-10-11-d  Superseded by D-2026-10-30-b (phase 2R): the pooled
+#                   z-scores of the price indices are sample-dependent and
+#                   leave the panel; the analysis scripts standardise on
+#                   their estimation sample (utils/derived_variables.R).
+#                   The indices arrive on the exposure scale and stay
+#                   there (D-2026-10-23-a); both lags arrive from script
+#                   03 on the level.
 #   D-2026-10-11-f  bf_transfers_pc_brl_2024 = transfers / population, NA
 #                   where population is missing or zero.
 #   D-2026-10-11-g  Columns not carried into the panel at the join.
@@ -79,10 +82,8 @@
 #   D-2026-10-29-b  The six Cerrado municipalities of Mato Grosso installed
 #                   in 2001 join the lookup, so the post-2000 and parent
 #                   flags and the installation rule cover the whole sample.
-#   D-2026-10-29-c  The pooled z-scores keep the biome municipalities as
-#                   their reference population: centre and spread over the
-#                   biome_amazon == 1 municipality-years, applied to every
-#                   row, so no value of the audited sample moves.
+#   D-2026-10-29-c  Superseded for the z-scores by D-2026-10-30-b; its
+#                   pressure-score part stays in script 05.
 #
 # RUN ORDER After every 01, 02 and 03 script. Script 05 reads the output.
 
@@ -126,8 +127,6 @@ N_MUNIC_LEGAL_EXPECTED <- 772L
 FLAG_COLS <- c("biome_amazon", "legal_amazon")
 # Every PPCDAm municipality is in the nine states (panel.qmd Q2, Q11).
 N_PPCDAM_OUTSIDE_EXPECTED <- 0L                               # D-2026-10-11-b
-# Reference population of the pooled z-scores (D-2026-10-29-c).
-Z_REF_FLAG <- "biome_amazon"
 # ---- end fix -----------------------------------------------------------------
 # ---- Fix (D-2026-10-28-g; phase 2, step 2.7) ---------------------------------
 # The 2022 area is on the MapBiomas mesh, so no forest area exceeds the
@@ -135,7 +134,6 @@ Z_REF_FLAG <- "biome_amazon"
 # area, panel.qmd Q3).
 N_FOREST_OVER_AREA_EXPECTED <- 0L
 # ---- end fix -----------------------------------------------------------------
-Z_TOL <- 1e-6
 # Municipality-years after 2000 without a governing election in the data
 # (D-2026-10-22-d): Mojuí dos Campos 2001-2012 (installed 2013), 2001-2004
 # for Ipiranga do Norte, Itanhangá (installed 2005), Altamira do Maranhão,
@@ -190,8 +188,9 @@ PANEL_COLS <- c(
   "crop_rice_munic_area_share", "crop_cotton_munic_area_share",
   "cattle_heads", "cattle_per_km2",
   "price_index_crop", "price_index_cattle", "price_index_crop_lag1",
-  "price_index_crop_z", "price_index_crop_lag1_z", "price_index_cattle_z",
-  "price_index_cattle_lag1_z",
+  # Phase 2R (D-2026-10-30-b): the four pooled z-score columns that stood
+  # here left the panel; the cattle lag level takes their place.
+  "price_index_cattle_lag1",
   # Phase 2, step 2.3 (D-2026-10-22-e): the eight elec_*_gov columns that
   # stood here are retired.
   "bf_transfers_pc_brl_2024",
@@ -312,30 +311,7 @@ panel <- deforestation %>%
   mutate(ppcdam_list = replace_na(ppcdam_list, 0L)) %>%
   arrange(geocode, year)
 
-# Pooled standardisation; the crop lag uses the level's centre and spread
-# so level and lag read on one metric (D-2026-10-11-d). Flagged for the
-# storage audit (task 2.2).
-# ---- Fix (D-2026-10-29-c; phase 2, step 2.9) ---------------------------------
-# The reference population stays the biome municipality-years, the pool of
-# the audited sample; the centre and spread apply to every row.
-z_ref    <- panel[[Z_REF_FLAG]] == 1L
-crop_m   <- mean(panel$price_index_crop[z_ref],   na.rm = TRUE)
-crop_s   <- sd(panel$price_index_crop[z_ref],     na.rm = TRUE)
-cattle_m <- mean(panel$price_index_cattle[z_ref], na.rm = TRUE)
-cattle_s <- sd(panel$price_index_cattle[z_ref],   na.rm = TRUE)
-# ---- end fix -----------------------------------------------------------------
-
 panel <- panel %>%
-  mutate(
-    price_index_crop_z      = (price_index_crop      - crop_m)   / crop_s,
-    price_index_crop_lag1_z = (price_index_crop_lag1 - crop_m)   / crop_s,
-    price_index_cattle_z    = (price_index_cattle    - cattle_m) / cattle_s
-  ) %>%
-  group_by(geocode) %>%
-  mutate(
-    price_index_cattle_lag1_z = lag(price_index_cattle_z, n = 1L)
-  ) %>%
-  ungroup() %>%
   mutate(
     bf_transfers_pc_brl_2024 = if_else(
       !is.na(population) & population > 0,
@@ -352,8 +328,6 @@ panel <- panel %>%
 # ---- Assert: output state ---------------------------------------------------
 # panel.qmd Q1-Q5, Q9, Q11.
 first_year <- panel$year == min(PANEL_YEARS)
-z_cols <- c("price_index_crop_z", "price_index_cattle_z")
-z_ref  <- panel[[Z_REF_FLAG]] == 1L
 emp_na <- is.na(panel$emp_workers_n)
 agri_share_cols <- c("emp_share_agri_low_workers", "emp_share_agri_mid_workers",
                      "emp_share_agri_high_workers")
@@ -403,9 +377,6 @@ stopifnot(
     N_PIA_RATE_OVER_1_EXPECTED,
   all(map_lgl(panel[setdiff(PIA_RATE_COLS, "emp_pia_rate_total")],
               ~ all(.x <= panel$emp_pia_rate_total, na.rm = TRUE))),
-  # D-2026-10-29-c: mean 0 and sd 1 over the reference population.
-  all(abs(map_dbl(panel[z_ref, z_cols], mean, na.rm = TRUE)) < Z_TOL),
-  all(abs(map_dbl(panel[z_ref, z_cols], sd, na.rm = TRUE) - 1) < Z_TOL),
   # D-2026-10-29-a: the flags are constant within municipality, the biome
   # inside the Legal Amazon, with the expected counts.
   all(map_lgl(panel[FLAG_COLS],
@@ -413,7 +384,12 @@ stopifnot(
   all(panel$biome_amazon <= panel$legal_amazon),
   sum(panel$biome_amazon[first_year]) == N_MUNIC_BIOME_EXPECTED,
   sum(panel$legal_amazon[first_year]) == N_MUNIC_LEGAL_EXPECTED,
-  all(is.na(panel$price_index_cattle_lag1_z[first_year])),
+  # Both index lags from script 03: NA in the first year and where the
+  # level is NA, nowhere else (D-2026-10-30-b).
+  all(is.na(panel$price_index_cattle_lag1) ==
+        (first_year | is.na(panel$price_index_cattle))),
+  all(is.na(panel$price_index_crop_lag1) ==
+        (first_year | is.na(panel$price_index_crop))),
   # Governing-year storage (D-2026-10-22-d): 2000 NA; after 2000 the only
   # NA municipality-years are those without a governing election in the
   # data (panel.qmd Q5).
