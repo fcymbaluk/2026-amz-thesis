@@ -631,7 +631,7 @@ Supersedes: none
 
 ## D-2026-10-10-c  Mayoral candidates keyed on sequencial_candidato; id_candidato_bd abandoned
 
-Status: closed (phase 1, script 03, 03-controls-elections.R; author decision 2026-10-10 on the key). Implementation: votes are summed by ballot number (numero_candidato) and party within municipality, year and round, the legacy aggregation less the lost id, and elec_winner_id is the winner's smallest sequencial_candidato. The eight other elec_* columns and election_year reproduce the reference on all 10,542 cells, so the "9 residual cells" of the stage 5 spot-check were an artefact of that check; elec_winner_id differs on every cell by definition (60 reference NAs are now filled)
+Status: closed (phase 1, script 03, 03-controls-elections.R; author decision 2026-10-10 on the key). Implementation: votes are summed by ballot number (numero_candidato) and party within municipality, year and round, the legacy aggregation less the lost id, and elec_winner_id is the winner's smallest sequencial_candidato. The eight other elec_* columns and election_year reproduce the reference on all 10,542 cells, so the "9 residual cells" of the stage 5 spot-check were an artefact of that check; elec_winner_id differs on every cell by definition (60 reference NAs are now filled); the dedupe deferred here was done 2026-10-31 by D-2026-10-31-e
 Scope: script 03 (electoral section, legacy input _data/raw-tse-results-2.csv, line 409 at tag pre-reorg); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_winner_party, elec_winner_id, elec_competitive, elec_uncontested, election_year and the _gov lags; raw/tse/
 Context: the lost TSE file carried id_candidato_bd, the Base dos Dados
          cross-election person identifier, which the legacy script used as
@@ -2793,42 +2793,47 @@ Supersedes: none (applies D-2026-10-10-g to the extension)
 
 ## D-2026-10-31-e  TSE: dedupe of the 36 ballot-number duplicates of 2000 and 2004, and the nine elections whose declared winner is not the most voted
 
-Status: open (phase 2, after task 1.11, 2026-10-31; for the author; the separate entry D-2026-10-10-c deferred to phase 2)
-Scope: 03-controls-elections.R (candidate key and vote sum, D-2026-10-10-c; winner rule, D-2026-10-10-d and D-2026-10-31-c); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_total_votes, elec_winner_party, elec_winner_id and elec_competitive of the 36 duplicate municipality-elections (26 in the biome) over their governing years 2001-2004 and 2005-2008; the winner columns of the nine declared-not-most-voted elections
+Status: closed (phase 2, after task 1.11, branch phase2-tse-dedupe, 2026-10-31; author's decision 2026-10-31 on both parts; comparator report in the commit message)
+Scope: 03-controls-elections.R (candidate set: one candidacy per ballot number; winner rule unchanged, D-2026-10-10-d and D-2026-10-31-c); elec_enc, elec_mov, elec_winner_share, elec_n_candidates, elec_total_votes, elec_winner_party, elec_winner_id and elec_competitive (pol_mayor_*_term) of the 36 duplicate municipality-elections (26 in the biome) over their governing years 2001-2004 and 2005-2008
 Context: the raw extract carries two rows for one ballot number in 36
          municipality-elections of 2000 and 2004 (two
-         sequencial_candidato, identical votes): 27 under the same party
-         label, summed by the pipeline's key so their votes count twice,
-         as inherited from the lost script (D-2026-10-10-c; KNOWN DEFECTS
-         block of script 03), and 9 under two party labels, kept as two
-         candidates with equal votes. The tie-break check of
-         D-2026-10-31-c shows the four tied different-party pairs
-         (Vilhena, Anamã, Matinha and Presidente Sarney, 2004) to be
-         substituted candidacies: one row declared elected, the other
-         "renuncia/falecimento/cassacao", the same votes recorded under
-         both candidate numbers. The remaining 32 pairs are untested
-         against the declaration. Separately, nine elections of 2000 and
-         2004 (Alvorada D'Oeste, Juruá, Paço do Lumiar and Presidente
-         Médici (MA) in the biome; Balsas, Luciara, Serra Nova Dourada,
-         Alto Parnaíba and Vargem Grande outside) declare elected a
-         candidate who is not the most voted, the most voted reading
-         "nao eleito" or "renuncia/falecimento/cassacao" in some zones;
-         the pipeline stores the most voted as winner (D-2026-10-10-d).
-Reason: open question for the author, in two parts. (1) Dedupe: whether
-        the duplicate rows are one candidacy (the same votes under a
-        substituted or relabelled registration), in which case the
-        pipeline counts each once (one candidate, the votes once, the
-        declared row's party and id), which moves the ENC, the margin,
-        the winner's share, the candidate count and the total votes of
-        the 36 elections over their governing years, 26 municipalities
-        in the biome; the evidence needed is the resultado pattern of all
-        36 pairs and the TSE candidate registrations. (2) Declared
-        winner: whether the winner columns follow the TSE declaration
-        wherever one exists (nine elections move; the margin and ENC
-        keep the vote counts) or stay with the most voted (the votes
-        cast; the declaration a later judicial outcome). Each is a
-        definition change with its own comparator report; one phase 2
-        step before stage 10 if taken.
-Evidence: _audit/tse.qmd Q2 and Q6 (2026-10-31 render); D-2026-10-10-c (Reason), D-2026-10-31-c (Context)
-Affects: until decided, the elec_* columns of the 36 duplicate elections as inherited (the votes of 27 pairs doubled, 9 pairs as two candidates) and the winner's party and id of the nine declared-not-most-voted elections over their governing years; no value changed by this entry
-Supersedes: none (takes up the dedupe D-2026-10-10-c deferred)
+         sequencial_candidato, identical votes row by row): 27 under the
+         same party label, summed by the phase 1 key so their votes
+         counted twice, as inherited from the lost script (D-2026-10-10-c;
+         KNOWN DEFECTS block of script 03), and 9 under two party labels,
+         kept as two candidates with equal votes. The TSE result column
+         sorts them into two patterns (_audit/tse.qmd Q2): the 20 pairs
+         of 2000 are identical rows (same party, the same declaration on
+         both), one candidacy registered twice; in each of the 16 pairs
+         of 2004 one registration reads "renuncia/falecimento/cassacao"
+         and the other elected or not, a substitute who kept the ballot
+         number (same party in 7, a different label in 9, the four tied
+         pairs of D-2026-10-31-c among them). In no pair are these two
+         people who each received those votes. The nine elections of
+         2000 and 2004 that declared elected a candidate who was not the
+         most voted (Alvorada D'Oeste, Juruá, Paço do Lumiar and
+         Presidente Médici (MA) in the biome; Balsas, Luciara, Serra Nova
+         Dourada, Alto Parnaíba and Vargem Grande outside) all had a
+         doubled pair as their most-voted candidacy.
+Reason: two parts, decided by the author 2026-10-31. (1) Dedupe,
+        applied: script 03 keeps one candidacy per ballot number and
+        election, the registration not renounced in 2004 and the smaller
+        sequencial_candidato in 2000, with its party and id, votes
+        counted once; it asserts the 36 pairs by year, two rows each
+        with identical votes, the 2000 pairs same-party with no renounced
+        row, the 2004 pairs with exactly one, and no registration lost
+        elsewhere. (2) Declared winner, decided against: the winner stays
+        the most voted candidate of the first round, not the TSE
+        declaration, because the electoral block measures the contest
+        and not the office holder (in the 38 runoff elections of the
+        window the stored winner is the first-round leader by design,
+        D-2026-10-10-d); the declaration decides ties only
+        (D-2026-10-31-c). After the dedupe the two rules agree in every
+        election with a declaration, the nine cases above included, so
+        no value depends on the choice. A variable for the party that
+        governed (declaration plus second round) is not needed now and
+        is not built; if the design ever needs it, it is a new variable
+        with its own entry. The KNOWN DEFECTS block of script 03 retired.
+Evidence: _audit/tse.qmd Q2 and Q6 (2026-10-31 render after the fix); comparator of scripts 03 to 06 against the post-tie-break outputs: elec_enc, elec_mov and elec_winner_share in 144 cells each (36 municipalities, 2001-2008), elec_competitive 60 (15 elections flip), elec_winner_id 44 (11 elections), elec_winner_party 36 (9 elections), elec_n_candidates 36 (the 9 different-party pairs), no other column, no schema change, panel_amz_baseline identical
+Affects: the electoral block of the 36 elections over their governing years: 144 municipality-years of 36 municipalities, 26 in the biome; the ENC moves by up to 1.0 (median -0.08), the winner's share by up to 0.24, the margin by up to 0.43, with 15 competitive flags flipped (eight to 0, seven to 1) and 11 winners changed (the nine declared winners above plus the id of Chaves and Zé Doca 2004, same party); nothing outside 2001-2008
+Supersedes: none (takes up the dedupe D-2026-10-10-c deferred; the ballot-order tie-break of phase 1 was already replaced by D-2026-10-31-c)

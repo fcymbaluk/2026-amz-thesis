@@ -2425,20 +2425,46 @@ vertical-align: -.125em;
 1 TRUE       FALSE          9
 2 TRUE       TRUE          27</code></pre>
 </div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>pairs <span class="ot">&lt;-</span> dups <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ano, id_municipio, numero_candidato, sequencial_candidato, sigla_partido) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">result =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">unique</span>(resultado)), <span class="at">collapse =</span> <span class="st">&quot;|&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ano, id_municipio, numero_candidato) <span class="sc">%&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(sequencial_candidato, <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">same_party =</span> <span class="fu">n_distinct</span>(sigla_partido) <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">results =</span> <span class="fu">paste</span>(result, <span class="at">collapse =</span> <span class="st">&quot; / &quot;</span>), <span class="at">top =</span> <span class="fu">any</span>(votes <span class="sc">==</span> <span class="fu">max</span>(votes)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>pairs <span class="sc">%&gt;%</span> <span class="fu">count</span>(ano, same_party, results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 4
+  ano   same_party results                                        n
+  &lt;chr&gt; &lt;lgl&gt;      &lt;chr&gt;                                      &lt;int&gt;
+1 2000  TRUE       eleito / eleito                                3
+2 2000  TRUE       nao eleito / nao eleito                       17
+3 2004  FALSE      eleito / renuncia/falecimento/cassacao         1
+4 2004  FALSE      nao eleito / renuncia/falecimento/cassacao     2
+5 2004  FALSE      renuncia/falecimento/cassacao / eleito         3
+6 2004  FALSE      renuncia/falecimento/cassacao / nao eleito     3
+7 2004  TRUE       eleito / renuncia/falecimento/cassacao         1
+8 2004  TRUE       renuncia/falecimento/cassacao / eleito         2
+9 2004  TRUE       renuncia/falecimento/cassacao / nao eleito     4</code></pre>
 </div>
-<p><strong>Finding.</strong> Thirty-six municipality-elections of 2000 and 2004 (26 in the biome, 10 among the municipalities added at step 2.9) carry two rows for one ballot number, with two <code>sequencial_candidato</code> values and identical votes; in 27 the party is the same and in 9 the two rows carry different party labels: a Base dos Dados artefact. The lost script grouped by <code>id_candidato_bd</code> and ballot number and summed, which doubled these votes; summing by ballot number reproduces that count, and the recovered panel’s <code>elec_n_candidates</code> and <code>elec_enc</code> are reproduced on every cell at the script 03 acceptance (commit message). The pipeline keeps the sum and takes the smaller <code>sequencial_candidato</code> as the winner’s id. <strong>Decision.</strong> D-2026-10-10-c (closed); the dedupe was left to phase 2 and is still open (no phase 2 step took it; the KNOWN DEFECTS block of script 03 stands; since 2026-10-31 it has its own entry, D-2026-10-31-e). The nine different-party pairs are not summed by the pipeline’s key, which includes the party, and count as two candidates with equal votes (Q6). In the four of them that tie (Vilhena, Anamã, Matinha and Presidente Sarney, 2004) one row is declared elected and the other reads “renuncia/falecimento/cassacao”: a substituted candidacy that kept the ballot number, not two candidates (Q6; D-2026-10-31-c). <strong>Assertion.</strong> none (the duplicates are summed as inherited; KNOWN DEFECTS block).</p>
+</div>
+<p><strong>Finding.</strong> Thirty-six municipality-elections of 2000 and 2004 (26 in the biome, 10 among the municipalities added at step 2.9) carry two rows for one ballot number, with two <code>sequencial_candidato</code> values and identical votes; in 27 the party is the same and in 9 the two rows carry different party labels. The TSE result column sorts them into two patterns: the 20 pairs of 2000 are identical rows (same party, the same declaration on both, elected in 3), one candidacy registered twice; in each of the 16 pairs of 2004 one registration reads “renuncia/falecimento/cassacao” and the other elected or not, a substitute who kept the ballot number, under the same party in 7 and a different label in 9. In no pair are these two people who each received those votes. The lost script grouped by <code>id_candidato_bd</code> and ballot number and summed, which doubled the votes of the 27 same-party pairs; the 9 different-party pairs it counted as two candidates with equal votes. Phase 1 reproduced that count (D-2026-10-10-c), and so did the pipeline until 2026-10-31: the recovered panel’s <code>elec_n_candidates</code> and <code>elec_enc</code> were reproduced on every cell at the script 03 acceptance. Since D-2026-10-31-e script 03 keeps one candidacy per ballot number, the registration not renounced in 2004 and the smaller id in 2000, with its party and id, votes counted once. The footprint (comparator in the commit message): the ENC, margin and winner’s share of the 36 elections over their governing years 2001-2004 and 2005-2008 (144 municipality-years, 26 municipalities in the biome), the candidate count down by one in the 9 different-party pairs, the competitive flag flipped in 15 elections, and the winner in 11, nine of them the elections of Q6 whose declared winner was not the most voted: their most-voted candidacy was a doubled pair. <strong>Decision.</strong> D-2026-10-10-c (closed, the key); D-2026-10-31-e (closed, the dedupe, 2026-10-31): one candidacy per ballot number. <strong>Assertion.</strong> <code>N_DUP_PAIRS_EXPECTED</code> (20 in 2000, 16 in 2004); two rows per pair with identical votes; the 2000 pairs same-party with no renounced row, the 2004 pairs with exactly one; one candidacy per ballot number after the dedupe and no registration lost elsewhere (script 03, “Assert: ballot-number pairs”).</p>
 </section>
 <section id="q3.-are-uncontested-elections-coded-as-intended" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-are-uncontested-elections-coded-as-intended">Q3. Are uncontested elections coded as intended?</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>election_rows <span class="ot">&lt;-</span> tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(election_year <span class="sc">==</span> <span class="dv">1</span>L, <span class="sc">!</span><span class="fu">is.na</span>(elec_enc))</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>election_rows <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested),</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">mov_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)), <span class="at">competitive_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_competitive)),</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>election_rows <span class="ot">&lt;-</span> tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(election_year <span class="sc">==</span> <span class="dv">1</span>L, <span class="sc">!</span><span class="fu">is.na</span>(elec_enc))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>election_rows <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested),</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">mov_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)), <span class="at">competitive_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_competitive)),</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 5
@@ -2453,8 +2479,8 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1100031&quot;</span>, year <span class="sc">%in%</span> <span class="dv">2008</span><span class="sc">:</span><span class="dv">2015</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_n_candidates, elec_enc, elec_mov, elec_competitive, elec_uncontested)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1100031&quot;</span>, year <span class="sc">%in%</span> <span class="dv">2008</span><span class="sc">:</span><span class="dv">2015</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_n_candidates, elec_enc, elec_mov, elec_competitive, elec_uncontested)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 7
@@ -2477,8 +2503,8 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1100015&quot;</span>, year <span class="sc">%in%</span> <span class="dv">2003</span><span class="sc">:</span><span class="dv">2009</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_n_candidates, elec_enc, elec_winner_party)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1100015&quot;</span>, year <span class="sc">%in%</span> <span class="dv">2003</span><span class="sc">:</span><span class="dv">2009</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, election_year, elec_n_candidates, elec_enc, elec_winner_party)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 5
@@ -2500,37 +2526,37 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>election_rows <span class="sc">%&gt;%</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean_candidates =</span> <span class="fu">mean</span>(elec_n_candidates), <span class="at">mean_enc =</span> <span class="fu">mean</span>(elec_enc),</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">median_mov =</span> <span class="fu">median</span>(elec_mov, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_competitive =</span> <span class="fu">mean</span>(elec_competitive, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_uncontested =</span> <span class="fu">mean</span>(elec_uncontested), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>election_rows <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean_candidates =</span> <span class="fu">mean</span>(elec_n_candidates), <span class="at">mean_enc =</span> <span class="fu">mean</span>(elec_enc),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">median_mov =</span> <span class="fu">median</span>(elec_mov, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_competitive =</span> <span class="fu">mean</span>(elec_competitive, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_uncontested =</span> <span class="fu">mean</span>(elec_uncontested), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 7
    year     n mean_candidates mean_enc median_mov share_competitive share_uncontested
   &lt;int&gt; &lt;int&gt;           &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;             &lt;dbl&gt;             &lt;dbl&gt;
-1  2004   802            2.85     2.28      0.117             0.439            0.0125
-2  2008   807            2.92     2.35      0.106             0.474            0.0124
+1  2004   802            2.85     2.28      0.117             0.442            0.0125
+2  2008   807            2.91     2.34      0.106             0.471            0.0124
 3  2012   806            2.88     2.24      0.110             0.463            0.0360
 4  2016   808            2.94     2.31      0.101             0.497            0.0235
 5  2020   807            3.09     2.34      0.115             0.447            0.0248
 6  2024   807            3.60     2.41      0.124             0.429            0.0198</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Over the 808 municipalities of the nine states (the sample since phase 2, step 2.9), about three candidates and 2.2 to 2.4 effective candidates on average, a median margin of 10 to 12 points, 44 to 50 percent of the races below the ten-point threshold and 1 to 4 percent uncontested (the 2012 peak is the zero-vote exclusion of Q8); the measures move little across elections, with a rise in candidacies in 2020 and again in 2024. <strong>Decision.</strong> none required.</p>
+<p><strong>Finding.</strong> Over the 808 municipalities of the nine states (the sample since phase 2, step 2.9), about three candidates and 2.2 to 2.4 effective candidates on average, a median margin of 10 to 12 points, 43 to 50 percent of the races below the ten-point threshold and 1 to 4 percent uncontested (the 2012 peak is the zero-vote exclusion of Q8; the 2004 row carries the dedupe of Q2 since 2026-10-31, the 2000 election sits on the 2001-2004 rows outside this table); the measures move little across elections, with a rise in candidacies in 2020 and again in 2024. <strong>Decision.</strong> none required.</p>
 </section>
 <section id="q6.-are-there-zero-vote-candidates-or-first-place-ties" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-are-there-zero-vote-candidates-or-first-place-ties">Q6. Are there zero-vote candidates or first-place ties?</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>candidates <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido) <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>candidates <span class="sc">%&gt;%</span> <span class="fu">filter</span>(votes <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>candidates <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>candidates <span class="sc">%&gt;%</span> <span class="fu">filter</span>(votes <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
@@ -2541,12 +2567,12 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>candidates <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">n</span>() <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(votes), <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">tie =</span> votes[<span class="dv">1</span>] <span class="sc">==</span> votes[<span class="dv">2</span>], <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(tie)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>candidates <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">n</span>() <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(votes), <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">tie =</span> votes[<span class="dv">1</span>] <span class="sc">==</span> votes[<span class="dv">2</span>], <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(tie)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
@@ -2556,19 +2582,25 @@ vertical-align: -.125em;
 2 TRUE      6</code></pre>
 </div>
 </div>
-<p>The TSE result column (<code>resultado</code>) against the vote count, on the candidates with valid votes (the pipeline’s set since step 2.7): declared winners per election, the tied candidates with their declaration, and the elections whose declared winner is not the most voted.</p>
+<p>The TSE result column (<code>resultado</code>) against the vote count, on the pipeline’s candidate set (one candidacy per ballot number since D-2026-10-31-e, valid votes only since step 2.7): declared winners per election, the tied candidates with their declaration, and the elections whose declared winner is not the most voted.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>declared <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido) <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">elected =</span> <span class="fu">any</span>(resultado <span class="sc">==</span> <span class="st">&quot;eleito&quot;</span>),</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">result =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(resultado), <span class="at">collapse =</span> <span class="st">&quot; | &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(votes <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">top =</span> votes <span class="sc">==</span> <span class="fu">max</span>(votes), <span class="at">n_top =</span> <span class="fu">sum</span>(top), <span class="at">n_elected =</span> <span class="fu">sum</span>(elected)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(geocode, year, n_elected) <span class="sc">%&gt;%</span> <span class="fu">count</span>(n_elected)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>declared <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato,</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>           sequencial_candidato, sigla_partido) <span class="sc">%&gt;%</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">elected =</span> <span class="fu">any</span>(resultado <span class="sc">==</span> <span class="st">&quot;eleito&quot;</span>),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">renounced =</span> <span class="fu">all</span>(resultado <span class="sc">==</span> <span class="st">&quot;renuncia/falecimento/cassacao&quot;</span>),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">result =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(resultado), <span class="at">collapse =</span> <span class="st">&quot; | &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, year, numero_candidato) <span class="sc">%&gt;%</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(renounced, sequencial_candidato, <span class="at">.by_group =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(votes <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">top =</span> votes <span class="sc">==</span> <span class="fu">max</span>(votes), <span class="at">n_top =</span> <span class="fu">sum</span>(top), <span class="at">n_elected =</span> <span class="fu">sum</span>(elected)) <span class="sc">%&gt;%</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(geocode, year, n_elected) <span class="sc">%&gt;%</span> <span class="fu">count</span>(n_elected)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
@@ -2579,47 +2611,30 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_top <span class="sc">&gt;</span> <span class="dv">1</span>, top) <span class="sc">%&gt;%</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, numero_candidato, sigla_partido, votes, result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 12 × 6
-   geocode  year numero_candidato sigla_partido votes result                       
-   &lt;chr&gt;   &lt;int&gt; &lt;chr&gt;            &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;                        
- 1 1100304  2004 15               PMDB          18281 renuncia/falecimento/cassacao
- 2 1100304  2004 15               PTB           18281 eleito                       
- 3 1300086  2004 23               PMDB           2383 eleito                       
- 4 1300086  2004 23               PPS            2383 renuncia/falecimento/cassacao
- 5 1718709  2000 11               PPB             665 eleito                       
- 6 1718709  2000 45               PSDB            665 nao eleito                   
- 7 2106508  2004 25               PFL            6369 renuncia/falecimento/cassacao
- 8 2106508  2004 25               PMDB           6369 eleito                       
- 9 2109270  2004 14               PSC            3279 eleito                       
-10 2109270  2004 14               PTB            3279 renuncia/falecimento/cassacao
-11 2111748  2004 14               PTB            2359 nao eleito                   
-12 2111748  2004 25               PFL            2359 eleito                       </code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_top <span class="sc">==</span> <span class="dv">1</span>, n_elected <span class="sc">==</span> <span class="dv">1</span>, top, <span class="sc">!</span>elected) <span class="sc">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_top <span class="sc">&gt;</span> <span class="dv">1</span>, top) <span class="sc">%&gt;%</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, numero_candidato, sigla_partido, votes, result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 6
-  geocode  year numero_candidato sigla_partido votes result                                    
-  &lt;chr&gt;   &lt;int&gt; &lt;chr&gt;            &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;                                     
-1 1100346  2000 14               PTB            5674 nao eleito                                
-2 1302207  2000 11               PPB            1748 nao eleito                                
-3 2100501  2004 14               PTB            2380 renuncia/falecimento/cassacao | nao eleito
-4 2101400  2000 25               PFL           14338 nao eleito                                
-5 2107506  2000 15               PMDB          20024 nao eleito                                
-6 2109239  2004 43               PV             1504 renuncia/falecimento/cassacao | nao eleito
-7 2112704  2004 15               PMDB          14766 nao eleito | renuncia/falecimento/cassacao
-8 5105309  2000 15               PMDB           1294 nao eleito                                
-9 5107883  2000 15               PMDB            398 nao eleito                                </code></pre>
+<pre><code># A tibble: 4 × 6
+  geocode  year numero_candidato sigla_partido votes result    
+  &lt;chr&gt;   &lt;int&gt; &lt;chr&gt;            &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;     
+1 1718709  2000 11               PPB             665 eleito    
+2 1718709  2000 45               PSDB            665 nao eleito
+3 2111748  2004 14               PTB            2359 nao eleito
+4 2111748  2004 25               PFL            2359 eleito    </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>declared <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_top <span class="sc">==</span> <span class="dv">1</span>, n_elected <span class="sc">==</span> <span class="dv">1</span>, top, <span class="sc">!</span>elected) <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, numero_candidato, sigla_partido, votes, result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 6
+# ℹ 6 variables: geocode &lt;chr&gt;, year &lt;int&gt;, numero_candidato &lt;chr&gt;, sigla_partido &lt;chr&gt;, votes &lt;int&gt;,
+#   result &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Fifty-six candidates with zero votes, almost all in 2012 (candidacies refused after the ballot was printed); in phase 1 they entered the ENC and the candidate count as inherited, and since step 2.7 they are excluded (Q8). Six municipality-elections show a first-place tie when candidates are keyed on ballot number and party, and the TSE result column declares exactly one of the tied candidates elected in every one of them. No election has more than one declared winner; the 39 with none are first rounds that decided nothing (runoff municipalities, the result reading “2º turno”, and a few empty or refused declarations, among them Torixoréu, MT, 2020: one candidate with 196 votes, uncontested under Q3, no declaration). Four ties are the different-party duplicate pairs of Q2 (one ballot number under two party labels with the same votes: Vilhena, RO, Anamã, AM, Matinha and Presidente Sarney, MA, all in 2004 and in the biome); in each, one row is declared elected and the other reads “renuncia/falecimento/cassacao”, a substituted candidacy that kept the ballot number. Two are real ties of valid votes in municipalities added at step 2.9: Rio dos Bois (TO) 2000 (PPB and PSDB, 665 votes each) and Senador Alexandre Costa (MA) 2004 (PTB and PFL, 2,359 each). Phase 1 took the first candidate in ballot-number order, which agreed with the declaration in Rio dos Bois, Anamã and Presidente Sarney and not in Vilhena (PMDB stored for PTB), Matinha (PFL for PMDB) and Senador Alexandre Costa (PTB for PFL). Since the tie-break on the declaration (D-2026-10-31-c, 2026-10-31) the stored winner is the declared one in all six: the winner’s party and id move in 24 cells of those three municipalities, 2005-2008, 16 in the biome; margin (0), ENC and flags unchanged. Beyond ties, nine elections of 2000 and 2004 (Alvorada D’Oeste, Juruá, Paço do Lumiar and Presidente Médici, MA, in the biome; Balsas, Luciara, Serra Nova Dourada, Alto Parnaíba and Vargem Grande outside) declare elected a candidate who is not the most voted, the most voted reading “nao eleito” or “renuncia/falecimento/cassacao” in some zones: registrations refused or mandates lost after the count. The winner rule stays most valid votes there, as inherited; the declaration decides ties only. <strong>Decision.</strong> D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c (closed: a first-place tie goes to the candidate the TSE declared elected); the Q2 dedupe, deferred by D-2026-10-10-c (closed) to a separate entry, is now D-2026-10-31-e (open, for the author) with the substitution pattern as evidence, together with the nine declared-not-most-voted elections; no change. <strong>Assertion.</strong> <code>N_TIED_ELECTIONS_EXPECTED = 6L</code>; at most one declared winner per election; every tie holds exactly one declared winner and the stored winner is it (script 03, “Assert: ties”).</p>
+<p><strong>Finding.</strong> Fifty-six candidates with zero votes, almost all in 2012 (candidacies refused after the ballot was printed); in phase 1 they entered the ENC and the candidate count as inherited, and since step 2.7 they are excluded (Q8). Keyed on ballot number and party, as the first chunk does, six municipality-elections show a first-place tie: four are the different-party pairs of Q2 (Vilhena, RO, Anamã, AM, Matinha and Presidente Sarney, MA, 2004, in the biome), a renounced registration beside its substitute with the same votes, and two are real ties of valid votes in municipalities added at step 2.9, Rio dos Bois (TO) 2000 (PPB and PSDB, 665 votes each) and Senador Alexandre Costa (MA) 2004 (PTB and PFL, 2,359 each). On the pipeline’s candidate set (second chunk) only the two real ties remain, and the TSE result column declares exactly one of the tied candidates elected in each. No election has more than one declared winner; the 39 with none are first rounds that decided nothing (runoff municipalities, the result reading “2º turno”, and a few empty or refused declarations, among them Torixoréu, MT, 2020: one candidate with 196 votes, uncontested under Q3, no declaration). In every election with a declaration the declared winner is now the most voted: the nine elections of 2000 and 2004 where it was not (Alvorada D’Oeste, Juruá, Paço do Lumiar and Presidente Médici, MA, in the biome; Balsas, Luciara, Serra Nova Dourada, Alto Parnaíba and Vargem Grande outside) had a doubled pair of Q2 as their most-voted candidacy, and the dedupe puts the declared winner first in all nine. The sequence of the two fixes: phase 1 took the first tied candidate in ballot-number order, which stored the wrong candidate in Senador Alexandre Costa (PTB for PFL) and the renounced half in Vilhena and Matinha; the tie-break on the declaration (D-2026-10-31-c) corrected the three (24 cells, 2005-2008); the dedupe (D-2026-10-31-e) then removed the four spurious ties and the nine wrong winners of the doubled pairs. The winner remains the most voted candidate of the first round, not the office holder: in the 38 runoff elections of the window the stored winner is the first-round leader, by design (D-2026-10-10-d), and the declaration decides ties only. <strong>Decision.</strong> D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c (closed: a first-place tie goes to the candidate the TSE declared elected); D-2026-10-31-e (closed: one candidacy per ballot number; the winner stays the most voted of the first round, no office-holder variable). <strong>Assertion.</strong> <code>N_TIED_ELECTIONS_EXPECTED = 2L</code>; at most one declared winner per election; every tie holds exactly one declared winner and the stored winner is it (script 03, “Assert: ties”).</p>
 </section>
 <section id="q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22" class="level2">
 <h2 class="anchored" data-anchor-id="q7.-does-the-governing-year-storage-reproduce-the-lagged-block-and-what-do-2021-2024-hold-phase-2-step-2.3-2026-10-22">Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)</h2>
@@ -2627,11 +2642,11 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(year, elec_governing_year) <span class="sc">%&gt;%</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_governing_year)) <span class="sc">%&gt;%</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(elec_governing_year) <span class="sc">%&gt;%</span></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">governs =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(year, elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_governing_year)) <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">governs =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 2
@@ -2648,27 +2663,27 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The comparison against the phase 1 lagged block was run at the step on</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the interim panel of 2026-10-22; once the _gov block is gone from the</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># panel (D-2026-10-22-e) the chunk reports the recorded result instead.</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>phase1 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>)</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>elec_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;elec_enc&quot;</span>, <span class="st">&quot;elec_mov&quot;</span>, <span class="st">&quot;elec_winner_share&quot;</span>, <span class="st">&quot;elec_n_candidates&quot;</span>,</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;elec_winner_party&quot;</span>, <span class="st">&quot;elec_winner_id&quot;</span>, <span class="st">&quot;elec_competitive&quot;</span>, <span class="st">&quot;elec_uncontested&quot;</span>)</span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>) <span class="sc">%in%</span> <span class="fu">names</span>(phase1))) {</span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Recorded at the step: zero differing cells in six of the eight columns;&quot;</span>,</span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;164 cells in elec_mov and in elec_competitive, all NA in the new storage&quot;</span>,</span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;where the lag carried a previous election&#39;s value onto an uncontested race.</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  cmp <span class="ot">&lt;-</span> tse <span class="sc">%&gt;%</span></span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(elec_vars)) <span class="sc">%&gt;%</span></span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(phase1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>))),</span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
-<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(elec_vars, <span class="cf">function</span>(v) {</span>
-<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> cmp[[v]]; b <span class="ot">&lt;-</span> cmp[[<span class="fu">paste0</span>(v, <span class="st">&quot;_gov&quot;</span>)]]</span>
-<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="fu">xor</span>(<span class="fu">is.na</span>(a), <span class="fu">is.na</span>(b)) <span class="sc">|</span> (<span class="sc">!</span><span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b) <span class="sc">&amp;</span> a <span class="sc">!=</span> b)</span>
-<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">variable =</span> v, <span class="at">differing =</span> <span class="fu">sum</span>(d), <span class="at">new_na_old_value =</span> <span class="fu">sum</span>(d <span class="sc">&amp;</span> <span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b)))</span>
-<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The comparison against the phase 1 lagged block was run at the step on</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the interim panel of 2026-10-22; once the _gov block is gone from the</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="co"># panel (D-2026-10-22-e) the chunk reports the recorded result instead.</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>phase1 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>elec_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;elec_enc&quot;</span>, <span class="st">&quot;elec_mov&quot;</span>, <span class="st">&quot;elec_winner_share&quot;</span>, <span class="st">&quot;elec_n_candidates&quot;</span>,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;elec_winner_party&quot;</span>, <span class="st">&quot;elec_winner_id&quot;</span>, <span class="st">&quot;elec_competitive&quot;</span>, <span class="st">&quot;elec_uncontested&quot;</span>)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>) <span class="sc">%in%</span> <span class="fu">names</span>(phase1))) {</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Recorded at the step: zero differing cells in six of the eight columns;&quot;</span>,</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;164 cells in elec_mov and in elec_competitive, all NA in the new storage&quot;</span>,</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;where the lag carried a previous election&#39;s value onto an uncontested race.</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>  cmp <span class="ot">&lt;-</span> tse <span class="sc">%&gt;%</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(elec_vars)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(phase1 <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, <span class="fu">all_of</span>(<span class="fu">paste0</span>(elec_vars, <span class="st">&quot;_gov&quot;</span>))),</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(elec_vars, <span class="cf">function</span>(v) {</span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> cmp[[v]]; b <span class="ot">&lt;-</span> cmp[[<span class="fu">paste0</span>(v, <span class="st">&quot;_gov&quot;</span>)]]</span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> <span class="fu">xor</span>(<span class="fu">is.na</span>(a), <span class="fu">is.na</span>(b)) <span class="sc">|</span> (<span class="sc">!</span><span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b) <span class="sc">&amp;</span> a <span class="sc">!=</span> b)</span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">variable =</span> v, <span class="at">differing =</span> <span class="fu">sum</span>(d), <span class="at">new_na_old_value =</span> <span class="fu">sum</span>(d <span class="sc">&amp;</span> <span class="fu">is.na</span>(a) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(b)))</span>
+<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Recorded at the step: zero differing cells in six of the eight columns; 164 cells in elec_mov and in elec_competitive, all NA in the new storage where the lag carried a previous election&#39;s value onto an uncontested race.</code></pre>
@@ -2677,13 +2692,13 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="ot">&lt;-</span> sample_geo <span class="sc">%&gt;%</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cross_join</span>(<span class="fu">tibble</span>(<span class="at">year =</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(tse, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="sc">%&gt;%</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>, <span class="fu">is.na</span>(elec_enc)) <span class="sc">%&gt;%</span></span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="ot">&lt;-</span> sample_geo <span class="sc">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cross_join</span>(<span class="fu">tibble</span>(<span class="at">year =</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(tse, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>))</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>sample_tse <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2000</span>, <span class="fu">is.na</span>(elec_enc)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">paste</span>(<span class="fu">range</span>(year), <span class="at">collapse =</span> <span class="st">&quot;-&quot;</span>), <span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 5
@@ -2700,12 +2715,12 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id_municipio <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;2100402&quot;</span>, <span class="st">&quot;2102150&quot;</span>, <span class="st">&quot;2105005&quot;</span>, <span class="st">&quot;2109700&quot;</span>, <span class="st">&quot;5104526&quot;</span>, <span class="st">&quot;5104542&quot;</span>,</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;5106307&quot;</span>), turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id_municipio, ano) <span class="sc">%&gt;%</span></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id_municipio) <span class="sc">%&gt;%</span></span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">elections =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(ano), <span class="at">collapse =</span> <span class="st">&quot; &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id_municipio <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;2100402&quot;</span>, <span class="st">&quot;2102150&quot;</span>, <span class="st">&quot;2105005&quot;</span>, <span class="st">&quot;2109700&quot;</span>, <span class="st">&quot;5104526&quot;</span>, <span class="st">&quot;5104542&quot;</span>,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;5106307&quot;</span>), turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(id_municipio, ano) <span class="sc">%&gt;%</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id_municipio) <span class="sc">%&gt;%</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">elections =</span> <span class="fu">paste</span>(<span class="fu">sort</span>(ano), <span class="at">collapse =</span> <span class="st">&quot; &quot;</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 7 × 2
@@ -2723,10 +2738,10 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, election_year, elec_governing_year) <span class="sc">%&gt;%</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">with_values =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_enc)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2019</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, election_year, elec_governing_year) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">with_values =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(elec_enc)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 5
@@ -2747,9 +2762,9 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ano <span class="sc">==</span> <span class="st">&quot;2024&quot;</span>, turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>, tipo_eleicao <span class="sc">==</span> <span class="st">&quot;eleicao ordinaria&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n_distinct</span>(id_municipio), <span class="at">empty_code_rows =</span> <span class="fu">sum</span>(id_municipio <span class="sc">==</span> <span class="st">&quot;&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>tse_raw <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ano <span class="sc">==</span> <span class="st">&quot;2024&quot;</span>, turno <span class="sc">==</span> <span class="st">&quot;1&quot;</span>, tipo_eleicao <span class="sc">==</span> <span class="st">&quot;eleicao ordinaria&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n_distinct</span>(id_municipio), <span class="at">empty_code_rows =</span> <span class="fu">sum</span>(id_municipio <span class="sc">==</span> <span class="st">&quot;&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 2
@@ -2766,13 +2781,13 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>zero <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido,</span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>           numero_partido) <span class="sc">%&gt;%</span></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">resultado =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(resultado), <span class="at">collapse =</span> <span class="st">&quot;/&quot;</span>),</span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(votes <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>zero <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, resultado)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>zero <span class="ot">&lt;-</span> first_round <span class="sc">%&gt;%</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">geocode =</span> id_municipio, <span class="at">year =</span> <span class="fu">as.integer</span>(ano), numero_candidato, sigla_partido,</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>           numero_partido) <span class="sc">%&gt;%</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">votes =</span> <span class="fu">sum</span>(<span class="fu">as.integer</span>(votos)), <span class="at">resultado =</span> <span class="fu">paste</span>(<span class="fu">unique</span>(resultado), <span class="at">collapse =</span> <span class="st">&quot;/&quot;</span>),</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(votes <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>zero <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, resultado)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
@@ -2783,8 +2798,8 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="ot">&lt;-</span> zero <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode)</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="ot">&lt;-</span> zero <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> sample_geo<span class="sc">$</span>geocode)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>zero_sample <span class="sc">%&gt;%</span> <span class="fu">count</span>(year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
@@ -2795,13 +2810,13 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>affected <span class="ot">&lt;-</span> zero_sample <span class="sc">%&gt;%</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, year) <span class="sc">%&gt;%</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(candidates <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">summarise</span>(<span class="at">n_all =</span> <span class="fu">n</span>(), <span class="at">n_valid =</span> <span class="fu">sum</span>(votes <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>),</span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span>
-<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, n_valid)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>affected <span class="ot">&lt;-</span> zero_sample <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(candidates <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">summarise</span>(<span class="at">n_all =</span> <span class="fu">n</span>(), <span class="at">n_valid =</span> <span class="fu">sum</span>(votes <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>),</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(sample_geo, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">count</span>(year, n_valid)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 3
@@ -2818,7 +2833,7 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_valid <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(municipality, state_abbreviation, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>affected <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_valid <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(municipality, state_abbreviation, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 3
@@ -2839,12 +2854,12 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline output after the fix (tse read at setup): the eight races are</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="co"># uncontested over their governing years.</span></span>
-<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
-<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> affected<span class="sc">$</span>geocode[affected<span class="sc">$</span>n_valid <span class="sc">==</span> <span class="dv">1</span>], year <span class="sc">%in%</span> <span class="dv">2013</span><span class="sc">:</span><span class="dv">2016</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cells =</span> <span class="fu">n</span>(), <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested), <span class="at">mov_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)),</span>
-<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">enc_one =</span> <span class="fu">sum</span>(elec_enc <span class="sc">==</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline output after the fix (tse read at setup): the eight races are</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="co"># uncontested over their governing years.</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>tse <span class="sc">%&gt;%</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> affected<span class="sc">$</span>geocode[affected<span class="sc">$</span>n_valid <span class="sc">==</span> <span class="dv">1</span>], year <span class="sc">%in%</span> <span class="dv">2013</span><span class="sc">:</span><span class="dv">2016</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cells =</span> <span class="fu">n</span>(), <span class="at">uncontested =</span> <span class="fu">sum</span>(elec_uncontested), <span class="at">mov_na =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(elec_mov)),</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">enc_one =</span> <span class="fu">sum</span>(elec_enc <span class="sc">==</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
