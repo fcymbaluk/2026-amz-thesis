@@ -111,9 +111,12 @@ keeps the sum and takes the smaller `sequencial_candidato` as the
 winner's id.
 **Decision.** D-2026-10-10-c (closed); the dedupe was left to phase 2
 and is still open (no phase 2 step took it; the KNOWN DEFECTS block of
-script 03 stands). The nine different-party pairs are not summed by the
+script 03 stands; since 2026-10-31 it has its own entry, D-2026-10-31-e). The nine different-party pairs are not summed by the
 pipeline's key, which includes the party, and count as two candidates
-with equal votes (Q6).
+with equal votes (Q6). In the four of them that tie (Vilhena, Anamã,
+Matinha and Presidente Sarney, 2004) one row is declared elected and the
+other reads "renuncia/falecimento/cassacao": a substituted candidacy
+that kept the ballot number, not two candidates (Q6; D-2026-10-31-c).
 **Assertion.** none (the duplicates are summed as inherited; KNOWN DEFECTS
 block).
 
@@ -200,26 +203,69 @@ candidates %>%
   count(tie)
 ```
 
+The TSE result column (`resultado`) against the vote count, on the
+candidates with valid votes (the pipeline's set since step 2.7): declared
+winners per election, the tied candidates with their declaration, and the
+elections whose declared winner is not the most voted.
+
+```{r q6-declared}
+declared <- first_round %>%
+  group_by(geocode = id_municipio, year = as.integer(ano), numero_candidato, sigla_partido) %>%
+  summarise(votes = sum(as.integer(votos)), elected = any(resultado == "eleito"),
+            result = paste(unique(resultado), collapse = " | "), .groups = "drop") %>%
+  filter(votes > 0) %>%
+  group_by(geocode, year) %>%
+  mutate(top = votes == max(votes), n_top = sum(top), n_elected = sum(elected)) %>%
+  ungroup()
+declared %>% distinct(geocode, year, n_elected) %>% count(n_elected)
+declared %>% filter(n_top > 1, top) %>%
+  select(geocode, year, numero_candidato, sigla_partido, votes, result)
+declared %>% filter(n_top == 1, n_elected == 1, top, !elected) %>%
+  select(geocode, year, numero_candidato, sigla_partido, votes, result)
+```
+
 **Finding.** Fifty-six candidates with zero votes, almost all in 2012
 (candidacies refused after the ballot was printed); in phase 1 they
 entered the ENC and the candidate count as inherited, and since step 2.7
 they are excluded (Q8). Six municipality-elections show a first-place
-tie when candidates are keyed on ballot number and party. Four are the
-duplicate rows of Q2 (one ballot number under two party labels with the
-same votes: Vilhena, RO, Anamã, AM, Matinha and Presidente Sarney, MA,
-all in 2004 and in the biome), which the pipeline's key keeps as two
-candidates with equal votes, the inherited defect of Q2 still open. Two
-are real ties of valid votes in municipalities added at step 2.9: Rio
-dos Bois (TO) in 2000 (PPB and PSDB, 665 votes each) and Senador
-Alexandre Costa (MA) in 2004 (PTB and PFL, 2,359 each). The pipeline
-takes the first candidate in ballot-number order as the winner, which
-agrees with the TSE result (`resultado`) in Rio dos Bois and not in
-Senador Alexandre Costa, where the TSE declared the PFL candidate
-elected; the winner's party and id stored for 2005-2008 are therefore
-wrong for that municipality, outside the biome.
-**Decision.** D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c, open:
-the tie-break on the TSE result is for the author to decide; the Q2
-dedupe stays open from D-2026-10-10-c.
+tie when candidates are keyed on ballot number and party, and the TSE
+result column declares exactly one of the tied candidates elected in
+every one of them. No election has more than one declared winner; the
+39 with none are first rounds that decided nothing (runoff
+municipalities, the result reading "2º turno", and a few empty or
+refused declarations, among them Torixoréu, MT, 2020: one candidate
+with 196 votes, uncontested under Q3, no declaration). Four ties are the
+different-party duplicate pairs of Q2 (one ballot number under two party
+labels with the same votes: Vilhena, RO, Anamã, AM, Matinha and
+Presidente Sarney, MA, all in 2004 and in the biome); in each, one row is
+declared elected and the other reads "renuncia/falecimento/cassacao", a
+substituted candidacy that kept the ballot number. Two are real ties of
+valid votes in municipalities added at step 2.9: Rio dos Bois (TO) 2000
+(PPB and PSDB, 665 votes each) and Senador Alexandre Costa (MA) 2004
+(PTB and PFL, 2,359 each). Phase 1 took the first candidate in
+ballot-number order, which agreed with the declaration in Rio dos Bois,
+Anamã and Presidente Sarney and not in Vilhena (PMDB stored for PTB),
+Matinha (PFL for PMDB) and Senador Alexandre Costa (PTB for PFL). Since
+the tie-break on the declaration (D-2026-10-31-c, 2026-10-31) the
+stored winner is the declared one in all six: the winner's party and id
+move in 24 cells of those three municipalities, 2005-2008, 16 in the
+biome; margin (0), ENC and flags unchanged. Beyond ties, nine elections
+of 2000 and 2004 (Alvorada D'Oeste, Juruá, Paço do Lumiar and Presidente
+Médici, MA, in the biome; Balsas, Luciara, Serra Nova Dourada, Alto
+Parnaíba and Vargem Grande outside) declare elected a candidate who is
+not the most voted, the most voted reading "nao eleito" or
+"renuncia/falecimento/cassacao" in some zones: registrations refused or
+mandates lost after the count. The winner rule stays most valid votes
+there, as inherited; the declaration decides ties only.
+**Decision.** D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c
+(closed: a first-place tie goes to the candidate the TSE declared
+elected); the Q2 dedupe, deferred by D-2026-10-10-c (closed) to a
+separate entry, is now D-2026-10-31-e (open, for the author) with the
+substitution pattern as evidence, together with the nine
+declared-not-most-voted elections; no change.
+**Assertion.** `N_TIED_ELECTIONS_EXPECTED = 6L`; at most one declared
+winner per election; every tie holds exactly one declared winner and the
+stored winner is it (script 03, "Assert: ties").
 
 ## Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)
 

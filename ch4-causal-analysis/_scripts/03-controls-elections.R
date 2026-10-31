@@ -38,11 +38,19 @@
 #                   printed) leave the candidate set before the shares;
 #                   the ENC is unchanged, the candidate count and the
 #                   uncontested flag follow the valid candidates.
+#   D-2026-10-31-c  After task 1.11: the winner is the candidate with most
+#                   valid votes; a first-place tie is broken by the TSE
+#                   declaration (resultado "eleito"), never by ballot
+#                   order. Six ties in 2000-2020, each with exactly one
+#                   declared winner among the tied.
 #
 # KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
 #   D-2026-10-10-c  36 ballot-number duplicates of 2000 and 2004 are
 #             summed, so their votes count twice, as inherited. Dedupe
-#             is a phase 2 decision.
+#             is a phase 2 decision. The four different-party pairs that
+#             tie in 2004 carry one row declared elected and one
+#             "renuncia/falecimento/cassacao" (tse.qmd Q6): substituted
+#             candidacies, not two candidates.
 # RUN ORDER Independent of the other 03 scripts; no pipeline inputs.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
@@ -61,6 +69,7 @@ TSE_OFFICE         <- "prefeito"
 TSE_ROUND          <- 1L                                      # D-2026-10-10-d
 TSE_ELECTION_TYPE  <- "eleicao ordinaria"                     # D-2026-10-10-d
 ELEC_COMPETITIVE_MOV <- 0.10                                  # D-2026-10-10-d
+TSE_ELECTED          <- "eleito"                              # D-2026-10-31-c
 TSE_STATES <- c("AC", "AM", "AP", "MA", "MT", "PA", "RO", "RR", "TO")
 TSE_COLUMNS <- c("ano", "turno", "id_eleicao", "tipo_eleicao", "data_eleicao",
                  "sigla_uf", "id_municipio", "id_municipio_tse", "cargo",
@@ -73,6 +82,11 @@ N_MUNIC_TSE_EXPECTED <- 808L
 # Zero-vote candidates in the first round of the governing elections, 54
 # of 2012 and 2 of 2020 (tse.qmd Q6, Q8; D-2026-10-28-e).
 N_ZERO_VOTE_CANDIDATES_EXPECTED <- 56L
+# First-place ties of valid votes in the governing elections (tse.qmd Q6;
+# D-2026-10-31-c): Rio dos Bois 2000, Vilhena, Anamã, Matinha, Presidente
+# Sarney and Senador Alexandre Costa 2004. Each has exactly one tied
+# candidate declared elected; at most one candidate per election is.
+N_TIED_ELECTIONS_EXPECTED <- 6L
 
 # ---- Read -------------------------------------------------------------------
 tse_raw <- read_csv(TSE_FILE, col_types = cols(.default = col_character()),
@@ -101,18 +115,21 @@ mayors <- tse_raw %>%
          tipo_eleicao == TSE_ELECTION_TYPE) %>%
   transmute(geocode = id_municipio, year = as.integer(ano),
             sequencial_candidato, numero_candidato, sigla_partido,
-            numero_partido, votes = as.integer(votos)) %>%
+            numero_partido, resultado, votes = as.integer(votos)) %>%
   filter(year %in% TSE_ELECTION_YEARS,
          year %in% governing_election(ELEC_YEARS))      # D-2026-10-22-f
 stopifnot(all(is_geocode(mayors$geocode)))
 
 # One row per candidate: votes summed over zones and over the ballot-number
 # duplicates of 2000 and 2004 (D-2026-10-10-c); the smallest
-# sequencial_candidato stands for the candidate.
+# sequencial_candidato stands for the candidate. A candidate is declared
+# elected when any of its zone rows carries the TSE result "eleito"
+# (D-2026-10-31-c; the result varies across zones for a few candidates).
 candidates_all <- mayors %>%
   group_by(geocode, year, numero_candidato, sigla_partido, numero_partido) %>%
   summarise(candidate_votes = sum(votes),
             candidate_id = min(sequencial_candidato),
+            elected = any(resultado == TSE_ELECTED),
             .groups = "drop")
 
 # ---- Fix (D-2026-10-28-e; phase 2, step 2.7) ---------------------------------
@@ -128,11 +145,20 @@ candidates <- candidates_all %>%
          vote_share = candidate_votes / total_votes) %>%
   ungroup()
 
+# ---- Fix (D-2026-10-31-c; phase 2, after task 1.11) --------------------------
+# The winner is the candidate with most valid votes; a first-place tie is
+# broken by the TSE declaration (elected), then by ballot number for a
+# deterministic order. Phase 1 broke ties by ballot order alone, which
+# stored the wrong winner wherever the declared winner had the higher
+# ballot number (Senador Alexandre Costa 2004; Vilhena and Matinha 2004
+# among the Q2 duplicates). Every tie has one declared winner (assertion).
+# ---- end fix -----------------------------------------------------------------
 # Competitiveness per municipality-election (D-2026-10-10-d). The
 # competitive flag is computed before the uncontested margin is set to NA,
 # so an uncontested race has competitive = NA, as inherited.
 elections <- candidates %>%
-  arrange(geocode, year, desc(vote_share)) %>%
+  arrange(geocode, year, desc(vote_share), desc(elected),
+          numero_candidato, sigla_partido, numero_partido) %>%
   group_by(geocode, year) %>%
   summarise(
     elec_enc          = 1 / sum(vote_share^2),
@@ -194,6 +220,29 @@ stopifnot(
   all(tse_elections$elec_governing_year[tse_elections$year > min(ELEC_YEARS)] %in%
         TSE_ELECTION_YEARS | is.na(tse_elections$elec_enc[tse_elections$year > min(ELEC_YEARS)])),
   is.integer(tse_elections$elec_governing_year)
+)
+# ---- Assert: ties (D-2026-10-31-c) -----------------------------------------
+# tse.qmd Q6. At most one declared winner per election (none in the
+# first round of a runoff municipality); every first-place tie holds exactly
+# one declared winner among the tied candidates, and the stored winner is it.
+ties <- candidates %>%
+  group_by(geocode, year) %>%
+  summarise(n_elected   = sum(elected),
+            n_top       = sum(candidate_votes == max(candidate_votes)),
+            top_elected = sum(elected & candidate_votes == max(candidate_votes)),
+            .groups = "drop") %>%
+  filter(n_top > 1L) %>%
+  left_join(elections %>% select(geocode, year, elec_winner_id),
+            by = c("geocode", "year")) %>%
+  left_join(candidates %>% select(geocode, year, elec_winner_id = candidate_id,
+                                  winner_elected = elected),
+            by = c("geocode", "year", "elec_winner_id"))
+stopifnot(
+  all(tapply(candidates$elected, paste(candidates$geocode, candidates$year),
+             sum) <= 1L),
+  nrow(ties) == N_TIED_ELECTIONS_EXPECTED,
+  all(ties$top_elected == 1L),
+  all(ties$winner_elected)
 )
 stopifnot(
   n_zero_vote == N_ZERO_VOTE_CANDIDATES_EXPECTED,              # D-2026-10-28-e
