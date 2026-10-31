@@ -2256,7 +2256,11 @@ vertical-align: -.125em;
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>biome_amz <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">&quot;_data/raw/ibge/ibge_bioma.csv&quot;</span>, <span class="at">delim =</span> <span class="st">&quot;;&quot;</span>,</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>()),</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">locale =</span> <span class="fu">locale</span>(<span class="at">encoding =</span> <span class="st">&quot;UTF-8&quot;</span>), <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(Geocódigo, <span class="st">&quot;^[0-9]{7}$&quot;</span>), <span class="st">`</span><span class="at">Bioma predominante</span><span class="st">`</span> <span class="sc">==</span> <span class="st">&quot;Amazônia&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(Geocódigo, <span class="st">&quot;^[0-9]{7}$&quot;</span>), <span class="st">`</span><span class="at">Bioma predominante</span><span class="st">`</span> <span class="sc">==</span> <span class="st">&quot;Amazônia&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The 808 municipalities of the nine states with the biome flag (phase 2,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># step 2.9, D-2026-10-29-a).</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>flags <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/mapbiomas_deforestation_amz_1987_2023.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(geocode, municipality, state_abbreviation, biome_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="q1.-what-does-the-export-contain-and-how-is-it-distributed" class="level2">
@@ -2339,7 +2343,7 @@ vertical-align: -.125em;
 </section>
 <section id="q2.-which-municipality-years-have-no-rais-rows" class="level2">
 <h2 class="anchored" data-anchor-id="q2.-which-municipality-years-have-no-rais-rows">Q2. Which municipality-years have no RAIS rows?</h2>
-<p>What is checked: the 808 × 26 grid against the rows present, and the missing municipality-years of the Amazon-biome sample in 2000-2020, which the panel carries as NA employment.</p>
+<p>What is checked: the 808 × 26 grid against the rows present, and the missing municipality-years of 2000-2020, which the panel carries as NA employment, inside and outside the biome.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2376,53 +2380,84 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>missing <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> biome_amz<span class="sc">$</span>Geocódigo, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(geocode, <span class="at">name =</span> <span class="st">&quot;years_missing&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(years_missing)) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>missing_window <span class="ot">&lt;-</span> missing <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(flags, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>missing_window <span class="sc">%&gt;%</span> <span class="fu">count</span>(biome_amazon, <span class="at">name =</span> <span class="st">&quot;municipality_years&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 30 × 2
-   geocode years_missing
-   &lt;chr&gt;           &lt;int&gt;
- 1 1504752            13
- 2 2100832             5
- 3 5104526             5
- 4 5104542             5
- 5 2102150             4
- 6 1400704             3
- 7 2105658             3
- 8 2108256             2
- 9 2109239             2
-10 2112274             2
-11 1400233             1
-12 1507466             1
-13 2100550             1
-14 2100873             1
-15 2101350             1
-16 2103125             1
-17 2103158             1
-18 2104651             1
-19 2105153             1
-20 2106375             1
-21 2107456             1
-22 2111029             1
-23 2111789             1
-24 5101852             1
-25 5103254             1
-26 5103361             1
-27 5103437             1
-28 5106190             1
-29 5107578             1
-30 5107743             1</code></pre>
+<pre><code># A tibble: 2 × 2
+  biome_amazon municipality_years
+         &lt;int&gt;              &lt;int&gt;
+1            0                 35
+2            1                 64</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>missing <span class="sc">%&gt;%</span> <span class="fu">filter</span>(geocode <span class="sc">%in%</span> biome_amz<span class="sc">$</span>Geocódigo, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>missing_window <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(geocode, municipality, state_abbreviation, biome_amazon, <span class="at">name =</span> <span class="st">&quot;years_missing&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(years_missing), geocode) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">60</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 64</code></pre>
+<pre><code># A tibble: 53 × 5
+   geocode municipality               state_abbreviation biome_amazon years_missing
+   &lt;chr&gt;   &lt;chr&gt;                      &lt;chr&gt;                     &lt;int&gt;         &lt;int&gt;
+ 1 1504752 Mojuí dos Campos           PA                            1            13
+ 2 2100832 Apicum-Açu                 MA                            1             5
+ 3 5104526 Ipiranga do Norte          MT                            1             5
+ 4 5104542 Itanhangá                  MT                            1             5
+ 5 2102150 Brejo de Areia             MA                            1             4
+ 6 2106359 Marajá do Sena             MA                            0             4
+ 7 2111672 São Roberto                MA                            0             4
+ 8 1400704 Uiramutã                   RR                            1             3
+ 9 2101731 Belágua                    MA                            0             3
+10 2105658 Junco do Maranhão          MA                            1             3
+11 5107883 Serra Nova Dourada         MT                            0             3
+12 2105450 Jatobá                     MA                            0             2
+13 2108058 Paulino Neves              MA                            0             2
+14 2108256 Pedro do Rosário           MA                            1             2
+15 2109239 Presidente Médici          MA                            1             2
+16 2112274 Tufilândia                 MA                            1             2
+17 1400233 Caroebe                    RR                            1             1
+18 1507466 São João da Ponta          PA                            1             1
+19 1712157 Lavandeira                 TO                            0             1
+20 1712702 Mateiros                   TO                            0             1
+21 1720150 São Félix do Tocantins     TO                            0             1
+22 2100550 Amapá do Maranhão          MA                            1             1
+23 2100873 Araguanã                   MA                            1             1
+24 2101350 Bacurituba                 MA                            1             1
+25 2103125 Central do Maranhão        MA                            1             1
+26 2103158 Centro do Guilherme        MA                            1             1
+27 2104081 Fernando Falcão            MA                            0             1
+28 2104099 Formosa da Serra Negra     MA                            0             1
+29 2104628 Governador Luiz Rocha      MA                            0             1
+30 2104651 Governador Newton Bello    MA                            1             1
+31 2105153 Igarapé do Meio            MA                            1             1
+32 2105351 Itaipava do Grajaú         MA                            0             1
+33 2105963 Lagoa Grande do Maranhão   MA                            0             1
+34 2106375 Maranhãozinho              MA                            1             1
+35 2106672 Milagres do Maranhão       MA                            0             1
+36 2107456 Olinda Nova do Maranhão    MA                            1             1
+37 2109759 Santa Filomena do Maranhão MA                            0             1
+38 2110237 Santana do Maranhão        MA                            0             1
+39 2111029 São João do Carú           MA                            1             1
+40 2111573 São Pedro dos Crentes      MA                            0             1
+41 2111789 Serrano do Maranhão        MA                            1             1
+42 5101852 Bom Jesus do Araguaia      MT                            1             1
+43 5103254 Colniza                    MT                            1             1
+44 5103361 Conquista D&#39;Oeste          MT                            1             1
+45 5103437 Curvelândia                MT                            1             1
+46 5106174 Nova Nazaré                MT                            0             1
+47 5106190 Nova Santa Helena          MT                            1             1
+48 5106315 Novo Santo Antônio         MT                            0             1
+49 5107578 Rondolândia                MT                            1             1
+50 5107743 Santa Cruz do Xingu        MT                            1             1
+51 5107768 Santa Rita do Trivelato    MT                            0             1
+52 5107792 Santo Antônio do Leste     MT                            0             1
+53 5108352 Vale de São Domingos       MT                            0             1</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The gaps concentrate in the early years and in municipalities installed after 2000 (which have no bonds before installation) and in a few small municipalities with no active bond in a year. Within the Amazon-biome sample and the 2000-2020 window, 64 municipality-years are absent: 13 are Mojuí dos Campos before 2013 (dropped downstream), and the remaining 51 are the rows the recovered panel shows as NA in every <code>emp_*</code> column (phase 1 check). The script does not fill them: a missing municipality-year is not a zero. <strong>Decision.</strong> none required; task 1.8 (NA versus zero) documents the rule. <strong>Assertion.</strong> none in script 02 (the grid is completed in script 04).</p>
+<p><strong>Finding.</strong> The gaps concentrate in the early years, in municipalities installed after 2000 (which have no bonds before installation) and in small municipalities with no active bond in a year. Within the 2000-2020 window 99 municipality-years of 53 municipalities are absent: 64 in the biome (13 of them Mojuí dos Campos before 2013, dropped downstream, and the 51 the recovered panel showed as NA in every <code>emp_*</code> column at the phase 1 check) and 35 in 23 of the municipalities added at step 2.9, split into pre-installation years and reporting gaps in Q5. The script does not fill them: a missing municipality-year is not a zero. <strong>Decision.</strong> D-2026-10-28-b (absent municipality-years NA, phase 2, step 2.7); D-2026-10-31-a (the gaps of the added municipalities). <strong>Assertion.</strong> none in script 02 (the grid is completed in script 04).</p>
 </section>
 <section id="q3.-where-do-the-agricultural-wage-group-counts-and-the-shares-turn-na" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-where-do-the-agricultural-wage-group-counts-and-the-shares-turn-na">Q3. Where do the agricultural wage-group counts and the shares turn NA?</h2>
@@ -2530,11 +2565,11 @@ vertical-align: -.125em;
 </div>
 </div>
 </div>
-<p><strong>Finding.</strong> The median municipality has formal employment near 3 percent of its working-age population in 2000 and about 10 percent by the mid-2010s; the median low-wage share of bonds falls from 75 to 13 percent. Three municipality-years exceed a rate of one (5107800 in 2000-2001, 1720259 in 2007), where the bonds counted outnumber the interpolated PIA; kept as inherited. <strong>Decision.</strong> none required. <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (counts add up; shares within 0-1).</p>
+<p><strong>Finding.</strong> The median municipality has formal employment near 3 percent of its working-age population in 2000 and about 10 percent by the mid-2010s; the median low-wage share of bonds falls from 75 to 13 percent. Three municipality-years exceed a rate of one (Santo Antônio de Leverger, MT, in 2000-2001 and São Salvador do Tocantins, TO, in 2007), both outside the biome, where the bonds counted outnumber the interpolated PIA: more formal jobs than working-age residents is a commuting or registration effect, kept as computed and outside the 0-1 guard. <strong>Decision.</strong> D-2026-10-29-d (the bonds-per-PIA rates above one stored as computed). <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (counts add up; shares within 0-1).</p>
 </section>
 <section id="q5.-which-municipality-years-are-gaps-rather-than-zeros-and-where-are-the-agricultural-shares-na-after-the-bracket-fix-phase-2-step-2.7-2026-10-28" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-which-municipality-years-are-gaps-rather-than-zeros-and-where-are-the-agricultural-shares-na-after-the-bracket-fix-phase-2-step-2.7-2026-10-28">Q5. Which municipality-years are gaps rather than zeros, and where are the agricultural shares NA after the bracket fix? (phase 2, step 2.7, 2026-10-28)</h2>
-<p>What is checked: the 64 absent municipality-years of the 503 × 21 panel split into pre-installation years and reporting gaps, with the bond counts of the adjacent years; and the NA pattern of the agricultural bracket counts and shares in the interim output after <code>values_fill</code> (task 1.8; D-2026-10-28-a, D-2026-10-28-b).</p>
+<p>What is checked: the 99 absent municipality-years of the 808 × 21 panel (the 64 of the biome’s 503 × 21 until phase 2, step 2.9) split into pre-installation years and reporting gaps, with the bond counts of the adjacent years; and the NA pattern of the agricultural bracket counts and shares in the interim output after <code>values_fill</code> (task 1.8; D-2026-10-28-a, D-2026-10-28-b).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2680,7 +2715,7 @@ vertical-align: -.125em;
 1                  2711                  3899                  12639    2270</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Of the 64 absent municipality-years, 30 are years before the installation of the ten lookup municipalities (Mojuí dos Campos 2000-2012, seven Mato Grosso municipalities in 2000, Ipiranga do Norte and Itanhangá 2000-2004) and 34 are gaps of 2000-2005 in twenty small Maranhão and Roraima municipalities. Several gaps sit between years with substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209 after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10 and 157), so absence is a reporting gap, not a year without bonds; the rows stay NA. After the fix the three agricultural bracket counts are never NA and add up to the agricultural total in every row; the three agricultural shares are NA exactly where no agricultural bond exists (0 / 0) and 0 where the bracket is empty. Against the pre-step output the fix moved 541 cells of <code>emp_share_agri_high_workers</code> (163 municipalities) and 19 of <code>emp_share_agri_mid_workers</code> from NA to 0 in the final panel, none of <code>emp_share_agri_low_workers</code> (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-a (bracket counts 0, the counts <code>workers_total</code>, <code>workers_agric</code> and <code>pia</code> carried into the panel as <code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>), D-2026-10-28-b (absent municipality-years NA). <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (bracket counts never NA and adding up; agricultural shares NA iff <code>workers_agric == 0</code>); <code>04-panel-assemble.R</code>, output block (64 NA cells of <code>emp_workers_n</code>, shared by every <code>emp_*</code> column).</p>
+<p><strong>Finding.</strong> Of the 99 absent municipality-years of the 808 × 21 window (64 on the biome’s 503), 36 are years before the installation of the sixteen lookup municipalities (Mojuí dos Campos 2000-2012, thirteen Mato Grosso municipalities in 2000, Ipiranga do Norte and Itanhangá 2000-2004) and 63 are reporting gaps: 34 of 2000-2005 in twenty small Maranhão and Roraima municipalities of the biome, and 29 in eighteen municipalities added at step 2.9, 23 of them in 2000-2002 of the same kind (small Maranhão and Tocantins municipalities; Serra Nova Dourada 2001-2002 is the one gap after installation in the lookup, D-2026-10-29-b) and four in the middle of the window, which the biome never showed: Belágua 2008 (137 bonds before, 81 after), Santa Filomena do Maranhão 2008 (92 and 2), São Roberto 2008-2009 (112 and 191) and Marajá do Sena 2015 (167 and 195). Several gaps sit between years with substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209 after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10 and 157), so absence is a reporting gap, not a year without bonds; the rows stay NA. After the fix the three agricultural bracket counts are never NA and add up to the agricultural total in every row; the three agricultural shares are NA exactly where no agricultural bond exists (0 / 0) and 0 where the bracket is empty. Against the pre-step output the fix moved 541 cells of <code>emp_share_agri_high_workers</code> (163 municipalities) and 19 of <code>emp_share_agri_mid_workers</code> from NA to 0 in the final panel, none of <code>emp_share_agri_low_workers</code> (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-a (bracket counts 0, the counts <code>workers_total</code>, <code>workers_agric</code> and <code>pia</code> carried into the panel as <code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>; <code>lab_emp_formal_n</code>, <code>lab_emp_formal_agri_n</code> and <code>lab_pia_n</code> in the final panel since phase 2R), D-2026-10-28-b (absent municipality-years NA), D-2026-10-31-a (the gaps of the added municipalities, the four mid-window ones named). <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (bracket counts never NA and adding up; agricultural shares NA iff <code>workers_agric == 0</code>); <code>04-panel-assemble.R</code>, output block (99 NA cells of <code>emp_workers_n</code>, shared by every <code>emp_*</code> column; the two cells of Serra Nova Dourada after installation admitted).</p>
 </section>
 
 </main>

@@ -2245,7 +2245,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: IBGE, Bioma predominante por município para fins estatísticos, file dated 2025-05-16 (recovered from the Claude Project). Raw file: <code>_data/raw/ibge/ibge_bioma.csv</code> (semicolon-delimited, UTF-8 with BOM). Pipeline script: <code>_scripts/01-env-deforestation.R</code> (biome join and sample filter).</p>
+<p>Source: IBGE, Bioma predominante por município para fins estatísticos, file dated 2025-05-16 (recovered from the Claude Project). Raw file: <code>_data/raw/ibge/ibge_bioma.csv</code> (semicolon-delimited, UTF-8 with BOM). Pipeline script: <code>_scripts/01-env-deforestation.R</code> (biome join; the list set the sample until phase 2, step 2.9, and sets the <code>biome_amazon</code> flag of the nine-state sample since, D-2026-10-29-a).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2325,7 +2325,7 @@ vertical-align: -.125em;
 1      503               503 TRUE         AC AM AP MA MT PA RO RR TO</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> 503 municipalities have Amazônia as predominant biome, all with unique seven-digit codes, across the nine Legal Amazon states. <strong>Decision.</strong> D-2026-10-06-c (<code>BIOME_KEEP = &quot;Amazônia&quot;</code>, <code>N_MUNIC_BIOME_EXPECTED = 503</code>); reopened by D-2026-10-05-m (task 1.1). <strong>Assertion.</strong> <code>01-env-deforestation.R</code>, raw-state block.</p>
+<p><strong>Finding.</strong> 503 municipalities have Amazônia as predominant biome, all with unique seven-digit codes, across the nine Legal Amazon states. The nine states hold 808 municipalities in all; the 305 others are 301 Cerrado (Maranhão 124, Tocantins 116, Mato Grosso 61) and 4 Pantanal (Mato Grosso), with the composition by flag in <code>mapbiomas.qmd</code> Q10. <strong>Decision.</strong> D-2026-10-06-c (<code>BIOME_KEEP = &quot;Amazônia&quot;</code>, <code>N_MUNIC_BIOME_EXPECTED = 503</code>), reopened by D-2026-10-05-m (task 1.1) and superseded as a filter by D-2026-10-29-a (phase 2, step 2.9, 2026-10-29): the list no longer selects the sample, it sets the constant flag <code>biome_amazon</code> on the 808 municipalities of the nine states, and the 503 flagged municipalities are still asserted. <strong>Assertion.</strong> <code>01-env-deforestation.R</code>, raw-state block (503 in the list) and output block (503 flagged among the 808).</p>
 </section>
 <section id="q3.-which-municipalities-share-a-name-across-states" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-which-municipalities-share-a-name-across-states">Q3. Which municipalities share a name across states?</h2>
@@ -2394,7 +2394,7 @@ vertical-align: -.125em;
 #   Bioma predominante &lt;chr&gt;, municipality &lt;chr&gt;, state &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> All 503 biome municipalities are in MapBiomas and every name agrees. The one spelling difference noted in the pre-rebuild script belonged to the lost xlsx export of the list. <strong>Decision.</strong> none required. <strong>Assertion.</strong> <code>01-env-deforestation.R</code>, raw-state block (<code>munic_names</code>).</p>
+<p><strong>Finding.</strong> All 503 biome municipalities are in MapBiomas and every name agrees. The one spelling difference noted in the pre-rebuild script belonged to the lost xlsx export of the list. Over the 808 municipalities of the nine states the same check (<code>mapbiomas.qmd</code> Q10) finds one difference, Santo Antônio de Leverger (MT), outside the biome, which IBGE now spells “do Leverger”; the panel keeps the MapBiomas spelling. <strong>Decision.</strong> none required (the spelling: D-2026-10-29-a). <strong>Assertion.</strong> <code>01-env-deforestation.R</code>, raw-state block (<code>munic_names</code>: one mismatch among the 808, the geocode named).</p>
 </section>
 
 </main>

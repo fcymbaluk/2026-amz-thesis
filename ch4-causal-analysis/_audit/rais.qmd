@@ -38,6 +38,10 @@ biome_amz <- read_delim("_data/raw/ibge/ibge_bioma.csv", delim = ";",
                         col_types = cols(.default = col_character()),
                         locale = locale(encoding = "UTF-8"), show_col_types = FALSE) %>%
   filter(str_detect(Geocódigo, "^[0-9]{7}$"), `Bioma predominante` == "Amazônia")
+# The 808 municipalities of the nine states with the biome flag (phase 2,
+# step 2.9, D-2026-10-29-a).
+flags <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  distinct(geocode, municipality, state_abbreviation, biome_amazon)
 ```
 
 ## Q1. What does the export contain, and how is it distributed?
@@ -77,28 +81,34 @@ municipalities, codes, no duplicates).
 ## Q2. Which municipality-years have no RAIS rows?
 
 What is checked: the 808 × 26 grid against the rows present, and the
-missing municipality-years of the Amazon-biome sample in 2000-2020, which
-the panel carries as NA employment.
+missing municipality-years of 2000-2020, which the panel carries as NA
+employment, inside and outside the biome.
 
 ```{r q2-missing}
 grid <- expand_grid(geocode = unique(rais_raw$geocode), year = 1999:2024)
 missing <- grid %>% anti_join(rais, by = c("geocode", "year"))
 nrow(missing)
 missing %>% count(year) %>% print(n = 30)
-missing %>% filter(geocode %in% biome_amz$Geocódigo, year %in% 2000:2020) %>%
-  count(geocode, name = "years_missing") %>% arrange(desc(years_missing)) %>% print(n = 30)
-missing %>% filter(geocode %in% biome_amz$Geocódigo, year %in% 2000:2020) %>% nrow()
+missing_window <- missing %>%
+  filter(year %in% 2000:2020) %>%
+  left_join(flags, by = "geocode")
+missing_window %>% count(biome_amazon, name = "municipality_years")
+missing_window %>%
+  count(geocode, municipality, state_abbreviation, biome_amazon, name = "years_missing") %>%
+  arrange(desc(years_missing), geocode) %>% print(n = 60)
 ```
 
-**Finding.** The gaps concentrate in the early years and in municipalities
-installed after 2000 (which have no bonds before installation) and in a
-few small municipalities with no active bond in a year. Within the
-Amazon-biome sample and the 2000-2020 window, 64 municipality-years are
-absent: 13 are Mojuí dos Campos before 2013 (dropped downstream), and
-the remaining 51 are the rows the recovered panel shows as NA in every
-`emp_*` column (phase 1 check). The script does not fill them: a missing
-municipality-year is not a zero.
-**Decision.** none required; task 1.8 (NA versus zero) documents the rule.
+**Finding.** The gaps concentrate in the early years, in municipalities
+installed after 2000 (which have no bonds before installation) and in
+small municipalities with no active bond in a year. Within the 2000-2020
+window 99 municipality-years of 53 municipalities are absent: 64 in the
+biome (13 of them Mojuí dos Campos before 2013, dropped downstream, and
+the 51 the recovered panel showed as NA in every `emp_*` column at the
+phase 1 check) and 35 in 23 of the municipalities added at step 2.9,
+split into pre-installation years and reporting gaps in Q5. The script
+does not fill them: a missing municipality-year is not a zero.
+**Decision.** D-2026-10-28-b (absent municipality-years NA, phase 2,
+step 2.7); D-2026-10-31-a (the gaps of the added municipalities).
 **Assertion.** none in script 02 (the grid is completed in script 04).
 
 ## Q3. Where do the agricultural wage-group counts and the shares turn NA?
@@ -161,17 +171,22 @@ rais %>%
 **Finding.** The median municipality has formal employment near 3
 percent of its working-age population in 2000 and about 10 percent by
 the mid-2010s; the median low-wage share of bonds falls from 75 to 13
-percent. Three municipality-years exceed a rate of one (5107800 in
-2000-2001, 1720259 in 2007), where the bonds counted outnumber the
-interpolated PIA; kept as inherited.
-**Decision.** none required.
+percent. Three municipality-years exceed a rate of one (Santo Antônio de
+Leverger, MT, in 2000-2001 and São Salvador do Tocantins, TO, in 2007),
+both outside the biome, where the bonds counted outnumber the
+interpolated PIA: more formal jobs than working-age residents is a
+commuting or registration effect, kept as computed and outside the 0-1
+guard.
+**Decision.** D-2026-10-29-d (the bonds-per-PIA rates above one stored
+as computed).
 **Assertion.** `02-social-rais.R`, output block (counts add up; shares
 within 0-1).
 
 ## Q5. Which municipality-years are gaps rather than zeros, and where are the agricultural shares NA after the bracket fix? (phase 2, step 2.7, 2026-10-28)
 
-What is checked: the 64 absent municipality-years of the 503 × 21 panel
-split into pre-installation years and reporting gaps, with the bond
+What is checked: the 99 absent municipality-years of the 808 × 21 panel
+(the 64 of the biome's 503 × 21 until phase 2, step 2.9) split into
+pre-installation years and reporting gaps, with the bond
 counts of the adjacent years; and the NA pattern of the agricultural
 bracket counts and shares in the interim output after `values_fill`
 (task 1.8; D-2026-10-28-a, D-2026-10-28-b).
@@ -219,11 +234,19 @@ rais %>%
             no_agri = sum(workers_agric == 0))
 ```
 
-**Finding.** Of the 64 absent municipality-years, 30 are years before
-the installation of the ten lookup municipalities (Mojuí dos Campos
-2000-2012, seven Mato Grosso municipalities in 2000, Ipiranga do Norte
-and Itanhangá 2000-2004) and 34 are gaps of 2000-2005 in twenty small
-Maranhão and Roraima municipalities. Several gaps sit between years with
+**Finding.** Of the 99 absent municipality-years of the 808 × 21 window
+(64 on the biome's 503), 36 are years before the installation of the
+sixteen lookup municipalities (Mojuí dos Campos 2000-2012, thirteen Mato
+Grosso municipalities in 2000, Ipiranga do Norte and Itanhangá
+2000-2004) and 63 are reporting gaps: 34 of 2000-2005 in twenty small
+Maranhão and Roraima municipalities of the biome, and 29 in eighteen
+municipalities added at step 2.9, 23 of them in 2000-2002 of the same
+kind (small Maranhão and Tocantins municipalities; Serra Nova Dourada
+2001-2002 is the one gap after installation in the lookup,
+D-2026-10-29-b) and four in the middle of the window, which the biome
+never showed: Belágua 2008 (137 bonds before, 81 after), Santa Filomena
+do Maranhão 2008 (92 and 2), São Roberto 2008-2009 (112 and 191) and
+Marajá do Sena 2015 (167 and 195). Several gaps sit between years with
 substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209
 after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10
 and 157), so absence is a reporting gap, not a year without bonds; the
@@ -237,9 +260,12 @@ the final panel, none of `emp_share_agri_low_workers`
 (`compare_outputs`, commit message of step 2.7).
 **Decision.** D-2026-10-28-a (bracket counts 0, the counts
 `workers_total`, `workers_agric` and `pia` carried into the panel as
-`emp_workers_n`, `emp_agri_workers_n`, `pia`), D-2026-10-28-b (absent
-municipality-years NA).
+`emp_workers_n`, `emp_agri_workers_n`, `pia`; `lab_emp_formal_n`,
+`lab_emp_formal_agri_n` and `lab_pia_n` in the final panel since phase
+2R), D-2026-10-28-b (absent municipality-years NA), D-2026-10-31-a (the
+gaps of the added municipalities, the four mid-window ones named).
 **Assertion.** `02-social-rais.R`, output block (bracket counts never
 NA and adding up; agricultural shares NA iff `workers_agric == 0`);
-`04-panel-assemble.R`, output block (64 NA cells of `emp_workers_n`,
-shared by every `emp_*` column).
+`04-panel-assemble.R`, output block (99 NA cells of `emp_workers_n`,
+shared by every `emp_*` column; the two cells of Serra Nova Dourada
+after installation admitted).

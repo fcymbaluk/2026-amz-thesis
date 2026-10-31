@@ -16,7 +16,11 @@ Source: none. This notebook audits the sample-definition stage: the drop of
 Mojuí dos Campos, the 2000-2003 baseline summaries, the forest-availability
 floor and the two at-risk gates, the window-consistent PPCDAm treatment
 flags and the cross-sectional pressure scores, with the positivity and
-balance diagnostics that the legacy script printed to the console.
+balance diagnostics that the legacy script printed to the console. Since
+phase 2, step 2.9 the store holds the 807 municipalities of the nine
+states (D-2026-10-29-a); the chapter's sample is the biome (502) and the
+robustness sample the Legal Amazon (771), and Q4-Q7 read the design
+diagnostics on those two samples while Q10 reads the extension itself.
 Pipeline script: `_scripts/05-sample-definition.R`.
 Interim outputs: `_data/interim/panel_amz_2000_2020_sample.rds` and
 `_data/interim/panel_amz_baseline.rds`.
@@ -47,6 +51,12 @@ muni <- read_rds("_data/interim/panel_amz_baseline.rds")
 BASE_YEARS <- 2000:2003
 WINDOWS <- tibble(window = c("main", "robust"), treat = c("enf_ppcdam_listed_main_dum",
                   "enf_ppcdam_listed_robust_dum"), start = 2004L, end = c(2010L, 2012L))
+# Since phase 2, step 2.9 the store holds the 807 municipalities of the nine
+# states; the chapter's sample is the biome (502) and the robustness sample
+# the Legal Amazon (771) (D-2026-10-29-a, D-2026-10-30-g). The design
+# diagnostics of Q4-Q7 are read on those two samples.
+SAMPLES <- list(biome = filter(muni, geo_biome_amazon_dum == 1L),
+                legal_amazon = filter(muni, geo_legal_amazon_dum == 1L))
 ```
 
 ## Q1. What does the drop of Mojuí dos Campos remove, and is every remaining municipality observed over the baseline window?
@@ -72,7 +82,8 @@ panel %>%
   count(years)
 ```
 
-**Finding.** The drop removes Mojuí's 21 rows (503 to 502 municipalities).
+**Finding.** The drop removes Mojuí's 21 rows (808 to 807 municipalities;
+503 to 502 until step 2.9).
 Over 2000-2003 the municipality carries deforestation, forest, area and the
 PPCDAm indicator (never listed) but no cattle or crop values, so its
 baseline clearing would exist while its agricultural pressure would not;
@@ -126,10 +137,14 @@ do Norte and Itanhangá (MT) have no PAM or PPM rows before their first
 survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop
 series at all (D-2026-10-10-i). Their `agr_pressure_idx` and
 `smp_pressure_idx` are NA; their flags are defined because the flags read
-only clearing and forest share. The baselines are right-skewed, which is
-why the pressure scores log them first. The 2000 forest share exceeds 1
-for one municipality, Nova Ubiratã (1.18), the mesh-vintage mismatch of
-`_audit/panel.qmd` Q3 (task 1.8); it passes the floor either way.
+only clearing and forest share. None of the 305 municipalities added at
+step 2.9 lacks a baseline: the six installed in 2001 have PAM and PPM
+values from 2001 (D-2026-10-29-b). The baselines are right-skewed over
+the 807 (median clearing 20 km² a year, 90th percentile 103, maximum
+1,126), which is why the pressure scores log them first. The 2000
+forest share runs 0.085 to 0.998; the value above 1 that Nova Ubiratã
+showed at phase 1 (1.18) was the mesh-vintage mismatch of
+`_audit/panel.qmd` Q3, closed by the 2022 area release (D-2026-10-28-g).
 **Decision.** D-2026-10-12-a (NA, never NaN, where a source has no baseline
 value).
 **Assertion.** `05-sample-definition.R`, output block
@@ -170,19 +185,23 @@ muni %>%
 
 **Finding.** Listing starts in 2008 (36 municipalities) with a second
 cohort in 2009 (7), so the main window holds 43 treated municipalities and
-no exit; 2011 and 2012 add 8, so the robust window holds 51, and six of
-its treated municipalities (four in Pará, two in Mato Grosso) have left
-the list by 2012. Later cohorts (2017, 2018) bring the full-panel count to
-61. A municipality first listed after a window's end is a control in that
-design.
-**Decision.** D-2026-10-12-b.
-**Assertion.** `05-sample-definition.R`, output block (43, 51, 61; main
+no exit; 2011 and 2012 add 9 (Grajaú, MA, listed in 2011, among them
+since step 2.9), so the robust window holds 52, and six of its treated
+municipalities (four in Pará, two in Mato Grosso) have left the list by
+2012. Later cohorts (2017, 2018) bring the full-panel count to 62. On the
+biome alone the counts are 43, 51 and 61: Grajaú is the one treated
+municipality the extension adds (Q10). A municipality first listed after
+a window's end is a control in that design.
+**Decision.** D-2026-10-12-b; D-2026-10-29-a (the flags for every
+municipality of the store).
+**Assertion.** `05-sample-definition.R`, output block (43, 52, 62; main
 within robust within ever).
 
 ## Q4. Does the at-risk restriction remove treated municipalities?
 
-What is checked: for each window, the number of municipalities, treated and
-control, in the full sample and under the broad and narrow gates.
+What is checked: for each window and each sample, the number of
+municipalities, treated and control, before the gates and under the floor
+and the broad and narrow gates.
 
 ```{r q4-retention}
 retention <- function(d, treat) {
@@ -196,25 +215,33 @@ retention <- function(d, treat) {
   ) %>%
     mutate(control = n - treated)
 }
-map_dfr(set_names(WINDOWS$treat, WINDOWS$window), ~ retention(muni, .x),
-        .id = "window")
+map_dfr(SAMPLES, function(d) {
+  map_dfr(set_names(WINDOWS$treat, WINDOWS$window), ~ retention(d, .x), .id = "window")
+}, .id = "sample_def") %>%
+  print(n = 16)
 ```
 
-**Finding.** Under both windows every treated municipality survives the
-floor and both gates; the restriction removes controls only, from 459 to
-425 (broad) and 365 (narrow) in the main window and from 451 to 417 and
-357 in the robust window. The floor alone removes two never-listed
-Tocantins municipalities (Arapoema and Bernardo Sayão, forest share
-below 0.09).
-**Decision.** D-2026-10-05-h (gates as inherited).
-**Assertion.** `05-sample-definition.R`, output block (500, 468, 408;
-every robust-window treated municipality in the narrow sample).
+**Finding.** On both samples and under both windows every treated
+municipality survives the floor and both gates; the restriction removes
+controls only. On the biome sample, from 459 to 425 (broad) and 365
+(narrow) in the main window and from 451 to 417 and 357 in the robust
+window; on the Legal Amazon sample, from 728 to 691 and 596 and from 719
+to 682 and 587, Grajaú being the robust window's 52nd treated
+municipality. The floor alone removes two never-listed Tocantins
+municipalities of the biome (Arapoema and Bernardo Sayão, forest share
+below 0.09) and none of the added ones (Q10).
+**Decision.** D-2026-10-05-h (gates as inherited); D-2026-10-29-a (the
+gates computed for every municipality of the store).
+**Assertion.** `05-sample-definition.R`, output block (805, 756 and 646
+over the 807; every robust-window treated municipality in the narrow
+sample).
 
 ## Q5. Which baseline covariates differ between treated and control municipalities?
 
 What is checked: treated and control means and the standardized mean
 difference (difference over the pooled within-group standard deviation) for
-five baseline covariates, by window and sample. The restriction is not
+five baseline covariates, by window and gate, on the biome sample and on
+the Legal Amazon sample. The restriction is not
 expected to balance covariates; the table names what matching or weighting
 inside the at-risk sample must condition on (absolute values above about
 0.1).
@@ -235,23 +262,32 @@ smd_tab <- function(d, treat, label) {
     })
   )
 }
-smd_by_window <- function(treat) {
-  bind_rows(smd_tab(muni, treat, "full"),
-            smd_tab(filter(muni, smp_atrisk_broad_dum), treat, "broad"),
-            smd_tab(filter(muni, smp_atrisk_narrow_dum), treat, "narrow")) %>%
+smd_by_window <- function(treat, d) {
+  bind_rows(smd_tab(d, treat, "full"),
+            smd_tab(filter(d, smp_atrisk_broad_dum), treat, "broad"),
+            smd_tab(filter(d, smp_atrisk_narrow_dum), treat, "narrow")) %>%
     mutate(across(c(mean_treated, mean_control, smd), ~ round(.x, 3)))
 }
-smd_by_window("enf_ppcdam_listed_main_dum") %>% print(n = 15)
-smd_by_window("enf_ppcdam_listed_robust_dum") %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_main_dum", SAMPLES$biome) %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_robust_dum", SAMPLES$biome) %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_main_dum", SAMPLES$legal_amazon) %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_robust_dum", SAMPLES$legal_amazon) %>% print(n = 15)
 ```
 
-**Finding.** Listed municipalities have far higher baseline clearing area
-(smd about 1.5 in the main window, 1.4 in the robust one), are more
-forested (0.7 to 0.9) and have lower clearing rate and cattle density
-(about -0.4 to -0.6); the imbalance does not shrink as the sample narrows.
-Crop share is balanced in the main window and tilts towards the treated
-group (0.14 to 0.19) in the robust window, whose 2011-2012 cohorts are more
-crop-oriented. These are the covariates the estimator conditions on.
+**Finding.** On the biome sample listed municipalities have far higher
+baseline clearing area (smd about 1.5 in the main window, 1.4 in the
+robust one), are more forested (0.7 to 0.9) and have lower clearing rate
+and cattle density (about -0.4 to -0.6); the imbalance does not shrink as
+the gates narrow. Crop share is balanced in the main window and tilts
+towards the treated group (0.13 to 0.18) in the robust window, whose
+2011-2012 cohorts are more crop-oriented. On the Legal Amazon sample the
+picture is the same for clearing, forest and cattle (the Cerrado controls
+are a little less forested and clear at a slightly higher rate), while
+the crop share changes sign: the added controls plant more, so the
+treated group is the less crop-oriented one (-0.3 in the main window,
+-0.05 to -0.08 in the robust one). These are the covariates the
+estimator conditions on, and the crop share is the one whose role
+depends on the sample.
 **Decision.** none required; evidence for the chapter's methods section.
 **Assertion.** none.
 
@@ -260,7 +296,8 @@ crop-oriented. These are the covariates the estimator conditions on.
 What is checked: a logistic model of listing on the 2000 forest share and
 the logged baseline clearing, cattle density and crop share; the overlap of
 the two groups' propensity ranges; the units outside it, by window and
-sample. Municipalities with a missing covariate are dropped from the model.
+gate, on the biome and the Legal Amazon samples. Municipalities with a
+missing covariate are dropped from the model.
 
 ```{r q6-overlap}
 ps_covs <- c("env_forest_munic_share_bl0000", "env_defor_area_km2_log_bl0003", "agr_cattle_per_km2_log_bl0003",
@@ -281,35 +318,44 @@ ps_overlap <- function(d, treat, label) {
          treated_median_ps = round(median(tr), 3),
          control_median_ps = round(median(co), 3))
 }
-overlap_by_window <- function(treat) {
-  bind_rows(ps_overlap(muni, treat, "full"),
-            ps_overlap(filter(muni, smp_atrisk_broad_dum), treat, "broad"),
-            ps_overlap(filter(muni, smp_atrisk_narrow_dum), treat, "narrow"))
+overlap_by_window <- function(treat, d) {
+  bind_rows(ps_overlap(d, treat, "full"),
+            ps_overlap(filter(d, smp_atrisk_broad_dum), treat, "broad"),
+            ps_overlap(filter(d, smp_atrisk_narrow_dum), treat, "narrow"))
 }
-overlap_by_window("enf_ppcdam_listed_main_dum")
-overlap_by_window("enf_ppcdam_listed_robust_dum")
+overlap_by_window("enf_ppcdam_listed_main_dum", SAMPLES$biome)
+overlap_by_window("enf_ppcdam_listed_robust_dum", SAMPLES$biome)
+overlap_by_window("enf_ppcdam_listed_main_dum", SAMPLES$legal_amazon)
+overlap_by_window("enf_ppcdam_listed_robust_dum", SAMPLES$legal_amazon)
 ```
 
-**Finding.** The groups separate sharply: the median listed municipality
-has a propensity near 0.7 against near zero for controls. Most controls in
-the full sample lie below the treated range; the gates cut that off-support
-mass (main window: 410 to 377 to 317; robust: 357 to 324 to 264) while
-keeping every treated municipality. A residual block of listed
+**Finding.** On the biome sample the groups separate sharply: the median
+listed municipality has a propensity near 0.7 against near zero for
+controls. Most controls lie below the treated range; the gates cut that
+off-support mass (main window: 410 to 377 to 317; robust: 357 to 324 to
+264) while keeping every treated municipality. A residual block of listed
 municipalities (14 main, 12 robust) sits above the control range: extreme
 frontier units with no close control, to be reported with that caveat.
+On the Legal Amazon sample the added Cerrado municipalities enter as
+further off-support controls (669 to 633 to 538 in the main window, 580
+to 544 to 449 in the robust one), the treated median propensity falls to
+0.6 and the same 14 and 12 treated units stay above the control range,
+so the extension adds controls where the design already has too many.
 Three municipalities leave the model for missing covariates (Q2).
 **Decision.** none required; evidence for the chapter's methods section.
 **Assertion.** none.
 
 ## Q7. Are the pressure scores standardized, and how much do they depend on the sample?
 
-What is checked: the moments of the three scores over the 502
-municipalities, and the scores recomputed with the standardization run on
-the broad at-risk sample only, as the governing rule for derived variables
-would require if the scores were built in an analysis script.
+What is checked: the moments of the three scores over the 502 biome
+municipalities, their reference population (D-2026-10-29-c; the moments
+outside it are in Q10), and the scores recomputed with the
+standardization run on the biome's broad at-risk sample only, as the
+governing rule for derived variables would require if the scores were
+built in an analysis script.
 
 ```{r q7-moments}
-muni %>%
+SAMPLES$biome %>%
   summarise(across(c(env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx),
                    list(mean = ~ mean(.x, na.rm = TRUE),
                         sd = ~ sd(.x, na.rm = TRUE)))) %>%
@@ -321,7 +367,7 @@ muni %>%
 
 ```{r q7-sample-dependence}
 z <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
-muni %>%
+SAMPLES$biome %>%
   filter(smp_atrisk_broad_dum) %>%
   mutate(defor_broad = z(env_defor_area_km2_log_bl0003),
          agri_broad = 0.5 * z(agr_cattle_per_km2_log_bl0003) +
@@ -336,13 +382,15 @@ muni %>%
 ```
 
 **Finding.** `env_defor_pressure_idx` and `smp_pressure_idx` have mean 0 and sd 1
-over the 502 municipalities; `agr_pressure_idx` is a half-half mix of two
-z-scores and has sd below 1 by construction. Restandardizing on the broad
-at-risk sample moves the scores by up to 0.4 standard deviations, which
-is the sample dependence the governing rule for derived variables
-excludes from the panel.
-**Decision.** D-2026-10-12-c (reproduced as inherited; flagged for the
-storage audit, task 2.2).
+over the 502 biome municipalities, their reference population;
+`agr_pressure_idx` is a half-half mix of two z-scores and has sd below 1
+by construction. Restandardizing on the biome's broad at-risk sample
+moves the scores by up to 0.4 standard deviations, which is the sample
+dependence that kept them out of the final panel at the storage audit:
+since phase 2R the three scores live in the municipality store only
+(D-2026-10-30-c), read on the biome metric for every municipality (Q10).
+**Decision.** D-2026-10-12-c (reproduced as inherited); D-2026-10-29-c
+(the reference population); D-2026-10-30-c (store only).
 **Assertion.** `05-sample-definition.R`, output block (moments of
 `env_defor_pressure_idx` and `smp_pressure_idx` within `Z_TOL`).
 
@@ -412,17 +460,18 @@ panel %>%
   summary()
 ```
 
-**Finding.** The store carries the twelve anchors for the 502
-municipalities; only the nine Mato Grosso municipalities installed after
-the 2000 census are NA, in the 2000 vintage of all four variables, and
-every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the
-panel's values in those years exactly, with the same NA pattern, which
-confirms that the interpolated series pass through the census values and
-that the store adds no new information for those years; what it adds is
-the clean value for the intercensal baseline: the 2002-2007 mean of the
+**Finding.** The store carries the twelve anchors for the 807
+municipalities; only the fifteen Mato Grosso municipalities installed
+after the 2000 census (nine in the biome, six in the Cerrado since step
+2.9) are NA, in the 2000 vintage of all four variables, and every 2010
+and 2022 anchor is present. The 2000 and 2010 anchors equal the panel's
+values in those years exactly, with the same NA pattern, which confirms
+that the interpolated series pass through the census values and that
+the store adds no new information for those years; what it adds is the
+clean value for the intercensal baseline: the 2002-2007 mean of the
 interpolated informality share sits below the 2000 census for most
-municipalities, and the population mean above it, by the blend documented
-in `_audit/census.qmd` Q8. Analysis scripts take baseline census
+municipalities (median 2.6 points), and the population mean above it
+(median ratio 1.07), by the blend documented in `_audit/census.qmd` Q8. Analysis scripts take baseline census
 quantities from here (memo
 `docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md`).
 **Decision.** D-2026-10-26-a.
@@ -492,8 +541,9 @@ carry denser cattle (20 against 13 head per km²) and more crop land
 `env_defor_pressure_idx` averages -0.29 and `agr_pressure_idx` 0.65 with a maximum
 of 10 standard deviations (the soy municipalities of Mato Grosso's
 Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain
-the sample-dependent variables Q7 describes, now read on the biome
-metric for every municipality, pending task 2.2.
+the sample-dependent variables Q7 describes, read on the biome metric
+for every municipality; at the storage audit they stayed in the store
+and left the final panel (D-2026-10-30-c).
 **Decision.** D-2026-10-29-a (807 municipalities, flags in the store, the
 gates and treatment flags for every municipality), D-2026-10-29-c (the
 reference population).

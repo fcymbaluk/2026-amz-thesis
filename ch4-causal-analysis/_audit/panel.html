@@ -2211,10 +2211,10 @@ vertical-align: -.125em;
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel" id="toc-q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel" class="nav-link active" data-scroll-target="#q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel">Q1. Which sources cover which municipality-years of the 503 × 21 panel?</a></li>
+  <li><a href="#q1.-which-sources-cover-which-municipality-years-of-the-808-21-panel" id="toc-q1.-which-sources-cover-which-municipality-years-of-the-808-21-panel" class="nav-link active" data-scroll-target="#q1.-which-sources-cover-which-municipality-years-of-the-808-21-panel">Q1. Which sources cover which municipality-years of the 808 × 21 panel?</a></li>
   <li><a href="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" id="toc-q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" class="nav-link" data-scroll-target="#q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent">Q2. Which PPCDAm municipalities fall outside the biome sample, and how is the indicator coded where the list is silent?</a></li>
   <li><a href="#q3.-are-the-areas-on-one-unit" id="toc-q3.-are-the-areas-on-one-unit" class="nav-link" data-scroll-target="#q3.-are-the-areas-on-one-unit">Q3. Are the areas on one unit?</a></li>
-  <li><a href="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" id="toc-q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="nav-link" data-scroll-target="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</a></li>
+  <li><a href="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-on-their-reference-population-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" id="toc-q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-on-their-reference-population-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="nav-link" data-scroll-target="#q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-on-their-reference-population-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1 on their reference population, and how much does Santa Cruz do Arari’s restored cattle index move them?</a></li>
   <li><a href="#q5.-are-the-electoral-columns-stored-on-the-governing-years" id="toc-q5.-are-the-electoral-columns-stored-on-the-governing-years" class="nav-link" data-scroll-target="#q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</a></li>
   <li><a href="#q6.-where-are-per-capita-transfers-missing-and-why" id="toc-q6.-where-are-per-capita-transfers-missing-and-why" class="nav-link" data-scroll-target="#q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</a></li>
   <li><a href="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos" id="toc-q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="nav-link" data-scroll-target="#q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</a></li>
@@ -2252,7 +2252,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: none. This notebook audits the join of the interim outputs of scripts 01-03 into the municipality-year panel of the Amazon-biome sample (503 municipalities, 2000-2020) and the three derived blocks added at the join (pooled z-scores of the price indices, per-capita Bolsa Família transfers; the electoral lag retired at step 2.3; the two municipality flags of step 2.5). Pipeline script: <code>_scripts/04-panel-assemble.R</code>. Interim output: <code>_data/interim/panel_amz_2000_2020.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 04 commit message and in the decision entries it cites.</p>
+<p>Source: none. This notebook audits the join of the interim outputs of scripts 01-03 into the municipality-year panel of the nine Legal Amazon states (808 municipalities, 2000-2020; the Amazon-biome sample of 503 until phase 2, step 2.9, kept since as the <code>biome_amazon</code> flag) and the derived block added at the join (per-capita Bolsa Família transfers; the pooled z-scores of the price indices until phase 2R, D-2026-10-30-b; the electoral lag retired at step 2.3; the two municipality flags of step 2.5). The interim panel keeps the working names; the final panel of script 06 carries the crosswalk names (Q10). Pipeline script: <code>_scripts/04-panel-assemble.R</code>. Interim output: <code>_data/interim/panel_amz_2000_2020.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 04 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2263,8 +2263,8 @@ vertical-align: -.125em;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>sample_geocodes <span class="ot">&lt;-</span> <span class="fu">unique</span>(mapbiomas<span class="sc">$</span>geocode)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel" class="level2">
-<h2 class="anchored" data-anchor-id="q1.-which-sources-cover-which-municipality-years-of-the-503-21-panel">Q1. Which sources cover which municipality-years of the 503 × 21 panel?</h2>
+<section id="q1.-which-sources-cover-which-municipality-years-of-the-808-21-panel" class="level2">
+<h2 class="anchored" data-anchor-id="q1.-which-sources-cover-which-municipality-years-of-the-808-21-panel">Q1. Which sources cover which municipality-years of the 808 × 21 panel?</h2>
 <p>What is checked: for one representative column per source block, the number of non-missing cells by year. A left join from the MapBiomas sample leaves NA wherever a source has no row, and the sources have different windows (Bolsa Família 2004-2019, GDP and population 2002 onward, prices 2000-2020 with the crop lag from 2001).</p>
 <div class="cell">
 <details class="code-fold">
@@ -2361,11 +2361,11 @@ vertical-align: -.125em;
 8 price_index_crop                84              4</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> All 503 municipalities have rows in every block except RAIS (Mojuí dos Campos has none) and the PAM crop block with the crop index (Santa Cruz do Arari has no series, D-2026-10-10-i). Within the sources’ windows the gaps are: Bolsa Família 2004-2019 only; population and GDP from 2002, with the nine Mato Grosso municipalities absent from the 2000 census NA through 2009 (72 cells, D-2026-10-05-k); RAIS 72 municipality-years (Mojuí’s 21 and 51 early years of small municipalities, <code>_audit/rais.qmd</code> Q2, task 1.8); elections 28 cells (Mojuí 2000-2011 and four municipalities installed in 2001 for 2000-2003); cattle 30 cells and crop areas 112 cells (Mojuí before 2013, the post-2000 Mato Grosso municipalities before their first survey year, D-2026-10-10-g, Santa Cruz do Arari, and scattered years of six Pará municipalities of the Belém metropolitan area and the Marajó). Everything else is complete over 2000-2020. <strong>Decision.</strong> D-2026-10-11-a (left joins onto the MapBiomas sample, 503 municipalities including Mojuí dos Campos); D-2026-10-11-g (columns not carried into the panel). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (unique keys, 503 geocodes, every sample municipality in the areas file) and output block (503 × 21 rows, unique keys).</p>
+<p><strong>Finding.</strong> All 808 municipalities have rows in every block except RAIS and the census anchors (Mojuí dos Campos has none), the PAM crop block (Santa Cruz do Arari has no series, D-2026-10-10-i) and the crop index (NA also for the three municipalities with an empty base window, D-2026-10-23-b). Within the sources’ windows the gaps are: Bolsa Família from 2004 (3,244 cells: 2000-2003 for every municipality, three municipalities in 2004, Mojuí dos Campos through 2013); population in 2000 for the sixteen municipalities installed after 2000 and the census-anchored series (PEA, informality, PIA) through 2009 for the fifteen of them without a 2000 census (171 cells, D-2026-10-23-d); GDP from 2002; RAIS 99 municipality-years (36 before installation and 63 reporting gaps of small municipalities, <code>_audit/rais.qmd</code> Q5) and the employment rates in 232, the union of those cells with the PIA’s; elections in 2000 everywhere and in 40 municipality-years after it (Q5); cattle 36 cells and crop areas 119 cells (before installation for the sixteen lookup municipalities, D-2026-10-10-g; Santa Cruz do Arari; scattered years of six Pará municipalities of the Belém metropolitan area and the Marajó; Gaúcha do Norte 2002 and São Félix do Tocantins 2014). Everything else is complete over 2000-2020. On the biome’s 503 alone the same blocks carried, at phase 1, RAIS 72, elections 28, cattle 30 and crop 112 NA cells. <strong>Decision.</strong> D-2026-10-11-a (left joins onto the MapBiomas sample, Mojuí dos Campos included; the nine-state sample since D-2026-10-29-a); D-2026-10-11-g (columns not carried into the panel). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (unique keys, 808 geocodes, every sample municipality in the areas file) and output block (808 × 21 rows, unique keys).</p>
 </section>
 <section id="q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent" class="level2">
 <h2 class="anchored" data-anchor-id="q2.-which-ppcdam-municipalities-fall-outside-the-biome-sample-and-how-is-the-indicator-coded-where-the-list-is-silent">Q2. Which PPCDAm municipalities fall outside the biome sample, and how is the indicator coded where the list is silent?</h2>
-<p>What is checked: the listed municipalities absent from the 503, and the count of listed municipality-years by year after NA is recoded to 0.</p>
+<p>What is checked: the listed municipalities absent from the sample (none since phase 2, step 2.9; four of the biome’s 503 before it), and the count of listed municipality-years by year after NA is recoded to 0.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2396,7 +2396,7 @@ vertical-align: -.125em;
 # ℹ 6 more variables: `2015` &lt;int&gt;, `2016` &lt;int&gt;, `2017` &lt;int&gt;, `2018` &lt;int&gt;, `2019` &lt;int&gt;, `2020` &lt;int&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Four listed municipalities are not in the IBGE Amazônia predominant-biome list and leave the panel at the join: Grajaú (MA, listed from 2011) and three Mato Grosso municipalities listed only in 2023-2024 (Comodoro, Paranatinga, Ribeirão Cascalheira). Grajaú is the one ever-listed municipality that the Legal Amazon extension (task 1.1) adds within the 2004-2020 window. The list file carries 0 for 2004-2007 and the join leaves NA for 2000-2003 and for every never-listed municipality; both are recoded to 0, so the indicator is never NA and is 0 before 2008. <strong>Decision.</strong> D-2026-10-11-b. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (four outside geocodes, values in {0, 1}) and output block (no NA, zero before 2008).</p>
+<p><strong>Finding.</strong> Since phase 2, step 2.9 no listed municipality falls outside the sample (the first table is empty). Until then four did and left the panel at the join: Grajaú (MA, listed from 2011) and three Mato Grosso municipalities listed only in 2023-2024 (Comodoro, Paranatinga, Ribeirão Cascalheira), all in the Legal Amazon outside the biome (Q11). Grajaú is the one ever-listed municipality the extension adds within the 2004-2020 window, so the listed count by year rises by one from 2011 (48 in 2011 against the biome’s 47). The list file carries 0 for 2004-2007 and the join leaves NA for 2000-2003 and for every never-listed municipality; both are recoded to 0, so the indicator is never NA and is 0 before 2008. <strong>Decision.</strong> D-2026-10-11-b; D-2026-10-29-a (every listed municipality in the sample). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (no listed geocode outside the sample, values in {0, 1}) and output block (no NA, zero before 2008).</p>
 </section>
 <section id="q3.-are-the-areas-on-one-unit" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-are-the-areas-on-one-unit">Q3. Are the areas on one unit?</h2>
@@ -2490,37 +2490,53 @@ vertical-align: -.125em;
 3 5107925 Sorriso                              8455. TRUE        </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> With the 2022 release (phase 2, step 2.7, 2026-10-28) the forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year, and the mapped total agrees with the area within 1 percent for 486 of the 503 municipalities; the 7 that differ by more than 2 percent are coastal municipalities of Maranhão and Pará where MapBiomas maps less than the area in either release (pam_ppm.qmd Q7). At phase 1, with the 2025 release, four municipality-years broke the bound: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the municipal area by up to 18 percent. That was a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the sample), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas, from the biome list and from the 2022 table. Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory, so with the post-split area its cattle density and crop shares were inflated by 43 percent in every year; the 2025 area agreed with the mapped total within 1 percent for 459 municipalities and differed by more than 2 percent in 20, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-28-j (phase 2, step 2.8: hectares to km² at construction in script 01, the interim columns under their panel names; supersedes D-2026-10-11-c, the conversion at the join); D-2026-10-28-g (the 2022 release, the mesh of Collection 9, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
+<p><strong>Finding.</strong> With the 2022 release (phase 2, step 2.7, 2026-10-28) the forest share of the municipal area lies between 0.06 and 1.0 in every municipality-year of the 808 (0.065 to 0.998), and the mapped total agrees with the area within 1 percent for 791 of the 808 municipalities (486 of the biome’s 503); the 7 that differ by more than 2 percent, all in the biome, are coastal municipalities of Maranhão and Pará where MapBiomas maps less than the area in either release (pam_ppm.qmd Q7), and no municipality added at step 2.9 differs by that much. At phase 1, with the 2025 release, four municipality-years broke the bound: Nova Ubiratã (MT) in 2000-2003, where the converted forest area exceeded the municipal area by up to 18 percent. That was a mesh-vintage mismatch, not a unit error: MapBiomas Collection 9 maps 12,461 km² for Nova Ubiratã in every year, against 8,721 km² in the 2025 IBGE table, because Boa Esperança do Norte (MT, geocode 5101837, 4,704 km², installed 2025) was carved out of Nova Ubiratã (3,740 km²) and Sorriso (839 km², Cerrado, outside the biome and in the sample since step 2.9), with small parts of Vera and Paranatinga; the new municipality is in the 2025 table and absent from MapBiomas, from the biome list and from the 2022 table. Every 2000-2020 variable of Nova Ubiratã refers to the pre-split territory, so with the post-split area its cattle density and crop shares were inflated by 43 percent in every year; the 2025 area agreed with the mapped total within 1 percent for 459 municipalities and differed by more than 2 percent in 20, the largest after Nova Ubiratã being the Seringueiras-São Miguel do Guaporé (RO) boundary swap of 670 km² (0.85 and 1.10). The fall of Nova Ubiratã’s forest plus deforestation from 10,480 km² in 2000 to 8,935 km² in 2004 is class composition (D-2026-10-06-b): land cleared in year t is “Antrópico” from t+1, so it leaves both classes. <strong>Decision.</strong> D-2026-10-28-j (phase 2, step 2.8: hectares to km² at construction in script 01, the interim columns under their panel names; supersedes D-2026-10-11-c, the conversion at the join); D-2026-10-28-g (the 2022 release, the mesh of Collection 9, superseding the vintage of D-2026-10-10-f). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>N_FOREST_OVER_AREA_EXPECTED</code> = 0).</p>
 </section>
-<section id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="level2">
-<h2 class="anchored" data-anchor-id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1, and how much does Santa Cruz do Arari’s restored cattle index move them?</h2>
-<p>What is checked: the moments of the four z-scores, and the cattle z-score recomputed with the municipality’s 21 restored cells (D-2026-10-10-i) left out of the pool.</p>
+<section id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-on-their-reference-population-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them" class="level2">
+<h2 class="anchored" data-anchor-id="q4.-do-the-pooled-z-scores-have-mean-0-and-sd-1-on-their-reference-population-and-how-much-does-santa-cruz-do-araris-restored-cattle-index-move-them">Q4. Do the pooled z-scores have mean 0 and sd 1 on their reference population, and how much does Santa Cruz do Arari’s restored cattle index move them?</h2>
+<p>What is checked: until phase 2R the four z-scores were built at the join and stored; since D-2026-10-30-b they leave the panel and the analysis scripts build them with <code>z_on()</code> on the chapter’s sample, the biome municipality-years (D-2026-10-29-c, D-2026-10-30-g). They are rebuilt here the same way (the level standardised on the biome rows, the lag as the z lagged within municipality), with their moments inside and outside the reference population, and the cattle z-score recomputed with the municipality’s 21 restored cells (D-2026-10-10-i) left out of the pool.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="st">&quot;_z&quot;</span>),</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">na =</span> <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x))))) <span class="sc">%&gt;%</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;variable&quot;</span>, <span class="st">&quot;stat&quot;</span>),</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(mean|sd|na)$&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;_scripts/utils/derived_variables.R&quot;</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>ref <span class="ot">&lt;-</span> panel<span class="sc">$</span>biome_amazon <span class="sc">==</span> <span class="dv">1</span>L</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>zs <span class="ot">&lt;-</span> panel <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">price_index_crop_z =</span> <span class="fu">z_on</span>(price_index_crop, ref),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">price_index_cattle_z =</span> <span class="fu">z_on</span>(price_index_cattle, ref)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">price_index_crop_lag1_z =</span> <span class="fu">lag</span>(price_index_crop_z),</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">price_index_cattle_lag1_z =</span> <span class="fu">lag</span>(price_index_cattle_z)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>zs <span class="sc">%&gt;%</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="st">&quot;_z&quot;</span>),</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>                        <span class="at">na =</span> <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)))), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>biome_amazon, <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;variable&quot;</span>, <span class="st">&quot;stat&quot;</span>),</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(mean|sd|na)$&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value) <span class="sc">%&gt;%</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(variable, biome_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 4
-  variable                     mean    sd    na
-  &lt;chr&gt;                       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 price_index_crop_z         0.362  1.91     84
-2 price_index_crop_lag1_z    0.358  1.91    888
-3 price_index_cattle_z      -0.0259 0.892    63
-4 price_index_cattle_lag1_z -0.0388 0.875   868</code></pre>
+<pre><code># A tibble: 8 × 5
+  biome_amazon variable                       mean    sd    na
+         &lt;int&gt; &lt;chr&gt;                         &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1            0 price_index_cattle_lag1_z -8.05e- 2 0.663   305
+2            1 price_index_cattle_lag1_z -1.33e- 2 0.982   563
+3            0 price_index_cattle_z      -6.84e- 2 0.676     0
+4            1 price_index_cattle_z       1.16e-16 1.00     63
+5            0 price_index_crop_lag1_z    9.48e- 1 2.73    305
+6            1 price_index_crop_lag1_z   -3.00e- 3 0.996   583
+7            0 price_index_crop_z         9.55e- 1 2.73      0
+8            1 price_index_crop_z         3.31e-16 1        84</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> panel<span class="sc">$</span>price_index_cattle</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">if_else</span>(ref, panel<span class="sc">$</span>price_index_cattle, <span class="cn">NA_real_</span>)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>pool_without <span class="ot">&lt;-</span> <span class="fu">if_else</span>(panel<span class="sc">$</span>geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>, <span class="cn">NA_real_</span>, x)</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>z_with <span class="ot">&lt;-</span> (x <span class="sc">-</span> <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">/</span> <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>z_without <span class="ot">&lt;-</span> (x <span class="sc">-</span> <span class="fu">mean</span>(pool_without, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">/</span></span>
@@ -2532,10 +2548,10 @@ vertical-align: -.125em;
 <pre><code># A tibble: 1 × 2
   max_abs_shift cells_shifted
           &lt;dbl&gt;         &lt;int&gt;
-1       0.00329         16904</code></pre>
+1       0.00387         10500</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Every z-score has mean 0 and sd 1 to numerical precision; the crop z-score is NA where the crop index is NA (Santa Cruz do Arari and, since D-2026-10-23-b, Ipiranga do Norte, Itanhangá and Mojuí dos Campos, whose zeros left the pool) and the lags are NA in 2000. Adding Santa Cruz do Arari’s restored index to the pool shifts the cattle z-score of every cell by at most about four thousandths of a standard deviation; the rest of the drift reported by the comparator for the z-scores is the Pink Sheet release (D-2026-10-10-a) passed through the standardisation. <strong>Decision.</strong> D-2026-10-11-d; the pooled standardisation is sample-dependent and is flagged for the storage audit (task 2.2). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (moments within <code>Z_TOL</code>, cattle lag NA in 2000).</p>
+<p><strong>Finding.</strong> Rebuilt on the biome reference, every z-score has mean 0 and sd 1 to numerical precision over the 503 biome municipalities; the crop z-score is NA where the crop index is NA (Santa Cruz do Arari and, since D-2026-10-23-b, Ipiranga do Norte, Itanhangá and Mojuí dos Campos, whose zeros left the pool: 84 cells) and the lags are NA in 2000. Read on the same metric, the 305 added municipalities have a crop z-score of mean 0.96 and sd 2.7, the Cerrado’s soy municipalities lying far above the biome’s crop exposure, and a cattle z-score of mean -0.07 and sd 0.68. Adding Santa Cruz do Arari’s restored index to the pool shifts the cattle z-score of every biome cell by at most about four thousandths of a standard deviation; the rest of the drift the comparator reported for the z-scores at phase 1 was the Pink Sheet release (D-2026-10-10-a) passed through the standardisation. <strong>Decision.</strong> D-2026-10-11-d, superseded by D-2026-10-30-b (phase 2R): the pooled standardisation is sample-dependent, so the z-scores leave the panel and the analysis scripts build them on their estimation sample; D-2026-10-29-c (the biome as reference population). <strong>Assertion.</strong> none in script 04 since phase 2R (the moments were asserted there within <code>Z_TOL</code> until then); the analysis scripts build the scores through <code>utils/derived_variables.R</code>.</p>
 </section>
 <section id="q5.-are-the-electoral-columns-stored-on-the-governing-years" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-are-the-electoral-columns-stored-on-the-governing-years">Q5. Are the electoral columns stored on the governing years?</h2>
@@ -2607,7 +2623,7 @@ vertical-align: -.125em;
 8 5106307 Paranatinga          2009-2012</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The stored block changes the year after each election (2005, 2009): the governing-period rule. In 2000 every electoral column is NA because the 1996 election is outside the data; after 2000 the margin and the competitive flag are NA exactly on the uncontested races, and the 28 municipality-years with no value at all are those without a governing election in the file (Mojuí dos Campos 2001-2012; Ipiranga do Norte, Itanhangá, Altamira do Maranhão and Brejo de Areia 2001-2004). <strong>Decision.</strong> D-2026-10-22-d (storage), D-2026-10-22-e (<code>_gov</code> retired; supersedes D-2026-10-11-e). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (2000 NA; 28 NA municipality-years after 2000; margin and flag NA iff uncontested or no election).</p>
+<p><strong>Finding.</strong> The stored block changes the year after each election (2005, 2009): the governing-period rule. In 2000 every electoral column is NA because the 1996 election is outside the data; after 2000 the margin and the competitive flag are NA exactly on the uncontested races, and the 40 municipality-years with no value at all are those without a governing election in the file (Mojuí dos Campos 2001-2012; Ipiranga do Norte, Itanhangá, Altamira do Maranhão, Brejo de Areia and Humberto de Campos 2001-2004; Paranatinga 2009-2012; Sambaíba 2017-2020; the last three added at step 2.9, <code>_audit/tse.qmd</code> Q7, D-2026-10-31-b; 28 municipality-years on the biome’s 503). <strong>Decision.</strong> D-2026-10-22-d (storage), D-2026-10-22-e (<code>_gov</code> retired; supersedes D-2026-10-11-e); D-2026-10-31-b. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (2000 NA; 40 NA municipality-years after 2000; margin and flag NA iff uncontested or no election).</p>
 </section>
 <section id="q6.-where-are-per-capita-transfers-missing-and-why" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-where-are-per-capita-transfers-missing-and-why">Q6. Where are per-capita transfers missing, and why?</h2>
@@ -2646,7 +2662,7 @@ vertical-align: -.125em;
 17  2020       808        808        808</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Per-capita transfers exist exactly where both inputs do. Since phase 2, step 2.5 (2026-10-23) population is complete from each municipality’s installation (D-2026-10-23-e), so the per-capita column is missing only where the transfers are; until then the nine Mato Grosso municipalities without a 2000 census population were NA through 2009 (D-2026-10-05-k). No municipality-year has a zero population. <strong>Decision.</strong> D-2026-10-11-f; D-2026-10-23-e (closes D-2026-10-10-k). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA pattern equals the union of the inputs’ NA).</p>
+<p><strong>Finding.</strong> Per-capita transfers exist exactly where both inputs do (805 municipalities in 2004, 807 to 2013, 808 after: the lookup municipalities’ first programme years). Since phase 2, step 2.5 (2026-10-23) population is complete from each municipality’s installation (D-2026-10-23-e), so the per-capita column is missing only where the transfers are; until then the nine Mato Grosso municipalities without a 2000 census population were NA through 2009 (D-2026-10-05-k). No municipality-year has a zero population. <strong>Decision.</strong> D-2026-10-11-f; D-2026-10-23-e (closes D-2026-10-10-k). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (NA pattern equals the union of the inputs’ NA).</p>
 </section>
 <section id="q7.-what-does-the-panel-hold-for-mojuí-dos-campos" class="level2">
 <h2 class="anchored" data-anchor-id="q7.-what-does-the-panel-hold-for-mojuí-dos-campos">Q7. What does the panel hold for Mojuí dos Campos?</h2>
@@ -2683,7 +2699,7 @@ vertical-align: -.125em;
 12 bf_transfers_pc_brl_2024 2014-2020      </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Mojuí dos Campos carries deforestation, area and PPCDAm (never listed) for every year; since phase 2, step 2.5 (2026-10-23) its GDP and population start in 2013 (official estimates to 2021, the 2022 census) and the census block in 2022, the split with Santarém being retired (D-2026-10-23-f); PAM and PPM series from 2013; elections from the 2012 election; Bolsa Família from 2014. The crop index is NA (all base-window weights missing, D-2026-10-23-b) and so is the cattle index. It has no RAIS row at all. The RAIS gap and the series before 2013 are what re-inclusion would have to solve. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8); D-2026-10-23-f. <strong>Assertion.</strong> none; the row count assertion counts it among the 503.</p>
+<p><strong>Finding.</strong> Mojuí dos Campos carries deforestation, area and PPCDAm (never listed) for every year; since phase 2, step 2.5 (2026-10-23) its GDP and population start in 2013 (official estimates to 2021, the 2022 census) and the census block in 2022, the split with Santarém being retired (D-2026-10-23-f); PAM and PPM series from 2013; elections from the 2012 election; Bolsa Família from 2014. The crop index is NA (all base-window weights missing, D-2026-10-23-b) and so is the cattle index. It has no RAIS row at all. The RAIS gap and the series before 2013 are what re-inclusion would have to solve. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8); D-2026-10-23-f. <strong>Assertion.</strong> none; the row count assertion counts it among the 808.</p>
 </section>
 <section id="q8.-which-municipalities-carry-the-post-2000-and-parent-flags" class="level2">
 <h2 class="anchored" data-anchor-id="q8.-which-municipalities-carry-the-post-2000-and-parent-flags">Q8. Which municipalities carry the post-2000 and parent flags?</h2>
@@ -2792,7 +2808,7 @@ vertical-align: -.125em;
 1                 1                 1</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Ten municipalities carry <code>muni_new_post2000</code>: the nine Mato Grosso municipalities installed in 2001 and 2005 and Mojuí dos Campos (2013), exactly the set with no population in 2000. Ten of their twelve parents are in the biome sample and carry <code>muni_parent_split</code>; Ribeirão Cascalheira and Cáceres are outside it. Both flags are constant within municipality. Installation years, parents and laws stay in the lookup. <strong>Decision.</strong> D-2026-10-23-f. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (the NA-population set in 2000 equals the lookup; ten flagged in each column).</p>
+<p><strong>Finding.</strong> Sixteen municipalities carry <code>muni_new_post2000</code>: the fifteen Mato Grosso municipalities installed in 2001 and 2005 (nine in the biome, six in the Cerrado since step 2.9, D-2026-10-29-b) and Mojuí dos Campos (2013), exactly the set with no population in 2000. Their seventeen parents are all in the nine-state sample and carry <code>muni_parent_split</code> (Ribeirão Cascalheira and Cáceres were outside the biome sample); eleven of them are in the biome, São Félix do Araguaia among them since step 2.9. Both flags are constant within municipality. Installation years, parents and laws stay in the lookup. <strong>Decision.</strong> D-2026-10-23-f; D-2026-10-29-b. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (the NA-population set in 2000 equals the lookup; sixteen and seventeen flagged).</p>
 </section>
 <section id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28" class="level2">
 <h2 class="anchored" data-anchor-id="q9.-do-the-denominator-counts-and-the-installation-rule-hold-in-the-panel-phase-2-step-2.7-2026-10-28">Q9. Do the denominator counts and the installation rule hold in the panel? (phase 2, step 2.7, 2026-10-28)</h2>
@@ -2880,7 +2896,7 @@ vertical-align: -.125em;
 16 Mojuí dos Campos                2013  2013   2013       2013       2013  2013  2014</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> <code>emp_workers_n</code> and <code>emp_agri_workers_n</code> are NA in the 64 municipality-years absent from the RAIS export, 30 before installation and 34 reporting gaps, the same cells where every <code>emp_*</code> rate and share is NA; <code>pia</code>, joined from the census file and not from the RAIS rows, is NA where <code>pea</code> is: before 2010 for the nine municipalities without a 2000 anchor and in every year for Mojuí dos Campos (111 cells). The agricultural shares are NA in the absent cells and where <code>emp_agri_workers_n</code> is 0, nowhere else. For the ten lookup municipalities every source starts in the installation year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014 for Mojuí dos Campos, whose code enters the MDS files a year late) and is NA before it. <strong>Decision.</strong> D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d. <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (64 NA cells shared by the counts, rates and shares; 111 NA cells of <code>pia</code>, the NA set of <code>pea</code>; agricultural shares NA iff absent or zero agricultural bonds; <code>INSTALL_RULE_COLS</code> NA before the installation year and observed from it).</p>
+<p><strong>Finding.</strong> <code>emp_workers_n</code> and <code>emp_agri_workers_n</code> are NA in the 99 municipality-years absent from the RAIS export, 36 before installation and 63 reporting gaps (64, 30 and 34 on the biome’s 503), the same cells where every <code>emp_*</code> rate and share is NA; <code>pia</code>, joined from the census file and not from the RAIS rows, is NA where <code>pea</code> is: before 2010 for the fifteen municipalities without a 2000 anchor and in every year for Mojuí dos Campos (171 cells). The agricultural shares are NA in the absent cells and where <code>emp_agri_workers_n</code> is 0 (2,270 cells), nowhere else. For the sixteen lookup municipalities every source starts in the installation year (GDP from 2002 for those installed in 2001; Bolsa Família from 2014 for Mojuí dos Campos, whose code enters the MDS files a year late) and is NA before it, with one admitted exception: Serra Nova Dourada’s first RAIS bond is in 2003, a reporting gap of 2001-2002 (D-2026-10-29-b). <strong>Decision.</strong> D-2026-10-28-a, D-2026-10-28-b, D-2026-10-28-d; D-2026-10-29-b (the admitted RAIS gap). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (99 NA cells shared by the counts, rates and shares; 171 NA cells of <code>pia</code>, the NA set of <code>pea</code>; agricultural shares NA iff absent or zero agricultural bonds; <code>INSTALL_RULE_COLS</code> NA before the installation year and observed from it, the two RAIS cells after installation admitted).</p>
 </section>
 <section id="q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28" class="level2">
 <h2 class="anchored" data-anchor-id="q10.-is-every-share-and-rate-on-0-1-and-does-each-columns-range-fit-its-codebook-unit-phase-2-step-2.8-2026-10-28">Q10. Is every share and rate on 0-1, and does each column’s range fit its codebook unit? (phase 2, step 2.8, 2026-10-28)</h2>
@@ -2906,18 +2922,18 @@ vertical-align: -.125em;
 <pre><code># A tibble: 20 × 3
    unit_short              bounded     n
    &lt;chr&gt;                   &lt;lgl&gt;   &lt;int&gt;
- 1 0/1                     FALSE      11
+ 1 0/1                     FALSE       9
  2 BRL                     FALSE       2
  3 BRL 2024                FALSE       2
  4 BRL 2024 per PEA member FALSE       1
  5 BRL 2024 per capita     FALSE       2
  6 BRL 2024 per family     FALSE       1
  7 BRL 2024 per quota slot FALSE       1
- 8 SD                      FALSE       9
+ 8 SD                      FALSE       1
  9 TRUE/FALSE              FALSE       3
 10 count                   FALSE       9
 11 head per km2            FALSE       1
-12 index                   FALSE       4
+12 index                   FALSE       5
 13 km2                     FALSE       7
 14 log BRL                 FALSE       1
 15 log BRL 2024 per capita FALSE       1
@@ -2934,23 +2950,23 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 15 × 4
-   variable                       min   max in_bounds
-   &lt;chr&gt;                        &lt;dbl&gt; &lt;dbl&gt; &lt;lgl&gt;    
- 1 deforestation_forest_rate    0     0.367 TRUE     
- 2 emp_share_low_workers        0     1     TRUE     
- 3 emp_share_mid_workers        0     1     TRUE     
- 4 emp_share_high_workers       0     1     TRUE     
- 5 emp_share_agri_low_workers   0     1     TRUE     
- 6 emp_share_agri_mid_workers   0     1     TRUE     
- 7 emp_share_agri_high_workers  0     1     TRUE     
- 8 emp_share_agri_workers       0     1     TRUE     
- 9 informal                     0.224 0.995 TRUE     
-10 elec_mov                     0     0.994 TRUE     
-11 elec_winner_share            0.202 1     TRUE     
-12 crop_soy_munic_area_share    0     0.698 TRUE     
-13 crop_corn_munic_area_share   0     0.57  TRUE     
-14 crop_rice_munic_area_share   0     0.241 TRUE     
-15 crop_cotton_munic_area_share 0     0.208 TRUE     </code></pre>
+   variable                             min   max in_bounds
+   &lt;chr&gt;                              &lt;dbl&gt; &lt;dbl&gt; &lt;lgl&gt;    
+ 1 env_defor_forest_share             0     0.367 TRUE     
+ 2 lab_emp_formal_lowwage_share       0     1     TRUE     
+ 3 lab_emp_formal_midwage_share       0     1     TRUE     
+ 4 lab_emp_formal_highwage_share      0     1     TRUE     
+ 5 lab_emp_formal_lowwage_agri_share  0     1     TRUE     
+ 6 lab_emp_formal_midwage_agri_share  0     1     TRUE     
+ 7 lab_emp_formal_highwage_agri_share 0     1     TRUE     
+ 8 lab_emp_formal_agri_share          0     1     TRUE     
+ 9 lab_informal_share                 0.224 0.995 TRUE     
+10 pol_mayor_margin_share_term        0     0.994 TRUE     
+11 pol_mayor_winner_share_term        0.202 1     TRUE     
+12 agr_soy_planted_munic_share        0     0.698 TRUE     
+13 agr_corn_planted_munic_share       0     0.57  TRUE     
+14 agr_rice_planted_munic_share       0     0.241 TRUE     
+15 agr_cotton_planted_munic_share     0     0.208 TRUE     </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2962,7 +2978,7 @@ vertical-align: -.125em;
 #   bounded &lt;lgl&gt;, in_bounds &lt;lgl&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Every column of the final panel has a codebook unit, and the 20 columns whose unit is a share or a rate all lie on 0-1: <code>deforestation_forest_rate</code> runs 0 to 0.367 and <code>informal</code> 0.286 to 0.984 after the rescale, beside the employment rates and shares, the crop shares and the two electoral shares that were already on 0-1. No column is on a percent scale. <strong>Decision.</strong> D-2026-10-28-h, D-2026-10-28-i (the two rescales at construction), D-2026-10-28-k (the unit column). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>SHARE_RATE_COLS</code> on 0-1); <code>01-env-deforestation.R</code> and <code>02-social-census.R</code>, output blocks (the rate and the informality share on 0-1).</p>
+<p><strong>Finding.</strong> Every one of the 76 columns of the final panel (the crosswalk names since phase 2R, D-2026-10-30-a) has a codebook unit, and the 15 columns whose unit is a share all lie on 0-1: <code>env_defor_forest_share</code> runs 0 to 0.367 and <code>lab_informal_share</code> 0.224 to 0.995 after the rescale (0.286 to 0.984 on the biome), beside the seven employment shares, the four crop shares and the two electoral shares that were already on 0-1. The five bonds-per-PIA rates are typed <code>ratio</code> since D-2026-10-29-d, because three cells of two municipalities added at step 2.9 exceed one (Q11), and the quota ratio was never bounded. No column is on a percent scale. <strong>Decision.</strong> D-2026-10-28-h, D-2026-10-28-i (the two rescales at construction), D-2026-10-28-k (the unit column); D-2026-10-29-d (the bonds-per-PIA rates outside the guard). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, output block (<code>SHARE_RATE_COLS</code> on 0-1); <code>01-env-deforestation.R</code> and <code>02-social-census.R</code>, output blocks (the rate and the informality share on 0-1).</p>
 </section>
 <section id="q11.-what-does-the-nine-state-extension-add-to-the-panel-and-where-are-the-added-municipalities-gaps-phase-2-step-2.9-2026-10-29" class="level2">
 <h2 class="anchored" data-anchor-id="q11.-what-does-the-nine-state-extension-add-to-the-panel-and-where-are-the-added-municipalities-gaps-phase-2-step-2.9-2026-10-29">Q11. What does the nine-state extension add to the panel, and where are the added municipalities’ gaps? (phase 2, step 2.9, 2026-10-29)</h2>
@@ -3151,25 +3167,11 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
-<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(price_index_crop_z, price_index_cattle_z),</span>
-<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))),</span>
-<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.double), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 5
-  biome_amazon price_index_crop_z_mean price_index_crop_z_sd price_index_cattle_z_mean price_index_cattle_z_sd
-         &lt;int&gt;                   &lt;dbl&gt;                 &lt;dbl&gt;                     &lt;dbl&gt;                   &lt;dbl&gt;
-1            0                   0.955                  2.73                    -0.068                   0.676
-2            1                   0                      1                        0                       1    </code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(emp_pia_rate_total <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, state_abbreviation, year, emp_workers_n, pia, emp_pia_rate_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The z-scores inside and outside the reference population are in Q4</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (rebuilt there since D-2026-10-30-b).</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(emp_pia_rate_total <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, state_abbreviation, year, emp_workers_n, pia, emp_pia_rate_total)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 6
@@ -3180,7 +3182,7 @@ vertical-align: -.125em;
 3 Santo Antônio de Leverger MT                  2001         13686 11294.               1.21</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The panel has 808 municipalities: 503 in the biome, 269 in the Legal Amazon outside the biome and 36 outside both (Maranhão’s Cerrado east of the 44th meridian). The four PPCDAm municipalities the biome join dropped (Q2) are now in the panel, all in the Legal Amazon: Grajaú (MA, listed 2011-2020) and Comodoro, Paranatinga and Ribeirão Cascalheira (MT, listed 2023-2024, outside the window). Every source covers the 305 added municipalities within its window: the gaps are Bolsa Família before 2004, GDP before 2002, the census-anchored series before 2010 for the six Mato Grosso municipalities without a 2000 census (60 cells of <code>pia</code>), their population in 2000 (6 cells), 35 RAIS municipality-years (6 before installation, 29 reporting gaps of small Maranhão and Tocantins municipalities, mostly 2000, plus Serra Nova Dourada 2001-2002, the only gap after installation in the lookup), elections for Humberto de Campos 2001-2004, Paranatinga 2009-2012 and Sambaíba 2017-2020 (no governing election in the file, as for the biome cases of Q5), and seven crop and six cattle cells before installation. The six municipalities added to the lookup (D-2026-10-29-b) were created by Mato Grosso laws of 1998-1999 and installed on 2001-01-01; they bring the lookup to sixteen rows and the parent flags to seventeen municipalities, six of them outside the biome; São Félix do Araguaia, inside the biome, becomes a parent (of Novo Santo Antônio and Serra Nova Dourada), the one value that moves among the 502 at this step. The pooled z-scores keep the biome municipality-years as their reference (D-2026-10-29-c): mean 0 and sd 1 there; outside the biome the crop z-score has mean 0.96 and sd 2.7, the Cerrado municipalities having larger crop shares, and the cattle z-score mean -0.07 and sd 0.68. Three cells carry more formal bonds than working-age residents (Santo Antônio de Leverger, MT, 2000 and 2001; São Salvador do Tocantins, TO, 2007), so the bonds-per-PIA rates are not bounded by one and leave the 0-1 guard (D-2026-10-29-d). <strong>Decision.</strong> D-2026-10-29-a (the sample and the flags), D-2026-10-29-b (the six lookup municipalities, the RAIS gap after installation), D-2026-10-29-c (the reference population of the z-scores), D-2026-10-29-d (the bonds-per-PIA rates above one). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (808 geocodes with the two flags, no PPCDAm municipality outside the sample) and output block (808 × 21 rows; flags constant, biome inside Legal Amazon, 503 and 772; 99 RAIS NA cells; 171 <code>pia</code> NA cells; 40 post-2000 election NA cells; 16 lookup and 17 parent municipalities; the installation rule with two admitted RAIS gaps; z moments on the reference rows; the five bonds-per-PIA rates non-negative, three cells above one, the bracket rates below the total).</p>
+<p><strong>Finding.</strong> The panel has 808 municipalities: 503 in the biome, 269 in the Legal Amazon outside the biome and 36 outside both (Maranhão’s Cerrado east of the 44th meridian). The four PPCDAm municipalities the biome join dropped (Q2) are now in the panel, all in the Legal Amazon: Grajaú (MA, listed 2011-2020) and Comodoro, Paranatinga and Ribeirão Cascalheira (MT, listed 2023-2024, outside the window). Every source covers the 305 added municipalities within its window: the gaps are Bolsa Família before 2004, GDP before 2002, the census-anchored series before 2010 for the six Mato Grosso municipalities without a 2000 census (60 cells of <code>pia</code>), their population in 2000 (6 cells), 35 RAIS municipality-years (6 before installation, 29 reporting gaps of small Maranhão and Tocantins municipalities, mostly 2000, plus Serra Nova Dourada 2001-2002, the only gap after installation in the lookup; the four gaps after 2002 are D-2026-10-31-a), elections for Humberto de Campos 2001-2004, Paranatinga 2009-2012 and Sambaíba 2017-2020 (no governing election in the file, as for the biome cases of Q5; D-2026-10-31-b), and seven crop and six cattle cells before installation (São Félix do Tocantins’s soy of 2014 among the crop cells, D-2026-10-31-d). The six municipalities added to the lookup (D-2026-10-29-b) were created by Mato Grosso laws of 1998-1999 and installed on 2001-01-01; they bring the lookup to sixteen rows and the parent flags to seventeen municipalities, six of them outside the biome; São Félix do Araguaia, inside the biome, becomes a parent (of Novo Santo Antônio and Serra Nova Dourada), the one value that moves among the 502 at this step. The pooled z-scores keep the biome municipality-years as their reference (D-2026-10-29-c) and, since phase 2R, are built in the analysis scripts rather than stored (D-2026-10-30-b; their moments inside and outside the biome are in Q4). Three cells carry more formal bonds than working-age residents (Santo Antônio de Leverger, MT, 2000 and 2001; São Salvador do Tocantins, TO, 2007), so the bonds-per-PIA rates are not bounded by one and leave the 0-1 guard (D-2026-10-29-d). <strong>Decision.</strong> D-2026-10-29-a (the sample and the flags), D-2026-10-29-b (the six lookup municipalities, the RAIS gap after installation), D-2026-10-29-c (the reference population of the z-scores), D-2026-10-29-d (the bonds-per-PIA rates above one). <strong>Assertion.</strong> <code>04-panel-assemble.R</code>, raw-state block (808 geocodes with the two flags, no PPCDAm municipality outside the sample) and output block (808 × 21 rows; flags constant, biome inside Legal Amazon, 503 and 772; 99 RAIS NA cells; 171 <code>pia</code> NA cells; 40 post-2000 election NA cells; 16 lookup and 17 parent municipalities; the installation rule with two admitted RAIS gaps; the five bonds-per-PIA rates non-negative, three cells above one, the bracket rates below the total).</p>
 </section>
 
 </main>

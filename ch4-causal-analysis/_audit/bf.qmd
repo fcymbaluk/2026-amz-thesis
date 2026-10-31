@@ -409,7 +409,12 @@ code coverage, parsing and average-benefit column; and the pipeline
 output after the extension, by regime and reference month.
 
 ```{r q6-monthly}
-biome <- unique(read_rds("_data/reference/panel_amz_2000_2020_final_phase1.rds")$geocode)
+# The 502 biome municipalities of the chapter's sample (the biome flag of
+# step 2.9, Mojuí dos Campos dropped as in script 05); until the task 1.11
+# pass this chunk read the geocodes from the frozen phase 1 panel.
+biome <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
+  filter(biome_amazon == 1L, geocode != "1504752") %>%
+  distinct(geocode) %>% pull(geocode)
 biome6 <- str_sub(biome, 1, 6)
 bf_new_num <- bf_new %>%
   transmute(ibge = codigo_ibge, anomes = as.integer(anomes_s),
@@ -507,7 +512,9 @@ more biome families, with no quota series (the workbook ends in October
 grid runs 2004-2024 for both months: 2004-2019 values unchanged, 2020-2021
 as reported under `pbf_emergency_aid` (June) and `pbf` (February), 2022
 and February 2023 empty under `auxilio_brasil`, 2023-2024 under
-`pbf_2023` with the quota and PEA ratios NA.
+`pbf_2023` with the quota and PEA ratios NA. The 305 municipalities
+added at step 2.9 are in every file (Q5) and enter the grid under the
+same regimes; the tables above keep to the chapter's 502.
 **Decision.** D-2026-10-22-a (series to 2024 across both layouts, 2022
 empty; supersedes D-2026-10-05-b, closes D-2026-10-05-q), D-2026-10-22-b
 (substitution months stored as reported, `bf_regime` added and carried
@@ -548,10 +555,14 @@ june %>%
 
 **Finding.** Zero-family rows exist only in 2004 (98 in June, 100 in
 February), 2005 (23, 32) and 2006 (4, 4), always with zero transfers,
-and never afterwards. In the sample the fourteen June rows are ten 2004
-municipalities that are zero in February too and paid in June 2005, and
-Ipiranga do Norte and Itanhangá, installed in 2005, in 2005 (quota 0,
-ratio NA) and 2006 (quota 93 and 100, ratio 0), paid from 2007. This is
+and never afterwards. In the nine states the thirty June rows are
+twenty-two 2004 municipalities that are zero in February too (ten in
+the biome, twelve added at step 2.9, ten of them in Tocantins), eighteen
+of which are paid in June 2005 while four small Tocantins municipalities
+(Juarina, Mateiros, Novo Jardim, Oliveira de Fátima) are still zero in
+June 2005 and paid in June 2006; and Ipiranga do Norte and Itanhangá,
+installed in 2005, in 2005 (quota 0, ratio NA) and 2006 (quota 93 and
+100, ratio 0), paid from 2007. This is
 the programme's rollout, so a zero of the payment file is a true zero and
 the quota ratio is 0, not NA. Positive families with zero transfers occur
 only in June 2020 (42 rows), the emergency-aid substitution months of

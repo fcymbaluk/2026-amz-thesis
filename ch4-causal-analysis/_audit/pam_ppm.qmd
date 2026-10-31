@@ -56,7 +56,8 @@ munic_area <- read_rds("_data/interim/pam_ppm_munic_area_2022.rds")
 crop_areas <- read_rds("_data/interim/pam_ppm_crop_areas_1988_2025.rds")
 cattle <- read_rds("_data/interim/pam_ppm_cattle_1974_2025.rds")
 weights <- read_rds("_data/interim/pam_ppm_weights_base_2000_2002.rds")
-# Biome sample of script 01 (503 municipalities, Mojuí dos Campos included).
+# The 808 municipalities of the nine states (script 01; the biome's 503
+# until phase 2, step 2.9), Mojuí dos Campos included.
 sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds") %>%
   distinct(geocode, municipality, state_abbreviation)
 ```
@@ -65,7 +66,7 @@ sample_geo <- read_rds("_data/interim/mapbiomas_deforestation_amz_1987_2023.rds"
 
 What is checked: files per crop, the category id behind each crop, the year
 span, the number of series, the symbols served, and the municipalities of
-Brazil (and of the biome sample) without a Tabela 5457 series.
+Brazil (and of the nine-state sample) without a Tabela 5457 series.
 
 ```{r q1-shape}
 pam_raw %>%
@@ -98,14 +99,17 @@ hectares, for 5,564 of the 5,570 municipalities; the categories are
 The only symbols are "-" (the SIDRA zero) and "..." (not available). Seven
 municipalities have no series at all: Santa Cruz do Arari (PA), in the biome
 sample, and six urban municipalities of Rio de Janeiro and São Paulo. In the
-sample, "..." always covers the four crops of a municipality-year at once:
-the nine Mato Grosso municipalities installed after 2000 before their first
-survey year (task 1.6), Mojuí dos Campos before 2013, one Mato Grosso
-municipality in 2002, and six Pará municipalities (Belém and Marituba among
-them) in scattered years between 2002 and 2020, where the survey did not
-report them.
+nine states "..." always covers the four crops of a municipality-year at
+once: the fifteen Mato Grosso municipalities installed after 2000 before
+their first survey year (the nine of task 1.6 and, in 2000 only, the six
+Cerrado municipalities of D-2026-10-29-b), Mojuí dos Campos before 2013,
+Gaúcha do Norte (MT) in 2002, six Pará municipalities (Belém and
+Marituba among them) in scattered years between 2002 and 2020, where the
+survey did not report them, and, among the 305 municipalities added at
+step 2.9, São Félix do Tocantins (TO) in 2014 alone, a one-year gap of
+the Pará kind (D-2026-10-31-d).
 **Decision.** D-2026-10-10-g (symbol rule); D-2026-10-10-i (Santa Cruz do
-Arari).
+Arari); D-2026-10-31-d.
 **Assertion.** `03-controls-agro.R`, raw-state block (category ids, year
 set, 5,564 series, symbols, Santa Cruz do Arari absent).
 
@@ -129,8 +133,10 @@ ppm_raw %>%
 **Finding.** One bovine herd series per municipality for 1974-2025, in
 heads, for 5,568 municipalities (three urban municipalities of RJ and SP
 are absent; Santa Cruz do Arari is present). Symbols as in PAM. In the
-sample, "..." occurs for the nine post-2000 Mato Grosso municipalities in
-2000-2004 only.
+nine states "..." occurs only before installation: Mojuí dos Campos
+2000-2012, Ipiranga do Norte and Itanhangá 2000-2004 and the thirteen
+other lookup municipalities in 2000 (36 cells); no added municipality
+has a herd gap after installation.
 **Decision.** D-2026-10-10-g.
 **Assertion.** `03-controls-agro.R`, raw-state block (category 2670, year
 set, 5,568 series, symbols).
@@ -170,7 +176,10 @@ municipalities. Santa Cruz do Arari has 1076.652 km², as in the 2025
 release. Boa Esperança do Norte (MT, 5101837, installed 2025), which PAM
 and PPM report, is the one surveyed municipality without a 2022 area; its
 crop shares, cattle density and base-window weights are NA and it stays in
-the interim files, outside the biome sample. Until 2026-10-28 the pipeline
+the interim files, outside the nine-state sample (it is absent from
+MapBiomas, `panel.qmd` Q3). Over the 808 municipalities the 2022 area
+runs from 79 km² (Raposa, MA) to 159,533 km² (Altamira, PA), median
+2,132 km². Until 2026-10-28 the pipeline
 read the 2025 release (5,573 coded rows plus two trailing rows: the same
 grid plus Boa Esperança do Norte, with the hand-renamed `geocode` and
 `Area km2` of the lost file replaced by IBGE's names), so the parents of
@@ -220,15 +229,21 @@ weights %>%
   pivot_wider(names_from = stat, values_from = value)
 ```
 
-**Finding.** Shares are small for most municipalities; where they exceed
-1 it is the double-cropping signature IBGE documents (successive crops
-are counted twice). Cattle densities reach a few hundred heads per km2.
-The base window is empty for the municipalities installed after 2002
-(Ipiranga do Norte and Itanhangá, MT: crop and cattle weights NA), for
-Mojuí dos Campos (installed 2013) and for Santa Cruz do Arari (crop
-weights NA, no PAM series; cattle weight present); the other post-2000 MT
-municipalities have a window value because PAM and PPM report them from
-2001.
+**Finding.** Shares are small for most municipalities: over the 808 of
+2000-2020 the median soy share is 0 and the corn share 0.3 percent of
+the territory, the 99th percentiles 36 and 15 percent (the Cerrado soy
+municipalities), and no share exceeds 1 (maximum 0.70 for soy); the
+double-cropping IBGE documents (successive crops counted twice) shows in
+corn shares up to 0.57 without pushing any planted area past the
+territory. The median herd is 38,000 head at 21 head per km², the
+densities reaching a few hundred (maximum 272). The base window is empty
+for the municipalities installed after 2002 (Ipiranga do Norte and
+Itanhangá, MT: crop and cattle weights NA), for Mojuí dos Campos
+(installed 2013) and for Santa Cruz do Arari (crop weights NA, no PAM
+series; cattle weight present); the thirteen other lookup municipalities
+have a window value because PAM and PPM report them from 2001. The soy
+and cotton weights are zero for 632 and 680 municipalities and the
+cattle weight for 3, the empty basket of D-2026-10-10-h.
 **Decision.** D-2026-10-10-f (window 2000-2002, NA for an empty window).
 **Assertion.** `03-controls-agro.R`, output block (shares and densities
 non-negative, weights never NaN).
@@ -289,18 +304,20 @@ window(ppm_raw) %>% summarise(dash = sum(value == "-"), dots = sum(value == "...
                               dots_outside_lookup = sum(value == "..." & !geocode %in% post2000$geocode))
 ```
 
-**Finding.** For the ten lookup municipalities "..." covers exactly the
-years before installation and the first reported value (a number, or "-"
-where no soy was planted) appears in the installation year, in both
-surveys; nothing is reported before it. The
-remaining "..." cells of PAM are six Pará municipalities (Afuá,
-Ananindeua, Belém, Benevides, Chaves, Marituba) and Gaúcha do Norte (MT,
-2002) in scattered years, where the survey did not report the
-municipality; PPM has no "..." outside the lookup set. The symbol rule
+**Finding.** For the sixteen lookup municipalities "..." covers exactly
+the years before installation and the first reported value (a number, or
+"-" where no soy was planted) appears in the installation year, in both
+surveys; nothing is reported before it. The remaining "..." cells of PAM
+are six Pará municipalities (Afuá, Ananindeua, Belém, Benevides, Chaves,
+Marituba) and Gaúcha do Norte (MT, 2002) in scattered years, where the
+survey did not report the municipality, and São Félix do Tocantins (TO)
+in 2014, among the municipalities added at step 2.9 (D-2026-10-31-d);
+PPM has no "..." outside the lookup set (22 "-" cells, 36 "..."). The
+symbol rule
 of D-2026-10-10-g ("-" zero, "..." NA) stands, and NA before
 installation is a property of every source, asserted in script 04 against
 the lookup.
-**Decision.** D-2026-10-28-d.
+**Decision.** D-2026-10-28-d; D-2026-10-31-d.
 **Assertion.** `04-panel-assemble.R`, output block (NA before the
 installation year and observed from it in crops, cattle, employment,
 population and GDP).
@@ -355,21 +372,24 @@ vintages %>%
 ```
 
 **Finding.** The 2022 area lies within 1 percent of the mapped total for
-486 of the 503 municipalities (485 of the 502 of the sample) against 459
-(458) for the 2025 release, and differs from it by more than 2 percent in
-7 against 20. The seven are coastal municipalities of Maranhão and Pará
+791 of the 808 municipalities of the nine states (486 of the biome's 503
+at the step) against 757 (459) for the 2025 release, and differs from it
+by more than 2 percent in 7 against 27 (7 against 20 on the biome). The
+seven are coastal municipalities of Maranhão and Pará, all in the biome
 (Raposa, Godofredo Viana, Porto Rico do Maranhão, São João de Pirabas,
-Cururupu, Augusto Corrêa, Luís Domingues) where the mapped total falls
+Cururupu, Augusto Corrêa, Luís Domingues), where the mapped total falls
 short of the area in both releases alike: MapBiomas' own coverage of the
-coast, not the mesh. The two releases differ in 300 municipalities, 31 by
-more than 1 percent. The large differences are the mesh: Nova Ubiratã
-(12,460.7 km² in 2022 against 8,720.8 in 2025; ratio 1.000 against 1.429),
-the Seringueiras-São Miguel do Guaporé (RO) boundary swap (3,773.5 and
-7,460.1 km² in 2022; ratios 1.000 against 0.849 and 1.099) and boundary
-revisions of 400-630 km² in Amazonas (Apuí, São Gabriel da Cachoeira,
-Jutaí, Presidente Figueiredo, Borba), all of which the 2022 release puts
-on the mapped mesh. With it no forest area exceeds the municipal area
-(panel.qmd Q3).
+coast, not the mesh. The two releases differ in 393 municipalities, 38
+by more than 1 percent. The large differences are the mesh: Nova Ubiratã
+(12,460.7 km² in 2022 against 8,720.8 in 2025; ratio 1.000 against
+1.429) and Sorriso (9,294 against 8,455), the two parents of Boa
+Esperança do Norte, the Seringueiras-São Miguel do Guaporé (RO) boundary
+swap (3,773.5 and 7,460.1 km² in 2022; ratios 1.000 against 0.849 and
+1.099), the Balsas-Sambaíba (MA) revision of about 540 km² (ratio 1.000
+against 1.043 and 0.821) and boundary revisions of 400-630 km² in
+Amazonas (Apuí, São Gabriel da Cachoeira, Jutaí, Presidente Figueiredo,
+Borba), all of which the 2022 release puts on the mapped mesh. With it
+no forest area exceeds the municipal area (panel.qmd Q3).
 **Decision.** D-2026-10-28-g.
 **Assertion.** `03-controls-agro.R`, raw-state block (the 2022 file, sheet
 and column; grid counts); `04-panel-assemble.R`, output block
