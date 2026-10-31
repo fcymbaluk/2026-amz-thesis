@@ -2251,16 +2251,29 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Source: none. This notebook audits the sample-definition stage: the drop of Mojuí dos Campos, the 2000-2003 baseline summaries, the forest-availability floor and the two at-risk gates, the window-consistent PPCDAm treatment flags and the cross-sectional pressure scores, with the positivity and balance diagnostics that the legacy script printed to the console. Pipeline script: <code>_scripts/05-sample-definition.R</code>. Interim outputs: <code>_data/interim/panel_amz_2000_2020_sample.rds</code> and <code>_data/interim/panel_amz_baseline.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 05 commit message and in the decision entries it cites.</p>
+<p>Source: none. This notebook audits the sample-definition stage: the drop of Mojuí dos Campos, the 2000-2003 baseline summaries, the forest-availability floor and the two at-risk gates, the window-consistent PPCDAm treatment flags and the cross-sectional pressure scores, with the positivity and balance diagnostics that the legacy script printed to the console. Since phase 2, step 2.9 the store holds the 807 municipalities of the nine states (D-2026-10-29-a); the chapter’s sample is the biome (502) and the robustness sample the Legal Amazon (771), and Q4-Q7 read the design diagnostics on those two samples while Q10 reads the extension itself. Pipeline script: <code>_scripts/05-sample-definition.R</code>. Interim outputs: <code>_data/interim/panel_amz_2000_2020_sample.rds</code> and <code>_data/interim/panel_amz_baseline.rds</code>. Equivalence with the recovered panel is not checked here (the notebook never reads <code>_data/reference/</code>); the <code>compare_outputs</code> report lives in the phase 1 script 05 commit message and in the decision entries it cites.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>panel_in <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>panel <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020_sample.rds&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>muni <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_baseline.rds&quot;</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>BASE_YEARS <span class="ot">&lt;-</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2003</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>WINDOWS <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">window =</span> <span class="fu">c</span>(<span class="st">&quot;main&quot;</span>, <span class="st">&quot;robust&quot;</span>), <span class="at">treat =</span> <span class="fu">c</span>(<span class="st">&quot;ppcdam_main&quot;</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;ppcdam_robust&quot;</span>), <span class="at">start =</span> <span class="dv">2004</span>L, <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2010</span>L, <span class="dv">2012</span>L))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Since phase 2R (D-2026-10-30-a) the store carries the crosswalk names and</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the two interim panels the working names; both interim panels are read</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># through the crosswalk so that the notebook speaks one vocabulary.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;_scripts/utils/crosswalk.R&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>xwalk <span class="ot">&lt;-</span> <span class="fu">read_crosswalk</span>()</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>panel_in <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_through_crosswalk</span>(xwalk)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>panel <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_2000_2020_sample.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_through_crosswalk</span>(xwalk)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>muni <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/panel_amz_baseline.rds&quot;</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>BASE_YEARS <span class="ot">&lt;-</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2003</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>WINDOWS <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">window =</span> <span class="fu">c</span>(<span class="st">&quot;main&quot;</span>, <span class="st">&quot;robust&quot;</span>), <span class="at">treat =</span> <span class="fu">c</span>(<span class="st">&quot;enf_ppcdam_listed_main_dum&quot;</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;enf_ppcdam_listed_robust_dum&quot;</span>), <span class="at">start =</span> <span class="dv">2004</span>L, <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">2010</span>L, <span class="dv">2012</span>L))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Since phase 2, step 2.9 the store holds the 807 municipalities of the nine</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># states; the chapter&#39;s sample is the biome (502) and the robustness sample</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># the Legal Amazon (771) (D-2026-10-29-a, D-2026-10-30-g). The design</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># diagnostics of Q4-Q7 are read on those two samples.</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>SAMPLES <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">biome =</span> <span class="fu">filter</span>(muni, geo_biome_amazon_dum <span class="sc">==</span> <span class="dv">1</span>L),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                <span class="at">legal_amazon =</span> <span class="fu">filter</span>(muni, geo_legal_amazon_dum <span class="sc">==</span> <span class="dv">1</span>L))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="q1.-what-does-the-drop-of-mojuí-dos-campos-remove-and-is-every-remaining-municipality-observed-over-the-baseline-window" class="level2">
@@ -2272,16 +2285,16 @@ vertical-align: -.125em;
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>panel_in <span class="sc">%&gt;%</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1504752&quot;</span>, year <span class="sc">%in%</span> BASE_YEARS) <span class="sc">%&gt;%</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">rows =</span> <span class="fu">n</span>(),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">across</span>(<span class="fu">c</span>(deforestation_area_km2, forest_area_km2, munic_area_km2,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                     cattle_per_km2, crop_soy_munic_area_share, ppcdam_list),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">across</span>(<span class="fu">c</span>(env_defor_area_km2, env_forest_area_km2, geo_area_km2,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                     agr_cattle_per_km2, agr_soy_planted_munic_share, enf_ppcdam_listed_dum),</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(.x))))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 7
-   rows deforestation_area_km2 forest_area_km2 munic_area_km2 cattle_per_km2 crop_soy_munic_area_share
-  &lt;int&gt;                  &lt;int&gt;           &lt;int&gt;          &lt;int&gt;          &lt;int&gt;                     &lt;int&gt;
-1     4                      4               4              4              0                         0
-# ℹ 1 more variable: ppcdam_list &lt;int&gt;</code></pre>
+   rows env_defor_area_km2 env_forest_area_km2 geo_area_km2 agr_cattle_per_km2 agr_soy_planted_munic_share
+  &lt;int&gt;              &lt;int&gt;               &lt;int&gt;        &lt;int&gt;              &lt;int&gt;                       &lt;int&gt;
+1     4                  4                   4            4                  0                           0
+# ℹ 1 more variable: enf_ppcdam_listed_dum &lt;int&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2290,7 +2303,7 @@ vertical-align: -.125em;
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> BASE_YEARS) <span class="sc">%&gt;%</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(deforestation_area_km2)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">years =</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(env_defor_area_km2)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(years)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
@@ -2300,7 +2313,7 @@ vertical-align: -.125em;
 1     4   807</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The drop removes Mojuí’s 21 rows (503 to 502 municipalities). Over 2000-2003 the municipality carries deforestation, forest, area and the PPCDAm indicator (never listed) but no cattle or crop values, so its baseline clearing would exist while its agricultural pressure would not; the substantive reason for the drop is the absence of every social and economic series before 2013 (<code>_audit/panel.qmd</code> Q7). Every remaining municipality has four baseline years of deforestation area. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (Mojuí present in the input, no NA in the deforestation, forest and area columns) and output block (502 municipalities, Mojuí absent).</p>
+<p><strong>Finding.</strong> The drop removes Mojuí’s 21 rows (808 to 807 municipalities; 503 to 502 until step 2.9). Over 2000-2003 the municipality carries deforestation, forest, area and the PPCDAm indicator (never listed) but no cattle or crop values, so its baseline clearing would exist while its agricultural pressure would not; the substantive reason for the drop is the absence of every social and economic series before 2013 (<code>_audit/panel.qmd</code> Q7). Every remaining municipality has four baseline years of deforestation area. <strong>Decision.</strong> D-2026-10-05-l (provisional; issue #8). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (Mojuí present in the input, no NA in the deforestation, forest and area columns) and output block (502 municipalities, Mojuí absent).</p>
 </section>
 <section id="q2.-which-municipalities-lack-a-baseline-covariate-and-how-are-the-baselines-distributed" class="level2">
 <h2 class="anchored" data-anchor-id="q2.-which-municipalities-lack-a-baseline-covariate-and-how-are-the-baselines-distributed">Q2. Which municipalities lack a baseline covariate, and how are the baselines distributed?</h2>
@@ -2309,48 +2322,50 @@ vertical-align: -.125em;
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                     forest_share_2000, pressure_defor, pressure_agri,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                     pressure_score, avail_ok, at_risk_broad, at_risk_narrow),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                     env_forest_munic_share_bl0000, env_defor_pressure_idx, agr_pressure_idx,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                     smp_pressure_idx, smp_avail_dum, smp_atrisk_broad_dum, smp_atrisk_narrow_dum),</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)))) <span class="sc">%&gt;%</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;column&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;na_munic&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(na_munic <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 2
-  column         na_munic
-  &lt;chr&gt;             &lt;int&gt;
-1 cattle_dens_b         2
-2 crop_share_b          3
-3 pressure_agri         3
-4 pressure_score        3</code></pre>
+  column                              na_munic
+  &lt;chr&gt;                                  &lt;int&gt;
+1 agr_cattle_per_km2_bl0003                  2
+2 agr_crop_planted_munic_share_bl0003        3
+3 agr_pressure_idx                           3
+4 smp_pressure_idx                           3</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(cattle_dens_b) <span class="sc">|</span> <span class="fu">is.na</span>(crop_share_b)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, defor_area_b,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         cattle_dens_b, crop_share_b, forest_share_2000, avail_ok,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         at_risk_narrow, ppcdam_robust)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(agr_cattle_per_km2_bl0003) <span class="sc">|</span> <span class="fu">is.na</span>(agr_crop_planted_munic_share_bl0003)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, uf, env_defor_area_km2_bl0003,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>         agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003, env_forest_munic_share_bl0000, smp_avail_dum,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         smp_atrisk_narrow_dum, enf_ppcdam_listed_robust_dum)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 10
-  geocode municipality   state_abbreviation defor_area_b cattle_dens_b crop_share_b forest_share_2000 avail_ok
-  &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;                     &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;             &lt;dbl&gt; &lt;lgl&gt;   
-1 1506401 Santa Cruz do… PA                           0           33.1           NA             0.941 TRUE    
-2 5104526 Ipiranga do N… MT                         186.          NA             NA             0.598 TRUE    
-3 5104542 Itanhangá      MT                         125.          NA             NA             0.826 TRUE    
-# ℹ 2 more variables: at_risk_narrow &lt;lgl&gt;, ppcdam_robust &lt;int&gt;</code></pre>
+  geocode municipality        uf    env_defor_area_km2_bl0003 agr_cattle_per_km2_bl0003 agr_crop_planted_mun…¹
+  &lt;chr&gt;   &lt;chr&gt;               &lt;chr&gt;                     &lt;dbl&gt;                     &lt;dbl&gt;                  &lt;dbl&gt;
+1 1506401 Santa Cruz do Arari PA                           0                       33.1                     NA
+2 5104526 Ipiranga do Norte   MT                         186.                      NA                       NA
+3 5104542 Itanhangá           MT                         125.                      NA                       NA
+# ℹ abbreviated name: ¹​agr_crop_planted_munic_share_bl0003
+# ℹ 4 more variables: env_forest_munic_share_bl0000 &lt;dbl&gt;, smp_avail_dum &lt;lgl&gt;, smp_atrisk_narrow_dum &lt;lgl&gt;,
+#   enf_ppcdam_listed_robust_dum &lt;int&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         forest_share_2000) <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         env_forest_munic_share_bl0000) <span class="sc">%&gt;%</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;baseline&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(baseline) <span class="sc">%&gt;%</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">min =</span> <span class="fu">min</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
@@ -2362,16 +2377,16 @@ vertical-align: -.125em;
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 6
-  baseline            min   p10 median     p90      max
-  &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
-1 cattle_dens_b     0     0.94  16.3    64.8    180.   
-2 crop_share_b      0     0      0.01    0.059    0.798
-3 defor_area_b      0     2.41  19.7   103.    1126.   
-4 defor_rate_b      0     0.001  0.019   0.069    0.236
-5 forest_share_2000 0.085 0.351  0.748   0.964    0.998</code></pre>
+  baseline                              min   p10 median     p90      max
+  &lt;chr&gt;                               &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+1 agr_cattle_per_km2_bl0003           0     0.94  16.3    64.8    180.   
+2 agr_crop_planted_munic_share_bl0003 0     0      0.01    0.059    0.798
+3 env_defor_area_km2_bl0003           0     2.41  19.7   103.    1126.   
+4 env_defor_forest_share_bl0003       0     0.001  0.019   0.069    0.236
+5 env_forest_munic_share_bl0000       0.085 0.351  0.748   0.964    0.998</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Three municipalities have no agricultural baseline: Ipiranga do Norte and Itanhangá (MT) have no PAM or PPM rows before their first survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop series at all (D-2026-10-10-i). Their <code>pressure_agri</code> and <code>pressure_score</code> are NA; their flags are defined because the flags read only clearing and forest share. The baselines are right-skewed, which is why the pressure scores log them first. The 2000 forest share exceeds 1 for one municipality, Nova Ubiratã (1.18), the mesh-vintage mismatch of <code>_audit/panel.qmd</code> Q3 (task 1.8); it passes the floor either way. <strong>Decision.</strong> D-2026-10-12-a (NA, never NaN, where a source has no baseline value). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AGRI_NA_EXPECTED</code> = 3, no NA in clearing and forest share, flags never NA).</p>
+<p><strong>Finding.</strong> Three municipalities have no agricultural baseline: Ipiranga do Norte and Itanhangá (MT) have no PAM or PPM rows before their first survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop series at all (D-2026-10-10-i). Their <code>agr_pressure_idx</code> and <code>smp_pressure_idx</code> are NA; their flags are defined because the flags read only clearing and forest share. None of the 305 municipalities added at step 2.9 lacks a baseline: the six installed in 2001 have PAM and PPM values from 2001 (D-2026-10-29-b). The baselines are right-skewed over the 807 (median clearing 20 km² a year, 90th percentile 103, maximum 1,126), which is why the pressure scores log them first. The 2000 forest share runs 0.085 to 0.998; the value above 1 that Nova Ubiratã showed at phase 1 (1.18) was the mesh-vintage mismatch of <code>_audit/panel.qmd</code> Q3, closed by the 2022 area release (D-2026-10-28-g). <strong>Decision.</strong> D-2026-10-12-a (NA, never NaN, where a source has no baseline value). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AGRI_NA_EXPECTED</code> = 3, no NA in clearing and forest share, flags never NA).</p>
 </section>
 <section id="q3.-which-municipalities-count-as-treated-under-each-analysis-window" class="level2">
 <h2 class="anchored" data-anchor-id="q3.-which-municipalities-count-as-treated-under-each-analysis-window">Q3. Which municipalities count as treated under each analysis window?</h2>
@@ -2380,7 +2395,7 @@ vertical-align: -.125em;
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ppcdam_list <span class="sc">==</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(enf_ppcdam_listed_dum <span class="sc">==</span> <span class="dv">1</span>L) <span class="sc">%&gt;%</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">first =</span> <span class="fu">min</span>(year), <span class="at">last =</span> <span class="fu">max</span>(year), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(first, <span class="at">name =</span> <span class="st">&quot;cohort_size&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -2403,31 +2418,31 @@ vertical-align: -.125em;
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2004</span>, year <span class="sc">&lt;=</span> <span class="dv">2012</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">listed_years =</span> <span class="fu">sum</span>(ppcdam_list),</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">exited =</span> <span class="fu">any</span>(ppcdam_list <span class="sc">==</span> <span class="dv">1</span>L) <span class="sc">&amp;&amp;</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>              ppcdam_list[year <span class="sc">==</span> <span class="dv">2012</span>] <span class="sc">==</span> <span class="dv">0</span>L, <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">listed_years =</span> <span class="fu">sum</span>(enf_ppcdam_listed_dum),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">exited =</span> <span class="fu">any</span>(enf_ppcdam_listed_dum <span class="sc">==</span> <span class="dv">1</span>L) <span class="sc">&amp;&amp;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>              enf_ppcdam_listed_dum[year <span class="sc">==</span> <span class="dv">2012</span>] <span class="sc">==</span> <span class="dv">0</span>L, <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(exited) <span class="sc">%&gt;%</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(muni, geocode, municipality, state_abbreviation),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">select</span>(muni, geocode, municipality, uf),</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 5
-  geocode listed_years exited municipality        state_abbreviation
-  &lt;chr&gt;          &lt;int&gt; &lt;lgl&gt;  &lt;chr&gt;               &lt;chr&gt;             
-1 1502939            4 TRUE   Dom Eliseu          PA                
-2 1505502            3 TRUE   Paragominas         PA                
-3 1506708            4 TRUE   Santana do Araguaia PA                
-4 1508126            4 TRUE   Ulianópolis         PA                
-5 5100250            4 TRUE   Alta Floresta       MT                
-6 5107065            3 TRUE   Querência           MT                </code></pre>
+  geocode listed_years exited municipality        uf   
+  &lt;chr&gt;          &lt;int&gt; &lt;lgl&gt;  &lt;chr&gt;               &lt;chr&gt;
+1 1502939            4 TRUE   Dom Eliseu          PA   
+2 1505502            3 TRUE   Paragominas         PA   
+3 1506708            4 TRUE   Santana do Araguaia PA   
+4 1508126            4 TRUE   Ulianópolis         PA   
+5 5100250            4 TRUE   Alta Floresta       MT   
+6 5107065            3 TRUE   Querência           MT   </code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">main =</span> <span class="fu">sum</span>(ppcdam_main), <span class="at">robust =</span> <span class="fu">sum</span>(ppcdam_robust),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">ever_full =</span> <span class="fu">sum</span>(ppcdam_ever_full))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">main =</span> <span class="fu">sum</span>(enf_ppcdam_listed_main_dum), <span class="at">robust =</span> <span class="fu">sum</span>(enf_ppcdam_listed_robust_dum),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">ever_full =</span> <span class="fu">sum</span>(enf_ppcdam_ever_dum))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 3
@@ -2436,52 +2451,62 @@ vertical-align: -.125em;
 1    43     52        62</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Listing starts in 2008 (36 municipalities) with a second cohort in 2009 (7), so the main window holds 43 treated municipalities and no exit; 2011 and 2012 add 8, so the robust window holds 51, and six of its treated municipalities (four in Pará, two in Mato Grosso) have left the list by 2012. Later cohorts (2017, 2018) bring the full-panel count to 61. A municipality first listed after a window’s end is a control in that design. <strong>Decision.</strong> D-2026-10-12-b. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (43, 51, 61; main within robust within ever).</p>
+<p><strong>Finding.</strong> Listing starts in 2008 (36 municipalities) with a second cohort in 2009 (7), so the main window holds 43 treated municipalities and no exit; 2011 and 2012 add 9 (Grajaú, MA, listed in 2011, among them since step 2.9), so the robust window holds 52, and six of its treated municipalities (four in Pará, two in Mato Grosso) have left the list by 2012. Later cohorts (2017, 2018) bring the full-panel count to 62. On the biome alone the counts are 43, 51 and 61: Grajaú is the one treated municipality the extension adds (Q10). A municipality first listed after a window’s end is a control in that design. <strong>Decision.</strong> D-2026-10-12-b; D-2026-10-29-a (the flags for every municipality of the store). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (43, 52, 62; main within robust within ever).</p>
 </section>
 <section id="q4.-does-the-at-risk-restriction-remove-treated-municipalities" class="level2">
 <h2 class="anchored" data-anchor-id="q4.-does-the-at-risk-restriction-remove-treated-municipalities">Q4. Does the at-risk restriction remove treated municipalities?</h2>
-<p>What is checked: for each window, the number of municipalities, treated and control, in the full sample and under the broad and narrow gates.</p>
+<p>What is checked: for each window and each sample, the number of municipalities, treated and control, before the gates and under the floor and the broad and narrow gates.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>retention <span class="ot">&lt;-</span> <span class="cf">function</span>(d, treat) {</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample  =</span> <span class="fu">c</span>(<span class="st">&quot;full&quot;</span>, <span class="st">&quot;avail&quot;</span>, <span class="st">&quot;broad&quot;</span>, <span class="st">&quot;narrow&quot;</span>),</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n       =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(d), <span class="fu">sum</span>(d<span class="sc">$</span>avail_ok), <span class="fu">sum</span>(d<span class="sc">$</span>at_risk_broad),</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d<span class="sc">$</span>at_risk_narrow)),</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">treated =</span> <span class="fu">c</span>(<span class="fu">sum</span>(d[[treat]]), <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>avail_ok),</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>at_risk_broad),</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>at_risk_narrow))</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n       =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(d), <span class="fu">sum</span>(d<span class="sc">$</span>smp_avail_dum), <span class="fu">sum</span>(d<span class="sc">$</span>smp_atrisk_broad_dum),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d<span class="sc">$</span>smp_atrisk_narrow_dum)),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">treated =</span> <span class="fu">c</span>(<span class="fu">sum</span>(d[[treat]]), <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>smp_avail_dum),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>smp_atrisk_broad_dum),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">sum</span>(d[[treat]] <span class="sc">&amp;</span> d<span class="sc">$</span>smp_atrisk_narrow_dum))</span>
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">control =</span> n <span class="sc">-</span> treated)</span>
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dfr</span>(<span class="fu">set_names</span>(WINDOWS<span class="sc">$</span>treat, WINDOWS<span class="sc">$</span>window), <span class="sc">~</span> <span class="fu">retention</span>(muni, .x),</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">.id =</span> <span class="st">&quot;window&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dfr</span>(SAMPLES, <span class="cf">function</span>(d) {</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">set_names</span>(WINDOWS<span class="sc">$</span>treat, WINDOWS<span class="sc">$</span>window), <span class="sc">~</span> <span class="fu">retention</span>(d, .x), <span class="at">.id =</span> <span class="st">&quot;window&quot;</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>}, <span class="at">.id =</span> <span class="st">&quot;sample_def&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">16</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 8 × 5
-  window sample     n treated control
-  &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
-1 main   full     807      43     764
-2 main   avail    805      43     762
-3 main   broad    756      43     713
-4 main   narrow   646      43     603
-5 robust full     807      52     755
-6 robust avail    805      52     753
-7 robust broad    756      52     704
-8 robust narrow   646      52     594</code></pre>
+<pre><code># A tibble: 16 × 6
+   sample_def   window sample     n treated control
+   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
+ 1 biome        main   full     502      43     459
+ 2 biome        main   avail    500      43     457
+ 3 biome        main   broad    468      43     425
+ 4 biome        main   narrow   408      43     365
+ 5 biome        robust full     502      51     451
+ 6 biome        robust avail    500      51     449
+ 7 biome        robust broad    468      51     417
+ 8 biome        robust narrow   408      51     357
+ 9 legal_amazon main   full     771      43     728
+10 legal_amazon main   avail    769      43     726
+11 legal_amazon main   broad    734      43     691
+12 legal_amazon main   narrow   639      43     596
+13 legal_amazon robust full     771      52     719
+14 legal_amazon robust avail    769      52     717
+15 legal_amazon robust broad    734      52     682
+16 legal_amazon robust narrow   639      52     587</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Under both windows every treated municipality survives the floor and both gates; the restriction removes controls only, from 459 to 425 (broad) and 365 (narrow) in the main window and from 451 to 417 and 357 in the robust window. The floor alone removes two never-listed Tocantins municipalities (Arapoema and Bernardo Sayão, forest share below 0.09). <strong>Decision.</strong> D-2026-10-05-h (gates as inherited). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (500, 468, 408; every robust-window treated municipality in the narrow sample).</p>
+<p><strong>Finding.</strong> On both samples and under both windows every treated municipality survives the floor and both gates; the restriction removes controls only. On the biome sample, from 459 to 425 (broad) and 365 (narrow) in the main window and from 451 to 417 and 357 in the robust window; on the Legal Amazon sample, from 728 to 691 and 596 and from 719 to 682 and 587, Grajaú being the robust window’s 52nd treated municipality. The floor alone removes two never-listed Tocantins municipalities of the biome (Arapoema and Bernardo Sayão, forest share below 0.09) and none of the added ones (Q10). <strong>Decision.</strong> D-2026-10-05-h (gates as inherited); D-2026-10-29-a (the gates computed for every municipality of the store). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (805, 756 and 646 over the 807; every robust-window treated municipality in the narrow sample).</p>
 </section>
 <section id="q5.-which-baseline-covariates-differ-between-treated-and-control-municipalities" class="level2">
 <h2 class="anchored" data-anchor-id="q5.-which-baseline-covariates-differ-between-treated-and-control-municipalities">Q5. Which baseline covariates differ between treated and control municipalities?</h2>
-<p>What is checked: treated and control means and the standardized mean difference (difference over the pooled within-group standard deviation) for five baseline covariates, by window and sample. The restriction is not expected to balance covariates; the table names what matching or weighting inside the at-risk sample must condition on (absolute values above about 0.1).</p>
+<p>What is checked: treated and control means and the standardized mean difference (difference over the pooled within-group standard deviation) for five baseline covariates, by window and gate, on the biome sample and on the Legal Amazon sample. The restriction is not expected to balance covariates; the table names what matching or weighting inside the at-risk sample must condition on (absolute values above about 0.1).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bal_covs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;forest_share_2000&quot;</span>, <span class="st">&quot;defor_area_b&quot;</span>, <span class="st">&quot;defor_rate_b&quot;</span>,</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;cattle_dens_b&quot;</span>, <span class="st">&quot;crop_share_b&quot;</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bal_covs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;env_forest_munic_share_bl0000&quot;</span>, <span class="st">&quot;env_defor_area_km2_bl0003&quot;</span>, <span class="st">&quot;env_defor_forest_share_bl0003&quot;</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;agr_cattle_per_km2_bl0003&quot;</span>, <span class="st">&quot;agr_crop_planted_munic_share_bl0003&quot;</span>)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>smd_tab <span class="ot">&lt;-</span> <span class="cf">function</span>(d, treat, label) {</span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> d[d[[treat]] <span class="sc">==</span> <span class="dv">1</span>L, ]</span>
 <span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  c <span class="ot">&lt;-</span> d[d[[treat]] <span class="sc">==</span> <span class="dv">0</span>L, ]</span>
@@ -2495,166 +2520,240 @@ vertical-align: -.125em;
 <span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    })</span>
 <span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>smd_by_window <span class="ot">&lt;-</span> <span class="cf">function</span>(treat) {</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">smd_tab</span>(muni, treat, <span class="st">&quot;full&quot;</span>),</span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">smd_tab</span>(<span class="fu">filter</span>(muni, at_risk_broad), treat, <span class="st">&quot;broad&quot;</span>),</span>
-<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">smd_tab</span>(<span class="fu">filter</span>(muni, at_risk_narrow), treat, <span class="st">&quot;narrow&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>smd_by_window <span class="ot">&lt;-</span> <span class="cf">function</span>(treat, d) {</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">smd_tab</span>(d, treat, <span class="st">&quot;full&quot;</span>),</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">smd_tab</span>(<span class="fu">filter</span>(d, smp_atrisk_broad_dum), treat, <span class="st">&quot;broad&quot;</span>),</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">smd_tab</span>(<span class="fu">filter</span>(d, smp_atrisk_narrow_dum), treat, <span class="st">&quot;narrow&quot;</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(mean_treated, mean_control, smd), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span>
 <span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;ppcdam_main&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_main_dum&quot;</span>, SAMPLES<span class="sc">$</span>biome) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 15 × 5
-   sample covariate         mean_treated mean_control    smd
-   &lt;chr&gt;  &lt;chr&gt;                    &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
- 1 full   forest_share_2000        0.806        0.693  0.627
- 2 full   defor_area_b           233.          32.4    1.62 
- 3 full   defor_rate_b             0.024        0.028 -0.181
- 4 full   cattle_dens_b           17.1         26.8   -0.422
- 5 full   crop_share_b             0.012        0.028 -0.329
- 6 broad  forest_share_2000        0.806        0.682  0.69 
- 7 broad  defor_area_b           233.          34.7    1.60 
- 8 broad  defor_rate_b             0.024        0.03  -0.249
- 9 broad  cattle_dens_b           17.1         28.0   -0.471
-10 broad  crop_share_b             0.012        0.029 -0.351
-11 narrow forest_share_2000        0.806        0.661  0.824
-12 narrow defor_area_b           233.          40.4    1.55 
-13 narrow defor_rate_b             0.024        0.033 -0.384
-14 narrow cattle_dens_b           17.1         30.0   -0.563
-15 narrow crop_share_b             0.012        0.031 -0.373</code></pre>
+   sample covariate                           mean_treated mean_control    smd
+   &lt;chr&gt;  &lt;chr&gt;                                      &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+ 1 full   env_forest_munic_share_bl0000              0.806        0.672  0.686
+ 2 full   env_defor_area_km2_bl0003                233.          35.9    1.59 
+ 3 full   env_defor_forest_share_bl0003              0.024        0.035 -0.389
+ 4 full   agr_cattle_per_km2_bl0003                 17.1         28.3   -0.434
+ 5 full   agr_crop_planted_munic_share_bl0003        0.012        0.015 -0.101
+ 6 broad  env_forest_munic_share_bl0000              0.806        0.66   0.756
+ 7 broad  env_defor_area_km2_bl0003                233.          38.7    1.57 
+ 8 broad  env_defor_forest_share_bl0003              0.024        0.037 -0.471
+ 9 broad  agr_cattle_per_km2_bl0003                 17.1         29.7   -0.486
+10 broad  agr_crop_planted_munic_share_bl0003        0.012        0.016 -0.141
+11 narrow env_forest_munic_share_bl0000              0.806        0.64   0.872
+12 narrow env_defor_area_km2_bl0003                233.          44.6    1.52 
+13 narrow env_defor_forest_share_bl0003              0.024        0.041 -0.613
+14 narrow agr_cattle_per_km2_bl0003                 17.1         32.6   -0.59 
+15 narrow agr_crop_planted_munic_share_bl0003        0.012        0.018 -0.202</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;ppcdam_robust&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_robust_dum&quot;</span>, SAMPLES<span class="sc">$</span>biome) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 15 × 5
-   sample covariate         mean_treated mean_control    smd
-   &lt;chr&gt;  &lt;chr&gt;                    &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
- 1 full   forest_share_2000        0.809        0.691  0.652
- 2 full   defor_area_b           207.          31.8    1.46 
- 3 full   defor_rate_b             0.023        0.028 -0.206
- 4 full   cattle_dens_b           16.2         27.0   -0.471
- 5 full   crop_share_b             0.024        0.027 -0.048
- 6 broad  forest_share_2000        0.809        0.681  0.717
- 7 broad  defor_area_b           207.          34.0    1.44 
- 8 broad  defor_rate_b             0.023        0.03  -0.275
- 9 broad  cattle_dens_b           16.2         28.2   -0.521
-10 broad  crop_share_b             0.024        0.029 -0.068
-11 narrow forest_share_2000        0.809        0.659  0.856
-12 narrow defor_area_b           207.          39.8    1.39 
-13 narrow defor_rate_b             0.023        0.034 -0.411
-14 narrow cattle_dens_b           16.2         30.3   -0.616
-15 narrow crop_share_b             0.024        0.03  -0.086</code></pre>
+   sample covariate                           mean_treated mean_control    smd
+   &lt;chr&gt;  &lt;chr&gt;                                      &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+ 1 full   env_forest_munic_share_bl0000              0.809        0.67   0.711
+ 2 full   env_defor_area_km2_bl0003                209.          35.1    1.44 
+ 3 full   env_defor_forest_share_bl0003              0.023        0.035 -0.408
+ 4 full   agr_cattle_per_km2_bl0003                 16.3         28.6   -0.473
+ 5 full   agr_crop_planted_munic_share_bl0003        0.024        0.014  0.178
+ 6 broad  env_forest_munic_share_bl0000              0.809        0.657  0.783
+ 7 broad  env_defor_area_km2_bl0003                209.          37.9    1.41 
+ 8 broad  env_defor_forest_share_bl0003              0.023        0.037 -0.491
+ 9 broad  agr_cattle_per_km2_bl0003                 16.3         30.1   -0.527
+10 broad  agr_crop_planted_munic_share_bl0003        0.024        0.015  0.16 
+11 narrow env_forest_munic_share_bl0000              0.809        0.636  0.905
+12 narrow env_defor_area_km2_bl0003                209.          43.8    1.36 
+13 narrow env_defor_forest_share_bl0003              0.023        0.042 -0.637
+14 narrow agr_cattle_per_km2_bl0003                 16.3         33.0   -0.636
+15 narrow agr_crop_planted_munic_share_bl0003        0.024        0.017  0.129</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_main_dum&quot;</span>, SAMPLES<span class="sc">$</span>legal_amazon) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15 × 5
+   sample covariate                           mean_treated mean_control    smd
+   &lt;chr&gt;  &lt;chr&gt;                                      &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+ 1 full   env_forest_munic_share_bl0000              0.806        0.681  0.695
+ 2 full   env_defor_area_km2_bl0003                233.          33.8    1.61 
+ 3 full   env_defor_forest_share_bl0003              0.024        0.029 -0.23 
+ 4 full   agr_cattle_per_km2_bl0003                 17.1         27.9   -0.462
+ 5 full   agr_crop_planted_munic_share_bl0003        0.012        0.028 -0.322
+ 6 broad  env_forest_munic_share_bl0000              0.806        0.674  0.739
+ 7 broad  env_defor_area_km2_bl0003                233.          35.6    1.60 
+ 8 broad  env_defor_forest_share_bl0003              0.024        0.031 -0.281
+ 9 broad  agr_cattle_per_km2_bl0003                 17.1         28.6   -0.495
+10 broad  agr_crop_planted_munic_share_bl0003        0.012        0.029 -0.343
+11 narrow env_forest_munic_share_bl0000              0.806        0.658  0.844
+12 narrow env_defor_area_km2_bl0003                233.          40.7    1.55 
+13 narrow env_defor_forest_share_bl0003              0.024        0.034 -0.395
+14 narrow agr_cattle_per_km2_bl0003                 17.1         30.3   -0.572
+15 narrow agr_crop_planted_munic_share_bl0003        0.012        0.03  -0.37 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">smd_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_robust_dum&quot;</span>, SAMPLES<span class="sc">$</span>legal_amazon) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">15</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15 × 5
+   sample covariate                           mean_treated mean_control    smd
+   &lt;chr&gt;  &lt;chr&gt;                                      &lt;dbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+ 1 full   env_forest_munic_share_bl0000              0.809        0.679  0.721
+ 2 full   env_defor_area_km2_bl0003                207.          33.2    1.45 
+ 3 full   env_defor_forest_share_bl0003              0.023        0.03  -0.255
+ 4 full   agr_cattle_per_km2_bl0003                 16.2         28.1   -0.511
+ 5 full   agr_crop_planted_munic_share_bl0003        0.024        0.027 -0.046
+ 6 broad  env_forest_munic_share_bl0000              0.809        0.672  0.767
+ 7 broad  env_defor_area_km2_bl0003                207.          34.9    1.43 
+ 8 broad  env_defor_forest_share_bl0003              0.023        0.031 -0.307
+ 9 broad  agr_cattle_per_km2_bl0003                 16.2         28.8   -0.545
+10 broad  agr_crop_planted_munic_share_bl0003        0.024        0.028 -0.065
+11 narrow env_forest_munic_share_bl0000              0.809        0.656  0.877
+12 narrow env_defor_area_km2_bl0003                207.          40.1    1.39 
+13 narrow env_defor_forest_share_bl0003              0.023        0.034 -0.423
+14 narrow agr_cattle_per_km2_bl0003                 16.2         30.5   -0.626
+15 narrow agr_crop_planted_munic_share_bl0003        0.024        0.03  -0.084</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> Listed municipalities have far higher baseline clearing area (smd about 1.5 in the main window, 1.4 in the robust one), are more forested (0.7 to 0.9) and have lower clearing rate and cattle density (about -0.4 to -0.6); the imbalance does not shrink as the sample narrows. Crop share is balanced in the main window and tilts towards the treated group (0.14 to 0.19) in the robust window, whose 2011-2012 cohorts are more crop-oriented. These are the covariates the estimator conditions on. <strong>Decision.</strong> none required; evidence for the chapter’s methods section. <strong>Assertion.</strong> none.</p>
+<p><strong>Finding.</strong> On the biome sample listed municipalities have far higher baseline clearing area (smd about 1.5 in the main window, 1.4 in the robust one), are more forested (0.7 to 0.9) and have lower clearing rate and cattle density (about -0.4 to -0.6); the imbalance does not shrink as the gates narrow. Crop share is balanced in the main window and tilts towards the treated group (0.13 to 0.18) in the robust window, whose 2011-2012 cohorts are more crop-oriented. On the Legal Amazon sample the picture is the same for clearing, forest and cattle (the Cerrado controls are a little less forested and clear at a slightly higher rate), while the crop share changes sign: the added controls plant more, so the treated group is the less crop-oriented one (-0.3 in the main window, -0.05 to -0.08 in the robust one). These are the covariates the estimator conditions on, and the crop share is the one whose role depends on the sample. <strong>Decision.</strong> none required; evidence for the chapter’s methods section. <strong>Assertion.</strong> none.</p>
 </section>
 <section id="q6.-do-treated-and-control-municipalities-share-a-region-of-common-support" class="level2">
 <h2 class="anchored" data-anchor-id="q6.-do-treated-and-control-municipalities-share-a-region-of-common-support">Q6. Do treated and control municipalities share a region of common support?</h2>
-<p>What is checked: a logistic model of listing on the 2000 forest share and the logged baseline clearing, cattle density and crop share; the overlap of the two groups’ propensity ranges; the units outside it, by window and sample. Municipalities with a missing covariate are dropped from the model.</p>
+<p>What is checked: a logistic model of listing on the 2000 forest share and the logged baseline clearing, cattle density and crop share; the overlap of the two groups’ propensity ranges; the units outside it, by window and gate, on the biome and the Legal Amazon samples. Municipalities with a missing covariate are dropped from the model.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ps_covs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;forest_share_2000&quot;</span>, <span class="st">&quot;log_defor_area_b&quot;</span>, <span class="st">&quot;log_cattle_dens_b&quot;</span>,</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;log_crop_share_b&quot;</span>)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>ps_overlap <span class="ot">&lt;-</span> <span class="cf">function</span>(d, treat, label) {</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  cc <span class="ot">&lt;-</span> d[<span class="fu">complete.cases</span>(d[ps_covs]), ]</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">reformulate</span>(ps_covs, <span class="at">response =</span> treat), <span class="at">data =</span> cc,</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">family =</span> binomial)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  cc<span class="sc">$</span>ps <span class="ot">&lt;-</span> <span class="fu">predict</span>(m, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  tr <span class="ot">&lt;-</span> cc<span class="sc">$</span>ps[cc[[treat]] <span class="sc">==</span> <span class="dv">1</span>L]</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  co <span class="ot">&lt;-</span> cc<span class="sc">$</span>ps[cc[[treat]] <span class="sc">==</span> <span class="dv">0</span>L]</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  lo <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">min</span>(tr), <span class="fu">min</span>(co))</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  hi <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">max</span>(tr), <span class="fu">max</span>(co))</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">sample =</span> label, <span class="at">n =</span> <span class="fu">nrow</span>(cc), <span class="at">treated =</span> <span class="fu">length</span>(tr),</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">support_lo =</span> <span class="fu">round</span>(lo, <span class="dv">3</span>), <span class="at">support_hi =</span> <span class="fu">round</span>(hi, <span class="dv">3</span>),</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">off_support_treated =</span> <span class="fu">sum</span>(tr <span class="sc">&lt;</span> lo <span class="sc">|</span> tr <span class="sc">&gt;</span> hi),</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">off_support_control =</span> <span class="fu">sum</span>(co <span class="sc">&lt;</span> lo <span class="sc">|</span> co <span class="sc">&gt;</span> hi),</span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">treated_median_ps =</span> <span class="fu">round</span>(<span class="fu">median</span>(tr), <span class="dv">3</span>),</span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">control_median_ps =</span> <span class="fu">round</span>(<span class="fu">median</span>(co), <span class="dv">3</span>))</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>overlap_by_window <span class="ot">&lt;-</span> <span class="cf">function</span>(treat) {</span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">ps_overlap</span>(muni, treat, <span class="st">&quot;full&quot;</span>),</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ps_overlap</span>(<span class="fu">filter</span>(muni, at_risk_broad), treat, <span class="st">&quot;broad&quot;</span>),</span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ps_overlap</span>(<span class="fu">filter</span>(muni, at_risk_narrow), treat, <span class="st">&quot;narrow&quot;</span>))</span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;ppcdam_main&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ps_covs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;env_forest_munic_share_bl0000&quot;</span>, <span class="st">&quot;env_defor_area_km2_log_bl0003&quot;</span>, <span class="st">&quot;agr_cattle_per_km2_log_bl0003&quot;</span>,</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>             <span class="st">&quot;agr_crop_planted_munic_share_log_bl0003&quot;</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>ps_overlap <span class="ot">&lt;-</span> <span class="cf">function</span>(d, treat, label) {</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  cc <span class="ot">&lt;-</span> d[<span class="fu">complete.cases</span>(d[ps_covs]), ]</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">reformulate</span>(ps_covs, <span class="at">response =</span> treat), <span class="at">data =</span> cc,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">family =</span> binomial)</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  cc<span class="sc">$</span>ps <span class="ot">&lt;-</span> <span class="fu">predict</span>(m, <span class="at">type =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  tr <span class="ot">&lt;-</span> cc<span class="sc">$</span>ps[cc[[treat]] <span class="sc">==</span> <span class="dv">1</span>L]</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  co <span class="ot">&lt;-</span> cc<span class="sc">$</span>ps[cc[[treat]] <span class="sc">==</span> <span class="dv">0</span>L]</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  lo <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">min</span>(tr), <span class="fu">min</span>(co))</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  hi <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">max</span>(tr), <span class="fu">max</span>(co))</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">sample =</span> label, <span class="at">n =</span> <span class="fu">nrow</span>(cc), <span class="at">treated =</span> <span class="fu">length</span>(tr),</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">support_lo =</span> <span class="fu">round</span>(lo, <span class="dv">3</span>), <span class="at">support_hi =</span> <span class="fu">round</span>(hi, <span class="dv">3</span>),</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">off_support_treated =</span> <span class="fu">sum</span>(tr <span class="sc">&lt;</span> lo <span class="sc">|</span> tr <span class="sc">&gt;</span> hi),</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">off_support_control =</span> <span class="fu">sum</span>(co <span class="sc">&lt;</span> lo <span class="sc">|</span> co <span class="sc">&gt;</span> hi),</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">treated_median_ps =</span> <span class="fu">round</span>(<span class="fu">median</span>(tr), <span class="dv">3</span>),</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">control_median_ps =</span> <span class="fu">round</span>(<span class="fu">median</span>(co), <span class="dv">3</span>))</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>overlap_by_window <span class="ot">&lt;-</span> <span class="cf">function</span>(treat, d) {</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">ps_overlap</span>(d, treat, <span class="st">&quot;full&quot;</span>),</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ps_overlap</span>(<span class="fu">filter</span>(d, smp_atrisk_broad_dum), treat, <span class="st">&quot;broad&quot;</span>),</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ps_overlap</span>(<span class="fu">filter</span>(d, smp_atrisk_narrow_dum), treat, <span class="st">&quot;narrow&quot;</span>))</span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_main_dum&quot;</span>, SAMPLES<span class="sc">$</span>biome)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 9
   sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
   &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
-1 full     804      43      0.068      0.892                  14                 705             0.614
-2 broad    754      43      0.068      0.892                  14                 655             0.614
-3 narrow   644      43      0.068      0.892                  14                 545             0.614
+1 full     499      43      0.088      0.922                  14                 410             0.695
+2 broad    466      43      0.088      0.922                  14                 377             0.695
+3 narrow   406      43      0.088      0.922                  14                 317             0.695
 # ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;ppcdam_robust&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_robust_dum&quot;</span>, SAMPLES<span class="sc">$</span>biome)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 9
   sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
   &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
-1 full     804      52      0.026      0.884                  12                 616             0.592
-2 broad    754      52      0.026      0.884                  12                 566             0.592
-3 narrow   644      52      0.026      0.884                  12                 456             0.591
+1 full     499      51      0.035      0.912                  12                 357             0.674
+2 broad    466      51      0.035      0.912                  12                 324             0.674
+3 narrow   406      51      0.035      0.911                  12                 264             0.674
+# ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_main_dum&quot;</span>, SAMPLES<span class="sc">$</span>legal_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 9
+  sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
+  &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
+1 full     768      43      0.068      0.892                  14                 669             0.614
+2 broad    732      43      0.068      0.892                  14                 633             0.614
+3 narrow   637      43      0.068      0.892                  14                 538             0.614
+# ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">overlap_by_window</span>(<span class="st">&quot;enf_ppcdam_listed_robust_dum&quot;</span>, SAMPLES<span class="sc">$</span>legal_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 9
+  sample     n treated support_lo support_hi off_support_treated off_support_control treated_median_ps
+  &lt;chr&gt;  &lt;int&gt;   &lt;int&gt;      &lt;dbl&gt;      &lt;dbl&gt;               &lt;int&gt;               &lt;int&gt;             &lt;dbl&gt;
+1 full     768      52      0.026      0.884                  12                 580             0.591
+2 broad    732      52      0.026      0.884                  12                 544             0.591
+3 narrow   637      52      0.026      0.884                  12                 449             0.591
 # ℹ 1 more variable: control_median_ps &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The groups separate sharply: the median listed municipality has a propensity near 0.7 against near zero for controls. Most controls in the full sample lie below the treated range; the gates cut that off-support mass (main window: 410 to 377 to 317; robust: 357 to 324 to 264) while keeping every treated municipality. A residual block of listed municipalities (14 main, 12 robust) sits above the control range: extreme frontier units with no close control, to be reported with that caveat. Three municipalities leave the model for missing covariates (Q2). <strong>Decision.</strong> none required; evidence for the chapter’s methods section. <strong>Assertion.</strong> none.</p>
+<p><strong>Finding.</strong> On the biome sample the groups separate sharply: the median listed municipality has a propensity near 0.7 against near zero for controls. Most controls lie below the treated range; the gates cut that off-support mass (main window: 410 to 377 to 317; robust: 357 to 324 to 264) while keeping every treated municipality. A residual block of listed municipalities (14 main, 12 robust) sits above the control range: extreme frontier units with no close control, to be reported with that caveat. On the Legal Amazon sample the added Cerrado municipalities enter as further off-support controls (669 to 633 to 538 in the main window, 580 to 544 to 449 in the robust one), the treated median propensity falls to 0.6 and the same 14 and 12 treated units stay above the control range, so the extension adds controls where the design already has too many. Three municipalities leave the model for missing covariates (Q2). <strong>Decision.</strong> none required; evidence for the chapter’s methods section. <strong>Assertion.</strong> none.</p>
 </section>
 <section id="q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample" class="level2">
 <h2 class="anchored" data-anchor-id="q7.-are-the-pressure-scores-standardized-and-how-much-do-they-depend-on-the-sample">Q7. Are the pressure scores standardized, and how much do they depend on the sample?</h2>
-<p>What is checked: the moments of the three scores over the 502 municipalities, and the scores recomputed with the standardization run on the broad at-risk sample only, as the governing rule for derived variables would require if the scores were built in an analysis script.</p>
+<p>What is checked: the moments of the three scores over the 502 biome municipalities, their reference population (D-2026-10-29-c; the moments outside it are in Q10), and the scores recomputed with the standardization run on the biome’s broad at-risk sample only, as the governing rule for derived variables would require if the scores were built in an analysis script.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(pressure_defor, pressure_agri, pressure_score),</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))) <span class="sc">%&gt;%</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;score&quot;</span>, <span class="st">&quot;stat&quot;</span>),</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(mean|sd)$&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value) <span class="sc">%&gt;%</span></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(mean, sd), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">4</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>SAMPLES<span class="sc">$</span>biome <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))) <span class="sc">%&gt;%</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">&quot;score&quot;</span>, <span class="st">&quot;stat&quot;</span>),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">&quot;(.*)_(mean|sd)$&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> stat, <span class="at">values_from =</span> value) <span class="sc">%&gt;%</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(mean, sd), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">4</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 3
-  score             mean    sd
-  &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt;
-1 pressure_defor -0.111  0.941
-2 pressure_agri   0.244  1.08 
-3 pressure_score  0.0905 1.07 </code></pre>
+  score                     mean    sd
+  &lt;chr&gt;                    &lt;dbl&gt; &lt;dbl&gt;
+1 env_defor_pressure_idx  0      1    
+2 agr_pressure_idx       -0.0007 0.808
+3 smp_pressure_idx        0      1    </code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">/</span> <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(at_risk_broad) <span class="sc">%&gt;%</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">defor_broad =</span> <span class="fu">z</span>(log_defor_area_b),</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">agri_broad =</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">z</span>(log_cattle_dens_b) <span class="sc">+</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">z</span>(log_crop_share_b),</span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">score_broad =</span> <span class="fu">z</span>(defor_broad <span class="sc">+</span> agri_broad)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">max_shift_defor =</span> <span class="fu">max</span>(<span class="fu">abs</span>(defor_broad <span class="sc">-</span> pressure_defor)),</span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_shift_agri =</span> <span class="fu">max</span>(<span class="fu">abs</span>(agri_broad <span class="sc">-</span> pressure_agri),</span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_shift_score =</span> <span class="fu">max</span>(<span class="fu">abs</span>(score_broad <span class="sc">-</span> pressure_score),</span>
-<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>z <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (x <span class="sc">-</span> <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">/</span> <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>SAMPLES<span class="sc">$</span>biome <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(smp_atrisk_broad_dum) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">defor_broad =</span> <span class="fu">z</span>(env_defor_area_km2_log_bl0003),</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">agri_broad =</span> <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">z</span>(agr_cattle_per_km2_log_bl0003) <span class="sc">+</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">z</span>(agr_crop_planted_munic_share_log_bl0003),</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">score_broad =</span> <span class="fu">z</span>(defor_broad <span class="sc">+</span> agri_broad)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">max_shift_defor =</span> <span class="fu">max</span>(<span class="fu">abs</span>(defor_broad <span class="sc">-</span> env_defor_pressure_idx)),</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_shift_agri =</span> <span class="fu">max</span>(<span class="fu">abs</span>(agri_broad <span class="sc">-</span> agr_pressure_idx),</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">max_shift_score =</span> <span class="fu">max</span>(<span class="fu">abs</span>(score_broad <span class="sc">-</span> smp_pressure_idx),</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 3
   max_shift_defor max_shift_agri max_shift_score
             &lt;dbl&gt;          &lt;dbl&gt;           &lt;dbl&gt;
-1           0.527           5.18            3.12</code></pre>
+1           0.401          0.236           0.387</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> <code>pressure_defor</code> and <code>pressure_score</code> have mean 0 and sd 1 over the 502 municipalities; <code>pressure_agri</code> is a half-half mix of two z-scores and has sd below 1 by construction. Restandardizing on the broad at-risk sample moves the scores by up to 0.4 standard deviations, which is the sample dependence the governing rule for derived variables excludes from the panel. <strong>Decision.</strong> D-2026-10-12-c (reproduced as inherited; flagged for the storage audit, task 2.2). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (moments of <code>pressure_defor</code> and <code>pressure_score</code> within <code>Z_TOL</code>).</p>
+<p><strong>Finding.</strong> <code>env_defor_pressure_idx</code> and <code>smp_pressure_idx</code> have mean 0 and sd 1 over the 502 biome municipalities, their reference population; <code>agr_pressure_idx</code> is a half-half mix of two z-scores and has sd below 1 by construction. Restandardizing on the biome’s broad at-risk sample moves the scores by up to 0.4 standard deviations, which is the sample dependence that kept them out of the final panel at the storage audit: since phase 2R the three scores live in the municipality store only (D-2026-10-30-c), read on the biome metric for every municipality (Q10). <strong>Decision.</strong> D-2026-10-12-c (reproduced as inherited); D-2026-10-29-c (the reference population); D-2026-10-30-c (store only). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (moments of <code>env_defor_pressure_idx</code> and <code>smp_pressure_idx</code> within <code>Z_TOL</code>).</p>
 </section>
 <section id="q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel" class="level2">
 <h2 class="anchored" data-anchor-id="q8.-why-does-santa-cruz-do-araris-availability-flag-differ-from-the-recovered-panel">Q8. Why does Santa Cruz do Arari’s availability flag differ from the recovered panel?</h2>
@@ -2662,83 +2761,86 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, defor_area_b, cattle_dens_b, crop_share_b,</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>         forest_km2_2000, forest_share_2000, avail_ok, at_risk_broad,</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>         at_risk_narrow, pressure_defor, pressure_agri)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">==</span> <span class="st">&quot;1506401&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, env_defor_area_km2_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>         env_forest_area_km2_bl0000, env_forest_munic_share_bl0000, smp_avail_dum, smp_atrisk_broad_dum,</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>         smp_atrisk_narrow_dum, env_defor_pressure_idx, agr_pressure_idx)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 11
-  municipality        defor_area_b cattle_dens_b crop_share_b forest_km2_2000 forest_share_2000 avail_ok
-  &lt;chr&gt;                      &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;           &lt;dbl&gt;             &lt;dbl&gt; &lt;lgl&gt;   
-1 Santa Cruz do Arari            0          33.1           NA           1013.             0.941 TRUE    
-# ℹ 4 more variables: at_risk_broad &lt;lgl&gt;, at_risk_narrow &lt;lgl&gt;, pressure_defor &lt;dbl&gt;, pressure_agri &lt;dbl&gt;</code></pre>
+  municipality     env_defor_area_km2_b…¹ agr_cattle_per_km2_b…² agr_crop_planted_mun…³ env_forest_area_km2_…⁴
+  &lt;chr&gt;                             &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;
+1 Santa Cruz do A…                      0                   33.1                     NA                  1013.
+# ℹ abbreviated names: ¹​env_defor_area_km2_bl0003, ²​agr_cattle_per_km2_bl0003,
+#   ³​agr_crop_planted_munic_share_bl0003, ⁴​env_forest_area_km2_bl0000
+# ℹ 6 more variables: env_forest_munic_share_bl0000 &lt;dbl&gt;, smp_avail_dum &lt;lgl&gt;, smp_atrisk_broad_dum &lt;lgl&gt;,
+#   smp_atrisk_narrow_dum &lt;lgl&gt;, env_defor_pressure_idx &lt;dbl&gt;, agr_pressure_idx &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> With the restored area the municipality’s 2000 forest share is 0.94 and it passes the floor; with zero baseline clearing it stays outside both gates, as in the recovered panel, so the change touches <code>avail_ok</code> only (21 cells). The recovered FALSE has no derivation from a missing share (<code>NA &gt;= 0.10</code> is NA, not FALSE), so the reference value is treated as a legacy artefact and the rebuilt value accepted. <strong>Decision.</strong> D-2026-10-12-d. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AVAIL_EXPECTED</code> = 500).</p>
+<p><strong>Finding.</strong> With the restored area the municipality’s 2000 forest share is 0.94 and it passes the floor; with zero baseline clearing it stays outside both gates, as in the recovered panel, so the change touches <code>smp_avail_dum</code> only (21 cells). The recovered FALSE has no derivation from a missing share (<code>NA &gt;= 0.10</code> is NA, not FALSE), so the reference value is treated as a legacy artefact and the rebuilt value accepted. <strong>Decision.</strong> D-2026-10-12-d. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, output block (<code>N_AVAIL_EXPECTED</code> = 500).</p>
 </section>
 <section id="q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel" class="level2">
 <h2 class="anchored" data-anchor-id="q9.-which-census-anchors-does-the-municipality-store-carry-and-do-they-agree-with-the-panel">Q9. Which census anchors does the municipality store carry, and do they agree with the panel?</h2>
-<p>What is checked: the twelve anchor columns added at phase 2, step 2.6 (<code>pia</code>, <code>pea</code>, <code>informal</code>, <code>population</code> at the 2000, 2010 and 2022 censuses, as read), their NA pattern, their agreement with the panel’s values in 2000 and 2010, and the gap between the 2000 anchor and the interpolated 2002-2007 mean that the analysis script currently uses as a baseline.</p>
+<p>What is checked: the twelve anchor columns added at phase 2, step 2.6 (<code>lab_pia_n</code>, <code>lab_pea_n</code>, <code>lab_informal_share</code>, <code>dem_pop_n</code> at the 2000, 2010 and 2022 censuses, as read), their NA pattern, their agreement with the panel’s values in 2000 and 2010, and the gap between the 2000 anchor and the interpolated 2002-2007 mean that the analysis script currently uses as a baseline.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>anchor_cols <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;_c20(00|10|22)$&quot;</span>, <span class="fu">names</span>(muni), <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(anchor_cols), <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)))) <span class="sc">%&gt;%</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;column&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;n_na&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_na <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>anchor_cols <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;_c20(00|10|22)$&quot;</span>, <span class="fu">names</span>(muni), <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(anchor_cols), <span class="sc">~</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(.x)))) <span class="sc">%&gt;%</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;column&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;n_na&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_na <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 2
-  column            n_na
-  &lt;chr&gt;            &lt;int&gt;
-1 pia_c2000           15
-2 pea_c2000           15
-3 informal_c2000      15
-4 population_c2000    15</code></pre>
+  column                    n_na
+  &lt;chr&gt;                    &lt;int&gt;
+1 lab_pia_n_c2000             15
+2 lab_pea_n_c2000             15
+3 lab_informal_share_c2000    15
+4 dem_pop_n_c2000             15</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(pia_c2000)) <span class="sc">%&gt;%</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, state_abbreviation, pia_c2010, population_c2010)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(lab_pia_n_c2000)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, municipality, uf, lab_pia_n_c2010, dem_pop_n_c2010)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 15 × 5
-   geocode municipality            state_abbreviation pia_c2010 population_c2010
-   &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;                  &lt;dbl&gt;            &lt;dbl&gt;
- 1 5101852 Bom Jesus do Araguaia   MT                      3913             5314
- 2 5103254 Colniza                 MT                     18790            26381
- 3 5103361 Conquista D&#39;Oeste       MT                      2545             3385
- 4 5103437 Curvelândia             MT                      3726             4866
- 5 5104526 Ipiranga do Norte       MT                      3822             5123
- 6 5104542 Itanhangá               MT                      3914             5276
- 7 5106174 Nova Nazaré             MT                      1977             3029
- 8 5106190 Nova Santa Helena       MT                      2656             3468
- 9 5106315 Novo Santo Antônio      MT                      1477             2005
-10 5107578 Rondolândia             MT                      2517             3604
-11 5107743 Santa Cruz do Xingu     MT                      1400             1900
-12 5107768 Santa Rita do Trivelato MT                      1850             2491
-13 5107792 Santo Antônio do Leste  MT                      2738             3754
-14 5107883 Serra Nova Dourada      MT                      1030             1365
-15 5108352 Vale de São Domingos    MT                      2329             3052</code></pre>
+   geocode municipality            uf    lab_pia_n_c2010 dem_pop_n_c2010
+   &lt;chr&gt;   &lt;chr&gt;                   &lt;chr&gt;           &lt;dbl&gt;           &lt;dbl&gt;
+ 1 5101852 Bom Jesus do Araguaia   MT               3913            5314
+ 2 5103254 Colniza                 MT              18790           26381
+ 3 5103361 Conquista D&#39;Oeste       MT               2545            3385
+ 4 5103437 Curvelândia             MT               3726            4866
+ 5 5104526 Ipiranga do Norte       MT               3822            5123
+ 6 5104542 Itanhangá               MT               3914            5276
+ 7 5106174 Nova Nazaré             MT               1977            3029
+ 8 5106190 Nova Santa Helena       MT               2656            3468
+ 9 5106315 Novo Santo Antônio      MT               1477            2005
+10 5107578 Rondolândia             MT               2517            3604
+11 5107743 Santa Cruz do Xingu     MT               1400            1900
+12 5107768 Santa Rita do Trivelato MT               1850            2491
+13 5107792 Santo Antônio do Leste  MT               2738            3754
+14 5107883 Serra Nova Dourada      MT               1030            1365
+15 5108352 Vale de São Domingos    MT               2329            3052</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span>L, <span class="dv">2010</span>L)) <span class="sc">%&gt;%</span></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, pea, informal, population) <span class="sc">%&gt;%</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, <span class="fu">all_of</span>(anchor_cols)), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pea_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, pea_c2000, pea_c2010),</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">informal_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, informal_c2000, informal_c2010),</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">population_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, population_c2000, population_c2010)) <span class="sc">%&gt;%</span></span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">pea_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(pea <span class="sc">-</span> pea_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">informal_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(informal <span class="sc">-</span> informal_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(population <span class="sc">-</span> population_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_same =</span> <span class="fu">all</span>(<span class="fu">is.na</span>(pea) <span class="sc">==</span> <span class="fu">is.na</span>(pea_c) <span class="sc">&amp;</span> <span class="fu">is.na</span>(informal) <span class="sc">==</span> <span class="fu">is.na</span>(informal_c) <span class="sc">&amp;</span></span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">is.na</span>(population) <span class="sc">==</span> <span class="fu">is.na</span>(population_c)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span>L, <span class="dv">2010</span>L)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(geocode, year, lab_pea_n, lab_informal_share, dem_pop_n) <span class="sc">%&gt;%</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, <span class="fu">all_of</span>(anchor_cols)), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pea_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, lab_pea_n_c2000, lab_pea_n_c2010),</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">informal_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, lab_informal_share_c2000, lab_informal_share_c2010),</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">population_c =</span> <span class="fu">if_else</span>(year <span class="sc">==</span> <span class="dv">2000</span>L, dem_pop_n_c2000, dem_pop_n_c2010)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">pea_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(lab_pea_n <span class="sc">-</span> pea_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">informal_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(lab_informal_share <span class="sc">-</span> informal_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_max_diff =</span> <span class="fu">max</span>(<span class="fu">abs</span>(dem_pop_n <span class="sc">-</span> population_c), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">na_same =</span> <span class="fu">all</span>(<span class="fu">is.na</span>(lab_pea_n) <span class="sc">==</span> <span class="fu">is.na</span>(pea_c) <span class="sc">&amp;</span> <span class="fu">is.na</span>(lab_informal_share) <span class="sc">==</span> <span class="fu">is.na</span>(informal_c) <span class="sc">&amp;</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">is.na</span>(dem_pop_n) <span class="sc">==</span> <span class="fu">is.na</span>(population_c)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
@@ -2748,15 +2850,15 @@ vertical-align: -.125em;
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2002</span><span class="sc">:</span><span class="dv">2007</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">informal_0207 =</span> <span class="fu">mean</span>(informal), <span class="at">population_0207 =</span> <span class="fu">mean</span>(population),</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, informal_c2000, population_c2000), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">informal_points_from_2000 =</span> informal_0207 <span class="sc">-</span> informal_c2000,</span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_ratio_to_2000 =</span> population_0207 <span class="sc">/</span> population_c2000) <span class="sc">%&gt;%</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>panel <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2002</span><span class="sc">:</span><span class="dv">2007</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">informal_0207 =</span> <span class="fu">mean</span>(lab_informal_share), <span class="at">population_0207 =</span> <span class="fu">mean</span>(dem_pop_n),</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(muni <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, lab_informal_share_c2000, dem_pop_n_c2000), <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">informal_points_from_2000 =</span> informal_0207 <span class="sc">-</span> lab_informal_share_c2000,</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">population_ratio_to_2000 =</span> population_0207 <span class="sc">/</span> dem_pop_n_c2000) <span class="sc">%&gt;%</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code> informal_points_from_2000 population_ratio_to_2000
@@ -2769,7 +2871,7 @@ vertical-align: -.125em;
  NAs    :15                NAs    :15              </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The store carries the twelve anchors for the 502 municipalities; only the nine Mato Grosso municipalities installed after the 2000 census are NA, in the 2000 vintage of all four variables, and every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the panel’s values in those years exactly, with the same NA pattern, which confirms that the interpolated series pass through the census values and that the store adds no new information for those years; what it adds is the clean value for the intercensal baseline: the 2002-2007 mean of the interpolated informality share sits below the 2000 census for most municipalities, and the population mean above it, by the blend documented in <code>_audit/census.qmd</code> Q8. Analysis scripts take baseline census quantities from here (memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>). <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (anchor years and coverage) and output block (<code>same_or_na</code> against the panel at the census years; <code>N_ANCHOR_NA_2000_EXPECTED</code>; no NA in the later vintages).</p>
+<p><strong>Finding.</strong> The store carries the twelve anchors for the 807 municipalities; only the fifteen Mato Grosso municipalities installed after the 2000 census (nine in the biome, six in the Cerrado since step 2.9) are NA, in the 2000 vintage of all four variables, and every 2010 and 2022 anchor is present. The 2000 and 2010 anchors equal the panel’s values in those years exactly, with the same NA pattern, which confirms that the interpolated series pass through the census values and that the store adds no new information for those years; what it adds is the clean value for the intercensal baseline: the 2002-2007 mean of the interpolated informality share sits below the 2000 census for most municipalities (median 2.6 points), and the population mean above it (median ratio 1.07), by the blend documented in <code>_audit/census.qmd</code> Q8. Analysis scripts take baseline census quantities from here (memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>). <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (anchor years and coverage) and output block (<code>same_or_na</code> against the panel at the census years; <code>N_ANCHOR_NA_2000_EXPECTED</code>; no NA in the later vintages).</p>
 </section>
 <section id="q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29" class="level2">
 <h2 class="anchored" data-anchor-id="q10.-how-do-the-added-municipalities-fall-through-the-gates-and-what-do-the-pressure-scores-measure-on-the-extended-sample-phase-2-step-2.9-2026-10-29">Q10. How do the added municipalities fall through the gates, and what do the pressure scores measure on the extended sample? (phase 2, step 2.9, 2026-10-29)</h2>
@@ -2777,91 +2879,94 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon, legal_amazon) <span class="sc">%&gt;%</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">avail_ok =</span> <span class="fu">sum</span>(avail_ok),</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">at_risk_broad =</span> <span class="fu">sum</span>(at_risk_broad), <span class="at">at_risk_narrow =</span> <span class="fu">sum</span>(at_risk_narrow),</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">ppcdam_main =</span> <span class="fu">sum</span>(ppcdam_main), <span class="at">ppcdam_robust =</span> <span class="fu">sum</span>(ppcdam_robust),</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">ppcdam_ever_full =</span> <span class="fu">sum</span>(ppcdam_ever_full), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geo_biome_amazon_dum, geo_legal_amazon_dum) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">municipalities =</span> <span class="fu">n</span>(), <span class="at">smp_avail_dum =</span> <span class="fu">sum</span>(smp_avail_dum),</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">smp_atrisk_broad_dum =</span> <span class="fu">sum</span>(smp_atrisk_broad_dum), <span class="at">smp_atrisk_narrow_dum =</span> <span class="fu">sum</span>(smp_atrisk_narrow_dum),</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">enf_ppcdam_listed_main_dum =</span> <span class="fu">sum</span>(enf_ppcdam_listed_main_dum), <span class="at">enf_ppcdam_listed_robust_dum =</span> <span class="fu">sum</span>(enf_ppcdam_listed_robust_dum),</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">enf_ppcdam_ever_dum =</span> <span class="fu">sum</span>(enf_ppcdam_ever_dum), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 9
-  biome_amazon legal_amazon municipalities avail_ok at_risk_broad at_risk_narrow ppcdam_main ppcdam_robust
-         &lt;int&gt;        &lt;int&gt;          &lt;int&gt;    &lt;int&gt;         &lt;int&gt;          &lt;int&gt;       &lt;int&gt;         &lt;int&gt;
-1            0            0             36       36            22              7           0             0
-2            0            1            269      269           266            231           0             1
-3            1            1            502      500           468            408          43            51
-# ℹ 1 more variable: ppcdam_ever_full &lt;int&gt;</code></pre>
+  geo_biome_amazon_dum geo_legal_amazon_dum municipalities smp_avail_dum smp_atrisk_broad_dum
+                 &lt;int&gt;                &lt;int&gt;          &lt;int&gt;         &lt;int&gt;                &lt;int&gt;
+1                    0                    0             36            36                   22
+2                    0                    1            269           269                  266
+3                    1                    1            502           500                  468
+# ℹ 4 more variables: smp_atrisk_narrow_dum &lt;int&gt;, enf_ppcdam_listed_main_dum &lt;int&gt;,
+#   enf_ppcdam_listed_robust_dum &lt;int&gt;, enf_ppcdam_ever_dum &lt;int&gt;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ppcdam_ever_full <span class="sc">==</span> <span class="dv">1</span>L, biome_amazon <span class="sc">==</span> <span class="dv">0</span>L) <span class="sc">%&gt;%</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, state_abbreviation, defor_area_b, forest_share_2000,</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>         at_risk_narrow, ppcdam_main, ppcdam_robust, pressure_score)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(enf_ppcdam_ever_dum <span class="sc">==</span> <span class="dv">1</span>L, geo_biome_amazon_dum <span class="sc">==</span> <span class="dv">0</span>L) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(municipality, uf, env_defor_area_km2_bl0003, env_forest_munic_share_bl0000,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>         smp_atrisk_narrow_dum, enf_ppcdam_listed_main_dum, enf_ppcdam_listed_robust_dum, smp_pressure_idx)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 8
-  municipality state_abbreviation defor_area_b forest_share_2000 at_risk_narrow ppcdam_main ppcdam_robust
-  &lt;chr&gt;        &lt;chr&gt;                     &lt;dbl&gt;             &lt;dbl&gt; &lt;lgl&gt;                &lt;int&gt;         &lt;int&gt;
-1 Grajaú       MA                         105.             0.836 TRUE                     0             1
-# ℹ 1 more variable: pressure_score &lt;dbl&gt;</code></pre>
+  municipality uf    env_defor_area_km2_bl0003 env_forest_munic_share_bl0000 smp_atrisk_narrow_dum
+  &lt;chr&gt;        &lt;chr&gt;                     &lt;dbl&gt;                         &lt;dbl&gt; &lt;lgl&gt;                
+1 Grajaú       MA                         105.                         0.836 TRUE                 
+# ℹ 3 more variables: enf_ppcdam_listed_main_dum &lt;int&gt;, enf_ppcdam_listed_robust_dum &lt;int&gt;,
+#   smp_pressure_idx &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(pia_c2000)) <span class="sc">%&gt;%</span> <span class="fu">count</span>(biome_amazon)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(lab_pia_n_c2000)) <span class="sc">%&gt;%</span> <span class="fu">count</span>(geo_biome_amazon_dum)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
-  biome_amazon     n
-         &lt;int&gt; &lt;int&gt;
-1            0     6
-2            1     9</code></pre>
+  geo_biome_amazon_dum     n
+                 &lt;int&gt; &lt;int&gt;
+1                    0     6
+2                    1     9</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                     forest_share_2000),</span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">round</span>(<span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">3</span>)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geo_biome_amazon_dum) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>                     env_forest_munic_share_bl0000),</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>                   <span class="sc">~</span> <span class="fu">round</span>(<span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">3</span>)), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 6
-  biome_amazon defor_area_b defor_rate_b cattle_dens_b crop_share_b forest_share_2000
-         &lt;int&gt;        &lt;dbl&gt;        &lt;dbl&gt;         &lt;dbl&gt;        &lt;dbl&gt;             &lt;dbl&gt;
-1            0         14.0        0.016          20.4        0.016             0.748
-2            1         25.5        0.023          13.3        0.006             0.749</code></pre>
+  geo_biome_amazon_dum env_defor_area_km2_bl0003 env_defor_forest_share_bl0003 agr_cattle_per_km2_bl0003
+                 &lt;int&gt;                     &lt;dbl&gt;                         &lt;dbl&gt;                     &lt;dbl&gt;
+1                    0                      14.0                         0.016                      20.4
+2                    1                      25.5                         0.023                      13.3
+# ℹ 2 more variables: agr_crop_planted_munic_share_bl0003 &lt;dbl&gt;, env_forest_munic_share_bl0000 &lt;dbl&gt;</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(biome_amazon) <span class="sc">%&gt;%</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(pressure_defor, pressure_agri, pressure_score),</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max =</span> <span class="sc">~</span> <span class="fu">max</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>biome_amazon) <span class="sc">%&gt;%</span></span>
-<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> biome_amazon, <span class="at">values_from =</span> value, <span class="at">names_prefix =</span> <span class="st">&quot;biome_&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.double), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>muni <span class="sc">%&gt;%</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geo_biome_amazon_dum) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx),</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span> <span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">sd =</span> <span class="sc">~</span> <span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max =</span> <span class="sc">~</span> <span class="fu">max</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>geo_biome_amazon_dum) <span class="sc">%&gt;%</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> geo_biome_amazon_dum, <span class="at">values_from =</span> value, <span class="at">names_prefix =</span> <span class="st">&quot;biome_&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.double), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 9 × 3
-  name                biome_0 biome_1
-  &lt;chr&gt;                 &lt;dbl&gt;   &lt;dbl&gt;
-1 pressure_defor_mean  -0.294   0    
-2 pressure_defor_sd     0.804   1    
-3 pressure_defor_max    1.78    2.73 
-4 pressure_agri_mean    0.645  -0.001
-5 pressure_agri_sd      1.33    0.808
-6 pressure_agri_max    10.2     7.95 
-7 pressure_score_mean   0.239   0    
-8 pressure_score_sd     1.17    1    
-9 pressure_score_max    7.17    6.19 </code></pre>
+  name                        biome_0 biome_1
+  &lt;chr&gt;                         &lt;dbl&gt;   &lt;dbl&gt;
+1 env_defor_pressure_idx_mean  -0.294   0    
+2 env_defor_pressure_idx_sd     0.804   1    
+3 env_defor_pressure_idx_max    1.78    2.73 
+4 agr_pressure_idx_mean         0.645  -0.001
+5 agr_pressure_idx_sd           1.33    0.808
+6 agr_pressure_idx_max         10.2     7.95 
+7 smp_pressure_idx_mean         0.239   0    
+8 smp_pressure_idx_sd           1.17    1    
+9 smp_pressure_idx_max          7.17    6.19 </code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The sample panel holds 807 municipalities, 502 in the biome, 269 in the Legal Amazon outside it and 36 outside both. The gates keep most of the added municipalities: all 305 clear the 10 percent forest floor (their 2000 forest share is at least 0.22 on the MapBiomas vegetation aggregate), 288 clear the broad gate and 238 the narrow one, against 500, 468 and 408 of the 502; the 36 municipalities outside the Legal Amazon are 22 broad and 7 narrow. Grajaú (MA), listed in 2011, is the one treated municipality outside the biome: 105 km² of baseline clearing a year, a 2000 forest share of 0.84, inside the narrow gate, treated in the robust and ever windows and a not-yet-treated control in the main window, so the treated counts become 43, 52 and 62. The six Cerrado municipalities added to the lookup have no 2000 anchor (fifteen municipalities in all). The added municipalities clear less (median baseline 14 km² a year against 25.5) at a slightly lower rate, carry denser cattle (20 against 13 head per km²) and more crop land (1.6 against 0.6 percent of the territory). The pressure scores keep the 502 as reference population: mean 0 and sd 1 there; outside the biome <code>pressure_defor</code> averages -0.29 and <code>pressure_agri</code> 0.65 with a maximum of 10 standard deviations (the soy municipalities of Mato Grosso’s Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain the sample-dependent variables Q7 describes, now read on the biome metric for every municipality, pending task 2.2. <strong>Decision.</strong> D-2026-10-29-a (807 municipalities, flags in the store, the gates and treatment flags for every municipality), D-2026-10-29-c (the reference population). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (808 in, the two flags present) and output block (807 out; flags 0/1 with 502 and 771; 805 above the floor, 756 broad, 646 narrow; 43, 52 and 62 treated; 15 municipalities without a 2000 anchor; pressure moments on the reference rows).</p>
+<p><strong>Finding.</strong> The sample panel holds 807 municipalities, 502 in the biome, 269 in the Legal Amazon outside it and 36 outside both. The gates keep most of the added municipalities: all 305 clear the 10 percent forest floor (their 2000 forest share is at least 0.22 on the MapBiomas vegetation aggregate), 288 clear the broad gate and 238 the narrow one, against 500, 468 and 408 of the 502; the 36 municipalities outside the Legal Amazon are 22 broad and 7 narrow. Grajaú (MA), listed in 2011, is the one treated municipality outside the biome: 105 km² of baseline clearing a year, a 2000 forest share of 0.84, inside the narrow gate, treated in the robust and ever windows and a not-yet-treated control in the main window, so the treated counts become 43, 52 and 62. The six Cerrado municipalities added to the lookup have no 2000 anchor (fifteen municipalities in all). The added municipalities clear less (median baseline 14 km² a year against 25.5) at a slightly lower rate, carry denser cattle (20 against 13 head per km²) and more crop land (1.6 against 0.6 percent of the territory). The pressure scores keep the 502 as reference population: mean 0 and sd 1 there; outside the biome <code>env_defor_pressure_idx</code> averages -0.29 and <code>agr_pressure_idx</code> 0.65 with a maximum of 10 standard deviations (the soy municipalities of Mato Grosso’s Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain the sample-dependent variables Q7 describes, read on the biome metric for every municipality; at the storage audit they stayed in the store and left the final panel (D-2026-10-30-c). <strong>Decision.</strong> D-2026-10-29-a (807 municipalities, flags in the store, the gates and treatment flags for every municipality), D-2026-10-29-c (the reference population). <strong>Assertion.</strong> <code>05-sample-definition.R</code>, raw-state block (808 in, the two flags present) and output block (807 out; flags 0/1 with 502 and 771; 805 above the floor, 756 broad, 646 narrow; 43, 52 and 62 treated; 15 municipalities without a 2000 anchor; pressure moments on the reference rows).</p>
 </section>
 
 </main>

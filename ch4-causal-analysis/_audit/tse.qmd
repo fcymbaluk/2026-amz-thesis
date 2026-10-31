@@ -98,16 +98,22 @@ dups %>% group_by(ano, id_municipio, numero_candidato) %>%
             .groups = "drop") %>% count(same_votes, same_party)
 ```
 
-**Finding.** Thirty-six municipality-elections of 2000 and 2004 carry two
+**Finding.** Thirty-six municipality-elections of 2000 and 2004 (26 in
+the biome, 10 among the municipalities added at step 2.9) carry two
 rows for one ballot number, with two `sequencial_candidato` values and
-identical votes and party: a Base dos Dados artefact. The lost script
+identical votes; in 27 the party is the same and in 9 the two rows
+carry different party labels: a Base dos Dados artefact. The lost script
 grouped by `id_candidato_bd` and ballot number and summed, which doubled
 these votes; summing by ballot number reproduces that count, and the
 recovered panel's `elec_n_candidates` and `elec_enc` are reproduced on
 every cell at the script 03 acceptance (commit message). The pipeline
 keeps the sum and takes the smaller `sequencial_candidato` as the
 winner's id.
-**Decision.** D-2026-10-10-c (closed); the dedupe is a phase 2 entry.
+**Decision.** D-2026-10-10-c (closed); the dedupe was left to phase 2
+and is still open (no phase 2 step took it; the KNOWN DEFECTS block of
+script 03 stands). The nine different-party pairs are not summed by the
+pipeline's key, which includes the party, and count as two candidates
+with equal votes (Q6).
 **Assertion.** none (the duplicates are summed as inherited; KNOWN DEFECTS
 block).
 
@@ -170,10 +176,13 @@ election_rows %>%
             share_uncontested = mean(elec_uncontested), .groups = "drop")
 ```
 
-**Finding.** Three candidates and 2.3 to 2.5 effective candidates on
-average, a median margin of 10 to 12 points, and 43 to 49 percent of the
-races below the ten-point threshold; the measures move little across
-elections, with a rise in candidacies in 2020.
+**Finding.** Over the 808 municipalities of the nine states (the sample
+since phase 2, step 2.9), about three candidates and 2.2 to 2.4
+effective candidates on average, a median margin of 10 to 12 points, 44
+to 50 percent of the races below the ten-point threshold and 1 to 4
+percent uncontested (the 2012 peak is the zero-vote exclusion of Q8);
+the measures move little across elections, with a rise in candidacies
+in 2020 and again in 2024.
 **Decision.** none required.
 
 ## Q6. Are there zero-vote candidates or first-place ties?
@@ -192,10 +201,25 @@ candidates %>%
 ```
 
 **Finding.** Fifty-six candidates with zero votes, almost all in 2012
-(candidacies refused after the ballot was printed); they enter the ENC and
-the candidate count as inherited. No first-place tie, so the winner's
-party and id are unambiguous.
-**Decision.** none in phase 1; the zero-vote rows are for task 1.8.
+(candidacies refused after the ballot was printed); in phase 1 they
+entered the ENC and the candidate count as inherited, and since step 2.7
+they are excluded (Q8). Six municipality-elections show a first-place
+tie when candidates are keyed on ballot number and party. Four are the
+duplicate rows of Q2 (one ballot number under two party labels with the
+same votes: Vilhena, RO, Anamã, AM, Matinha and Presidente Sarney, MA,
+all in 2004 and in the biome), which the pipeline's key keeps as two
+candidates with equal votes, the inherited defect of Q2 still open. Two
+are real ties of valid votes in municipalities added at step 2.9: Rio
+dos Bois (TO) in 2000 (PPB and PSDB, 665 votes each) and Senador
+Alexandre Costa (MA) in 2004 (PTB and PFL, 2,359 each). The pipeline
+takes the first candidate in ballot-number order as the winner, which
+agrees with the TSE result (`resultado`) in Rio dos Bois and not in
+Senador Alexandre Costa, where the TSE declared the PFL candidate
+elected; the winner's party and id stored for 2005-2008 are therefore
+wrong for that municipality, outside the biome.
+**Decision.** D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c, open:
+the tie-break on the TSE result is for the author to decide; the Q2
+dedupe stays open from D-2026-10-10-c.
 
 ## Q7. Does the governing-year storage reproduce the lagged block, and what do 2021-2024 hold? (phase 2, step 2.3, 2026-10-22)
 
@@ -246,7 +270,8 @@ sample_tse %>%
   group_by(geocode, municipality, state_abbreviation) %>%
   summarise(years = paste(range(year), collapse = "-"), n = n(), .groups = "drop")
 tse_raw %>%
-  filter(id_municipio %in% c("2100402", "2102150", "5104526", "5104542"), turno == "1") %>%
+  filter(id_municipio %in% c("2100402", "2102150", "2105005", "2109700", "5104526", "5104542",
+                             "5106307"), turno == "1") %>%
   distinct(id_municipio, ano) %>%
   group_by(id_municipio) %>%
   summarise(elections = paste(sort(ano), collapse = " "), .groups = "drop")
@@ -275,7 +300,12 @@ governing election in the file: Mojuí dos Campos 2001-2012 (installed
 2013), and 2001-2004 for Ipiranga do Norte and Itanhangá (installed 2005)
 and for Altamira do Maranhão and Brejo de Areia, which have no 2000
 election in the extract; phase 1 stored them as NA too, because `fill()`
-had nothing to carry. In 2021-2024, 807 of the 808 municipalities carry
+had nothing to carry. Among the municipalities added at step 2.9,
+Humberto de Campos (MA) has no 2000 election in the extract, Paranatinga
+(MT) no 2008 one and Sambaíba (MA) no 2016 one, of any type, so their
+governing years 2001-2004, 2009-2012 and 2017-2020 are NA under the same
+rule (D-2026-10-31-b): 40 NA municipality-years after 2000 on the 808,
+28 on the biome's 503. In 2021-2024, 807 of the 808 municipalities carry
 the 2020 election; Macapá is NA because its 2020 election was postponed
 to December after the Amapá blackout and the file types it
 "eleicoes municipais 2020 - ap", which the ordinary-election filter of
@@ -287,10 +317,12 @@ municipalities with a code plus two rows with an empty code (the Boa
 Esperança do Norte split) and governs 2025-2028, so it enters only
 `election_year`.
 **Decision.** D-2026-10-22-d (storage rule), D-2026-10-22-e (the `_gov`
-block of script 04 retired), D-2026-10-22-f (series to 2024).
+block of script 04 retired), D-2026-10-22-f (series to 2024);
+D-2026-10-31-b (the three added municipality-elections absent from the
+extract).
 **Assertion.** `03-controls-elections.R`, output block (governing map and
-equality with the election rows); `04-panel-assemble.R`, output block (28
-NA municipality-years after 2000 on the 503-municipality panel).
+equality with the election rows); `04-panel-assemble.R`, output block (40
+NA municipality-years after 2000 on the 808-municipality panel).
 
 ## Q8. Who are the zero-vote candidates, and what does their exclusion move? (phase 2, step 2.7, 2026-10-28)
 
@@ -326,16 +358,19 @@ tse %>%
 
 **Finding.** All 56 zero-vote candidates (54 in 2012, 2 in 2020) are
 recorded as "não eleito", so the file carries no marker of the refused
-candidacy beyond the zero. In the sample they sit in 37 elections of
-2012 and in Magalhães Barata 2020; in eight 2012 races (Borba,
-Tonantins, Uarini, Breves, Vigia, Aragominas, Itaúba, Matupá) the
-zero-vote candidate was the only opponent. Excluding them leaves the ENC
-and the winner's share unchanged (a zero share adds nothing), lowers
-`elec_n_candidates` in 148 cells of the final panel (37 municipalities,
-2013-2016) and makes the eight races uncontested, so their margin and
-competitive flag are NA and `elec_uncontested` is 1 over 2013-2016
-(`compare_outputs`, commit message of step 2.7).
-**Decision.** D-2026-10-28-e.
+candidacy beyond the zero. In the nine states they sit in 51 elections
+of 2012 (37 in the biome, 14 among the municipalities added at step 2.9)
+and in two of 2020 (Magalhães Barata, PA, in the biome, and one added
+municipality); in twelve 2012 races the zero-vote candidate was the only
+opponent: the biome's eight (Borba, Tonantins, Uarini, Breves, Vigia,
+Aragominas, Itaúba, Matupá) and four added ones (Cachoeirinha,
+Palmeirópolis and Silvanópolis, TO; Mirador, MA). Excluding them leaves
+the ENC and the winner's share unchanged (a zero share adds nothing),
+lowers `elec_n_candidates` over the governing years 2013-2016 (148 cells
+of the biome's final panel at step 2.7) and makes the twelve races
+uncontested, so their margin and competitive flag are NA and
+`elec_uncontested` is 1 over 2013-2016 (48 cells).
+**Decision.** D-2026-10-28-e; D-2026-10-31-b (the four added races).
 **Assertion.** `03-controls-elections.R`, output block (56 zero-vote
 candidates dropped, every remaining candidate has votes, no election
 lost).

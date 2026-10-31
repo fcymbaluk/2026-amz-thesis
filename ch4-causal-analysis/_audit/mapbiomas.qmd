@@ -140,45 +140,64 @@ list.
 
 What is checked: summary statistics and quantiles of `deforestation_area_km2`
 and `forest_area_km2` (km² from phase 2, step 2.8, D-2026-10-28-j; hectares
-before) over the biome municipalities, 1987-2023; the largest
-municipality-years; the yearly total for the biome sample.
+before) over the 808 municipalities of the nine states (the biome's 503
+until phase 2, step 2.9), 1987-2023, by biome flag; the largest
+municipality-years; the yearly total, biome and extension apart.
 
 ```{r q4}
 defor %>%
+  group_by(biome_amazon) %>%
   summarise(across(c(deforestation_area_km2, forest_area_km2),
                    list(min = min, p25 = ~ quantile(.x, 0.25), median = median,
                         mean = mean, p75 = ~ quantile(.x, 0.75), p95 = ~ quantile(.x, 0.95),
-                        max = max))) %>%
-  pivot_longer(everything(), names_to = c("variable", "stat"), names_sep = "_(?=[a-z0-9]+$)") %>%
-  pivot_wider(names_from = stat, values_from = value)
+                        max = max)), .groups = "drop") %>%
+  pivot_longer(-biome_amazon, names_to = c("variable", "stat"), names_sep = "_(?=[a-z0-9]+$)") %>%
+  pivot_wider(names_from = stat, values_from = value) %>%
+  arrange(variable, biome_amazon)
 
 defor %>%
   arrange(desc(deforestation_area_km2)) %>%
   select(geocode, municipality, state_abbreviation, year, deforestation_area_km2, forest_area_km2) %>%
   head(10)
 
-ggplot(defor, aes(x = deforestation_area_km2)) +
+ggplot(defor, aes(x = deforestation_area_km2, fill = factor(biome_amazon))) +
   geom_histogram(bins = 60) +
   scale_x_log10() +
-  labs(title = "deforestation_area_km2, biome municipalities 1987-2023 (log scale)",
-       x = "km2", y = "municipality-years") +
+  labs(title = "deforestation_area_km2, nine states 1987-2023 (log scale)",
+       x = "km2", y = "municipality-years", fill = "biome_amazon") +
   theme_minimal()
 
 defor %>%
-  group_by(year) %>%
-  summarise(total_km2 = sum(deforestation_area_km2)) %>%
-  ggplot(aes(x = year, y = total_km2)) +
+  group_by(year, biome_amazon) %>%
+  summarise(total_km2 = sum(deforestation_area_km2), .groups = "drop") %>%
+  ggplot(aes(x = year, y = total_km2, fill = factor(biome_amazon))) +
   geom_col() +
-  labs(title = "Deforestation, biome municipalities", x = NULL, y = "km2") +
+  labs(title = "Deforestation, nine states", x = NULL, y = "km2", fill = "biome_amazon") +
   theme_minimal()
+defor %>%
+  filter(year %in% c(2003, 2004, 2010, 2011, 2012, 2020)) %>%
+  group_by(year) %>%
+  summarise(biome_km2 = sum(deforestation_area_km2[biome_amazon == 1L]),
+            added_km2 = sum(deforestation_area_km2[biome_amazon == 0L]), .groups = "drop") %>%
+  mutate(added_share = round(added_km2 / (biome_km2 + added_km2), 3))
 ```
 
-**Finding.** Both areas are strongly right-skewed, as expected from the
-heterogeneity of municipal size. The largest municipality-years belong to
-the known frontier municipalities (see table), and the yearly biome total
-follows the known trajectory (peaks above 31,000 km2 in 2003 and 2004, a
-trough near 11,000 km2 in 2010-2012, a rise afterward), so the tails
-reflect the territory rather than record errors.
+**Finding.** Both areas are strongly right-skewed in both groups, as
+expected from the heterogeneity of municipal size. The largest
+municipality-years belong to the known frontier municipalities of the
+biome (São Félix do Xingu and Altamira, PA); the largest outside it are
+Paranatinga (MT, 564 km² in 2003) and the soy frontier of Sorriso (MT)
+in the early 1990s. The 305 added municipalities are smaller on this
+aggregate (median forest stock 1,100 km² against 1,860 km², 95th
+percentile 8,400 against 32,000) and clear less (median 13 km² a year
+against 16, 95th percentile 86 against 150). The yearly biome total
+follows the known trajectory (peaks above 31,000 km² in 2003 and 2004, a
+trough near 11,000 km² in 2010-2012, a rise afterward); the added
+municipalities contribute 22 percent of the nine-state total at the 2003
+peak and 31 to 40 percent in 2010-2020, when the biome's clearing had
+fallen and the Cerrado's had not. The tails reflect the territory rather
+than record errors, and the biome flag is what keeps the two
+trajectories apart.
 **Decision.** none required.
 **Assertion.** none; distributional facts are not assertable.
 
@@ -217,18 +236,19 @@ series, so Mojuí dos Campos (emancipated from Santarém in 2013) has values
 for all 37 years. The pipeline keeps it at this stage; it is dropped in the
 panel scripts because its social and economic series start in 2013.
 **Decision.** D-2026-10-05-l (downstream).
-**Assertion.** `N_MUNIC_BIOME_EXPECTED = 503` in `01-env-deforestation.R`.
+**Assertion.** `N_MUNIC_STATES_EXPECTED = 808` and
+`N_MUNIC_BIOME_EXPECTED = 503` in `01-env-deforestation.R` (Mojuí dos
+Campos counted in both).
 
 ## Q7. Which municipalities lack rows for some transition, and is the zero fill correct?
 
-What is checked: the number of the four transitions present per biome
-municipality in the raw sheet, and the rows of any municipality with
-fewer than four.
+What is checked: the number of the four transitions present per
+municipality of the nine states in the raw sheet (the biome's 503 until
+phase 2, step 2.9), and the rows of any municipality with fewer than four.
 
 ```{r q7}
 coverage <- nine %>%
-  filter(transition_name %in% c(FOREST_TR, DEFOR_TR),
-         as.character(geocode) %in% biome_amz$Geocódigo) %>%
+  filter(transition_name %in% c(FOREST_TR, DEFOR_TR)) %>%
   distinct(geocode, municipality, transition_name) %>%
   count(geocode, municipality, name = "transitions_present")
 coverage %>% count(transitions_present)
@@ -239,12 +259,13 @@ nine %>%
   count(municipality, transition_name, class_level_1)
 ```
 
-**Finding.** One municipality, Santa Cruz do Arari (PA), has no secondary
-vegetation and no secondary suppression rows: its forest is primary
-vegetation alone and its deforestation primary suppression alone, which
-totals 16 hectares over the whole series. MapBiomas omits transitions with
-no pixels,
-so `values_fill = 0` in the wide reshape is the correct treatment.
+**Finding.** Of the 808 municipalities of the nine states one, Santa
+Cruz do Arari (PA), has no secondary vegetation and no secondary
+suppression rows: its forest is primary vegetation alone and its
+deforestation primary suppression alone, which totals 16 hectares over
+the whole series; every municipality added at step 2.9 carries the four
+transitions. MapBiomas omits transitions with no pixels, so
+`values_fill = 0` in the wide reshape is the correct treatment.
 **Decision.** none required.
 **Assertion.** `01-env-deforestation.R`, output block (no NA in the area
 columns).
@@ -254,7 +275,7 @@ columns).
 ```{r q8}
 tibble(
   rows = nrow(defor),
-  expected = 503 * length(1987:2023),
+  expected = 808 * length(1987:2023),
   geocodes = n_distinct(defor$geocode),
   duplicate_keys = sum(duplicated(paste(defor$geocode, defor$year))),
   na_forest_area = sum(is.na(defor$forest_area_km2)),
@@ -265,9 +286,10 @@ tibble(
 )
 ```
 
-**Finding.** 18,611 rows, 503 municipalities times 37 years, with unique
-keys; no missing area; the rate is missing only where forest is zero (no
-such row in this sample); the z-score is defined for every row.
+**Finding.** 29,896 rows, 808 municipalities times 37 years (18,611 and
+503 until phase 2, step 2.9), with unique keys; no missing area; the
+rate is missing only where forest is zero (no such row in this sample);
+the z-score is defined for every row.
 **Decision.** none required. The rate is the share of the same year's
 forest stock cleared in the year, on 0-1 from phase 2, step 2.8
 (D-2026-10-06-d; D-2026-10-28-h, with Q9 on the denominator timing);
@@ -324,17 +346,21 @@ rel %>%
   head(8)
 ```
 
-**Finding.** Over the 10,563 municipality-years of 2000-2020 the two
-quotients rank the cells identically (Spearman 0.9999, Pearson 0.997):
-the medians coincide at 0.013, the relative gap between them is 0.4
-percent at the median and 11 percent at the 99th percentile, and
-neither exceeds one anywhere (maxima 0.367 and 0.270). The lagged stock
-is not a closed balance: the forest area rises on the previous year in
-2,868 cells, because the aggregate includes secondary vegetation, which
-regrows, and the start-of-year stock reconstructed as forest plus
-clearing differs from the previous year's stock by more than 5 percent
-in 450 cells. The largest divergences are Maranhão municipalities in
-2000 with heavy secondary-vegetation turnover (Governador Nunes Freire,
+**Finding.** Over the 16,968 municipality-years of 2000-2020 (the 808
+municipalities of the nine states; 10,563 and the biome's 503 at the
+step) the two quotients rank the cells identically (Spearman 0.9999,
+Pearson 0.997): the medians coincide at 0.014, the relative gap between
+them is 0.6 percent at the median and 9 percent at the 99th percentile
+(0.4 and 11 on the biome alone, whose secondary-vegetation turnover is
+heavier), and neither exceeds one anywhere (maxima 0.367 and 0.270, both
+in the biome; 0.157 and 0.140 among the added municipalities). The
+lagged stock is not a closed balance: the forest area rises on the
+previous year in 3,615 cells (2,868 in the biome), because the aggregate
+includes secondary vegetation, which regrows, and the start-of-year
+stock reconstructed as forest plus clearing differs from the previous
+year's stock by more than 5 percent in 473 cells (450 in the biome). The
+largest divergences are Maranhão municipalities of the biome in 2000
+with heavy secondary-vegetation turnover (Governador Nunes Freire,
 Junco do Maranhão), not frontier clearing. So a bounded "stock at risk"
 is not available from these aggregates, the lagged quotient buys no
 property the contemporaneous one lacks, and the choice does not move

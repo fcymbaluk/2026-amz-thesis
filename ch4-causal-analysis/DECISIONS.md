@@ -2658,3 +2658,110 @@ Evidence: scratchpad smoke run of 07-11 with outputs redirected (exit 0
 Affects: the sample of every analysis output from the next rerun (502
          municipalities, as before step 2.9); no stored value
 Supersedes: the SAMPLE WARNING headers of 2026-10-29 (D-2026-10-29-a, analysis side)
+
+## D-2026-10-31-a  RAIS reporting gaps of the municipalities added at step 2.9 stay NA; the four mid-window gaps named
+
+Status: closed (phase 2, task 1.11, branch phase2-1.11-audit-rerender, 2026-10-31; no code change)
+Scope: _data/interim/rais_employment_1999_2024 (rows absent); the 99-cell NA assertion of 04-panel-assemble.R (unchanged since step 2.9); the emp_* block of the panel (lab_emp_formal_* since phase 2R)
+Context: the Legal Amazon extension (D-2026-10-29-a) brought 305
+         municipalities whose RAIS rows had not been audited. The
+         re-render of _audit/rais.qmd on the 808 finds 35 absent
+         municipality-years among them in 2000-2020: 6 before
+         installation (the six Cerrado municipalities of the lookup in
+         2000, D-2026-10-29-b) and 29 reporting gaps in eighteen
+         municipalities. 23 of the 29 are 2000-2002 gaps of the kind the
+         biome shows in its small Maranhão and Roraima municipalities
+         (Lavandeira, Mateiros, São Félix do Tocantins, Fernando Falcão,
+         Formosa da Serra Negra, Governador Luiz Rocha, Itaipava do
+         Grajaú, Lagoa Grande do Maranhão, Milagres do Maranhão, Santana
+         do Maranhão, São Pedro dos Crentes and São Roberto in 2000;
+         Belágua 2000-2001; Marajá do Sena 2000-2002; Jatobá 2001-2002;
+         Paulino Neves 2000 and 2002; Serra Nova Dourada 2001-2002,
+         already D-2026-10-29-b). Four sit in the middle of the window
+         between years with substantial counts, which the biome never
+         showed: Belágua 2008 (137 bonds in 2007, 81 in 2009), Santa
+         Filomena do Maranhão 2008 (92 and 2), São Roberto 2008-2009 (112
+         in 2007, 191 in 2010) and Marajá do Sena 2015 (167 and 195).
+Reason: D-2026-10-28-b governs: a municipality-year absent from the
+        export is not observed, not zero, and stays NA in every emp_*
+        column; the mid-window gaps are reporting gaps of the same nature
+        (the adjacent counts rule out a year without bonds) and get no
+        fill or interpolation. Recorded so that the annex can name them
+        and the RAIS track (rebuild/upstream-reform-rais.md) can check
+        them against the vínculo-level table.
+Evidence: _audit/rais.qmd Q2 and Q5 (2026-10-31 render); _audit/panel.qmd Q9 and Q11
+Affects: no value; 29 NA municipality-years of the added municipalities in every emp_* column, within the 99 asserted since step 2.9
+Supersedes: none (applies D-2026-10-28-b to the extension)
+
+## D-2026-10-31-b  TSE: three added municipality-elections absent from the extract stay NA; four added single-valid-candidate races of 2012 are uncontested
+
+Status: closed (phase 2, task 1.11, branch phase2-1.11-audit-rerender, 2026-10-31; no code change)
+Scope: _data/interim/tse_elections_2000_2024; the 40-cell post-2000 NA assertion of 04-panel-assemble.R (unchanged since step 2.9); the elec_* block (pol_mayor_*_term since phase 2R)
+Context: among the municipalities added at step 2.9 the extract has no
+         row of any type (ordinary or supplementary) for Humberto de
+         Campos (MA) in 2000, Paranatinga (MT) in 2008 and Sambaíba (MA)
+         in 2016, so their governing years 2001-2004, 2009-2012 and
+         2017-2020 have no election to join; Chapadinha and Santana do
+         Maranhão lack 2024, outside the window. The zero-vote exclusion
+         of D-2026-10-28-e leaves a single valid candidate in four more
+         2012 races, Cachoeirinha, Palmeirópolis and Silvanópolis (TO)
+         and Mirador (MA), beside the biome's eight.
+Reason: D-2026-10-22-d governs the first: a governing year without an
+        election in the file is NA, as for Altamira do Maranhão and Brejo
+        de Areia 2000 in the biome; the cause of the absence (a
+        supplementary election the Base dos Dados table does not carry,
+        or an annulled result) is not chased here and is noted for the
+        annex. D-2026-10-28-e governs the second: the four races are
+        uncontested over 2013-2016, margin and competitive flag NA.
+Evidence: _audit/tse.qmd Q7 and Q8 (2026-10-31 render); _audit/panel.qmd Q5 and Q11
+Affects: no value; 12 NA municipality-years in the elec_* block and 16 uncontested cells, all outside the biome
+Supersedes: none (applies D-2026-10-22-d and D-2026-10-28-e to the extension)
+
+## D-2026-10-31-c  TSE first-place ties: the winner of Senador Alexandre Costa 2004 is misassigned; a tie-break on the TSE result proposed
+
+Status: open (phase 2, task 1.11, 2026-10-31; for the author)
+Scope: 03-controls-elections.R (winner rule: arrange on the vote share, first row); elec_winner_party and elec_winner_id (pol_mayor_winner_party_cat_term, pol_mayor_winner_id_term) of Senador Alexandre Costa (MA, 2111748), 2005-2008
+Context: the re-render of _audit/tse.qmd Q6 on the 808 finds two real
+         first-place ties of valid votes, both in municipalities added at
+         step 2.9: Rio dos Bois (TO) 2000, PPB and PSDB with 665 votes
+         each, and Senador Alexandre Costa (MA) 2004, PTB and PFL with
+         2,359 each. The pipeline keeps the first candidate in
+         ballot-number order, which coincides with the TSE result
+         (resultado "eleito") in Rio dos Bois (PPB, ballot 11) and not in
+         Senador Alexandre Costa, where the TSE declared the PFL
+         candidate (ballot 25) elected and the pipeline stores the PTB
+         candidate (ballot 14). The margin (0), the ENC and the
+         competitive flag are right in both. Four further ties the
+         notebook lists are the duplicate rows of D-2026-10-10-c (one
+         ballot number under two party labels: Vilhena, Anamã, Matinha
+         and Presidente Sarney, 2004, in the biome), the inherited dedupe
+         left to phase 2 and still open.
+Reason: proposed fix, not applied: break ties on resultado (the candidate
+        the TSE declared elected), with an assertion that at most one
+        candidate per election is "eleito" and that every tie is resolved
+        by it. A definition change of the winner (most votes, then the
+        TSE declaration) that moves 8 cells of two columns, all outside
+        the biome, and needs the comparator in its commit; left to the
+        author because it changes a definition. With the dedupe of
+        D-2026-10-10-c it is a candidate for one phase 2 step before
+        stage 10.
+Evidence: _audit/tse.qmd Q2 and Q6 (2026-10-31 render)
+Affects: until fixed, elec_winner_party and elec_winner_id of Senador Alexandre Costa 2005-2008 (8 cells, outside the biome) are wrong; no other value
+Supersedes: none
+
+## D-2026-10-31-d  PAM: São Félix do Tocantins soy 2014 served as "..." stays NA
+
+Status: closed (phase 2, task 1.11, branch phase2-1.11-audit-rerender, 2026-10-31; no code change)
+Scope: _data/interim/pam_ppm_crop_areas_1988_2025 (the four crops of São Félix do Tocantins, TO, 1720150, 2014); the crop cells of 04-panel-assemble.R
+Context: among the 305 municipalities added at step 2.9 the only "..."
+         cell of Tabela 5457 inside 2000-2020 and outside the
+         installation years is São Félix do Tocantins in 2014, the four
+         crops at once, a one-year gap of the kind six Pará municipalities
+         show (D-2026-10-10-g; _audit/pam_ppm.qmd Q1 and Q6). PPM has no
+         such cell.
+Reason: the symbol rule stands: "..." is not available and stays NA in
+        the planted areas and shares; no interpolation. Recorded so that
+        the annex can name every crop gap of the sample.
+Evidence: _audit/pam_ppm.qmd Q1 and Q6 (2026-10-31 render); _audit/panel.qmd Q1 and Q11
+Affects: no value; 8 NA cells (four areas, four shares) of one municipality-year, outside the biome
+Supersedes: none (applies D-2026-10-10-g to the extension)

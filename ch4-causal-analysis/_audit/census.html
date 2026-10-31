@@ -2810,18 +2810,21 @@ $`2022`
 </section>
 <section id="q7.-what-do-the-municipalities-absent-from-the-2000-census-carry-under-the-step-2.5-rule" class="level2">
 <h2 class="anchored" data-anchor-id="q7.-what-do-the-municipalities-absent-from-the-2000-census-carry-under-the-step-2.5-rule">Q7. What do the municipalities absent from the 2000 census carry under the step 2.5 rule?</h2>
-<p>What is checked: the stored PEA, informality and PIA of the nine sample municipalities around the 2010 census and at the PIA ends, and the NA pattern of the whole group of 58 by year.</p>
+<p>What is checked: the stored PEA, informality and PIA of the fifteen sample municipalities without a 2000 anchor (the nine of the biome and, since phase 2, step 2.9, the six Cerrado municipalities of D-2026-10-29-b) around the 2010 census and at the PIA ends, and the NA pattern of the whole group of 58 by year.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>nine <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;5101852&quot;</span>, <span class="st">&quot;5103254&quot;</span>, <span class="st">&quot;5103361&quot;</span>, <span class="st">&quot;5103437&quot;</span>, <span class="st">&quot;5104526&quot;</span>, <span class="st">&quot;5104542&quot;</span>, <span class="st">&quot;5106190&quot;</span>,</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;5107578&quot;</span>, <span class="st">&quot;5107743&quot;</span>)</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>census_pea_informal <span class="sc">%&gt;%</span></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> nine, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2009</span>, <span class="dv">2010</span>, <span class="dv">2011</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geocode, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The sample municipalities without a 2000 anchor: the nine of step 2.5</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and, since step 2.9, the six Cerrado municipalities of D-2026-10-29-b.</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>post2000 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/munic_post2000.csv&quot;</span>,</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_character</span>(), <span class="at">install_year =</span> <span class="fu">col_integer</span>()))</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>nine <span class="ot">&lt;-</span> post2000 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(install_year <span class="sc">&lt;</span> <span class="dv">2010</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(geocode)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>census_pea_informal <span class="sc">%&gt;%</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(geocode <span class="sc">%in%</span> nine, year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2009</span>, <span class="dv">2010</span>, <span class="dv">2011</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geocode, year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 27 × 4
+<pre><code># A tibble: 45 × 4
    geocode  year    pea informal
    &lt;chr&gt;   &lt;int&gt;  &lt;dbl&gt;    &lt;dbl&gt;
  1 5101852  2009    NA    NA    
@@ -2834,7 +2837,7 @@ $`2022`
  8 5103361  2010  1666     0.517
  9 5103361  2011  1670.    0.515
 10 5103437  2009    NA    NA    
-# ℹ 17 more rows</code></pre>
+# ℹ 35 more rows</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2843,18 +2846,24 @@ $`2022`
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> pia)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 6
-  geocode `2009` `2010` `2022` `2023` `2024`
-  &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-1 5101852     NA   3913   5641  5785   5929 
-2 5103254     NA  18790  19825 19911. 19998.
-3 5103361     NA   2545   2879  2907.  2935.
-4 5103437     NA   3726   3994  4016.  4039.
-5 5104526     NA   3822   5957  6135.  6313.
-6 5104542     NA   3914   5790  5946.  6103.
-7 5106190     NA   2656   3278  3330.  3382.
-8 5107578     NA   2517   2565  2569   2573 
-9 5107743     NA   1400   2009  2060.  2110.</code></pre>
+<pre><code># A tibble: 15 × 6
+   geocode `2009` `2010` `2022` `2023` `2024`
+   &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 5101852     NA   3913   5641  5785   5929 
+ 2 5103254     NA  18790  19825 19911. 19998.
+ 3 5103361     NA   2545   2879  2907.  2935.
+ 4 5103437     NA   3726   3994  4016.  4039.
+ 5 5104526     NA   3822   5957  6135.  6313.
+ 6 5104542     NA   3914   5790  5946.  6103.
+ 7 5106174     NA   1977   2885  2961.  3036.
+ 8 5106190     NA   2656   3278  3330.  3382.
+ 9 5106315     NA   1477   1607  1618.  1629.
+10 5107578     NA   2517   2565  2569   2573 
+11 5107743     NA   1400   2009  2060.  2110.
+12 5107768     NA   1850   2397  2443.  2488.
+13 5107792     NA   2738   2956  2974.  2992.
+14 5107883     NA   1030   1410  1442.  1473.
+15 5108352     NA   2329   2333  2333.  2334.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2895,11 +2904,11 @@ $`2022`
 6  2024    58      0</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> The 58 municipalities are NA in PEA, informality and PIA from 1999 to 2009 and complete from 2010, the PIA through 2024 (the 2023-2024 extrapolation of D-2026-10-07-f is kept, since it extends the anchor range at its end). Colniza’s informality now begins at its 2010 census value instead of climbing from zero through the treatment years. The ratios that divide by these series (<code>emp_pia_rate_*</code> in <code>02-social-rais.R</code>, <code>bf_transfers_pea_brl_2024</code> in <code>02-social-bf.R</code>) inherit the NA without code changes; population is rebuilt separately from the official estimates (<code>_audit/ibge_pib.qmd</code> Q7). <strong>Decision.</strong> D-2026-10-23-d. <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>na_rule_ok</code> for the three series; <code>N_ABSENT_2000_EXPECTED</code>).</p>
+<p><strong>Finding.</strong> The 58 municipalities are NA in PEA, informality and PIA from 1999 to 2009 and complete from 2010, the PIA through 2024 (the 2023-2024 extrapolation of D-2026-10-07-f is kept, since it extends the anchor range at its end). Colniza’s informality now begins at its 2010 census value instead of climbing from zero through the treatment years. The six Cerrado municipalities of step 2.9 (Nova Nazaré, Novo Santo Antônio, Santa Rita do Trivelato, Santo Antônio do Leste, Serra Nova Dourada, Vale de São Domingos) follow the same rule, so fifteen of the 808 municipalities of the nine states carry NA through 2009 (150 panel cells of each series). The ratios that divide by these series (<code>emp_pia_rate_*</code> in <code>02-social-rais.R</code>, <code>bf_transfers_pea_brl_2024</code> in <code>02-social-bf.R</code>) inherit the NA without code changes; population is rebuilt separately from the official estimates (<code>_audit/ibge_pib.qmd</code> Q7). <strong>Decision.</strong> D-2026-10-23-d; D-2026-10-29-b (the six). <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>na_rule_ok</code> for the three series; <code>N_ABSENT_2000_EXPECTED</code>).</p>
 </section>
 <section id="q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match" class="level2">
 <h2 class="anchored" data-anchor-id="q8.-how-much-of-a-pre-treatment-baseline-on-the-interpolated-series-is-the-2010-census-and-do-the-stored-anchors-match">Q8. How much of a pre-treatment baseline on the interpolated series is the 2010 census, and do the stored anchors match?</h2>
-<p>What is checked: the share of the 2010 anchor in the mean of a linearly interpolated series over the two baseline windows in use (2004-2007 in the chapter tables, 2002-2007 in <code>08-data-analysis-2WFE-CS.R</code>); the distance between those means and the 2000 census for PIA and informality in the biome sample; and the anchors file against the annual series at the census years.</p>
+<p>What is checked: the share of the 2010 anchor in the mean of a linearly interpolated series over the two baseline windows in use (2004-2007 in the chapter tables, 2002-2007 in <code>08-data-analysis-2WFE-CS.R</code>); the distance between those means and the 2000 census for PIA and informality in the 807 municipalities of the store; and the anchors file against the annual series at the census years.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -3009,7 +3018,7 @@ $`2022`
 12 5103254  2022  19825  10317    0.595</code></pre>
 </div>
 </div>
-<p><strong>Finding.</strong> By construction of the linear fill, the 2010 census is 55 percent of a 2004-2007 mean and 45 percent of a 2002-2007 mean, so a “baseline” taken on the interpolated series is mostly, or nearly half, post-treatment information for the 2008 and 2009 cohorts. In the sample the 2004-2007 mean of PIA sits 16 percent above the 2000 census at the median (interquartile range 9 to 26 percent) and the informality share 2.3 points below it. The anchors file holds the three series as read for the 5,570 municipalities of the 2022 grid at the three census years: 63 NA in 2000 (the 58 absent from that census and the five created after 2010), five NA in 2010, none in 2022, and it equals the annual series at the census years to the last digit with the same NA pattern. The interpolation itself is unchanged (task 1.7): the alternatives of a census-only denominator and of predetermined annual series are weighed in the memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>. <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>same_or_na</code> on the three series; the NA counts by census year).</p>
+<p><strong>Finding.</strong> By construction of the linear fill, the 2010 census is 55 percent of a 2004-2007 mean and 45 percent of a 2002-2007 mean, so a “baseline” taken on the interpolated series is mostly, or nearly half, post-treatment information for the 2008 and 2009 cohorts. In the 807 municipalities of the store (792 with a 2000 anchor) the 2004-2007 mean of PIA sits 14 percent above the 2000 census at the median (interquartile range 8 to 24 percent) and the informality share 3.2 points below it (16 percent and 2.3 points on the biome’s 502 at step 2.6: the added Cerrado municipalities grew less and formalised faster). The anchors file holds the three series as read for the 5,570 municipalities of the 2022 grid at the three census years: 63 NA in 2000 (the 58 absent from that census and the five created after 2010), five NA in 2010, none in 2022, and it equals the annual series at the census years to the last digit with the same NA pattern. The interpolation itself is unchanged (task 1.7): the alternatives of a census-only denominator and of predetermined annual series are weighed in the memo <code>docs/decisions/2026-10-26-baseline-covariates-on-census-anchors.md</code>. <strong>Decision.</strong> D-2026-10-26-a. <strong>Assertion.</strong> <code>02-social-census.R</code>, output block (<code>same_or_na</code> on the three series; the NA counts by census year).</p>
 </section>
 
 </main>

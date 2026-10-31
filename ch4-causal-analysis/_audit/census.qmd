@@ -360,13 +360,18 @@ within 0-100, row counts).
 
 ## Q7. What do the municipalities absent from the 2000 census carry under the step 2.5 rule?
 
-What is checked: the stored PEA, informality and PIA of the nine sample
-municipalities around the 2010 census and at the PIA ends, and the NA
+What is checked: the stored PEA, informality and PIA of the fifteen
+sample municipalities without a 2000 anchor (the nine of the biome and,
+since phase 2, step 2.9, the six Cerrado municipalities of
+D-2026-10-29-b) around the 2010 census and at the PIA ends, and the NA
 pattern of the whole group of 58 by year.
 
 ```{r q7-rule}
-nine <- c("5101852", "5103254", "5103361", "5103437", "5104526", "5104542", "5106190",
-          "5107578", "5107743")
+# The sample municipalities without a 2000 anchor: the nine of step 2.5
+# and, since step 2.9, the six Cerrado municipalities of D-2026-10-29-b.
+post2000 <- read_csv("_data/aux/munic_post2000.csv",
+                     col_types = cols(.default = col_character(), install_year = col_integer()))
+nine <- post2000 %>% filter(install_year < 2010) %>% pull(geocode)
 census_pea_informal %>%
   filter(geocode %in% nine, year %in% c(2009, 2010, 2011)) %>%
   arrange(geocode, year)
@@ -391,11 +396,16 @@ from 1999 to 2009 and complete from 2010, the PIA through 2024 (the
 2023-2024 extrapolation of D-2026-10-07-f is kept, since it extends the
 anchor range at its end). Colniza's informality now begins at its 2010
 census value instead of climbing from zero through the treatment years.
-The ratios that divide by these series (`emp_pia_rate_*` in
-`02-social-rais.R`, `bf_transfers_pea_brl_2024` in `02-social-bf.R`)
-inherit the NA without code changes; population is rebuilt separately
-from the official estimates (`_audit/ibge_pib.qmd` Q7).
-**Decision.** D-2026-10-23-d.
+The six Cerrado municipalities of step 2.9 (Nova Nazaré, Novo Santo
+Antônio, Santa Rita do Trivelato, Santo Antônio do Leste, Serra Nova
+Dourada, Vale de São Domingos) follow the same rule, so fifteen of the
+808 municipalities of the nine states carry NA through 2009 (150 panel
+cells of each series). The ratios that divide by these series
+(`emp_pia_rate_*` in `02-social-rais.R`, `bf_transfers_pea_brl_2024` in
+`02-social-bf.R`) inherit the NA without code changes; population is
+rebuilt separately from the official estimates (`_audit/ibge_pib.qmd`
+Q7).
+**Decision.** D-2026-10-23-d; D-2026-10-29-b (the six).
 **Assertion.** `02-social-census.R`, output block (`na_rule_ok` for the
 three series; `N_ABSENT_2000_EXPECTED`).
 
@@ -405,8 +415,8 @@ What is checked: the share of the 2010 anchor in the mean of a linearly
 interpolated series over the two baseline windows in use (2004-2007 in the
 chapter tables, 2002-2007 in `08-data-analysis-2WFE-CS.R`); the distance
 between those means and the 2000 census for PIA and informality in the
-biome sample; and the anchors file against the annual series at the census
-years.
+807 municipalities of the store; and the anchors file against the annual
+series at the census years.
 
 ```{r q8-blend}
 census_anchors <- read_rds("_data/interim/census_anchors_2000_2022.rds")
@@ -460,10 +470,13 @@ census_anchors %>% filter(geocode %in% sample_geo) %>% arrange(geocode, year)
 **Finding.** By construction of the linear fill, the 2010 census is 55
 percent of a 2004-2007 mean and 45 percent of a 2002-2007 mean, so a
 "baseline" taken on the interpolated series is mostly, or nearly half,
-post-treatment information for the 2008 and 2009 cohorts. In the sample
-the 2004-2007 mean of PIA sits 16 percent above the 2000 census at the
-median (interquartile range 9 to 26 percent) and the informality share 2.3
-points below it. The anchors file holds the three series as read for the
+post-treatment information for the 2008 and 2009 cohorts. In the 807
+municipalities of the store (792 with a 2000 anchor) the 2004-2007 mean
+of PIA sits 14 percent above the 2000 census at the median
+(interquartile range 8 to 24 percent) and the informality share 3.2
+points below it (16 percent and 2.3 points on the biome's 502 at step
+2.6: the added Cerrado municipalities grew less and formalised faster).
+The anchors file holds the three series as read for the
 5,570 municipalities of the 2022 grid at the three census years: 63 NA in
 2000 (the 58 absent from that census and the five created after 2010),
 five NA in 2010, none in 2022, and it equals the annual series at the
