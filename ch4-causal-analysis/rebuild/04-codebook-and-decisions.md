@@ -4,7 +4,7 @@ Three files that keep the pipeline, the annex and the history from drifting apar
 
 ## 1. `_data/aux/codebook.csv`
 
-One row per variable in the final panel, plus one per column of the municipality store `panel_amz_baseline` that is not in the panel (the census anchors, from 2026-10-26; their `script` is 05 and their `construction` names the store). Read by script 06 to set labels and by the annex to render section 6. Adding a variable to the panel without a codebook row fails an assertion in script 06.
+One row per variable in the final panel, plus one per column of the municipality store `panel_amz_baseline` that is not in the panel (the census anchors from 2026-10-26, the baseline summaries, the pressure scores and the alternative treatment flags from 2026-10-30; their `script` is 05 and their `construction` names the store), plus one per variable the storage audit moved to the analysis scripts (from 2026-10-30, so the verdict is on record). The `dataset` column tells the three apart. Variable names are the `new_name` of `_data/aux/crosswalk.csv` (phase 2R, D-2026-10-30-a). Read by script 06, which asserts that the panel's columns and the codebook's `panel` rows coincide and that every column holds its declared `type`, and by the annex to render section 6.
 
 Columns:
 
@@ -22,6 +22,8 @@ Columns:
 | `interpolated` | `TRUE` when the column carries, or divides by, a series interpolated between census anchors; `FALSE` otherwise (added at phase 2, step 2.6, D-2026-10-26-a) |
 | `anchor_years` | The census years of the anchors when `interpolated` is `TRUE`, e.g. `2000/2010/2022`; empty otherwise |
 | `missing_rule` | One sentence: when the variable is NA and what 0 means, or that neither occurs, citing the decision that set the rule (added at phase 2, step 2.7, D-2026-10-28-f) |
+| `dataset` | Where the variable lives: `panel` (the final panel, whether or not the store also carries it), `store` (the municipality store only) or `analysis` (left the pipeline at the storage audit; built in the analysis scripts). Added at phase 2R, D-2026-10-30-f |
+| `storage_verdict` | The task 2.2 classification against the governing rule for derived variables: `key`, `stored: source value`, `stored: <condition>` naming the storage condition met, `store only: <reason>` or `analysis: <reason>`, with the decision ID. Added at phase 2R, D-2026-10-30-f |
 
 Example rows:
 
@@ -29,15 +31,15 @@ Example rows:
 variable,label,role,type,unit,source,years,construction,script
 geocode,IBGE municipality code,id,character,,IBGE,2000-2020,7-digit code,01
 year,Year,id,integer,,,2000-2020,,04
-ppcdam_list,PPCDAm priority list,treatment,integer,0/1,MMA ordinances,2008-2020,1 if listed in year t,01
-defor_norm_ref0007,Deforestation z-score (2000-07 base),outcome,double,SD,MapBiomas c9,2000-2020,see annex §2.2,06
-bf_families_quota_ratio,BF coverage ratio,moderator,double,ratio,MDS,2004-2019,families in June / municipal quota,02
-gdp_per_capita_2024_log,Log GDP per capita (2024 BRL),covariate,double,log BRL,IBGE PIB,2002-2020,log(gdp_brl_2024 / population),03
-price_index_crop,Crop price index,covariate,double,index (2000 = 1),World Bank Pink Sheet + PAM,2000-2020,see annex §5.5,06
-at_risk_narrow,At-risk sample flag,sample,logical,0/1,,2000-2020,see annex §1.4,05
+enf_ppcdam_listed_dum,PPCDAm priority list,treatment,integer,0/1,MMA ordinances,2008-2020,1 if listed in year t,01
+env_defor_area_z_bl0007,Deforestation z-score (2000-07 base),outcome,double,SD,MapBiomas c9,2000-2020,see annex §2.2,06
+sop_bf_fam_quota_ratio,BF coverage ratio,moderator,double,ratio,MDS,2004-2019,families in June / municipal quota,02
+ecn_gdp_pc_brl24_log,Log GDP per capita (2024 BRL),covariate,double,log BRL,IBGE PIB,2002-2020,log(gdp_brl_2024 / population),03
+mkt_price_crop_idx,Crop price index,covariate,double,index (exposure x relative price),World Bank Pink Sheet + PAM,2000-2020,see annex §5.5,03
+smp_atrisk_narrow_dum,At-risk sample flag,sample,logical,TRUE/FALSE,,2000-2020,see annex §1.4,05
 ```
 
-The `type` column is the contract that fixes the current problem of `bf_` and `gdp_` columns arriving as character in the CSV. Script 06 asserts that every column matches its declared type before writing.
+The `type` column is the contract that fixed the phase 1 problem of `bf_` and `gdp_` columns arriving as character in the CSV; it is filled for every row since 2026-10-30 (`typeof` of the column: `integer`, `double`, `character`, `logical`) and script 06 asserts that every panel column matches it before writing.
 
 ## 2. `DECISIONS.md`
 

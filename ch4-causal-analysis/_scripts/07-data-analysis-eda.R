@@ -1,16 +1,19 @@
 # Purpose: exploratory data analysis of the Chapter 4 panel (legacy EDA blocks A-E,
 #          BF variation, H2 descriptive TWFE); writes the chapter's descriptive figures
-# Inputs:  _data/final/panel_amz_2000_2020_final.csv (phase 1 panel, frozen 2026-10-12)
+# Inputs:  _data/final/panel_amz_2000_2020_final.csv (script 06; crosswalk names
+#          since phase 2R, D-2026-10-30-a); _scripts/utils/derived_variables.R
 # Outputs: output/figures/fig-variable-availability.png, fig-policy-timeline.png,
 #          fig-series-natural-units.png, fig-wage-brackets.png, fig-bf-components.png,
 #          fig-series-indexed-groups.png, fig-moderator-credibility.png,
 #          fig-cohort-exit-paths.png, fig-bf-coverage-map.png
-# Status:  legacy monolith (August 2026) run as-is on the phase 1 panel for the
-#          descriptive sprint; restyle deferred (updated 2026-10-14).
-#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
-#          carries 807 municipalities (nine states); this script selects no
-#          sample. Do not rerun before filtering on biome_amazon == 1 (the
-#          chapter's sample) or legal_amazon == 1 (rebuild/tasks.md 1.12).
+# Status:  legacy monolith (August 2026) run as-is for the descriptive sprint;
+#          restyle deferred. Phase 2R, session 2 (2026-10-30): column names
+#          migrated through _data/aux/crosswalk.csv; the script selects the
+#          chapter's sample, the 502 biome municipalities, through
+#          read_panel() (rebuild/tasks.md 1.12, D-2026-10-30-g), builds the
+#          pooled price z-scores on that sample with z_on() (D-2026-10-30-b)
+#          and the robust and ever treatment flags with listed_within()
+#          (D-2026-10-30-d). Outputs not regenerated before stage 10.
 
 library(tidyverse)
 library(magrittr)
@@ -36,33 +39,58 @@ library(ggplot2)
 library(scales)
 
 # --- paths -------------------------------------------------------------------
-data_path <- "_data/final/panel_amz_2000_2020_final.csv"   # phase 1 panel
+data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 #dir.create("_output/_figures", recursive = TRUE, showWarnings = FALSE)
 #dir.create("_output/_tables",  recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path)
+# --- sample and derived variables (phase 2R, 2026-10-30) ---------------------
+# The final panel carries the 807 municipalities of the nine states
+# (D-2026-10-29-a); this script works on the chapter's sample, the 502
+# municipalities of the Amazon biome (rebuild/tasks.md 1.12, D-2026-10-30-g).
+# The pooled price z-scores left the panel (D-2026-10-30-b): they are built
+# here on that sample with z_on(), and the lagged z is the z lagged within
+# municipality on the balanced panel, as script 04 built it. Every block
+# below re-reads the panel through this function.
+source("_scripts/utils/derived_variables.R")
+SAMPLE_REGION_COL <- "geo_biome_amazon_dum"  # geo_legal_amazon_dum: robustness
+N_MUNIC_EXPECTED  <- 502L
+read_panel <- function(path = data_path) {
+  d <- read.csv(path) %>%
+    filter(.data[[SAMPLE_REGION_COL]] == 1L) %>%
+    arrange(geocode, year) %>%
+    mutate(mkt_price_crop_idx_z   = z_on(mkt_price_crop_idx),
+           mkt_price_cattle_idx_z = z_on(mkt_price_cattle_idx)) %>%
+    group_by(geocode) %>%
+    mutate(mkt_price_crop_idx_z_lag1   = dplyr::lag(mkt_price_crop_idx_z),
+           mkt_price_cattle_idx_z_lag1 = dplyr::lag(mkt_price_cattle_idx_z)) %>%
+    ungroup()
+  stopifnot(n_distinct(d$geocode) == N_MUNIC_EXPECTED)
+  d
+}
+
+df <- read_panel()
 df
 glimpse(df)
 
 
 
 df %>%
-  count(ppcdam_list)
+  count(enf_ppcdam_listed_dum)
 
-table(df$ppcdam_list)
+table(df$enf_ppcdam_listed_dum)
 
 df %>%
-  filter(ppcdam_list == 0) %>%
+  filter(enf_ppcdam_listed_dum == 0) %>%
   summarise(n_municipalities = n_distinct(geocode))
 
 df %>% 
   filter(
-    at_risk_narrow == TRUE,
-    ppcdam_list == 0) %>% 
+    smp_atrisk_narrow_dum == TRUE,
+    enf_ppcdam_listed_dum == 0) %>% 
   summarise(n_municipalities = n_distinct(geocode))
 
 df %>%
-  filter(ppcdam_list == 1) %>%
+  filter(enf_ppcdam_listed_dum == 1) %>%
   count(year)
 
 df <- df %>%
@@ -80,12 +108,12 @@ df <- df %>%
 # and preempts referee suspicion about silent sample loss.
 # =============================================================================
 
-key_vars <- c("defor_norm_ref0007", "deforestation_area_km2",
-              "bf_families_quota_ratio", "bf_transfers_pc_brl_2024",
-              "emp_pia_rate_total", "emp_pia_rate_agric",
-              "emp_share_low_workers",
-              "price_index_crop", "price_index_cattle",
-              "gdp_per_capita_2024", "elec_enc", "elec_winner_share")
+key_vars <- c("env_defor_area_z_bl0007", "env_defor_area_km2",
+              "sop_bf_fam_quota_ratio", "sop_bf_transf_pc_brl24",
+              "lab_emp_formal_pia_rate", "lab_emp_formal_agri_pia_rate",
+              "lab_emp_formal_lowwage_share",
+              "mkt_price_crop_idx", "mkt_price_cattle_idx",
+              "ecn_gdp_pc_brl24", "pol_mayor_enc_idx_term", "pol_mayor_winner_share_term")
 
 # Confirm everything is numeric; stop early if the type fix regressed.
 stopifnot(all(sapply(df[key_vars], is.numeric)))
@@ -123,7 +151,7 @@ ggsave("output/figures/fig-variable-availability.png", p_miss,
 
 agg_defor <- df |>
   group_by(year) |>
-  summarise(defor_total_km2 = sum(deforestation_area_km2, na.rm = TRUE))
+  summarise(defor_total_km2 = sum(env_defor_area_km2, na.rm = TRUE))
 
 # Compact event set. Deliberately not exhaustive: the point is legibility.
 events <- tribble(
@@ -187,11 +215,11 @@ ggsave("output/figures/fig-policy-timeline.png", p_a1,
 series <- df |>
   group_by(year) |>
   summarise(
-    `Deforestation (km2, total)`     = sum(deforestation_area_km2, na.rm = TRUE),
-    `BF coverage (families/quota)`   = mean(bf_families_quota_ratio, na.rm = TRUE),
-    `Formal employment (RAIS/PIA)`   = mean(emp_pia_rate_total, na.rm = TRUE),
-    `Crop price exposure index`      = mean(price_index_crop, na.rm = TRUE),
-    `Cattle price exposure index`    = mean(price_index_cattle, na.rm = TRUE)
+    `Deforestation (km2, total)`     = sum(env_defor_area_km2, na.rm = TRUE),
+    `BF coverage (families/quota)`   = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
+    `Formal employment (RAIS/PIA)`   = mean(lab_emp_formal_pia_rate, na.rm = TRUE),
+    `Crop price exposure index`      = mean(mkt_price_crop_idx, na.rm = TRUE),
+    `Cattle price exposure index`    = mean(mkt_price_cattle_idx, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   mutate(series = factor(series, levels = c(
@@ -245,13 +273,13 @@ decompose_wb <- function(x, id) {
          n_munic = length(unique(d$id)))
 }
 
-decomp_vars <- c("bf_families_quota_ratio", "bf_transfers_pc_brl_2024",
-                 "emp_pia_rate_total", "emp_pia_rate_agric",
-                 "emp_share_low_workers",
-                 "defor_norm_ref0007", "deforestation_area_km2",
-                 "deforestation_forest_rate",
-                 "elec_enc", "gdp_per_capita_2024",
-                 "price_index_crop", "price_index_cattle", "cattle_per_km2")
+decomp_vars <- c("sop_bf_fam_quota_ratio", "sop_bf_transf_pc_brl24",
+                 "lab_emp_formal_pia_rate", "lab_emp_formal_agri_pia_rate",
+                 "lab_emp_formal_lowwage_share",
+                 "env_defor_area_z_bl0007", "env_defor_area_km2",
+                 "env_defor_forest_share",
+                 "pol_mayor_enc_idx_term", "ecn_gdp_pc_brl24",
+                 "mkt_price_crop_idx", "mkt_price_cattle_idx", "agr_cattle_per_km2")
 
 wb_table <- bind_rows(
   lapply(decomp_vars,
@@ -265,17 +293,17 @@ wb_table <- bind_rows(
 # print(wb_table, n = Inf)
 
 # Interpretation notes (for the chapter text, not the console):
-# - bf_families_quota_ratio ~71% between: stable municipal characteristic.
+# - sop_bf_fam_quota_ratio ~71% between: stable municipal characteristic.
 #   Appropriate as a cross-sectional moderator; weak identifying variation
 #   for FE direct-effect specifications.
-# - emp_pia_rate_agric ~84% between: structural; use baseline values as a
+# - lab_emp_formal_agri_pia_rate ~84% between: structural; use baseline values as a
 #   predetermined moderator rather than a time-varying regressor.
-# - defor_norm_ref0007 ~81% within by construction (z-score on own
+# - env_defor_area_z_bl0007 ~81% within by construction (z-score on own
 #   2000–2007 baseline): suitable outcome for within-based designs.
 # - price indices ~93% between: Bartik-type structure; levels reflect fixed
 #   crop mix, identification would rest on the small differential-trend
 #   component.
-# - emp_share_low_workers ~80% within: wage brackets are defined using fixed
+# - lab_emp_formal_lowwage_share ~80% within: wage brackets are defined using fixed
 #   real thresholds (2024 minimum wage after IPCA deflation), so movements
 #   across brackets reflect changes in the real wage distribution of formal
 #   employment rather than annual reclassification from changing nominal MW
@@ -310,7 +338,7 @@ library(scales)
 data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 #dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path)
+df <- read_panel()
 
 theme_eda <- theme_minimal(base_size = 11) +
   theme(strip.text = element_text(face = "bold", size = 9),
@@ -325,18 +353,18 @@ theme_eda <- theme_minimal(base_size = 11) +
 # employment rather than mechanical reclassification from annual MW updates.
 # Attribution to MW policy specifically still requires the exposure design;
 # these are descriptives of the wage distribution's base.
-# Panel A: rates over PIA (do not sum to 1; they sum to emp_pia_rate_total,
+# Panel A: rates over PIA (do not sum to 1; they sum to lab_emp_formal_pia_rate,
 #          so lines). Panel B: shares of formal workers (sum to 1, so a
 #          stacked area is the natural geometry).
 # =============================================================================
 
 rates_long <- df |>
   group_by(year) |>
-  summarise(across(c(emp_pia_rate_low, emp_pia_rate_mid, emp_pia_rate_high),
+  summarise(across(c(lab_emp_formal_lowwage_pia_rate, lab_emp_formal_midwage_pia_rate, lab_emp_formal_highwage_pia_rate),
                    \(x) mean(x, na.rm = TRUE))) |>
   pivot_longer(-year, names_to = "bracket", values_to = "value") |>
   mutate(bracket = factor(bracket,
-                          levels = c("emp_pia_rate_low", "emp_pia_rate_mid", "emp_pia_rate_high"),
+                          levels = c("lab_emp_formal_lowwage_pia_rate", "lab_emp_formal_midwage_pia_rate", "lab_emp_formal_highwage_pia_rate"),
                           labels = c("Low (≤ 1 MW-2024)", "Mid (1–4 MW-2024)", "High (> 4 MW-2024)")))
 
 p3a <- ggplot(rates_long, aes(year, value, color = bracket)) +
@@ -350,12 +378,12 @@ p3a <- ggplot(rates_long, aes(year, value, color = bracket)) +
 
 shares_long <- df |>
   group_by(year) |>
-  summarise(across(c(emp_share_low_workers, emp_share_mid_workers,
-                     emp_share_high_workers), \(x) mean(x, na.rm = TRUE))) |>
+  summarise(across(c(lab_emp_formal_lowwage_share, lab_emp_formal_midwage_share,
+                     lab_emp_formal_highwage_share), \(x) mean(x, na.rm = TRUE))) |>
   pivot_longer(-year, names_to = "bracket", values_to = "value") |>
   mutate(bracket = factor(bracket,
-                          levels = c("emp_share_high_workers", "emp_share_mid_workers",
-                                     "emp_share_low_workers"),
+                          levels = c("lab_emp_formal_highwage_share", "lab_emp_formal_midwage_share",
+                                     "lab_emp_formal_lowwage_share"),
                           labels = c("High (> 4 MW-2024)", "Mid (1–4 MW-2024)", "Low (≤ 1 MW-2024)")))
 
 p3b <- ggplot(shares_long, aes(year, value, fill = bracket)) +
@@ -392,9 +420,9 @@ ggsave("output/figures/fig-wage-brackets.png", p3,
 agri <- df |>
   group_by(year) |>
   summarise(
-    `Formal / PIA: total`          = mean(emp_pia_rate_total, na.rm = TRUE),
-    `Formal / PIA: agricultural`   = mean(emp_pia_rate_agric, na.rm = TRUE),
-    `Agricultural share of formal` = mean(emp_share_agri_workers, na.rm = TRUE)
+    `Formal / PIA: total`          = mean(lab_emp_formal_pia_rate, na.rm = TRUE),
+    `Formal / PIA: agricultural`   = mean(lab_emp_formal_agri_pia_rate, na.rm = TRUE),
+    `Agricultural share of formal` = mean(lab_emp_formal_agri_share, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   mutate(panel = ifelse(grepl("share", series),
@@ -431,15 +459,15 @@ bf <- df |>
   group_by(year) |>
   summarise(
     `Total transfers (billion BRL-2024)` =
-      sum(bf_transfers_total_brl_2024, na.rm = TRUE) / 1e9,
+      sum(sop_bf_transf_brl24, na.rm = TRUE) / 1e9,
     `Avg transfer per family (BRL-2024)` =
-      mean(bf_transfers_avg_brl_2024, na.rm = TRUE),
+      mean(sop_bf_transf_fam_brl24, na.rm = TRUE),
     `Coverage: families / quota` =
-      mean(bf_families_quota_ratio, na.rm = TRUE),
+      mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
     `Transfers per quota family (BRL-2024)` =
-      mean(bf_transfers_quota_brl_2024, na.rm = TRUE),
+      mean(sop_bf_transf_quota_brl24, na.rm = TRUE),
     `Transfers per capita (BRL-2024)` =
-      mean(bf_transfers_pc_brl_2024, na.rm = TRUE)
+      mean(sop_bf_transf_pc_brl24, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   mutate(series = factor(series, levels = c(
@@ -477,7 +505,7 @@ ggsave("output/figures/fig-bf-components.png", p5,
 
 informal_s <- df |>
   group_by(year) |>
-  summarise(value = mean(informal, na.rm = TRUE)) |>
+  summarise(value = mean(lab_informal_share, na.rm = TRUE)) |>
   mutate(census = year %in% c(2000, 2010, 2020))
 # 2020 shown as the last interpolated point toward the 2022 census anchor
 
@@ -494,8 +522,8 @@ gdp_s <- df |>
   filter(year >= 2002) |>
   group_by(year) |>
   summarise(
-    `B. GDP per capita (BRL-2024)`   = mean(gdp_per_capita_2024, na.rm = TRUE),
-    `C. Total GDP (billion BRL-2024)`= sum(gdp_brl_2024, na.rm = TRUE) / 1e9
+    `B. GDP per capita (BRL-2024)`   = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
+    `C. Total GDP (billion BRL-2024)`= sum(ecn_gdp_brl24, na.rm = TRUE) / 1e9
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value")
 
@@ -540,10 +568,10 @@ p6b
 
 crops <- df |>
   group_by(year) |>
-  summarise(Soy    = sum(crop_soy_area_planted_km2,    na.rm = TRUE),
-            Corn   = sum(crop_corn_area_planted_km2,   na.rm = TRUE),
-            Rice   = sum(crop_rice_area_planted_km2,   na.rm = TRUE),
-            Cotton = sum(crop_cotton_area_planted_km2, na.rm = TRUE)) |>
+  summarise(Soy    = sum(agr_soy_planted_km2,    na.rm = TRUE),
+            Corn   = sum(agr_corn_planted_km2,   na.rm = TRUE),
+            Rice   = sum(agr_rice_planted_km2,   na.rm = TRUE),
+            Cotton = sum(agr_cotton_planted_km2, na.rm = TRUE)) |>
   pivot_longer(-year, names_to = "crop", values_to = "km2") |>
   mutate(crop = factor(crop, levels = c("Soy", "Corn", "Rice", "Cotton")))
 
@@ -559,9 +587,9 @@ p7a <- ggplot(crops, aes(year, km2, fill = crop)) +
 cattle <- df |>
   group_by(year) |>
   summarise(`B. Cattle herd (million heads, total)` =
-              sum(cattle_heads, na.rm = TRUE) / 1e6,
+              sum(agr_cattle_n, na.rm = TRUE) / 1e6,
             `C. Cattle density (heads/km², mean)` =
-              mean(cattle_per_km2, na.rm = TRUE)) |>
+              mean(agr_cattle_per_km2, na.rm = TRUE)) |>
   pivot_longer(-year, names_to = "series", values_to = "value")
 
 p7b <- ggplot(cattle, aes(year, value)) +
@@ -573,8 +601,8 @@ p7b <- ggplot(cattle, aes(year, value)) +
 
 prices <- df |>
   group_by(year) |>
-  summarise(`Crop price index (z)`   = mean(price_index_crop_z,   na.rm = TRUE),
-            `Cattle price index (z)` = mean(price_index_cattle_z, na.rm = TRUE)) |>
+  summarise(`Crop price index (z)`   = mean(mkt_price_crop_idx_z,   na.rm = TRUE),
+            `Cattle price index (z)` = mean(mkt_price_cattle_idx_z, na.rm = TRUE)) |>
   pivot_longer(-year, names_to = "series", values_to = "value")
 
 p7c <- ggplot(prices, aes(year, value, color = series)) +
@@ -645,18 +673,18 @@ library(scales)
 combined <- df |>
   group_by(year) |>
   summarise(
-    `Formal low-wage rate (mean)` = mean(emp_pia_rate_low, na.rm = TRUE),
-    `Formal mid-wage rate (mean)` = mean(emp_pia_rate_mid, na.rm = TRUE),
-    `BF avg transfer/family (mean)` = mean(bf_transfers_avg_brl_2024, na.rm = TRUE),
-    `GDP per capita (mean)`       = mean(gdp_per_capita_2024, na.rm = TRUE),
-    `Crop area, 4 crops (total)`  = sum(crop_soy_area_planted_km2, na.rm = TRUE) +
-      sum(crop_corn_area_planted_km2, na.rm = TRUE) +
-      sum(crop_rice_area_planted_km2, na.rm = TRUE) +
-      sum(crop_cotton_area_planted_km2, na.rm = TRUE),
-    `Cattle density (mean)`       = mean(cattle_per_km2, na.rm = TRUE),
-    `Crop price index (mean)`     = mean(price_index_crop, na.rm = TRUE),
-    `Cattle price index (mean)`   = mean(price_index_cattle, na.rm = TRUE),
-    `Deforestation (total)`       = sum(deforestation_area_km2, na.rm = TRUE)
+    `Formal low-wage rate (mean)` = mean(lab_emp_formal_lowwage_pia_rate, na.rm = TRUE),
+    `Formal mid-wage rate (mean)` = mean(lab_emp_formal_midwage_pia_rate, na.rm = TRUE),
+    `BF avg transfer/family (mean)` = mean(sop_bf_transf_fam_brl24, na.rm = TRUE),
+    `GDP per capita (mean)`       = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
+    `Crop area, 4 crops (total)`  = sum(agr_soy_planted_km2, na.rm = TRUE) +
+      sum(agr_corn_planted_km2, na.rm = TRUE) +
+      sum(agr_rice_planted_km2, na.rm = TRUE) +
+      sum(agr_cotton_planted_km2, na.rm = TRUE),
+    `Cattle density (mean)`       = mean(agr_cattle_per_km2, na.rm = TRUE),
+    `Crop price index (mean)`     = mean(mkt_price_crop_idx, na.rm = TRUE),
+    `Cattle price index (mean)`   = mean(mkt_price_cattle_idx, na.rm = TRUE),
+    `Deforestation (total)`       = sum(env_defor_area_km2, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   group_by(series) |>
@@ -753,18 +781,18 @@ library(scales)
 idx_series <- df |>
   group_by(year) |>
   summarise(
-    `Deforestation`         = sum(deforestation_area_km2, na.rm = TRUE),
-    `GDP per capita`        = mean(gdp_per_capita_2024, na.rm = TRUE),
-    `Crop area (4 crops)`   = sum(crop_soy_area_planted_km2,    na.rm = TRUE) +
-      sum(crop_corn_area_planted_km2,   na.rm = TRUE) +
-      sum(crop_rice_area_planted_km2,   na.rm = TRUE) +
-      sum(crop_cotton_area_planted_km2, na.rm = TRUE),
-    `Cattle density`        = mean(cattle_per_km2, na.rm = TRUE),
-    `Crop price index`      = mean(price_index_crop,   na.rm = TRUE),
-    `Cattle price index`    = mean(price_index_cattle, na.rm = TRUE),
-    `Formal mid-wage rate`  = mean(emp_pia_rate_mid, na.rm = TRUE),
-    `Formal low-wage rate`  = mean(emp_pia_rate_low, na.rm = TRUE),
-    `BF avg transfer/family`= mean(bf_transfers_avg_brl_2024, na.rm = TRUE)
+    `Deforestation`         = sum(env_defor_area_km2, na.rm = TRUE),
+    `GDP per capita`        = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
+    `Crop area (4 crops)`   = sum(agr_soy_planted_km2,    na.rm = TRUE) +
+      sum(agr_corn_planted_km2,   na.rm = TRUE) +
+      sum(agr_rice_planted_km2,   na.rm = TRUE) +
+      sum(agr_cotton_planted_km2, na.rm = TRUE),
+    `Cattle density`        = mean(agr_cattle_per_km2, na.rm = TRUE),
+    `Crop price index`      = mean(mkt_price_crop_idx,   na.rm = TRUE),
+    `Cattle price index`    = mean(mkt_price_cattle_idx, na.rm = TRUE),
+    `Formal mid-wage rate`  = mean(lab_emp_formal_midwage_pia_rate, na.rm = TRUE),
+    `Formal low-wage rate`  = mean(lab_emp_formal_lowwage_pia_rate, na.rm = TRUE),
+    `BF avg transfer/family`= mean(sop_bf_transf_fam_brl24, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   group_by(series) |>
@@ -850,17 +878,17 @@ library(scales)
 idx_series <- df |>
   group_by(year) |>
   summarise(
-    `Deforestation`         = sum(deforestation_area_km2, na.rm = TRUE),
-    `GDP per capita`        = mean(gdp_per_capita_2024, na.rm = TRUE),
-    `Crop area (4 crops)`   = sum(crop_soy_area_planted_km2,    na.rm = TRUE) +
-      sum(crop_corn_area_planted_km2,   na.rm = TRUE) +
-      sum(crop_rice_area_planted_km2,   na.rm = TRUE) +
-      sum(crop_cotton_area_planted_km2, na.rm = TRUE),
-    `Cattle density`        = mean(cattle_per_km2, na.rm = TRUE),
-    `Crop price index`      = mean(price_index_crop,   na.rm = TRUE),
-    `Cattle price index`    = mean(price_index_cattle, na.rm = TRUE),
-    `Formal low-wage rate`  = mean(emp_pia_rate_low, na.rm = TRUE),
-    `BF coverage (families/quota)` = mean(bf_families_quota_ratio, na.rm = TRUE)
+    `Deforestation`         = sum(env_defor_area_km2, na.rm = TRUE),
+    `GDP per capita`        = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
+    `Crop area (4 crops)`   = sum(agr_soy_planted_km2,    na.rm = TRUE) +
+      sum(agr_corn_planted_km2,   na.rm = TRUE) +
+      sum(agr_rice_planted_km2,   na.rm = TRUE) +
+      sum(agr_cotton_planted_km2, na.rm = TRUE),
+    `Cattle density`        = mean(agr_cattle_per_km2, na.rm = TRUE),
+    `Crop price index`      = mean(mkt_price_crop_idx,   na.rm = TRUE),
+    `Cattle price index`    = mean(mkt_price_cattle_idx, na.rm = TRUE),
+    `Formal low-wage rate`  = mean(lab_emp_formal_lowwage_pia_rate, na.rm = TRUE),
+    `BF coverage (families/quota)` = mean(sop_bf_fam_quota_ratio, na.rm = TRUE)
   ) |>
   pivot_longer(-year, names_to = "series", values_to = "value") |>
   filter(year <= 2019) |>
@@ -951,17 +979,29 @@ library(ggplot2)
 library(scales)
 
 # --- parameters (robustness-grid switches) -----------------------------------
-treatment_var <- "ppcdam_main"   # alternatives: ppcdam_robust, ppcdam_list
+treatment_var <- "enf_ppcdam_listed_main_dum"  # or enf_ppcdam_listed_robust_dum,
+                                               # enf_ppcdam_listed_dum
+PPCDAM_WINDOW_ROBUST <- 2004:2012  # script 05 windows (D-2026-10-12-b)
+PPCDAM_WINDOW_EVER   <- 2000:2020
 mod_years     <- 2006:2007       # moderator window: post-rollout, pre-treatment
 post_years    <- 2013:2016       # outcome window for the map
-base_years    <- 2000:2007       # baseline window (matches defor_norm_ref0007)
+base_years    <- 2000:2007       # baseline window (matches env_defor_area_z_bl0007)
 
 data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path) |>
+df <- read_panel() |>
   mutate(geocode = as.numeric(geocode),
-         avail_ok = avail_ok %in% c(TRUE, "True", "TRUE"))
+         smp_avail_dum = smp_avail_dum %in% c(TRUE, "True", "TRUE"))
+
+# The robust and ever treatment flags left the panel for the store
+# (D-2026-10-30-d); rebuilt here on the listing windows of script 05.
+df <- df |>
+  left_join(listed_within(df, PPCDAM_WINDOW_ROBUST,
+                          "enf_ppcdam_listed_robust_dum",
+                          listed = "enf_ppcdam_listed_dum"), by = "geocode") |>
+  left_join(listed_within(df, PPCDAM_WINDOW_EVER, "enf_ppcdam_ever_dum",
+                          listed = "enf_ppcdam_listed_dum"), by = "geocode")
 
 
 # --- municipality-level cross-section -----------------------------------------
@@ -969,12 +1009,12 @@ cross <- df |>
   group_by(geocode) |>
   summarise(
     ever_treated = max(.data[[treatment_var]], na.rm = TRUE),
-    bfq_mod  = mean(bf_families_quota_ratio[year %in% mod_years], na.rm = TRUE),
-    bfpc_mod = mean(bf_transfers_pc_brl_2024[year %in% mod_years], na.rm = TRUE),
-    post_norm  = mean(defor_norm_ref0007[year %in% post_years], na.rm = TRUE),
-    base_defor = mean(deforestation_area_km2[year %in% base_years], na.rm = TRUE),
-    at_risk_narrow = any(at_risk_narrow %in% c(TRUE, "True")),
-    state = first(state_abbreviation),
+    bfq_mod  = mean(sop_bf_fam_quota_ratio[year %in% mod_years], na.rm = TRUE),
+    bfpc_mod = mean(sop_bf_transf_pc_brl24[year %in% mod_years], na.rm = TRUE),
+    post_norm  = mean(env_defor_area_z_bl0007[year %in% post_years], na.rm = TRUE),
+    base_defor = mean(env_defor_area_km2[year %in% base_years], na.rm = TRUE),
+    smp_atrisk_narrow_dum = any(smp_atrisk_narrow_dum %in% c(TRUE, "True")),
+    state = first(uf),
     .groups = "drop"
   ) |>
   mutate(decline = -post_norm)   # higher = larger decline vs own baseline
@@ -1063,7 +1103,7 @@ p_b2a <- ggplot(treated, aes(bfq_mod)) +
   theme_minimal(base_size = 11)
 
 scatter_df <- cross |>
-  filter(at_risk_narrow, !is.na(base_defor), base_defor > 0) |>
+  filter(smp_atrisk_narrow_dum, !is.na(base_defor), base_defor > 0) |>
   pivot_longer(c(bfq_mod, bfpc_mod), names_to = "measure", values_to = "mod") |>
   filter(!is.na(mod)) |>
   mutate(measure = factor(measure, levels = c("bfq_mod", "bfpc_mod"),
@@ -1110,7 +1150,7 @@ p_b2b
 # =============================================================================
 # B3. Aggregate deforestation under alternative sample definitions
 # -----------------------------------------------------------------------------
-# Full 502 vs forest floor (avail_ok, 499) vs at-risk broad (468) vs
+# Full 502 vs forest floor (smp_avail_dum, 499) vs at-risk broad (468) vs
 # at-risk narrow (408). Forest floor barely restricts, so its line will
 # track the full sample: that near-identity is itself the point. Divergence
 # between at-risk samples and the full sample would indicate results could
@@ -1119,12 +1159,12 @@ p_b2b
 
 sample_series <- bind_rows(
   df |> mutate(sample = "Full (n = 502)"),
-  df |> filter(avail_ok)        |> mutate(sample = "Forest floor"),
-  df |> filter(at_risk_broad %in% c(TRUE, "True"))  |> mutate(sample = "At risk, broad"),
-  df |> filter(at_risk_narrow %in% c(TRUE, "True")) |> mutate(sample = "At risk, narrow")
+  df |> filter(smp_avail_dum)        |> mutate(sample = "Forest floor"),
+  df |> filter(smp_atrisk_broad_dum %in% c(TRUE, "True"))  |> mutate(sample = "At risk, broad"),
+  df |> filter(smp_atrisk_narrow_dum %in% c(TRUE, "True")) |> mutate(sample = "At risk, narrow")
 ) |>
   group_by(sample, year) |>
-  summarise(defor = sum(deforestation_area_km2, na.rm = TRUE),
+  summarise(defor = sum(env_defor_area_km2, na.rm = TRUE),
             n = n_distinct(geocode), .groups = "drop") |>
   mutate(sample = paste0(sub(" \\(.*", "", sample), " (n = ", n, ")"))
 
@@ -1154,22 +1194,22 @@ p_b3
 # B4. Normalized-outcome instability and the at-risk restriction
 # -----------------------------------------------------------------------------
 # The functional-form (Type B) case for running normalized-outcome analyses
-# on the at-risk samples: defor_norm_ref0007 scales by each municipality's
+# on the at-risk samples: env_defor_area_z_bl0007 scales by each municipality's
 # own 2000-2007 baseline variability, which is near zero where there was no
 # frontier activity. Those municipalities produce explosive z-scores
 # (Chaves-PA reaches |z| ~ 250) that are division artifacts, not signal.
 # The figure shows max |normalized outcome| (2008-2019) against baseline
-# deforestation, marking municipalities excluded by at_risk_narrow.
+# deforestation, marking municipalities excluded by smp_atrisk_narrow_dum.
 # =============================================================================
 
 b4 <- df |>
   group_by(geocode) |>
   summarise(
-    base_defor = mean(deforestation_area_km2[year %in% base_years], na.rm = TRUE),
-    max_abs_norm = max(abs(defor_norm_ref0007[year %in% 2008:2019]), na.rm = TRUE),
-    in_narrow = any(at_risk_narrow %in% c(TRUE, "True")),
+    base_defor = mean(env_defor_area_km2[year %in% base_years], na.rm = TRUE),
+    max_abs_norm = max(abs(env_defor_area_z_bl0007[year %in% 2008:2019]), na.rm = TRUE),
+    in_narrow = any(smp_atrisk_narrow_dum %in% c(TRUE, "True")),
     municipality = first(municipality),
-    state = first(state_abbreviation),
+    state = first(uf),
     .groups = "drop"
   ) |>
   filter(is.finite(max_abs_norm)) |>
@@ -1227,9 +1267,9 @@ p_b4
 rebound <- df |>
   group_by(geocode) |>
   summarise(
-    w_crash = mean(defor_norm_ref0007[year %in% 2008:2012], na.rm = TRUE),
-    w_after = mean(defor_norm_ref0007[year %in% 2013:2016], na.rm = TRUE),
-    in_narrow = any(at_risk_narrow %in% c(TRUE, "True")),
+    w_crash = mean(env_defor_area_z_bl0007[year %in% 2008:2012], na.rm = TRUE),
+    w_after = mean(env_defor_area_z_bl0007[year %in% 2013:2016], na.rm = TRUE),
+    in_narrow = any(smp_atrisk_narrow_dum %in% c(TRUE, "True")),
     .groups = "drop"
   ) |>
   mutate(reb = ifelse(in_narrow, w_after - w_crash, NA_real_))
@@ -1271,8 +1311,8 @@ p_b5
 #   C2. Event-time paths by BF moderator stratum (2008/09 cohorts) with a
 #       never-treated reference line
 #
-# Treatment timing ALWAYS comes from ppcdam_list (time-varying listing);
-# ppcdam_main / ppcdam_robust / ppcdam_ever_full are municipality-constant
+# Treatment timing ALWAYS comes from enf_ppcdam_listed_dum (time-varying listing);
+# enf_ppcdam_listed_main_dum / enf_ppcdam_listed_robust_dum / enf_ppcdam_ever_dum are municipality-constant
 # cohort-SET flags (main = 2008+2009 cohorts, robust adds 2011/12, full adds
 # 2017/18). They must never be passed as timing variables.
 # =============================================================================
@@ -1290,12 +1330,12 @@ y_clip    <- c(-4, 8)         # outcome display clip (~1% of points outside)
 # data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
-# df <- read.csv(data_path)
+# df <- read_panel()
 last_year <- max(df$year)
 
 # --- cohorts, exit status, event time ------------------------------------------
 cohorts <- df |>
-  filter(ppcdam_list == 1) |>
+  filter(enf_ppcdam_listed_dum == 1) |>
   group_by(geocode) |>
   summarise(cohort = min(year),
             listed_last = max(year) == last_year,
@@ -1306,7 +1346,7 @@ cohorts <- df |>
 moder <- df |>
   filter(year %in% mod_years) |>
   group_by(geocode) |>
-  summarise(bfq = mean(bf_families_quota_ratio, na.rm = TRUE), .groups = "drop")
+  summarise(bfq = mean(sop_bf_fam_quota_ratio, na.rm = TRUE), .groups = "drop")
 
 listed <- df |>
   inner_join(cohorts, by = "geocode") |>
@@ -1332,7 +1372,7 @@ listed <- listed |>
   left_join(cohort_n, by = "cohort") |>
   mutate(cohort_lab = paste0("Cohort ", cohort, " (n = ", n, ")"))
 
-p_c1 <- ggplot(listed, aes(et, defor_norm_ref0007, group = geocode,
+p_c1 <- ggplot(listed, aes(et, env_defor_area_z_bl0007, group = geocode,
                            color = exit_status)) +
   geom_hline(yintercept = 0, linewidth = 0.3, color = "grey60") +
   geom_vline(xintercept = 0, linetype = "dashed", linewidth = 0.4) +
@@ -1367,7 +1407,7 @@ p_c1
 # C2. Event-time paths by moderator stratum, 2008/09 cohorts, with a
 #     never-treated reference
 # -----------------------------------------------------------------------------
-# Restricted to the ppcdam_main cohort set (2008 + 2009, n = 43): near-uniform
+# Restricted to the enf_ppcdam_listed_main_dum cohort set (2008 + 2009, n = 43): near-uniform
 # timing makes the event-time display clean. Median split on the 2006-07
 # quota ratio (the Block B split). The never-treated reference (at-risk
 # narrow, never listed) is aligned on the 2008 clock, since 36 of 43 treated
@@ -1394,23 +1434,23 @@ main_set <- main_set |>
 
 strat_means <- main_set |>
   group_by(stratum, et) |>
-  summarise(m = mean(defor_norm_ref0007, na.rm = TRUE), .groups = "drop")
+  summarise(m = mean(env_defor_area_z_bl0007, na.rm = TRUE), .groups = "drop")
 
 glimpse(main_set)
 
 never <- df |>
   anti_join(cohorts, by = "geocode") |>
-  filter(at_risk_narrow %in% c(TRUE, "True")) |>
+  filter(smp_atrisk_narrow_dum %in% c(TRUE, "True")) |>
   mutate(et = year - 2008) |>
   filter(et >= et_window[1], et <= et_window[2]) |>
   group_by(et) |>
-  summarise(m = mean(defor_norm_ref0007, na.rm = TRUE), .groups = "drop")
+  summarise(m = mean(env_defor_area_z_bl0007, na.rm = TRUE), .groups = "drop")
 
 p_c2 <- ggplot() +
   geom_hline(yintercept = 0, linewidth = 0.3, color = "grey60") +
   geom_vline(xintercept = 0, linetype = "dashed", linewidth = 0.4) +
   geom_line(data = main_set,
-            aes(et, defor_norm_ref0007, group = geocode, color = stratum),
+            aes(et, env_defor_area_z_bl0007, group = geocode, color = stratum),
             alpha = 0.25, linewidth = 0.35) +
   geom_line(data = strat_means, aes(et, m, color = stratum), linewidth = 1.3) +
   geom_line(data = never, aes(et, m), color = "grey35", linewidth = 1,
@@ -1476,7 +1516,7 @@ n_bins     <- 20
 #dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 #dir.create("output/tables",  recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path) |>
+df <- read_panel() |>
   mutate(geocode = as.numeric(geocode))
 
 glimpse(df)
@@ -1501,15 +1541,15 @@ twoway_demean <- function(x, id, t) {
 }
 
 d2 <- df |>
-  filter(at_risk_narrow %in% c(TRUE, "True"), year %in% d2_years) |>
-  select(geocode, year, defor_norm_ref0007,
-         bf_families_quota_ratio, bf_transfers_pc_brl_2024) |>
+  filter(smp_atrisk_narrow_dum %in% c(TRUE, "True"), year %in% d2_years) |>
+  select(geocode, year, env_defor_area_z_bl0007,
+         sop_bf_fam_quota_ratio, sop_bf_transf_pc_brl24) |>
   drop_na()
 
 d2_long <- d2 |>
-  mutate(y_dd = twoway_demean(defor_norm_ref0007, geocode, year),
-         x1   = twoway_demean(bf_families_quota_ratio, geocode, year),
-         x2   = twoway_demean(bf_transfers_pc_brl_2024, geocode, year)) |>
+  mutate(y_dd = twoway_demean(env_defor_area_z_bl0007, geocode, year),
+         x1   = twoway_demean(sop_bf_fam_quota_ratio, geocode, year),
+         x2   = twoway_demean(sop_bf_transf_pc_brl24, geocode, year)) |>
   pivot_longer(c(x1, x2), names_to = "var", values_to = "x_dd") |>
   mutate(var = factor(var, levels = c("x1", "x2"),
                       labels = c("Families/quota ratio",
@@ -1578,7 +1618,7 @@ p_d2
 # =============================================================================
 
 first_listed <- df |>
-  filter(ppcdam_list == 1) |>
+  filter(enf_ppcdam_listed_dum == 1) |>
   group_by(geocode) |>
   summarise(cohort = min(year), .groups = "drop")
 
@@ -1586,28 +1626,28 @@ baseline <- df |>
   filter(year %in% base_years) |>
   group_by(geocode) |>
   summarise(
-    `Deforestation (km2/yr)`     = mean(deforestation_area_km2, na.rm = TRUE),
-    `Forest area (km2)`          = mean(forest_area_km2, na.rm = TRUE),
-    `BF families/quota`          = mean(bf_families_quota_ratio, na.rm = TRUE),
-    `BF transfers pc (BRL-2024)` = mean(bf_transfers_pc_brl_2024, na.rm = TRUE),
-    `GDP per capita (BRL-2024)`  = mean(gdp_per_capita_2024, na.rm = TRUE),
-    `Formal employment / PIA`    = mean(emp_pia_rate_total, na.rm = TRUE),
-    `Agric. share of formal`     = mean(emp_share_agri_workers, na.rm = TRUE),
-    `Cattle per km2`             = mean(cattle_per_km2, na.rm = TRUE),
-    `Electoral competition (ENC)`= mean(elec_enc, na.rm = TRUE),
+    `Deforestation (km2/yr)`     = mean(env_defor_area_km2, na.rm = TRUE),
+    `Forest area (km2)`          = mean(env_forest_area_km2, na.rm = TRUE),
+    `BF families/quota`          = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
+    `BF transfers pc (BRL-2024)` = mean(sop_bf_transf_pc_brl24, na.rm = TRUE),
+    `GDP per capita (BRL-2024)`  = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
+    `Formal employment / PIA`    = mean(lab_emp_formal_pia_rate, na.rm = TRUE),
+    `Agric. share of formal`     = mean(lab_emp_formal_agri_share, na.rm = TRUE),
+    `Cattle per km2`             = mean(agr_cattle_per_km2, na.rm = TRUE),
+    `Electoral competition (ENC)`= mean(pol_mayor_enc_idx_term, na.rm = TRUE),
     .groups = "drop"
   ) |>
   left_join(df |> filter(year == 2004) |>
-              transmute(geocode, `Population (2004)` = as.numeric(population)),
+              transmute(geocode, `Population (2004)` = as.numeric(dem_pop_n)),
             by = "geocode") |>
   left_join(first_listed, by = "geocode") |>
   mutate(at_risk = df |> group_by(geocode) |>
-           summarise(a = any(at_risk_narrow %in% c(TRUE, "True"))) |> pull(a))
+           summarise(a = any(smp_atrisk_narrow_dum %in% c(TRUE, "True"))) |> pull(a))
 
 moder <- df |>
   filter(year %in% mod_years) |>
   group_by(geocode) |>
-  summarise(bfq = mean(bf_families_quota_ratio, na.rm = TRUE), .groups = "drop")
+  summarise(bfq = mean(sop_bf_fam_quota_ratio, na.rm = TRUE), .groups = "drop")
 
 smd <- function(a, b) {
   a <- a[!is.na(a)]; b <- b[!is.na(b)]
@@ -1696,11 +1736,11 @@ snap_year <- 2006          # mid-administration of the pre-listing (2004) electi
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 # dir.create("output/tables",  recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path) |>
+df <- read_panel() |>
   mutate(geocode = as.numeric(geocode))
 
 first_listed <- df |>
-  filter(ppcdam_list == 1) |>
+  filter(enf_ppcdam_listed_dum == 1) |>
   group_by(geocode) |>
   summarise(cohort = min(year), .groups = "drop")
 
@@ -1708,7 +1748,7 @@ groups <- df |>
   distinct(geocode) |>
   left_join(first_listed, by = "geocode") |>
   left_join(df |> group_by(geocode) |>
-              summarise(at_risk = any(at_risk_narrow %in% c(TRUE, "True")),
+              summarise(at_risk = any(smp_atrisk_narrow_dum %in% c(TRUE, "True")),
                         .groups = "drop"), by = "geocode") |>
   filter(at_risk) |>
   mutate(grp = case_when(
@@ -1723,13 +1763,13 @@ groups <- df |>
 
 e1 <- df |>
   filter(year == snap_year) |>
-  select(geocode, elec_enc, elec_winner_share) |>
-  mutate(across(c(elec_enc, elec_winner_share), as.numeric)) |>
+  select(geocode, pol_mayor_enc_idx_term, pol_mayor_winner_share_term) |>
+  mutate(across(c(pol_mayor_enc_idx_term, pol_mayor_winner_share_term), as.numeric)) |>
   inner_join(groups, by = "geocode") |>
-  pivot_longer(c(elec_enc, elec_winner_share),
+  pivot_longer(c(pol_mayor_enc_idx_term, pol_mayor_winner_share_term),
                names_to = "var", values_to = "value") |>
   filter(!is.na(value)) |>
-  mutate(var = factor(var, levels = c("elec_enc", "elec_winner_share"),
+  mutate(var = factor(var, levels = c("pol_mayor_enc_idx_term", "pol_mayor_winner_share_term"),
                       labels = c("Effective number of candidates",
                                  "Winner vote share")))
 
@@ -1759,13 +1799,13 @@ p_e1
 
 e_tab <- df |>
   filter(year == snap_year) |>
-  select(geocode, elec_enc, elec_mov, elec_winner_share, elec_n_candidates,
-         elec_competitive, elec_uncontested) |>
+  select(geocode, pol_mayor_enc_idx_term, pol_mayor_margin_share_term, pol_mayor_winner_share_term, pol_mayor_cand_n_term,
+         pol_mayor_competitive_dum_term, pol_mayor_uncontested_dum_term) |>
   mutate(across(-geocode, as.numeric)) |>
   inner_join(groups, by = "geocode") |>
   group_by(grp) |>
-  summarise(across(c(elec_enc, elec_mov, elec_winner_share, elec_n_candidates,
-                     elec_competitive, elec_uncontested),
+  summarise(across(c(pol_mayor_enc_idx_term, pol_mayor_margin_share_term, pol_mayor_winner_share_term, pol_mayor_cand_n_term,
+                     pol_mayor_competitive_dum_term, pol_mayor_uncontested_dum_term),
                    \(x) round(mean(x, na.rm = TRUE), 3)),
             n = n(), .groups = "drop")
 # write.csv(e_tab, "output/tables/tab_e1_electoral_baseline.csv", row.names = FALSE)
@@ -1783,11 +1823,11 @@ e_tab
 # =============================================================================
 
 e2 <- df |>
-  select(geocode, year, elec_enc) |>
-  mutate(elec_enc = as.numeric(elec_enc)) |>
+  select(geocode, year, pol_mayor_enc_idx_term) |>
+  mutate(pol_mayor_enc_idx_term = as.numeric(pol_mayor_enc_idx_term)) |>
   inner_join(groups, by = "geocode") |>
   group_by(grp, year) |>
-  summarise(m = mean(elec_enc, na.rm = TRUE), .groups = "drop")
+  summarise(m = mean(pol_mayor_enc_idx_term, na.rm = TRUE), .groups = "drop")
 
 p_e2 <- ggplot(e2, aes(year, m, color = grp)) +
   annotate("rect", xmin = 2008, xmax = 2009, ymin = -Inf, ymax = Inf,
@@ -1834,23 +1874,23 @@ mod_years <- 2006:2007
 # data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/figures", recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path) |>
+df <- read_panel() |>
   mutate(geocode = as.numeric(geocode))
 
 first_listed <- df |>
-  filter(ppcdam_list == 1) |>
+  filter(enf_ppcdam_listed_dum == 1) |>
   group_by(geocode) |>
   summarise(cohort = min(year), .groups = "drop")
 
 base <- df |>
   filter(year %in% mod_years) |>
   group_by(geocode) |>
-  summarise(bfq  = mean(bf_families_quota_ratio, na.rm = TRUE),
-            bfpc = mean(bf_transfers_pc_brl_2024, na.rm = TRUE),
-            state = first(state_abbreviation), .groups = "drop") |>
+  summarise(bfq  = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
+            bfpc = mean(sop_bf_transf_pc_brl24, na.rm = TRUE),
+            state = first(uf), .groups = "drop") |>
   left_join(first_listed, by = "geocode") |>
   left_join(df |> group_by(geocode) |>
-              summarise(at_risk = any(at_risk_narrow %in% c(TRUE, "True")),
+              summarise(at_risk = any(smp_atrisk_narrow_dum %in% c(TRUE, "True")),
                         .groups = "drop"), by = "geocode") |>
   mutate(grp = case_when(
     cohort %in% c(2008, 2009) ~ "Listed 2008/09",
@@ -1958,15 +1998,15 @@ p22
 
 f23 <- df |>
   filter(year >= 2004, year <= 2019) |>
-  select(year, bf_families_quota_ratio, bf_transfers_pc_brl_2024) |>
+  select(year, sop_bf_fam_quota_ratio, sop_bf_transf_pc_brl24) |>
   pivot_longer(-year, names_to = "var", values_to = "v") |>
   filter(!is.na(v)) |>
   group_by(var, year) |>
   summarise(p10 = quantile(v, .1), p25 = quantile(v, .25), p50 = median(v),
             p75 = quantile(v, .75), p90 = quantile(v, .9), .groups = "drop") |>
   mutate(var = factor(var,
-                      levels = c("bf_families_quota_ratio",
-                                 "bf_transfers_pc_brl_2024"),
+                      levels = c("sop_bf_fam_quota_ratio",
+                                 "sop_bf_transf_pc_brl24"),
                       labels = c("Families/quota ratio",
                                  "Transfers per capita (BRL-2024)")))
 
@@ -2000,7 +2040,7 @@ p23
 late <- df |>
   filter(year %in% 2013:2014) |>
   group_by(geocode) |>
-  summarise(bfq_late = mean(bf_families_quota_ratio, na.rm = TRUE),
+  summarise(bfq_late = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
             .groups = "drop")
 
 f24 <- base |>
@@ -2093,22 +2133,22 @@ library(fixest)
 # data_path <- "_data/final/panel_amz_2000_2020_final.csv"
 # dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 
-df <- read.csv(data_path) |>
+df <- read_panel() |>
   mutate(geocode = as.numeric(geocode)) |>
   arrange(geocode, year) |>
   group_by(geocode) |>
-  mutate(bfq_l1  = dplyr::lag(bf_families_quota_ratio),
-         bfpc_l1 = dplyr::lag(bf_transfers_pc_brl_2024)) |>
+  mutate(bfq_l1  = dplyr::lag(sop_bf_fam_quota_ratio),
+         bfpc_l1 = dplyr::lag(sop_bf_transf_pc_brl24)) |>
   ungroup()
 
 # primary estimation sample: at-risk narrow (normalized outcome), BF years
 nar <- df |>
-  filter(at_risk_narrow %in% c(TRUE, "True"), year >= 2004, year <= 2019)
+  filter(smp_atrisk_narrow_dum %in% c(TRUE, "True"), year >= 2004, year <= 2019)
 
 # winsorized outcome (1/99 within estimation sample)
-q <- quantile(nar$defor_norm_ref0007, c(.01, .99), na.rm = TRUE)
+q <- quantile(nar$env_defor_area_z_bl0007, c(.01, .99), na.rm = TRUE)
 nar <- nar |>
-  mutate(defor_norm_w = pmin(pmax(defor_norm_ref0007, q[1]), q[2]))
+  mutate(defor_norm_w = pmin(pmax(env_defor_area_z_bl0007, q[1]), q[2]))
 
 # =============================================================================
 # Main grid: regressor (quota ratio / transfers pc) x timing (t / t-1)
@@ -2117,26 +2157,26 @@ nar <- nar |>
 # =============================================================================
 
 m <- list(
-  bfq        = feols(defor_norm_ref0007 ~ bf_families_quota_ratio | geocode + year,
+  bfq        = feols(env_defor_area_z_bl0007 ~ sop_bf_fam_quota_ratio | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfq_lag    = feols(defor_norm_ref0007 ~ bfq_l1 | geocode + year,
+  bfq_lag    = feols(env_defor_area_z_bl0007 ~ bfq_l1 | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfq_wins   = feols(defor_norm_w ~ bf_families_quota_ratio | geocode + year,
+  bfq_wins   = feols(defor_norm_w ~ sop_bf_fam_quota_ratio | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfq_prices = feols(defor_norm_ref0007 ~ bf_families_quota_ratio +
-                       price_index_crop_z + price_index_crop_lag1_z +
-                       price_index_cattle_z + price_index_cattle_lag1_z |
+  bfq_prices = feols(env_defor_area_z_bl0007 ~ sop_bf_fam_quota_ratio +
+                       mkt_price_crop_idx_z + mkt_price_crop_idx_z_lag1 +
+                       mkt_price_cattle_idx_z + mkt_price_cattle_idx_z_lag1 |
                        geocode + year,
                      data = nar, cluster = ~geocode),
-  bfpc       = feols(defor_norm_ref0007 ~ bf_transfers_pc_brl_2024 | geocode + year,
+  bfpc       = feols(env_defor_area_z_bl0007 ~ sop_bf_transf_pc_brl24 | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfpc_lag   = feols(defor_norm_ref0007 ~ bfpc_l1 | geocode + year,
+  bfpc_lag   = feols(env_defor_area_z_bl0007 ~ bfpc_l1 | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfpc_wins  = feols(defor_norm_w ~ bf_transfers_pc_brl_2024 | geocode + year,
+  bfpc_wins  = feols(defor_norm_w ~ sop_bf_transf_pc_brl24 | geocode + year,
                      data = nar, cluster = ~geocode),
-  bfpc_prices= feols(defor_norm_ref0007 ~ bf_transfers_pc_brl_2024 +
-                       price_index_crop_z + price_index_crop_lag1_z +
-                       price_index_cattle_z + price_index_cattle_lag1_z |
+  bfpc_prices= feols(env_defor_area_z_bl0007 ~ sop_bf_transf_pc_brl24 +
+                       mkt_price_crop_idx_z + mkt_price_crop_idx_z_lag1 +
+                       mkt_price_cattle_idx_z + mkt_price_cattle_idx_z_lag1 |
                        geocode + year,
                      data = nar, cluster = ~geocode)
 )
@@ -2146,18 +2186,18 @@ print(etable(m, cluster = ~geocode, digits = 3))
 
 # =============================================================================
 # Alternative outcome row: deforestation rate over forest stock, forest-floor
-# sample (avail_ok). The normalized outcome is undefined-in-practice for
+# sample (smp_avail_dum). The normalized outcome is undefined-in-practice for
 # near-zero-baseline municipalities (EDA B4); the rate outcome permits the
 # wider sample and checks functional-form dependence.
 # =============================================================================
 
 floor_s <- df |>
-  filter(avail_ok %in% c(TRUE, "True"), year >= 2004, year <= 2019)
+  filter(smp_avail_dum %in% c(TRUE, "True"), year >= 2004, year <= 2019)
 
 m_alt <- list(
-  rate_bfq  = feols(deforestation_forest_rate ~ bf_families_quota_ratio |
+  rate_bfq  = feols(env_defor_forest_share ~ sop_bf_fam_quota_ratio |
                       geocode + year, data = floor_s, cluster = ~geocode),
-  rate_bfpc = feols(deforestation_forest_rate ~ bf_transfers_pc_brl_2024 |
+  rate_bfpc = feols(env_defor_forest_share ~ sop_bf_transf_pc_brl24 |
                       geocode + year, data = floor_s, cluster = ~geocode)
 )
 print(etable(m_alt, cluster = ~geocode, digits = 4))
@@ -2166,15 +2206,15 @@ print(etable(m_alt, cluster = ~geocode, digits = 4))
 
 # =============================================================================
 # BAD-CONTROL ILLUSTRATION (do not interpret; documented deliberately).
-# Adding ppcdam_list conditions on a variable that responds to the outcome
+# Adding enf_ppcdam_listed_dum conditions on a variable that responds to the outcome
 # (listing selects on deforestation) and that itself affects coverage (the
 # coverage-listing DiD). Included only to show the estimate's sensitivity to
 # a control a naive specification might reach for.
 # =============================================================================
 
-m_bad <- feols(defor_norm_ref0007 ~ bf_transfers_pc_brl_2024 + ppcdam_list |
+m_bad <- feols(env_defor_area_z_bl0007 ~ sop_bf_transf_pc_brl24 + enf_ppcdam_listed_dum |
                  geocode + year, data = nar, cluster = ~geocode)
-cat("\nBad-control illustration (ppcdam_list included; do not interpret):\n")
+cat("\nBad-control illustration (enf_ppcdam_listed_dum included; do not interpret):\n")
 print(coeftable(m_bad))
 
 # =============================================================================

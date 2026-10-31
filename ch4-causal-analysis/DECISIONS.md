@@ -2416,3 +2416,245 @@ Reason: the values are kept as computed (a cap would recode a source
 Evidence: _audit/panel.qmd Q11
 Affects: none in the biome sample; three cells of two added municipalities carry values above one
 Supersedes: none (qualifies the guard of D-2026-10-28-i, not its scale)
+
+## D-2026-10-30-a  Phase 2R rename: the final panel and the municipality store take the names of the crosswalk; `ecn_` replaces `eco_`
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30; comparator report in the commit message)
+Scope: _data/aux/crosswalk.csv (new, 107 rows, one per working name of the panel and the store); _scripts/utils/crosswalk.R (new: read_crosswalk, rename_through_crosswalk, assert_naming_convention); 05-sample-definition.R (the store renamed and guarded at write); 06-normalized-outcome.R (the panel renamed as its last transform, guarded, checked against the codebook); _data/aux/codebook.csv (variable re-keyed, type filled for every row, columns dataset and storage_verdict added); rebuild/naming-convention.md version 3; every column of _data/final/panel_amz_2000_2020_final and _data/interim/panel_amz_baseline
+Context: the naming convention (version 2, 2026-10-05) was held back until
+         phase 2 passed its equivalence checks, so the pipeline and the
+         codebook kept the reference panel's working names through phases
+         1 and 2, and the columns added in phase 2 (bf_regime, the
+         post-2000 flags, the RAIS denominators, pia, the biome and Legal
+         Amazon flags) took working names of the same kind. Phase 2R
+         applies the convention.
+Reason: the rename happens once, at the end of the pipeline, through one
+        file. Scripts 01-05 and the source-first interim files keep their
+        working names, which the audit notebooks on the sources read;
+        script 06 renames the panel as its last transform and script 05
+        renames the municipality store at write, so the two documented
+        datasets and the codebook share one vocabulary. The guard (keys or
+        one of twelve domain prefixes, snake_case ASCII, at most 40
+        characters, no duplicate) and the codebook check (one row per
+        column with the type the data holds) run before each write. Names
+        resolved with the author on 2026-10-30: the price indices keep
+        `_idx` (exposure-weighted relative prices, D-2026-10-23-a); the
+        eight electoral columns take `_term` as D-2026-10-22-e foresaw;
+        the phase 2 columns become sop_bf_regime_cat, geo_munic_new_dum,
+        geo_munic_parent_dum, lab_emp_formal_n, lab_emp_formal_agri_n,
+        lab_pia_n, geo_biome_amazon_dum and geo_legal_amazon_dum (geo_
+        rather than smp_: IBGE classifications are data, not analytical
+        artifacts); the store's 2000-2003 baselines take `_bl0003`, its two
+        2000 values `_bl0000` (a one-year window in the two-digit-pair
+        encoding), the anchors `_c2000` and so on under their domain
+        prefix; `ecn_` replaces `eco_` for GDP because `eco_` reads as
+        ecology beside `env_` and `enf_` in a dissertation on eco-social
+        policy. Two names were applied as the convention's table lists
+        them and raised as open items in its section 9:
+        env_forest_exposure_log (the grammar would give
+        env_forest_area_km2_log_lag1) and the five `_pia_rate` columns
+        (the data exceed 1 in three cells, D-2026-10-29-d, which the
+        grammar reserves to `_ratio`). Alternative rejected: renaming
+        inside scripts 01-05 and the interim files (twelve scripts and
+        fifteen notebooks touched for no analytical gain; the notebooks'
+        vocabulary is the sources').
+Evidence: compare_outputs through the name map: final panel, 73 shared columns, 0 differences, 16,947 rows; store, 34 columns, 0 differences, 807 rows; the only schema changes are the rename, the removals of D-2026-10-30-b to -e and the addition of D-2026-10-30-b
+Affects: every column name of the final panel (76 columns) and the store (35); no value
+Supersedes: none
+
+## D-2026-10-30-b  Pooled price z-scores leave the panel; the cattle index lag stored on the level
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30; comparator report in the commit message)
+Scope: 03-controls-prices.R (price_index_cattle_lag1); 04-panel-assemble.R (the z-score block removed, PANEL_COLS); _scripts/utils/derived_variables.R (z_on); price_index_crop_z, price_index_crop_lag1_z, price_index_cattle_z, price_index_cattle_lag1_z removed; mkt_price_cattle_idx_lag1 added
+Context: the four z-scores standardised the indices on the pooled
+         municipality-years of the biome (D-2026-10-11-d; D-2026-10-29-c
+         as a holding rule) and were flagged for the storage audit; the
+         cattle lag existed only as the lag of the z-score. Scripts 07 and
+         11 use the four columns.
+Reason: the governing rule for derived variables (GUIDANCE.md) stores a
+        variable in the final panel only if its value does not depend on
+        which rows form an estimation sample. A pooled z-score fails
+        that test: its centre and spread are the mean and sd of the
+        pool, so the same municipality-year takes a different value when
+        the pool is the biome (D-2026-10-29-c), the Legal Amazon
+        extension or an at-risk sample. The four z-scores therefore
+        leave the panel. Each analysis script rebuilds them on its own
+        estimation sample with z_on(x, ref) in
+        utils/derived_variables.R, passing that sample as ref; the lag
+        is standardised with the centre and spread of the level (the
+        index itself, in the same year, before any lag or
+        standardisation), as script 04 did, so level and lag read on one
+        metric. The cattle lag raises a second question: it existed only
+        as the lag of the z-score (D-2026-10-11-d), so removing the
+        z-scores would remove it. A one-year lag passes the rule on its
+        own: it is sample-independent, and it must be computed on the
+        full balanced panel, the rule's second storage condition,
+        because a lag taken on a subsample would skip over dropped
+        years. Script 03 therefore lags the cattle index on the level,
+        the raw index rather than its z-score, in the line that already
+        lags the crop index, giving mkt_price_cattle_idx_lag1, the only
+        column phase 2R adds to the schema. Lagging the level and then
+        standardising is the same operation as standardising and then
+        lagging, so nothing is lost: lagging the reference panel's
+        cattle index gives the stored column exactly (max abs diff 0),
+        and its 847 NA cells are the first panel year plus the rows
+        where the level itself is NA.
+Evidence: compare_outputs (only in ref: the four columns; only in new: the lag; 0 differences elsewhere); _audit/panel.qmd Q4 and Q11 stale until the full pass (tasks.md 1.11)
+Affects: four columns removed, one added; no value of any other column
+Supersedes: D-2026-10-11-d; the z-score part of D-2026-10-29-c
+
+## D-2026-10-30-c  Pressure scores leave the panel and stay in the municipality store
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30; comparator report in the commit message)
+Scope: 05-sample-definition.R (PANEL_CARRY_COLS); pressure_defor, pressure_agri, pressure_score removed from the panel, kept in the store as env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx
+Context: cross-sectional z-scores over the 502 biome municipalities
+         (D-2026-10-12-c, D-2026-10-29-c), flagged for the audit;
+         restandardising on the broad at-risk sample moves them by up to
+         0.4 sd (_audit/panel-sample.qmd Q7). No analysis script uses them.
+Reason: sample-dependent, so out of the final panel. They stay in the
+        store, the interim diagnostic of script 05 that the audit notebook
+        reads, with their reference population unchanged; an analysis
+        script that wants a pressure score builds it with z_on() on its
+        own sample from the store's baseline columns.
+Evidence: compare_outputs (only in ref: the three columns); store 0 differences
+Affects: three columns leave the panel; the store keeps every value
+Supersedes: none (qualifies D-2026-10-12-c; the pressure part of D-2026-10-29-c stands)
+
+## D-2026-10-30-d  Treatment flags: the main window stays in the panel, the robust and ever windows stay in the store only
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30; comparator report in the commit message)
+Scope: 05-sample-definition.R (PANEL_CARRY_COLS; listed_within from utils); ppcdam_robust, ppcdam_ever_full removed from the panel, kept in the store; enf_ppcdam_listed_main_dum kept in the panel
+Context: D-2026-10-12-b stored three flags and left their placement to the
+         audit: the window is a design parameter varied in robustness
+         checks, and the treated set must be identical across the scripts
+         of one design.
+Reason: principle adopted 2026-10-30 (docs/decisions/2026-10-30-window-
+        parameterised-variables-main-window-stored.md): a
+        window-parameterised variable is stored under its main window when
+        that window is a logged design decision, because the third storage
+        condition, a design decision identical across all analysis
+        scripts, is enforced by the data only if the column exists; the
+        alternatives are robustness parameters and are built in the
+        analysis scripts through one shared helper, listed_within(d, years,
+        name), from the stored per-year listing. The two alternative flags
+        stay in the store for script 05's positivity assertions and the
+        audit notebook. Alternatives rejected: all three stored (the robust
+        and ever flags are one-line derivations that let a script use a
+        window other than the one it declares); none stored (the main
+        treated set would then rest on a convention, not on the data).
+        Script 07 uses the two removed flags and rebuilds them at the
+        stage 8 migration.
+Evidence: compare_outputs (only in ref: the two columns)
+Affects: two columns leave the panel; the store keeps every value
+Supersedes: none (qualifies D-2026-10-12-b)
+
+## D-2026-10-30-e  Short-window normalised outcome leaves the pipeline
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30; comparator report in the commit message)
+Scope: 06-normalized-outcome.R (DEFOR_REF_SHORT_YEARS and defor_norm_ref0003 removed; norm_within from utils); env_defor_area_z_bl0007 kept
+Context: D-2026-10-12-f stored the outcome on two reference windows,
+         2000-2007 (the main, D-2026-10-05-h) and 2000-2003 (the short
+         alternative), and left their placement to the audit. No analysis
+         script uses the short one.
+Reason: the principle of D-2026-10-30-d: the main outcome is the design
+        decision every script must share, is within-municipality and
+        therefore sample-independent, and stays; the reference window is a
+        robustness parameter, so the short window and any other are built
+        in the analysis scripts with norm_within(d, x, years, name,
+        sd_floor), the function of script 06 with the column as an
+        argument. The degenerate-reference rule (NA at or below the sd
+        floor) travels with the helper.
+Evidence: compare_outputs (only in ref: defor_norm_ref0003; env_defor_area_z_bl0007 0 differences)
+Affects: one column leaves the panel
+Supersedes: none (qualifies D-2026-10-12-f)
+
+## D-2026-10-30-f  Storage audit closed: classification of every stored derived variable (task 2.2)
+
+Status: closed (phase 2R, branch phase2r-rename-storage-audit, 2026-10-30)
+Scope: _data/aux/codebook.csv (columns storage_verdict and dataset, every row); the schema of the final panel
+Context: task 2.2 asks that every stored derived variable be classified
+         against the governing rule for derived variables (GUIDANCE.md,
+         Methodological standards): sample-independent, and at least one
+         of upstream inputs, full-balanced-panel computation, or a design
+         decision identical across analysis scripts.
+Reason: the verdicts, one per codebook row. Keys (5). Source values, not
+        derived (19: the listing, forest and clearing areas, families and
+        quota, GDP, area, the four planted areas, herd, the two bond
+        counts, regime, the two lookup flags, the biome and Legal Amazon
+        flags). Stored under the first condition: deflated values (2),
+        denominators (25: the clearing share, the five transfer ratios,
+        the twelve employment rates and shares, GDP per capita in two
+        bases, the four crop shares, cattle density), census
+        interpolations (4: pea, informal, population, pia), the
+        exposure-weighted price indices (2). Stored under the second: the
+        three lags (two index lags, the exposure offset). Stored under the
+        third: the governing-year electoral block and the election-year
+        flag (9), the three sample gates on absolute cuts, the main
+        treatment flag, the main outcome. Kept pending a guidance
+        clarification: the two log transforms of GDP per capita, which
+        meet none of the three conditions literally but are deterministic,
+        sample-independent and listed by the convention; the author
+        decides whether the rule names them. Removed from the panel: the
+        four pooled z-scores (analysis scripts, D-2026-10-30-b), the three
+        pressure scores (store, -c), the robust and ever treatment flags
+        (store, -d), the short-window outcome (analysis scripts, -e). The
+        store's own columns (9 baselines, 12 anchors) are store-only by
+        construction. The holding rule of D-2026-10-29-c is closed by -b
+        and -c.
+Evidence: codebook column storage_verdict; compare_outputs of the phase 2R commit
+Affects: the schema of the final panel, 85 to 76 columns; no value
+Supersedes: none (closes the task 2.2 flags of D-2026-10-11-d, D-2026-10-12-b, -c, -f and D-2026-10-29-c)
+
+## D-2026-10-30-g  Analysis scripts select the chapter's sample through the biome flag (task 1.12); scripts 07-11 and the chapter migrated to the crosswalk names
+
+Status: closed (phase 2R, session 2, branch phase2r-rename-storage-audit, 2026-10-30)
+Scope: _scripts/07-data-analysis-eda.R, 08-data-analysis-2WFE-CS.R, 09-descriptive-data.R (sample selection), 10-descriptive-figures.R, 11-correlations.R (inherited count); manuscript/ch4-causal-analysis.qmd, _audit/panel-sample.qmd, _audit/panel-outcome.qmd, _audit/siconfi.qmd (names)
+Context: since step 2.9 the final panel carries the 807 municipalities of
+         the nine states (D-2026-10-29-a) and none of the analysis scripts
+         selected a sample, so a rerun would have extended every figure,
+         table and estimate silently (rebuild/tasks.md 1.12). Phase 2R
+         renamed the panel (D-2026-10-30-a) and moved the pooled z-scores,
+         the short-window outcome and the robust and ever treatment flags
+         out of it (D-2026-10-30-b, -d, -e).
+Reason: scripts 07, 08 and 09 filter the panel on geo_biome_amazon_dum == 1
+        right after reading it, through a named constant
+        (SAMPLE_REGION_COL / REGION_FLAG; geo_legal_amazon_dum == 1 is the
+        robustness sample the chapter's data section should announce), and
+        assert 502 municipalities; scripts 10 and 11 inherit the sample of
+        script 09's descriptive panel and keep their 502 assertion. The
+        biome flag reproduces the chapter's sample exactly (the 502
+        municipalities of phase 1). Scripts 07 and 11 build the four price
+        z-scores on that sample with z_on() and the lagged z as the z
+        lagged within municipality; script 07 builds the robust and ever
+        flags with listed_within() on the windows of script 05; the
+        outcome notebook builds the short-window outcome with
+        norm_within(). Every column reference in the five scripts, the
+        chapter text and the three notebooks that read the final panel or
+        the store was migrated through the crosswalk; the two interim
+        panels the sample and outcome notebooks read are renamed through
+        the crosswalk at read. Script 09's own columns (the sprint
+        sources: va_*, the Atlas anchors, exp_*, rev_*, and
+        state_abbreviation / population in the SICONFI files) keep their
+        sprint names until task 4.8 promotes them; scripts 10 and 11 and
+        siconfi.qmd alias the panel's uf where it binds to those files.
+        07-data-analysis-EDA-poverty.R, a dead path superseded by script
+        09, is parked in _annex/parked/.
+Evidence: scratchpad smoke run of 07-11 with outputs redirected (exit 0
+          throughout; no output under output/ or _data/ regenerated before
+          stage 10). One assertion of scripts 10 and 11 fails on the
+          rebuilt inputs and was substituted in the scratchpad copies only:
+          the SICONFI revenue filing screen now flags 29 municipality-years
+          against the 26 logged in D-2026-10-16-b (expenditure 16 and the
+          sample's 16 unchanged), because script 09 joins the phase 2
+          population interim (19 cells moved and 106 NA cells changed
+          since the sprint, steps 2.5 and 2.7); the constant is updated at
+          the stage 10 rerun with its own entry. The stratum split and the
+          ATTs of script 08 also move on the rebuilt panel (26/25 treated
+          against 21/30; high -0.51, low -0.72), to be read at stage 10.
+          The rebuilt z-scores, flags and short-window outcome
+          equal the pre-step values on the 502 municipalities (max abs
+          difference 0; robust 51, ever 61; 42 NA cells); grep closure on
+          the crosswalk's old names
+Affects: the sample of every analysis output from the next rerun (502
+         municipalities, as before step 2.9); no stored value
+Supersedes: the SAMPLE WARNING headers of 2026-10-29 (D-2026-10-29-a, analysis side)

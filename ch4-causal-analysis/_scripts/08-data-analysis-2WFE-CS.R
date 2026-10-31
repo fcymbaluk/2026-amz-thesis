@@ -1,13 +1,14 @@
 # Purpose: stratified Callaway-Sant'Anna estimation of the priority-list effect by
 #          baseline Bolsa Família coverage (the chapter's moderation test)
-# Inputs:  _data/final/panel_amz_2000_2020_final.csv (phase 1 panel, frozen 2026-10-12)
+# Inputs:  _data/final/panel_amz_2000_2020_final.csv (script 06; crosswalk names
+#          since phase 2R, D-2026-10-30-a)
 # Outputs: output/tables/tab-att-strata.csv, output/figures/fig-event-study-strata.png
-# Status:  legacy script (August 2026) run as-is on the phase 1 panel for the
-#          descriptive sprint; restyle deferred (updated 2026-10-14).
-#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
-#          carries 807 municipalities (nine states); this script selects no
-#          sample. Do not rerun before filtering on biome_amazon == 1 (the
-#          chapter's sample) or legal_amazon == 1 (rebuild/tasks.md 1.12).
+# Status:  legacy script (August 2026) run as-is for the descriptive sprint;
+#          restyle deferred. Phase 2R, session 2 (2026-10-30): column names
+#          migrated through _data/aux/crosswalk.csv; the script selects the
+#          chapter's sample, the 502 biome municipalities, right after the
+#          read (rebuild/tasks.md 1.12, D-2026-10-30-g). Outputs not
+#          regenerated before stage 10.
 
 library(tidyverse)
 library(magrittr)
@@ -52,26 +53,31 @@ library(did)
 # ---- Parameters. Change these to run the robustness grid. -------------------
 WINDOW_START <- 2002L            # earlier start = more pre-periods for the PT test
 WINDOW_END   <- 2012L            # 2010 near-absorbing | 2012 full decline | 2020 extension
-SAMPLE_FLAG  <- "at_risk_narrow" # "at_risk_narrow" | "at_risk_broad" | avail_ok 
+SAMPLE_FLAG  <- "smp_atrisk_narrow_dum" # "smp_atrisk_narrow_dum" | "smp_atrisk_broad_dum" | smp_avail_dum 
 MODERATOR    <- "bf_cover"       # "bf_cover" (primary) | "bf_resid" | "formal"
 SPLIT        <- "median"         # "median" | "tercile" (top vs bottom third)
 CONTROL_GRP  <- "notyettreated"   # "nevertreated" | "notyettreated"
 BASE_YEARS   <- 2002:2007        # pre-blocklist baseline for the moderator
+REGION_FLAG  <- "geo_biome_amazon_dum"  # the chapter's sample (D-2026-10-30-g);
+                                        # "geo_legal_amazon_dum": robustness
+N_MUNIC_EXPECTED <- 502L
 
 # ---- Load -------------------------------------------------------------------
 # idname must be numeric for `did`. geocode is already integer.
 df <- read_csv(file.path("_data", "final", "panel_amz_2000_2020_final.csv"),
-               col_types = cols(geocode = col_integer(), year = col_integer()))
+               col_types = cols(geocode = col_integer(), year = col_integer())) %>%
+  filter(.data[[REGION_FLAG]] == 1L)
+stopifnot(n_distinct(df$geocode) == N_MUNIC_EXPECTED)
 
 #glimpse(df)
 
 # ---- Treatment cohort: first year on the priority list ----------------------
-# ppcdam_list is the annual (reversible) indicator. g is the first-entry year,
+# enf_ppcdam_listed_dum is the annual (reversible) indicator. g is the first-entry year,
 # 0 = never listed. Entries after WINDOW_END are set to 0 so that municipalities
 # listed only later act as legitimate not-yet-listed controls inside the window.
 cohort <- df %>%
   group_by(geocode) %>%
-  summarise(g_first = { y <- year[ppcdam_list == 1]
+  summarise(g_first = { y <- year[enf_ppcdam_listed_dum == 1]
   if (length(y)) min(y) else 0L },
   .groups = "drop") %>%
   mutate(g = if_else(g_first > 0 & g_first <= WINDOW_END, g_first, 0L))
@@ -84,14 +90,14 @@ baseline <- df %>%
   filter(year %in% BASE_YEARS) %>%
   group_by(geocode) %>%
   summarise(
-    bf_pc     = mean(bf_transfers_pc_brl_2024, na.rm = TRUE),
-    bf_cover  = mean(bf_families_quota_ratio,  na.rm = TRUE),
-    formal    = mean(emp_pia_rate_total,       na.rm = TRUE),
-    gdp0      = mean(gdp_per_capita_2024_log,  na.rm = TRUE),
-    informal0 = mean(informal,                 na.rm = TRUE),
-    agri0     = mean(emp_share_agri_workers,   na.rm = TRUE),
-    defor0    = mean(deforestation_area_km2,   na.rm = TRUE),
-    forest0   = mean(forest_area_km2,          na.rm = TRUE),
+    bf_pc     = mean(sop_bf_transf_pc_brl24, na.rm = TRUE),
+    bf_cover  = mean(sop_bf_fam_quota_ratio,  na.rm = TRUE),
+    formal    = mean(lab_emp_formal_pia_rate,       na.rm = TRUE),
+    gdp0      = mean(ecn_gdp_pc_brl24_log,  na.rm = TRUE),
+    informal0 = mean(lab_informal_share,       na.rm = TRUE),
+    agri0     = mean(lab_emp_formal_agri_share,   na.rm = TRUE),
+    defor0    = mean(env_defor_area_km2,   na.rm = TRUE),
+    forest0   = mean(env_forest_area_km2,          na.rm = TRUE),
     .groups   = "drop"
   )
 
@@ -162,7 +168,7 @@ raw_es <- samp %>%
                          stratum == "low"  ~ "listed, low coverage")) %>%
   filter(g == 0 | between(etime, -4, 6)) %>%
   group_by(grp, etime) %>%
-  summarise(y = mean(defor_norm_ref0007, na.rm = TRUE), .groups = "drop")
+  summarise(y = mean(env_defor_area_z_bl0007, na.rm = TRUE), .groups = "drop")
 
 p_raw <- raw_es %>% filter(!is.na(etime)) %>%
   ggplot(aes(etime, y, color = grp)) +
@@ -187,7 +193,7 @@ p_raw
 # (g,t) cell makes the doubly-robust step unstable, drop xformla or switch
 # est_method to "reg".
 run_cs <- function(d) {
-  att_gt(yname   = "defor_norm_ref0007",
+  att_gt(yname   = "env_defor_area_z_bl0007",
          tname   = "year",
          idname  = "geocode",
          gname   = "g",
@@ -268,7 +274,7 @@ p_es
 # ============================================================================
 # NEXT, NOT IN THIS SCRIPT
 #  - Reversibility: de Chaisemartin & D'Haultfoeuille (package DIDmultiplegtDYN)
-#    on the same strata, using ppcdam_list as the on/off treatment. Compare to
+#    on the same strata, using enf_ppcdam_listed_dum as the on/off treatment. Compare to
 #    the onset-based CS above. Matters most for the 2004-2020 window.
 #  - Spatial leakage (SUTVA): Conley standard errors and a border analysis, or a
 #    spatial-lag control, to check displacement of clearing to neighbours.

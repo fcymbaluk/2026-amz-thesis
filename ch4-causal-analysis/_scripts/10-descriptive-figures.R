@@ -27,11 +27,12 @@
 #          output/tables/tab-within-between.csv (D6)
 # Status   2026-10-16, sprint day 4. Group definitions D-2026-10-16-a and
 #          the SICONFI filing screen D-2026-10-16-b in DECISIONS.md.
-#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
-#          carries 807 municipalities (nine states) and this script inherits
-#          the sample of script 09, which selects none yet. Do not rerun before
-#          script 09 filters on the biome_amazon / legal_amazon flags
-#          (rebuild/tasks.md 1.12).
+#          Phase 2R, session 2 (2026-10-30): the panel's columns carry the
+#          crosswalk names (D-2026-10-30-a); the sample is selected by
+#          script 09 (502 biome municipalities, D-2026-10-30-g) and asserted
+#          here. The SICONFI files keep state_abbreviation and population
+#          until task 4.8; the panel's own are uf and dem_pop_n. Outputs
+#          not regenerated before stage 10.
 
 library(tidyverse)   # magrittr %>% throughout, never the native pipe
 library(scales)
@@ -95,17 +96,17 @@ stopifnot(
   n_distinct(panel$geocode) == N_MUNIC_EXPECTED,
   setequal(panel$year, PANEL_YEARS),
   !anyDuplicated(paste(panel$geocode, panel$year)),
-  all(c("deforestation_area_km2", "bf_families_quota_ratio",
-        "bf_transfers_pc_brl_2024", "emp_pia_rate_total",
-        "gdp_per_capita_2024", "exp_social_pc_brl_2024",
+  all(c("env_defor_area_km2", "sop_bf_fam_quota_ratio",
+        "sop_bf_transf_pc_brl24", "lab_emp_formal_pia_rate",
+        "ecn_gdp_pc_brl24", "exp_social_pc_brl_2024",
         "exp_health_pc_brl_2024", "exp_education_pc_brl_2024",
         "exp_social_assistance_pc_brl_2024", "va_agro_share",
         "poverty_share_c2000", "poverty_share_c2010", "urban_share_c2000",
-        "urban_share_c2010", "ppcdam_list", "rev_own_pc_brl_2024",
+        "urban_share_c2010", "enf_ppcdam_listed_dum", "rev_own_pc_brl_2024",
         "rev_fpm_pc_brl_2024", "rev_sus_pc_brl_2024",
         "rev_fundeb_pc_brl_2024", "rev_fnde_pc_brl_2024",
         "rev_fnas_pc_brl_2024") %in% names(panel)),
-  all(!is.na(panel$deforestation_area_km2)),
+  all(!is.na(panel$env_defor_area_km2)),
   all(panel$urban_share_c2010 >= 0 & panel$urban_share_c2010 <= 1),
   setequal(exp_uf$year, 2013:2024),
   n_distinct(exp_uf$state_abbreviation) == 9L
@@ -145,24 +146,24 @@ window_mean <- function(x, year, years, min_n = 1L) {
   if (sum(!is.na(v)) < min_n) NA_real_ else mean(v, na.rm = TRUE)
 }
 munic <- panel %>%
-  group_by(geocode, municipality, state_abbreviation) %>%
+  group_by(geocode, municipality, uf) %>%
   summarise(
-    ever_listed = any(ppcdam_list == 1L),
+    ever_listed = any(enf_ppcdam_listed_dum == 1L),
     spend_base = window_mean(exp_social_pc_brl_2024, year, BASELINE_YEARS,
                              MIN_BASELINE_REPORTS),
     spend_end  = window_mean(exp_social_pc_brl_2024, year, END_YEARS,
                              MIN_BASELINE_REPORTS),
     land_base  = window_mean(va_agro_share, year, BASELINE_YEARS),
     land_end   = window_mean(va_agro_share, year, END_YEARS),
-    defor_base = window_mean(deforestation_area_km2, year, BASELINE_YEARS),
-    defor_end  = window_mean(deforestation_area_km2, year, END_YEARS),
-    defor_decade_start = window_mean(deforestation_area_km2, year, DECADE_START),
-    defor_decade_end   = window_mean(deforestation_area_km2, year, DECADE_END),
+    defor_base = window_mean(env_defor_area_km2, year, BASELINE_YEARS),
+    defor_end  = window_mean(env_defor_area_km2, year, END_YEARS),
+    defor_decade_start = window_mean(env_defor_area_km2, year, DECADE_START),
+    defor_decade_end   = window_mean(env_defor_area_km2, year, DECADE_END),
     poverty_c2000 = first(poverty_share_c2000),
     poverty_c2010 = first(poverty_share_c2010),
     urban_c2000 = first(urban_share_c2000),
     urban_c2010 = first(urban_share_c2010),
-    population_2010 = first(population[year == 2010L]),
+    population_2010 = first(dem_pop_n[year == 2010L]),
     .groups = "drop"
   ) %>%
   mutate(
@@ -184,11 +185,11 @@ agg <- panel %>%
   filter(year %in% COMOVE_YEARS) %>%
   group_by(year) %>%
   summarise(
-    defor     = sum(deforestation_area_km2),
-    bf_cov    = mean(bf_families_quota_ratio, na.rm = TRUE),
-    bf_pc     = mean(bf_transfers_pc_brl_2024, na.rm = TRUE),
-    emp       = mean(emp_pia_rate_total, na.rm = TRUE),
-    gdp_pc    = mean(gdp_per_capita_2024, na.rm = TRUE),
+    defor     = sum(env_defor_area_km2),
+    bf_cov    = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
+    bf_pc     = mean(sop_bf_transf_pc_brl24, na.rm = TRUE),
+    emp       = mean(lab_emp_formal_pia_rate, na.rm = TRUE),
+    gdp_pc    = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
     health_pc = mean(exp_health_pc_brl_2024, na.rm = TRUE),
     educ_pc   = mean(exp_education_pc_brl_2024, na.rm = TRUE),
     assist_pc = mean(exp_social_assistance_pc_brl_2024, na.rm = TRUE),
@@ -351,8 +352,8 @@ uf_state <- exp_uf %>%
             value = exp_social_pc_brl_2024, series = "State government")
 state_defor <- panel %>%
   filter(year >= min(EXP_YEARS)) %>%
-  group_by(state_abbreviation, year) %>%
-  summarise(value = sum(deforestation_area_km2), n_sample = n(),
+  group_by(state_abbreviation = uf, year) %>%
+  summarise(value = sum(env_defor_area_km2), n_sample = n(),
             .groups = "drop") %>%
   mutate(series = "Deforestation")
 d2 <- bind_rows(
@@ -420,11 +421,11 @@ group_series <- function(data, group_var) {
     filter(year %in% COMOVE_YEARS, !is.na(.data[[group_var]])) %>%
     group_by(group = .data[[group_var]], year) %>%
     summarise(
-      defor     = sum(deforestation_area_km2),
-      bf_cov    = mean(bf_families_quota_ratio, na.rm = TRUE),
-      bf_pc     = mean(bf_transfers_pc_brl_2024, na.rm = TRUE),
-      emp       = mean(emp_pia_rate_total, na.rm = TRUE),
-      gdp_pc    = mean(gdp_per_capita_2024, na.rm = TRUE),
+      defor     = sum(env_defor_area_km2),
+      bf_cov    = mean(sop_bf_fam_quota_ratio, na.rm = TRUE),
+      bf_pc     = mean(sop_bf_transf_pc_brl24, na.rm = TRUE),
+      emp       = mean(lab_emp_formal_pia_rate, na.rm = TRUE),
+      gdp_pc    = mean(ecn_gdp_pc_brl24, na.rm = TRUE),
       social_pc = mean(exp_social_pc_brl_2024, na.rm = TRUE),
       .groups = "drop"
     ) %>%
@@ -637,13 +638,13 @@ save_fig(p_d5, "long-differences", width = 11, height = 5.5)
 
 # ---- D6: tables ------------------------------------------------------------
 TABLE_VARS <- c(
-  deforestation_area_km2            = "Deforestation (km2)",
-  deforestation_forest_rate         = "Deforestation (share of remaining forest)",
-  bf_families_quota_ratio           = "BF coverage (families / quota)",
-  bf_transfers_pc_brl_2024          = "BF transfers per capita (R$ 2024)",
-  emp_pia_rate_total                = "Formal employment (jobs / working-age pop.)",
-  emp_share_low_workers             = "Share of formal workers at or below 1 MW",
-  gdp_per_capita_2024               = "GDP per capita (R$ 2024)",
+  env_defor_area_km2            = "Deforestation (km2)",
+  env_defor_forest_share         = "Deforestation (share of remaining forest)",
+  sop_bf_fam_quota_ratio           = "BF coverage (families / quota)",
+  sop_bf_transf_pc_brl24          = "BF transfers per capita (R$ 2024)",
+  lab_emp_formal_pia_rate                = "Formal employment (jobs / working-age pop.)",
+  lab_emp_formal_lowwage_share             = "Share of formal workers at or below 1 MW",
+  ecn_gdp_pc_brl24               = "GDP per capita (R$ 2024)",
   va_agro_share                     = "Land-based share of value added",
   exp_total_pc_brl_2024             = "Municipal spending per capita, total (R$ 2024)",
   exp_social_pc_brl_2024            = "Municipal social spending per capita (R$ 2024)",
@@ -653,8 +654,8 @@ TABLE_VARS <- c(
   rev_fpm_pc_brl_2024               = "FPM per capita (R$ 2024)",
   rev_sus_pc_brl_2024               = "SUS transfers per capita (R$ 2024)",
   rev_fundeb_pc_brl_2024            = "FUNDEB per capita (R$ 2024)",
-  cattle_per_km2                    = "Cattle per km2",
-  price_index_crop                  = "Crop price exposure index"
+  agr_cattle_per_km2                    = "Cattle per km2",
+  mkt_price_crop_idx                  = "Crop price exposure index"
 )
 summary_long <- panel %>%
   mutate(period = ch4_period(year)) %>%
