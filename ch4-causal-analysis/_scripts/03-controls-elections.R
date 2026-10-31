@@ -41,16 +41,18 @@
 #   D-2026-10-31-c  After task 1.11: the winner is the candidate with most
 #                   valid votes; a first-place tie is broken by the TSE
 #                   declaration (resultado "eleito"), never by ballot
-#                   order. Six ties in 2000-2020, each with exactly one
-#                   declared winner among the tied.
-#
-# KNOWN DEFECTS (phase 1 only; delete this block when the fix lands)
-#   D-2026-10-10-c  36 ballot-number duplicates of 2000 and 2004 are
-#             summed, so their votes count twice, as inherited. Dedupe
-#             is a phase 2 decision. The four different-party pairs that
-#             tie in 2004 carry one row declared elected and one
-#             "renuncia/falecimento/cassacao" (tse.qmd Q6): substituted
-#             candidacies, not two candidates.
+#                   order. Two ties in 2000-2020 after the dedupe below,
+#                   each with exactly one declared winner among the tied.
+#   D-2026-10-31-e  After task 1.11: one candidacy per ballot number. The
+#                   36 ballot-number pairs of 2000 and 2004 (two
+#                   sequencial_candidato with identical votes) count
+#                   once: in 2004 the registration not marked
+#                   "renuncia/falecimento/cassacao" stands (a substitute
+#                   who kept the number), in 2000 the two rows are
+#                   identical and the smaller id stands. The winner stays
+#                   the most voted in the first round, not the TSE
+#                   declaration, so the block measures the contest, not
+#                   the office holder (decided against, same entry).
 # RUN ORDER Independent of the other 03 scripts; no pipeline inputs.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
@@ -70,6 +72,7 @@ TSE_ROUND          <- 1L                                      # D-2026-10-10-d
 TSE_ELECTION_TYPE  <- "eleicao ordinaria"                     # D-2026-10-10-d
 ELEC_COMPETITIVE_MOV <- 0.10                                  # D-2026-10-10-d
 TSE_ELECTED          <- "eleito"                              # D-2026-10-31-c
+TSE_RENOUNCED        <- "renuncia/falecimento/cassacao"       # D-2026-10-31-e
 TSE_STATES <- c("AC", "AM", "AP", "MA", "MT", "PA", "RO", "RR", "TO")
 TSE_COLUMNS <- c("ano", "turno", "id_eleicao", "tipo_eleicao", "data_eleicao",
                  "sigla_uf", "id_municipio", "id_municipio_tse", "cargo",
@@ -82,11 +85,14 @@ N_MUNIC_TSE_EXPECTED <- 808L
 # Zero-vote candidates in the first round of the governing elections, 54
 # of 2012 and 2 of 2020 (tse.qmd Q6, Q8; D-2026-10-28-e).
 N_ZERO_VOTE_CANDIDATES_EXPECTED <- 56L
-# First-place ties of valid votes in the governing elections (tse.qmd Q6;
-# D-2026-10-31-c): Rio dos Bois 2000, Vilhena, Anamã, Matinha, Presidente
-# Sarney and Senador Alexandre Costa 2004. Each has exactly one tied
-# candidate declared elected; at most one candidate per election is.
-N_TIED_ELECTIONS_EXPECTED <- 6L
+# Ballot-number pairs in the governing elections (tse.qmd Q2; D-2026-10-31-e):
+# 20 in 2000 (identical rows) and 16 in 2004 (one registration renounced).
+N_DUP_PAIRS_EXPECTED <- c(`2000` = 20L, `2004` = 16L)
+# First-place ties of valid votes after the dedupe (tse.qmd Q6;
+# D-2026-10-31-c): Rio dos Bois 2000 and Senador Alexandre Costa 2004. Each
+# has exactly one tied candidate declared elected; at most one candidate
+# per election is.
+N_TIED_ELECTIONS_EXPECTED <- 2L
 
 # ---- Read -------------------------------------------------------------------
 tse_raw <- read_csv(TSE_FILE, col_types = cols(.default = col_character()),
@@ -120,17 +126,43 @@ mayors <- tse_raw %>%
          year %in% governing_election(ELEC_YEARS))      # D-2026-10-22-f
 stopifnot(all(is_geocode(mayors$geocode)))
 
-# One row per candidate: votes summed over zones and over the ballot-number
-# duplicates of 2000 and 2004 (D-2026-10-10-c); the smallest
-# sequencial_candidato stands for the candidate. A candidate is declared
-# elected when any of its zone rows carries the TSE result "eleito"
-# (D-2026-10-31-c; the result varies across zones for a few candidates).
-candidates_all <- mayors %>%
-  group_by(geocode, year, numero_candidato, sigla_partido, numero_partido) %>%
+# One row per registration (sequencial_candidato): votes summed over the
+# rows of the extract. A registration is declared elected when any of its
+# rows carries the TSE result "eleito" (D-2026-10-31-c; the result varies
+# across rows for a few candidates) and renounced when every row reads
+# "renuncia/falecimento/cassacao".
+registrations <- mayors %>%
+  group_by(geocode, year, numero_candidato, sequencial_candidato,
+           sigla_partido, numero_partido) %>%
   summarise(candidate_votes = sum(votes),
-            candidate_id = min(sequencial_candidato),
-            elected = any(resultado == TSE_ELECTED),
+            votes_signature = paste(sort(votes), collapse = ";"),
+            elected   = any(resultado == TSE_ELECTED),
+            renounced = all(resultado == TSE_RENOUNCED),
             .groups = "drop")
+
+# ---- Fix (D-2026-10-31-e; phase 2, after task 1.11) --------------------------
+# One candidacy per ballot number. The 36 pairs of 2000 and 2004 carry the
+# same votes under two sequencial_candidato (identical row by row): in 2004
+# one registration is renounced and the other ran under the same number,
+# in 2000 the two rows are identical. The running registration stands
+# (then the smaller id); its party and id name the candidate. Phase 1
+# summed the pairs, doubling their votes (D-2026-10-10-c, KNOWN DEFECTS).
+dup_pairs <- registrations %>%
+  group_by(geocode, year, numero_candidato) %>%
+  filter(n() > 1L) %>%
+  summarise(n_rows      = n(),
+            same_votes  = n_distinct(votes_signature) == 1L,
+            same_party  = n_distinct(sigla_partido) == 1L,
+            n_renounced = sum(renounced),
+            .groups = "drop")
+candidates_all <- registrations %>%
+  group_by(geocode, year, numero_candidato) %>%
+  arrange(renounced, sequencial_candidato, .by_group = TRUE) %>%
+  slice(1L) %>%
+  ungroup() %>%
+  transmute(geocode, year, numero_candidato, sigla_partido, numero_partido,
+            candidate_votes, candidate_id = sequencial_candidato, elected)
+# ---- end fix -----------------------------------------------------------------
 
 # ---- Fix (D-2026-10-28-e; phase 2, step 2.7) ---------------------------------
 # A candidate with zero valid votes was not a competitor: dropped before the
@@ -221,6 +253,24 @@ stopifnot(
         TSE_ELECTION_YEARS | is.na(tse_elections$elec_enc[tse_elections$year > min(ELEC_YEARS)])),
   is.integer(tse_elections$elec_governing_year)
 )
+# ---- Assert: ballot-number pairs (D-2026-10-31-e) --------------------------
+# tse.qmd Q2. Exactly the 36 known pairs, two rows each with identical
+# votes; the 2000 pairs identical in party with no renounced row, the 2004
+# pairs with exactly one renounced row; one candidacy per ballot number
+# after the dedupe, and no registration lost elsewhere.
+stopifnot(
+  identical(table(factor(dup_pairs$year, levels = names(N_DUP_PAIRS_EXPECTED)))
+            %>% as.integer(), unname(N_DUP_PAIRS_EXPECTED)),
+  all(dup_pairs$n_rows == 2L),
+  all(dup_pairs$same_votes),
+  all(dup_pairs$same_party[dup_pairs$year == 2000L]),
+  all(dup_pairs$n_renounced[dup_pairs$year == 2000L] == 0L),
+  all(dup_pairs$n_renounced[dup_pairs$year == 2004L] == 1L),
+  !anyDuplicated(paste(candidates_all$geocode, candidates_all$year,
+                       candidates_all$numero_candidato)),
+  nrow(candidates_all) == nrow(registrations) - nrow(dup_pairs)
+)
+
 # ---- Assert: ties (D-2026-10-31-c) -----------------------------------------
 # tse.qmd Q6. At most one declared winner per election (none in the
 # first round of a runoff municipality); every first-place tie holds exactly

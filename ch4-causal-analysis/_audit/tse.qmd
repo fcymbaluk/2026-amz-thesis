@@ -96,29 +96,51 @@ dups %>% select(ano, sigla_uf, id_municipio, sequencial_candidato, numero_candid
 dups %>% group_by(ano, id_municipio, numero_candidato) %>%
   summarise(same_votes = n_distinct(votos) == 1, same_party = n_distinct(sigla_partido) == 1,
             .groups = "drop") %>% count(same_votes, same_party)
+pairs <- dups %>%
+  group_by(ano, id_municipio, numero_candidato, sequencial_candidato, sigla_partido) %>%
+  summarise(votes = sum(as.integer(votos)),
+            result = paste(sort(unique(resultado)), collapse = "|"), .groups = "drop") %>%
+  group_by(ano, id_municipio, numero_candidato) %>%
+  arrange(sequencial_candidato, .by_group = TRUE) %>%
+  summarise(same_party = n_distinct(sigla_partido) == 1,
+            results = paste(result, collapse = " / "), top = any(votes == max(votes)), .groups = "drop")
+pairs %>% count(ano, same_party, results)
 ```
 
 **Finding.** Thirty-six municipality-elections of 2000 and 2004 (26 in
 the biome, 10 among the municipalities added at step 2.9) carry two
 rows for one ballot number, with two `sequencial_candidato` values and
 identical votes; in 27 the party is the same and in 9 the two rows
-carry different party labels: a Base dos Dados artefact. The lost script
-grouped by `id_candidato_bd` and ballot number and summed, which doubled
-these votes; summing by ballot number reproduces that count, and the
-recovered panel's `elec_n_candidates` and `elec_enc` are reproduced on
-every cell at the script 03 acceptance (commit message). The pipeline
-keeps the sum and takes the smaller `sequencial_candidato` as the
-winner's id.
-**Decision.** D-2026-10-10-c (closed); the dedupe was left to phase 2
-and is still open (no phase 2 step took it; the KNOWN DEFECTS block of
-script 03 stands; since 2026-10-31 it has its own entry, D-2026-10-31-e). The nine different-party pairs are not summed by the
-pipeline's key, which includes the party, and count as two candidates
-with equal votes (Q6). In the four of them that tie (Vilhena, Anamã,
-Matinha and Presidente Sarney, 2004) one row is declared elected and the
-other reads "renuncia/falecimento/cassacao": a substituted candidacy
-that kept the ballot number, not two candidates (Q6; D-2026-10-31-c).
-**Assertion.** none (the duplicates are summed as inherited; KNOWN DEFECTS
-block).
+carry different party labels. The TSE result column sorts them into
+two patterns: the 20 pairs of 2000 are identical rows (same party, the
+same declaration on both, elected in 3), one candidacy registered twice;
+in each of the 16 pairs of 2004 one registration reads
+"renuncia/falecimento/cassacao" and the other elected or not, a
+substitute who kept the ballot number, under the same party in 7 and a
+different label in 9. In no pair are these two people who each
+received those votes. The lost script grouped by `id_candidato_bd` and
+ballot number and summed, which doubled the votes of the 27 same-party
+pairs; the 9 different-party pairs it counted as two candidates with
+equal votes. Phase 1 reproduced that count (D-2026-10-10-c), and so did
+the pipeline until 2026-10-31: the recovered panel's `elec_n_candidates`
+and `elec_enc` were reproduced on every cell at the script 03
+acceptance. Since D-2026-10-31-e script 03 keeps one candidacy per
+ballot number, the registration not renounced in 2004 and the smaller
+id in 2000, with its party and id, votes counted once. The footprint
+(comparator in the commit message): the ENC, margin and winner's share
+of the 36 elections over their governing years 2001-2004 and 2005-2008
+(144 municipality-years, 26 municipalities in the biome), the candidate
+count down by one in the 9 different-party pairs, the competitive flag
+flipped in 15 elections, and the winner in 11, nine of them the
+elections of Q6 whose declared winner was not the most voted: their
+most-voted candidacy was a doubled pair.
+**Decision.** D-2026-10-10-c (closed, the key); D-2026-10-31-e (closed,
+the dedupe, 2026-10-31): one candidacy per ballot number.
+**Assertion.** `N_DUP_PAIRS_EXPECTED` (20 in 2000, 16 in 2004); two rows
+per pair with identical votes; the 2000 pairs same-party with no
+renounced row, the 2004 pairs with exactly one; one candidacy per ballot
+number after the dedupe and no registration lost elsewhere (script 03,
+"Assert: ballot-number pairs").
 
 ## Q3. Are uncontested elections coded as intended?
 
@@ -181,9 +203,11 @@ election_rows %>%
 
 **Finding.** Over the 808 municipalities of the nine states (the sample
 since phase 2, step 2.9), about three candidates and 2.2 to 2.4
-effective candidates on average, a median margin of 10 to 12 points, 44
+effective candidates on average, a median margin of 10 to 12 points, 43
 to 50 percent of the races below the ten-point threshold and 1 to 4
-percent uncontested (the 2012 peak is the zero-vote exclusion of Q8);
+percent uncontested (the 2012 peak is the zero-vote exclusion of Q8; the
+2004 row carries the dedupe of Q2 since 2026-10-31, the 2000 election
+sits on the 2001-2004 rows outside this table);
 the measures move little across elections, with a rise in candidacies
 in 2020 and again in 2024.
 **Decision.** none required.
@@ -204,15 +228,22 @@ candidates %>%
 ```
 
 The TSE result column (`resultado`) against the vote count, on the
-candidates with valid votes (the pipeline's set since step 2.7): declared
-winners per election, the tied candidates with their declaration, and the
-elections whose declared winner is not the most voted.
+pipeline's candidate set (one candidacy per ballot number since
+D-2026-10-31-e, valid votes only since step 2.7): declared winners per
+election, the tied candidates with their declaration, and the elections
+whose declared winner is not the most voted.
 
 ```{r q6-declared}
 declared <- first_round %>%
-  group_by(geocode = id_municipio, year = as.integer(ano), numero_candidato, sigla_partido) %>%
+  group_by(geocode = id_municipio, year = as.integer(ano), numero_candidato,
+           sequencial_candidato, sigla_partido) %>%
   summarise(votes = sum(as.integer(votos)), elected = any(resultado == "eleito"),
+            renounced = all(resultado == "renuncia/falecimento/cassacao"),
             result = paste(unique(resultado), collapse = " | "), .groups = "drop") %>%
+  group_by(geocode, year, numero_candidato) %>%
+  arrange(renounced, sequencial_candidato, .by_group = TRUE) %>%
+  slice(1) %>%
+  ungroup() %>%
   filter(votes > 0) %>%
   group_by(geocode, year) %>%
   mutate(top = votes == max(votes), n_top = sum(top), n_elected = sum(elected)) %>%
@@ -227,43 +258,42 @@ declared %>% filter(n_top == 1, n_elected == 1, top, !elected) %>%
 **Finding.** Fifty-six candidates with zero votes, almost all in 2012
 (candidacies refused after the ballot was printed); in phase 1 they
 entered the ENC and the candidate count as inherited, and since step 2.7
-they are excluded (Q8). Six municipality-elections show a first-place
-tie when candidates are keyed on ballot number and party, and the TSE
-result column declares exactly one of the tied candidates elected in
-every one of them. No election has more than one declared winner; the
-39 with none are first rounds that decided nothing (runoff
-municipalities, the result reading "2º turno", and a few empty or
-refused declarations, among them Torixoréu, MT, 2020: one candidate
-with 196 votes, uncontested under Q3, no declaration). Four ties are the
-different-party duplicate pairs of Q2 (one ballot number under two party
-labels with the same votes: Vilhena, RO, Anamã, AM, Matinha and
-Presidente Sarney, MA, all in 2004 and in the biome); in each, one row is
-declared elected and the other reads "renuncia/falecimento/cassacao", a
-substituted candidacy that kept the ballot number. Two are real ties of
-valid votes in municipalities added at step 2.9: Rio dos Bois (TO) 2000
+they are excluded (Q8). Keyed on ballot number and party, as the first
+chunk does, six municipality-elections show a first-place tie: four are
+the different-party pairs of Q2 (Vilhena, RO, Anamã, AM, Matinha and
+Presidente Sarney, MA, 2004, in the biome), a renounced registration
+beside its substitute with the same votes, and two are real ties of
+valid votes in municipalities added at step 2.9, Rio dos Bois (TO) 2000
 (PPB and PSDB, 665 votes each) and Senador Alexandre Costa (MA) 2004
-(PTB and PFL, 2,359 each). Phase 1 took the first candidate in
-ballot-number order, which agreed with the declaration in Rio dos Bois,
-Anamã and Presidente Sarney and not in Vilhena (PMDB stored for PTB),
-Matinha (PFL for PMDB) and Senador Alexandre Costa (PTB for PFL). Since
-the tie-break on the declaration (D-2026-10-31-c, 2026-10-31) the
-stored winner is the declared one in all six: the winner's party and id
-move in 24 cells of those three municipalities, 2005-2008, 16 in the
-biome; margin (0), ENC and flags unchanged. Beyond ties, nine elections
-of 2000 and 2004 (Alvorada D'Oeste, Juruá, Paço do Lumiar and Presidente
-Médici, MA, in the biome; Balsas, Luciara, Serra Nova Dourada, Alto
-Parnaíba and Vargem Grande outside) declare elected a candidate who is
-not the most voted, the most voted reading "nao eleito" or
-"renuncia/falecimento/cassacao" in some zones: registrations refused or
-mandates lost after the count. The winner rule stays most valid votes
-there, as inherited; the declaration decides ties only.
+(PTB and PFL, 2,359 each). On the pipeline's candidate set (second
+chunk) only the two real ties remain, and the TSE result column declares
+exactly one of the tied candidates elected in each. No election has
+more than one declared winner; the 39 with none are first rounds that
+decided nothing (runoff municipalities, the result reading "2º turno",
+and a few empty or refused declarations, among them Torixoréu, MT, 2020:
+one candidate with 196 votes, uncontested under Q3, no declaration). In
+every election with a declaration the declared winner is now the most
+voted: the nine elections of 2000 and 2004 where it was not (Alvorada
+D'Oeste, Juruá, Paço do Lumiar and Presidente Médici, MA, in the biome;
+Balsas, Luciara, Serra Nova Dourada, Alto Parnaíba and Vargem Grande
+outside) had a doubled pair of Q2 as their most-voted candidacy, and the
+dedupe puts the declared winner first in all nine. The sequence of the
+two fixes: phase 1 took the first tied candidate in ballot-number order,
+which stored the wrong candidate in Senador Alexandre Costa (PTB for
+PFL) and the renounced half in Vilhena and Matinha; the tie-break on the
+declaration (D-2026-10-31-c) corrected the three (24 cells, 2005-2008);
+the dedupe (D-2026-10-31-e) then removed the four spurious ties and the
+nine wrong winners of the doubled pairs. The winner remains the most
+voted candidate of the first round, not the office holder: in the 38
+runoff elections of the window the stored winner is the first-round
+leader, by design (D-2026-10-10-d), and the declaration decides ties
+only.
 **Decision.** D-2026-10-28-e (the zero-vote rows); D-2026-10-31-c
 (closed: a first-place tie goes to the candidate the TSE declared
-elected); the Q2 dedupe, deferred by D-2026-10-10-c (closed) to a
-separate entry, is now D-2026-10-31-e (open, for the author) with the
-substitution pattern as evidence, together with the nine
-declared-not-most-voted elections; no change.
-**Assertion.** `N_TIED_ELECTIONS_EXPECTED = 6L`; at most one declared
+elected); D-2026-10-31-e (closed: one candidacy per ballot number; the
+winner stays the most voted of the first round, no office-holder
+variable).
+**Assertion.** `N_TIED_ELECTIONS_EXPECTED = 2L`; at most one declared
 winner per election; every tie holds exactly one declared winner and the
 stored winner is it (script 03, "Assert: ties").
 
