@@ -2604,3 +2604,57 @@ Reason: the verdicts, one per codebook row. Keys (5). Source values, not
 Evidence: codebook column storage_verdict; compare_outputs of the phase 2R commit
 Affects: the schema of the final panel, 85 to 76 columns; no value
 Supersedes: none (closes the task 2.2 flags of D-2026-10-11-d, D-2026-10-12-b, -c, -f and D-2026-10-29-c)
+
+## D-2026-10-30-g  Analysis scripts select the chapter's sample through the biome flag (task 1.12); scripts 07-11 and the chapter migrated to the crosswalk names
+
+Status: closed (phase 2R, session 2, branch phase2r-rename-storage-audit, 2026-10-30)
+Scope: _scripts/07-data-analysis-eda.R, 08-data-analysis-2WFE-CS.R, 09-descriptive-data.R (sample selection), 10-descriptive-figures.R, 11-correlations.R (inherited count); manuscript/ch4-causal-analysis.qmd, _audit/panel-sample.qmd, _audit/panel-outcome.qmd, _audit/siconfi.qmd (names)
+Context: since step 2.9 the final panel carries the 807 municipalities of
+         the nine states (D-2026-10-29-a) and none of the analysis scripts
+         selected a sample, so a rerun would have extended every figure,
+         table and estimate silently (rebuild/tasks.md 1.12). Phase 2R
+         renamed the panel (D-2026-10-30-a) and moved the pooled z-scores,
+         the short-window outcome and the robust and ever treatment flags
+         out of it (D-2026-10-30-b, -d, -e).
+Reason: scripts 07, 08 and 09 filter the panel on geo_biome_amazon_dum == 1
+        right after reading it, through a named constant
+        (SAMPLE_REGION_COL / REGION_FLAG; geo_legal_amazon_dum == 1 is the
+        robustness sample the chapter's data section should announce), and
+        assert 502 municipalities; scripts 10 and 11 inherit the sample of
+        script 09's descriptive panel and keep their 502 assertion. The
+        biome flag reproduces the chapter's sample exactly (the 502
+        municipalities of phase 1). Scripts 07 and 11 build the four price
+        z-scores on that sample with z_on() and the lagged z as the z
+        lagged within municipality; script 07 builds the robust and ever
+        flags with listed_within() on the windows of script 05; the
+        outcome notebook builds the short-window outcome with
+        norm_within(). Every column reference in the five scripts, the
+        chapter text and the three notebooks that read the final panel or
+        the store was migrated through the crosswalk; the two interim
+        panels the sample and outcome notebooks read are renamed through
+        the crosswalk at read. Script 09's own columns (the sprint
+        sources: va_*, the Atlas anchors, exp_*, rev_*, and
+        state_abbreviation / population in the SICONFI files) keep their
+        sprint names until task 4.8 promotes them; scripts 10 and 11 and
+        siconfi.qmd alias the panel's uf where it binds to those files.
+        07-data-analysis-EDA-poverty.R, a dead path superseded by script
+        09, is parked in _annex/parked/.
+Evidence: scratchpad smoke run of 07-11 with outputs redirected (exit 0
+          throughout; no output under output/ or _data/ regenerated before
+          stage 10). One assertion of scripts 10 and 11 fails on the
+          rebuilt inputs and was substituted in the scratchpad copies only:
+          the SICONFI revenue filing screen now flags 29 municipality-years
+          against the 26 logged in D-2026-10-16-b (expenditure 16 and the
+          sample's 16 unchanged), because script 09 joins the phase 2
+          population interim (19 cells moved and 106 NA cells changed
+          since the sprint, steps 2.5 and 2.7); the constant is updated at
+          the stage 10 rerun with its own entry. The stratum split and the
+          ATTs of script 08 also move on the rebuilt panel (26/25 treated
+          against 21/30; high -0.51, low -0.72), to be read at stage 10.
+          The rebuilt z-scores, flags and short-window outcome
+          equal the pre-step values on the 502 municipalities (max abs
+          difference 0; robust 51, ever 61; 42 NA cells); grep closure on
+          the crosswalk's old names
+Affects: the sample of every analysis output from the next rerun (502
+         municipalities, as before step 2.9); no stored value
+Supersedes: the SAMPLE WARNING headers of 2026-10-29 (D-2026-10-29-a, analysis side)

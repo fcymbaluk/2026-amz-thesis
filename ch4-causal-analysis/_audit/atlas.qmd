@@ -20,7 +20,8 @@ three census vintages. Dictionary in the sheet `Siglas`.
 Consumer: the descriptive sprint script `_scripts/09-descriptive-data.R`
 (tasks 4.2, 4.3); promoted to the pipeline under task 4.8.
 The lost legacy input was a Consulta export without geocodes, matched on
-municipality names with an alias table (`07-data-analysis-EDA-poverty.R`).
+municipality names with an alias table (`07-data-analysis-EDA-poverty.R`,
+parked in `_annex/parked/` since phase 2R, 2026-10-30).
 This file carries the seven-digit IBGE code, so the join is exact.
 
 ```{r setup}

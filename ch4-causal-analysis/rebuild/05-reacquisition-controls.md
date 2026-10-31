@@ -26,7 +26,7 @@ census population workbooks (`raw/ibge/Ibge_pop_1970-80-91-00-10.xlsx`,
 | 5 | IBGE Áreas territoriais | Workbook with sheet `AR_BR_MUN_2025`, columns `geocode`, `Area km2` | 2025 release | `_data/raw-ibge-area-munics.xlsx` | `munic_area_km2`; denominator of every crop share and the cattle density |
 | 6 | World Bank Pink Sheet | `CMO-Historical-Data-Annual.xlsx`, sheet "Annual Prices (Real)" (2010 USD, MUV-deflated), skip = 6, units row dropped; series Soybeans, Maize, Rice Thai 5%, Cotton A Index, Beef | 2000 to 2024 | `_data/raw-prices-world bank-pink sheet.xlsx` | `price_index_crop`, `price_index_cattle`, `price_index_crop_lag1`, the `_z` variants (script 06) |
 
-Not in scope: Atlas Brasil (read by `07-data-analysis-EDA-poverty.R` and needed
+Not in scope: Atlas Brasil (read by `07-data-analysis-EDA-poverty.R`, parked in `_annex/parked/` since 2026-10-30, and needed
 for descriptive tasks 4.2 and 4.3, not by 03 or 04). Keep it on the stage 5
 list.
 

@@ -21,11 +21,14 @@
 # Status    2026-10-15, sprint day 3. Decisions D-2026-10-15-a onward in
 #           DECISIONS.md; evidence in _audit/atlas.qmd, ibge_pib.qmd,
 #           siconfi.qmd.
-#           SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
-#           carries 807 municipalities (nine states); this script selects no
-#           sample and scripts 10-11 inherit its output. Do not rerun before
-#           filtering on biome_amazon == 1 (the chapter's sample) or
-#           legal_amazon == 1 (rebuild/tasks.md 1.12).
+#           Phase 2R, session 2 (2026-10-30): the panel's columns carry the
+#           crosswalk names (D-2026-10-30-a); the script selects the
+#           chapter's sample, the 502 biome municipalities, right after the
+#           read (rebuild/tasks.md 1.12, D-2026-10-30-g), and scripts 10-11
+#           inherit it. The sprint's own columns (va_*, the Atlas anchors,
+#           exp_*, rev_*, and state_abbreviation / population in the SICONFI
+#           files) keep their sprint names until task 4.8. Outputs not
+#           regenerated before stage 10.
 
 library(tidyverse)  # magrittr %>% throughout, never the native pipe
 library(readxl)
@@ -48,6 +51,9 @@ VA_YEARS          <- 2002:2023
 BRL_PER_MIL       <- 1000                                   # D-2026-10-10-b
 N_MUNIC_VA_EXPECTED <- 5570L
 N_MUNIC_SAMPLE_EXPECTED <- 502L
+# The chapter's sample (D-2026-10-30-g); geo_legal_amazon_dum is the
+# robustness sample.
+SAMPLE_REGION_COL <- "geo_biome_amazon_dum"
 PANEL_YEARS       <- 2000:2020
 SICONFI_DIR       <- "_data/raw/siconfi"
 SICONFI_FILES     <- c(
@@ -147,7 +153,8 @@ N_MUNIC_SICONFI_EXPECTED <- 808L
 N_UF_EXPECTED     <- 9L
 
 # ---- Read -------------------------------------------------------------------
-panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
+panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds") %>%
+  filter(.data[[SAMPLE_REGION_COL]] == 1L)   # the sample; count asserted below
 # Population from its own series since phase 2, step 2.5 (D-2026-10-23-e);
 # the GDP file no longer carries it. Rerun due at stage 10.
 population_all <- read_rds("_data/interim/ibge_pop_2000_2022.rds") %>%

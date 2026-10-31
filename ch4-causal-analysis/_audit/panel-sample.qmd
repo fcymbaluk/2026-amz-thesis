@@ -34,12 +34,19 @@ options(width = 110)
 ```
 
 ```{r read}
-panel_in <- read_rds("_data/interim/panel_amz_2000_2020.rds")
-panel <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds")
+# Since phase 2R (D-2026-10-30-a) the store carries the crosswalk names and
+# the two interim panels the working names; both interim panels are read
+# through the crosswalk so that the notebook speaks one vocabulary.
+source("_scripts/utils/crosswalk.R")
+xwalk <- read_crosswalk()
+panel_in <- read_rds("_data/interim/panel_amz_2000_2020.rds") %>%
+  rename_through_crosswalk(xwalk)
+panel <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds") %>%
+  rename_through_crosswalk(xwalk)
 muni <- read_rds("_data/interim/panel_amz_baseline.rds")
 BASE_YEARS <- 2000:2003
-WINDOWS <- tibble(window = c("main", "robust"), treat = c("ppcdam_main",
-                  "ppcdam_robust"), start = 2004L, end = c(2010L, 2012L))
+WINDOWS <- tibble(window = c("main", "robust"), treat = c("enf_ppcdam_listed_main_dum",
+                  "enf_ppcdam_listed_robust_dum"), start = 2004L, end = c(2010L, 2012L))
 ```
 
 ## Q1. What does the drop of Mojuí dos Campos remove, and is every remaining municipality observed over the baseline window?
@@ -52,8 +59,8 @@ baseline years per remaining municipality for the deforestation area.
 panel_in %>%
   filter(geocode == "1504752", year %in% BASE_YEARS) %>%
   summarise(rows = n(),
-            across(c(deforestation_area_km2, forest_area_km2, munic_area_km2,
-                     cattle_per_km2, crop_soy_munic_area_share, ppcdam_list),
+            across(c(env_defor_area_km2, env_forest_area_km2, geo_area_km2,
+                     agr_cattle_per_km2, agr_soy_planted_munic_share, enf_ppcdam_listed_dum),
                    ~ sum(!is.na(.x))))
 ```
 
@@ -61,7 +68,7 @@ panel_in %>%
 panel %>%
   filter(year %in% BASE_YEARS) %>%
   group_by(geocode) %>%
-  summarise(years = sum(!is.na(deforestation_area_km2)), .groups = "drop") %>%
+  summarise(years = sum(!is.na(env_defor_area_km2)), .groups = "drop") %>%
   count(years)
 ```
 
@@ -84,9 +91,9 @@ a missing baseline; quantiles of the five baseline measures.
 
 ```{r q2-na}
 muni %>%
-  summarise(across(c(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
-                     forest_share_2000, pressure_defor, pressure_agri,
-                     pressure_score, avail_ok, at_risk_broad, at_risk_narrow),
+  summarise(across(c(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,
+                     env_forest_munic_share_bl0000, env_defor_pressure_idx, agr_pressure_idx,
+                     smp_pressure_idx, smp_avail_dum, smp_atrisk_broad_dum, smp_atrisk_narrow_dum),
                    ~ sum(is.na(.x)))) %>%
   pivot_longer(everything(), names_to = "column", values_to = "na_munic") %>%
   filter(na_munic > 0)
@@ -94,16 +101,16 @@ muni %>%
 
 ```{r q2-which}
 muni %>%
-  filter(is.na(cattle_dens_b) | is.na(crop_share_b)) %>%
-  select(geocode, municipality, state_abbreviation, defor_area_b,
-         cattle_dens_b, crop_share_b, forest_share_2000, avail_ok,
-         at_risk_narrow, ppcdam_robust)
+  filter(is.na(agr_cattle_per_km2_bl0003) | is.na(agr_crop_planted_munic_share_bl0003)) %>%
+  select(geocode, municipality, uf, env_defor_area_km2_bl0003,
+         agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003, env_forest_munic_share_bl0000, smp_avail_dum,
+         smp_atrisk_narrow_dum, enf_ppcdam_listed_robust_dum)
 ```
 
 ```{r q2-quantiles}
 muni %>%
-  select(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
-         forest_share_2000) %>%
+  select(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,
+         env_forest_munic_share_bl0000) %>%
   pivot_longer(everything(), names_to = "baseline") %>%
   group_by(baseline) %>%
   summarise(min = min(value, na.rm = TRUE),
@@ -117,8 +124,8 @@ muni %>%
 **Finding.** Three municipalities have no agricultural baseline: Ipiranga
 do Norte and Itanhangá (MT) have no PAM or PPM rows before their first
 survey year (D-2026-10-10-g), and Santa Cruz do Arari (PA) has no crop
-series at all (D-2026-10-10-i). Their `pressure_agri` and
-`pressure_score` are NA; their flags are defined because the flags read
+series at all (D-2026-10-10-i). Their `agr_pressure_idx` and
+`smp_pressure_idx` are NA; their flags are defined because the flags read
 only clearing and forest share. The baselines are right-skewed, which is
 why the pressure scores log them first. The 2000 forest share exceeds 1
 for one municipality, Nova Ubiratã (1.18), the mesh-vintage mismatch of
@@ -137,7 +144,7 @@ robust (2004-2012) and full-panel definitions.
 
 ```{r q3-cohorts}
 panel %>%
-  filter(ppcdam_list == 1L) %>%
+  filter(enf_ppcdam_listed_dum == 1L) %>%
   group_by(geocode) %>%
   summarise(first = min(year), last = max(year), .groups = "drop") %>%
   count(first, name = "cohort_size")
@@ -147,18 +154,18 @@ panel %>%
 panel %>%
   filter(year >= 2004, year <= 2012) %>%
   group_by(geocode) %>%
-  summarise(listed_years = sum(ppcdam_list),
-            exited = any(ppcdam_list == 1L) &&
-              ppcdam_list[year == 2012] == 0L, .groups = "drop") %>%
+  summarise(listed_years = sum(enf_ppcdam_listed_dum),
+            exited = any(enf_ppcdam_listed_dum == 1L) &&
+              enf_ppcdam_listed_dum[year == 2012] == 0L, .groups = "drop") %>%
   filter(exited) %>%
-  left_join(select(muni, geocode, municipality, state_abbreviation),
+  left_join(select(muni, geocode, municipality, uf),
             by = "geocode")
 ```
 
 ```{r q3-counts}
 muni %>%
-  summarise(main = sum(ppcdam_main), robust = sum(ppcdam_robust),
-            ever_full = sum(ppcdam_ever_full))
+  summarise(main = sum(enf_ppcdam_listed_main_dum), robust = sum(enf_ppcdam_listed_robust_dum),
+            ever_full = sum(enf_ppcdam_ever_dum))
 ```
 
 **Finding.** Listing starts in 2008 (36 municipalities) with a second
@@ -181,11 +188,11 @@ control, in the full sample and under the broad and narrow gates.
 retention <- function(d, treat) {
   tibble(
     sample  = c("full", "avail", "broad", "narrow"),
-    n       = c(nrow(d), sum(d$avail_ok), sum(d$at_risk_broad),
-                sum(d$at_risk_narrow)),
-    treated = c(sum(d[[treat]]), sum(d[[treat]] & d$avail_ok),
-                sum(d[[treat]] & d$at_risk_broad),
-                sum(d[[treat]] & d$at_risk_narrow))
+    n       = c(nrow(d), sum(d$smp_avail_dum), sum(d$smp_atrisk_broad_dum),
+                sum(d$smp_atrisk_narrow_dum)),
+    treated = c(sum(d[[treat]]), sum(d[[treat]] & d$smp_avail_dum),
+                sum(d[[treat]] & d$smp_atrisk_broad_dum),
+                sum(d[[treat]] & d$smp_atrisk_narrow_dum))
   ) %>%
     mutate(control = n - treated)
 }
@@ -213,8 +220,8 @@ inside the at-risk sample must condition on (absolute values above about
 0.1).
 
 ```{r q5-smd}
-bal_covs <- c("forest_share_2000", "defor_area_b", "defor_rate_b",
-              "cattle_dens_b", "crop_share_b")
+bal_covs <- c("env_forest_munic_share_bl0000", "env_defor_area_km2_bl0003", "env_defor_forest_share_bl0003",
+              "agr_cattle_per_km2_bl0003", "agr_crop_planted_munic_share_bl0003")
 smd_tab <- function(d, treat, label) {
   t <- d[d[[treat]] == 1L, ]
   c <- d[d[[treat]] == 0L, ]
@@ -230,12 +237,12 @@ smd_tab <- function(d, treat, label) {
 }
 smd_by_window <- function(treat) {
   bind_rows(smd_tab(muni, treat, "full"),
-            smd_tab(filter(muni, at_risk_broad), treat, "broad"),
-            smd_tab(filter(muni, at_risk_narrow), treat, "narrow")) %>%
+            smd_tab(filter(muni, smp_atrisk_broad_dum), treat, "broad"),
+            smd_tab(filter(muni, smp_atrisk_narrow_dum), treat, "narrow")) %>%
     mutate(across(c(mean_treated, mean_control, smd), ~ round(.x, 3)))
 }
-smd_by_window("ppcdam_main") %>% print(n = 15)
-smd_by_window("ppcdam_robust") %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_main_dum") %>% print(n = 15)
+smd_by_window("enf_ppcdam_listed_robust_dum") %>% print(n = 15)
 ```
 
 **Finding.** Listed municipalities have far higher baseline clearing area
@@ -256,8 +263,8 @@ the two groups' propensity ranges; the units outside it, by window and
 sample. Municipalities with a missing covariate are dropped from the model.
 
 ```{r q6-overlap}
-ps_covs <- c("forest_share_2000", "log_defor_area_b", "log_cattle_dens_b",
-             "log_crop_share_b")
+ps_covs <- c("env_forest_munic_share_bl0000", "env_defor_area_km2_log_bl0003", "agr_cattle_per_km2_log_bl0003",
+             "agr_crop_planted_munic_share_log_bl0003")
 ps_overlap <- function(d, treat, label) {
   cc <- d[complete.cases(d[ps_covs]), ]
   m <- glm(reformulate(ps_covs, response = treat), data = cc,
@@ -276,11 +283,11 @@ ps_overlap <- function(d, treat, label) {
 }
 overlap_by_window <- function(treat) {
   bind_rows(ps_overlap(muni, treat, "full"),
-            ps_overlap(filter(muni, at_risk_broad), treat, "broad"),
-            ps_overlap(filter(muni, at_risk_narrow), treat, "narrow"))
+            ps_overlap(filter(muni, smp_atrisk_broad_dum), treat, "broad"),
+            ps_overlap(filter(muni, smp_atrisk_narrow_dum), treat, "narrow"))
 }
-overlap_by_window("ppcdam_main")
-overlap_by_window("ppcdam_robust")
+overlap_by_window("enf_ppcdam_listed_main_dum")
+overlap_by_window("enf_ppcdam_listed_robust_dum")
 ```
 
 **Finding.** The groups separate sharply: the median listed municipality
@@ -303,7 +310,7 @@ would require if the scores were built in an analysis script.
 
 ```{r q7-moments}
 muni %>%
-  summarise(across(c(pressure_defor, pressure_agri, pressure_score),
+  summarise(across(c(env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx),
                    list(mean = ~ mean(.x, na.rm = TRUE),
                         sd = ~ sd(.x, na.rm = TRUE)))) %>%
   pivot_longer(everything(), names_to = c("score", "stat"),
@@ -315,21 +322,21 @@ muni %>%
 ```{r q7-sample-dependence}
 z <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
 muni %>%
-  filter(at_risk_broad) %>%
-  mutate(defor_broad = z(log_defor_area_b),
-         agri_broad = 0.5 * z(log_cattle_dens_b) +
-           0.5 * z(log_crop_share_b),
+  filter(smp_atrisk_broad_dum) %>%
+  mutate(defor_broad = z(env_defor_area_km2_log_bl0003),
+         agri_broad = 0.5 * z(agr_cattle_per_km2_log_bl0003) +
+           0.5 * z(agr_crop_planted_munic_share_log_bl0003),
          score_broad = z(defor_broad + agri_broad)) %>%
-  summarise(max_shift_defor = max(abs(defor_broad - pressure_defor)),
-            max_shift_agri = max(abs(agri_broad - pressure_agri),
+  summarise(max_shift_defor = max(abs(defor_broad - env_defor_pressure_idx)),
+            max_shift_agri = max(abs(agri_broad - agr_pressure_idx),
                                  na.rm = TRUE),
-            max_shift_score = max(abs(score_broad - pressure_score),
+            max_shift_score = max(abs(score_broad - smp_pressure_idx),
                                   na.rm = TRUE)) %>%
   mutate(across(everything(), ~ round(.x, 3)))
 ```
 
-**Finding.** `pressure_defor` and `pressure_score` have mean 0 and sd 1
-over the 502 municipalities; `pressure_agri` is a half-half mix of two
+**Finding.** `env_defor_pressure_idx` and `smp_pressure_idx` have mean 0 and sd 1
+over the 502 municipalities; `agr_pressure_idx` is a half-half mix of two
 z-scores and has sd below 1 by construction. Restandardizing on the broad
 at-risk sample moves the scores by up to 0.4 standard deviations, which
 is the sample dependence the governing rule for derived variables
@@ -337,7 +344,7 @@ excludes from the panel.
 **Decision.** D-2026-10-12-c (reproduced as inherited; flagged for the
 storage audit, task 2.2).
 **Assertion.** `05-sample-definition.R`, output block (moments of
-`pressure_defor` and `pressure_score` within `Z_TOL`).
+`env_defor_pressure_idx` and `smp_pressure_idx` within `Z_TOL`).
 
 ## Q8. Why does Santa Cruz do Arari's availability flag differ from the recovered panel?
 
@@ -349,15 +356,15 @@ rebuilt panel has the area restored.
 ```{r q8-santa-cruz}
 muni %>%
   filter(geocode == "1506401") %>%
-  select(municipality, defor_area_b, cattle_dens_b, crop_share_b,
-         forest_km2_2000, forest_share_2000, avail_ok, at_risk_broad,
-         at_risk_narrow, pressure_defor, pressure_agri)
+  select(municipality, env_defor_area_km2_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,
+         env_forest_area_km2_bl0000, env_forest_munic_share_bl0000, smp_avail_dum, smp_atrisk_broad_dum,
+         smp_atrisk_narrow_dum, env_defor_pressure_idx, agr_pressure_idx)
 ```
 
 **Finding.** With the restored area the municipality's 2000 forest share
 is 0.94 and it passes the floor; with zero baseline clearing it stays
 outside both gates, as in the recovered panel, so the change touches
-`avail_ok` only (21 cells). The recovered FALSE has no derivation from a
+`smp_avail_dum` only (21 cells). The recovered FALSE has no derivation from a
 missing share (`NA >= 0.10` is NA, not FALSE), so the reference value is
 treated as a legacy artefact and the rebuilt value accepted.
 **Decision.** D-2026-10-12-d.
@@ -367,7 +374,7 @@ treated as a legacy artefact and the rebuilt value accepted.
 ## Q9. Which census anchors does the municipality store carry, and do they agree with the panel?
 
 What is checked: the twelve anchor columns added at phase 2, step 2.6
-(`pia`, `pea`, `informal`, `population` at the 2000, 2010 and 2022
+(`lab_pia_n`, `lab_pea_n`, `lab_informal_share`, `dem_pop_n` at the 2000, 2010 and 2022
 censuses, as read), their NA pattern, their agreement with the panel's
 values in 2000 and 2010, and the gap between the 2000 anchor and the
 interpolated 2002-2007 mean that the analysis script currently uses as a
@@ -380,28 +387,28 @@ muni %>%
   pivot_longer(everything(), names_to = "column", values_to = "n_na") %>%
   filter(n_na > 0)
 muni %>%
-  filter(is.na(pia_c2000)) %>%
-  select(geocode, municipality, state_abbreviation, pia_c2010, population_c2010)
+  filter(is.na(lab_pia_n_c2000)) %>%
+  select(geocode, municipality, uf, lab_pia_n_c2010, dem_pop_n_c2010)
 panel %>%
   filter(year %in% c(2000L, 2010L)) %>%
-  select(geocode, year, pea, informal, population) %>%
+  select(geocode, year, lab_pea_n, lab_informal_share, dem_pop_n) %>%
   left_join(muni %>% select(geocode, all_of(anchor_cols)), by = "geocode") %>%
-  mutate(pea_c = if_else(year == 2000L, pea_c2000, pea_c2010),
-         informal_c = if_else(year == 2000L, informal_c2000, informal_c2010),
-         population_c = if_else(year == 2000L, population_c2000, population_c2010)) %>%
-  summarise(pea_max_diff = max(abs(pea - pea_c), na.rm = TRUE),
-            informal_max_diff = max(abs(informal - informal_c), na.rm = TRUE),
-            population_max_diff = max(abs(population - population_c), na.rm = TRUE),
-            na_same = all(is.na(pea) == is.na(pea_c) & is.na(informal) == is.na(informal_c) &
-                            is.na(population) == is.na(population_c)))
+  mutate(pea_c = if_else(year == 2000L, lab_pea_n_c2000, lab_pea_n_c2010),
+         informal_c = if_else(year == 2000L, lab_informal_share_c2000, lab_informal_share_c2010),
+         population_c = if_else(year == 2000L, dem_pop_n_c2000, dem_pop_n_c2010)) %>%
+  summarise(pea_max_diff = max(abs(lab_pea_n - pea_c), na.rm = TRUE),
+            informal_max_diff = max(abs(lab_informal_share - informal_c), na.rm = TRUE),
+            population_max_diff = max(abs(dem_pop_n - population_c), na.rm = TRUE),
+            na_same = all(is.na(lab_pea_n) == is.na(pea_c) & is.na(lab_informal_share) == is.na(informal_c) &
+                            is.na(dem_pop_n) == is.na(population_c)))
 panel %>%
   filter(year %in% 2002:2007) %>%
   group_by(geocode) %>%
-  summarise(informal_0207 = mean(informal), population_0207 = mean(population),
+  summarise(informal_0207 = mean(lab_informal_share), population_0207 = mean(dem_pop_n),
             .groups = "drop") %>%
-  left_join(muni %>% select(geocode, informal_c2000, population_c2000), by = "geocode") %>%
-  transmute(informal_points_from_2000 = informal_0207 - informal_c2000,
-            population_ratio_to_2000 = population_0207 / population_c2000) %>%
+  left_join(muni %>% select(geocode, lab_informal_share_c2000, dem_pop_n_c2000), by = "geocode") %>%
+  transmute(informal_points_from_2000 = informal_0207 - lab_informal_share_c2000,
+            population_ratio_to_2000 = population_0207 / dem_pop_n_c2000) %>%
   summary()
 ```
 
@@ -437,31 +444,31 @@ biome municipalities (D-2026-10-29-c).
 
 ```{r q10-gates}
 muni %>%
-  group_by(biome_amazon, legal_amazon) %>%
-  summarise(municipalities = n(), avail_ok = sum(avail_ok),
-            at_risk_broad = sum(at_risk_broad), at_risk_narrow = sum(at_risk_narrow),
-            ppcdam_main = sum(ppcdam_main), ppcdam_robust = sum(ppcdam_robust),
-            ppcdam_ever_full = sum(ppcdam_ever_full), .groups = "drop")
+  group_by(geo_biome_amazon_dum, geo_legal_amazon_dum) %>%
+  summarise(municipalities = n(), smp_avail_dum = sum(smp_avail_dum),
+            smp_atrisk_broad_dum = sum(smp_atrisk_broad_dum), smp_atrisk_narrow_dum = sum(smp_atrisk_narrow_dum),
+            enf_ppcdam_listed_main_dum = sum(enf_ppcdam_listed_main_dum), enf_ppcdam_listed_robust_dum = sum(enf_ppcdam_listed_robust_dum),
+            enf_ppcdam_ever_dum = sum(enf_ppcdam_ever_dum), .groups = "drop")
 muni %>%
-  filter(ppcdam_ever_full == 1L, biome_amazon == 0L) %>%
-  select(municipality, state_abbreviation, defor_area_b, forest_share_2000,
-         at_risk_narrow, ppcdam_main, ppcdam_robust, pressure_score)
-muni %>% filter(is.na(pia_c2000)) %>% count(biome_amazon)
+  filter(enf_ppcdam_ever_dum == 1L, geo_biome_amazon_dum == 0L) %>%
+  select(municipality, uf, env_defor_area_km2_bl0003, env_forest_munic_share_bl0000,
+         smp_atrisk_narrow_dum, enf_ppcdam_listed_main_dum, enf_ppcdam_listed_robust_dum, smp_pressure_idx)
+muni %>% filter(is.na(lab_pia_n_c2000)) %>% count(geo_biome_amazon_dum)
 ```
 
 ```{r q10-baselines}
 muni %>%
-  group_by(biome_amazon) %>%
-  summarise(across(c(defor_area_b, defor_rate_b, cattle_dens_b, crop_share_b,
-                     forest_share_2000),
+  group_by(geo_biome_amazon_dum) %>%
+  summarise(across(c(env_defor_area_km2_bl0003, env_defor_forest_share_bl0003, agr_cattle_per_km2_bl0003, agr_crop_planted_munic_share_bl0003,
+                     env_forest_munic_share_bl0000),
                    ~ round(median(.x, na.rm = TRUE), 3)), .groups = "drop")
 muni %>%
-  group_by(biome_amazon) %>%
-  summarise(across(c(pressure_defor, pressure_agri, pressure_score),
+  group_by(geo_biome_amazon_dum) %>%
+  summarise(across(c(env_defor_pressure_idx, agr_pressure_idx, smp_pressure_idx),
                    list(mean = ~ mean(.x, na.rm = TRUE), sd = ~ sd(.x, na.rm = TRUE),
                         max = ~ max(.x, na.rm = TRUE))), .groups = "drop") %>%
-  pivot_longer(-biome_amazon) %>%
-  pivot_wider(names_from = biome_amazon, values_from = value, names_prefix = "biome_") %>%
+  pivot_longer(-geo_biome_amazon_dum) %>%
+  pivot_wider(names_from = geo_biome_amazon_dum, values_from = value, names_prefix = "biome_") %>%
   mutate(across(where(is.double), ~ round(.x, 3)))
 ```
 
@@ -482,7 +489,7 @@ Cerrado municipalities added to the lookup have no 2000 anchor
 carry denser cattle (20 against 13 head per km²) and more crop land
 (1.6 against 0.6 percent of the territory). The pressure scores keep the
 502 as reference population: mean 0 and sd 1 there; outside the biome
-`pressure_defor` averages -0.29 and `pressure_agri` 0.65 with a maximum
+`env_defor_pressure_idx` averages -0.29 and `agr_pressure_idx` 0.65 with a maximum
 of 10 standard deviations (the soy municipalities of Mato Grosso's
 Cerrado), so the composite averages 0.24 with sd 1.17. The scores remain
 the sample-dependent variables Q7 describes, now read on the biome

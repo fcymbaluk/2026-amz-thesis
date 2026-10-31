@@ -23,17 +23,19 @@
 #          _scripts/ and not in _scripts/models/. Sample, lag structure and
 #          variable scaling: D-2026-10-17-a; groups and windows
 #          D-2026-10-16-a; SICONFI filing screen D-2026-10-16-b.
-#          SAMPLE WARNING (2026-10-29, step 2.9, D-2026-10-29-a): the final panel now
-#          carries 807 municipalities (nine states) and this script inherits
-#          the sample of script 09, which selects none yet. Do not rerun before
-#          script 09 filters on the biome_amazon / legal_amazon flags
-#          (rebuild/tasks.md 1.12).
+#          Phase 2R, session 2 (2026-10-30): the panel's columns carry the
+#          crosswalk names (D-2026-10-30-a); the sample is selected by
+#          script 09 (502 biome municipalities, D-2026-10-30-g) and asserted
+#          here; the pooled price z-scores left the panel and are built on
+#          that sample with z_on() (D-2026-10-30-b). Outputs not
+#          regenerated before stage 10.
 
 library(tidyverse)   # magrittr %>% throughout, never the native pipe
 library(fixest)
 
 source("_scripts/utils/theme_ch4.R")
 source("_scripts/utils/screen_siconfi.R")
+source("_scripts/utils/derived_variables.R")
 
 # ---- Constants --------------------------------------------------------------
 N_MUNIC_EXPECTED  <- 502L
@@ -102,17 +104,32 @@ stopifnot(
   setequal(panel$year, PANEL_YEARS),
   nrow(panel) == N_MUNIC_EXPECTED * length(PANEL_YEARS),
   !anyDuplicated(paste(panel$geocode, panel$year)),
-  all(c("deforestation_area_km2", "deforestation_forest_rate",
-        "defor_norm_ref0007", "bf_families_quota_ratio",
-        "bf_transfers_pc_brl_2024", "emp_pia_rate_total",
-        "gdp_per_capita_2024_log", "price_index_crop_lag1_z",
-        "price_index_cattle_lag1_z", "cattle_per_km2", "ppcdam_list",
+  all(c("env_defor_area_km2", "env_defor_forest_share",
+        "env_defor_area_z_bl0007", "sop_bf_fam_quota_ratio",
+        "sop_bf_transf_pc_brl24", "lab_emp_formal_pia_rate",
+        "ecn_gdp_pc_brl24_log", "mkt_price_crop_idx",
+        "mkt_price_cattle_idx", "agr_cattle_per_km2", "enf_ppcdam_listed_dum",
         "exp_health_pc_brl_2024", "exp_education_pc_brl_2024",
         "exp_social_assistance_pc_brl_2024", "exp_social_pc_brl_2024",
         "exp_total_pc_brl_2024", "rev_current_pc_brl_2024") %in% names(panel)),
-  all(!is.na(panel$deforestation_area_km2)),
-  is.integer(panel$ppcdam_list)
+  all(!is.na(panel$env_defor_area_km2)),
+  is.integer(panel$enf_ppcdam_listed_dum)
 )
+
+# ---- Transform: price z-scores (D-2026-10-30-b) ----------------------------
+# The pooled standardisation of the price indices is sample-dependent and
+# left the panel at phase 2R: centred and scaled here on the script's
+# sample, every municipality-year of the 502 biome municipalities, which is
+# the reference population script 04 used (D-2026-10-29-c); the lagged z
+# is the z lagged within municipality on the balanced panel.
+panel <- panel %>%
+  arrange(geocode, year) %>%
+  mutate(mkt_price_crop_idx_z   = z_on(mkt_price_crop_idx),
+         mkt_price_cattle_idx_z = z_on(mkt_price_cattle_idx)) %>%
+  group_by(geocode) %>%
+  mutate(mkt_price_crop_idx_z_lag1   = lag(mkt_price_crop_idx_z),
+         mkt_price_cattle_idx_z_lag1 = lag(mkt_price_cattle_idx_z)) %>%
+  ungroup()
 
 # ---- Transform: SICONFI filing screen (D-2026-10-16-b) ---------------------
 # The same flags and application as script 10: computed on the
@@ -135,7 +152,7 @@ stopifnot(
 # ---- Transform: regression panel (D-2026-10-17-a) --------------------------
 # Lags are positional within municipality on the balanced 2000-2020 panel
 # (asserted above), so lag(x, 1) is the previous year's value. The price
-# indices enter through the pipeline's own one-year lags (D-2026-10-11-d)
+# indices enter through the lagged z-scores built above (D-2026-10-30-b)
 # and are not lagged again. Listing status is contemporaneous: it is the
 # enforcement regime of the outcome year, not a social condition. A function
 # absent from a reporting year is a zero (D-2026-10-15-c), so expenditure
@@ -144,21 +161,21 @@ reg <- panel %>%
   arrange(geocode, year) %>%
   group_by(geocode) %>%
   mutate(
-    y_log_km2       = log1p(deforestation_area_km2),
-    y_rate          = deforestation_forest_rate,
-    y_norm          = defor_norm_ref0007,
-    bf_cov_l1       = lag(bf_families_quota_ratio, CORR_LAG),
-    bf_pc_l1        = lag(bf_transfers_pc_brl_2024, CORR_LAG) / TRANSFERS_SCALE,
+    y_log_km2       = log1p(env_defor_area_km2),
+    y_rate          = env_defor_forest_share,
+    y_norm          = env_defor_area_z_bl0007,
+    bf_cov_l1       = lag(sop_bf_fam_quota_ratio, CORR_LAG),
+    bf_pc_l1        = lag(sop_bf_transf_pc_brl24, CORR_LAG) / TRANSFERS_SCALE,
     log_health_l1   = lag(log1p(exp_health_pc_brl_2024), CORR_LAG),
     log_educ_l1     = lag(log1p(exp_education_pc_brl_2024), CORR_LAG),
     log_assist_l1   = lag(log1p(exp_social_assistance_pc_brl_2024), CORR_LAG),
     log_social_l1   = lag(log1p(exp_social_pc_brl_2024), CORR_LAG),
-    emp_l1          = lag(emp_pia_rate_total, CORR_LAG) * EMP_SCALE,
-    log_gdp_l1      = lag(gdp_per_capita_2024_log, CORR_LAG),
-    cattle_l1       = lag(cattle_per_km2, CORR_LAG),
-    price_crop_l1   = price_index_crop_lag1_z,
-    price_cattle_l1 = price_index_cattle_lag1_z,
-    listed          = ppcdam_list
+    emp_l1          = lag(lab_emp_formal_pia_rate, CORR_LAG) * EMP_SCALE,
+    log_gdp_l1      = lag(ecn_gdp_pc_brl24_log, CORR_LAG),
+    cattle_l1       = lag(agr_cattle_per_km2, CORR_LAG),
+    price_crop_l1   = mkt_price_crop_idx_z_lag1,
+    price_cattle_l1 = mkt_price_cattle_idx_z_lag1,
+    listed          = enf_ppcdam_listed_dum
   ) %>%
   ungroup() %>%
   filter(year %in% CORR_YEARS)
@@ -264,13 +281,13 @@ window_mean <- function(x, year, years, min_n = 1L) {
 ld <- panel %>%
   group_by(geocode) %>%
   summarise(
-    ever_listed = as.integer(any(ppcdam_list == 1L)),
-    d_log_defor = log1p(window_mean(deforestation_area_km2, year, END_YEARS)) -
-      log1p(window_mean(deforestation_area_km2, year, BASELINE_YEARS)),
-    d_bf_cov = window_mean(bf_families_quota_ratio, year, BF_END_YEARS) -
-      window_mean(bf_families_quota_ratio, year, BASELINE_YEARS),
-    d_bf_pc = (window_mean(bf_transfers_pc_brl_2024, year, BF_END_YEARS) -
-      window_mean(bf_transfers_pc_brl_2024, year, BASELINE_YEARS)) /
+    ever_listed = as.integer(any(enf_ppcdam_listed_dum == 1L)),
+    d_log_defor = log1p(window_mean(env_defor_area_km2, year, END_YEARS)) -
+      log1p(window_mean(env_defor_area_km2, year, BASELINE_YEARS)),
+    d_bf_cov = window_mean(sop_bf_fam_quota_ratio, year, BF_END_YEARS) -
+      window_mean(sop_bf_fam_quota_ratio, year, BASELINE_YEARS),
+    d_bf_pc = (window_mean(sop_bf_transf_pc_brl24, year, BF_END_YEARS) -
+      window_mean(sop_bf_transf_pc_brl24, year, BASELINE_YEARS)) /
       TRANSFERS_SCALE,
     d_log_health = log1p(window_mean(exp_health_pc_brl_2024, year, END_YEARS,
                                      MIN_BASELINE_REPORTS)) -
@@ -288,16 +305,16 @@ ld <- panel %>%
                                      MIN_BASELINE_REPORTS)) -
       log1p(window_mean(exp_social_pc_brl_2024, year, BASELINE_YEARS,
                         MIN_BASELINE_REPORTS)),
-    d_emp = (window_mean(emp_pia_rate_total, year, END_YEARS) -
-      window_mean(emp_pia_rate_total, year, BASELINE_YEARS)) * EMP_SCALE,
-    d_log_gdp = window_mean(gdp_per_capita_2024_log, year, END_YEARS) -
-      window_mean(gdp_per_capita_2024_log, year, BASELINE_YEARS),
-    d_price_crop = window_mean(price_index_crop_z, year, END_YEARS) -
-      window_mean(price_index_crop_z, year, BASELINE_YEARS),
-    d_price_cattle = window_mean(price_index_cattle_z, year, END_YEARS) -
-      window_mean(price_index_cattle_z, year, BASELINE_YEARS),
-    d_cattle = window_mean(cattle_per_km2, year, END_YEARS) -
-      window_mean(cattle_per_km2, year, BASELINE_YEARS),
+    d_emp = (window_mean(lab_emp_formal_pia_rate, year, END_YEARS) -
+      window_mean(lab_emp_formal_pia_rate, year, BASELINE_YEARS)) * EMP_SCALE,
+    d_log_gdp = window_mean(ecn_gdp_pc_brl24_log, year, END_YEARS) -
+      window_mean(ecn_gdp_pc_brl24_log, year, BASELINE_YEARS),
+    d_price_crop = window_mean(mkt_price_crop_idx_z, year, END_YEARS) -
+      window_mean(mkt_price_crop_idx_z, year, BASELINE_YEARS),
+    d_price_cattle = window_mean(mkt_price_cattle_idx_z, year, END_YEARS) -
+      window_mean(mkt_price_cattle_idx_z, year, BASELINE_YEARS),
+    d_cattle = window_mean(agr_cattle_per_km2, year, END_YEARS) -
+      window_mean(agr_cattle_per_km2, year, BASELINE_YEARS),
     .groups = "drop"
   )
 ld_vars <- c("d_log_defor", names(LD_LABELS), names(LD_TOTAL),

@@ -40,7 +40,7 @@ exp_munic <- read_rds("_data/interim/siconfi_expenditure_munic_2000_2024.rds")
 exp_uf <- read_rds("_data/interim/siconfi_expenditure_uf_2013_2024.rds")
 rev_munic <- read_rds("_data/interim/siconfi_revenue_munic_2000_2024.rds")
 panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
-sample_geo <- panel %>% distinct(geocode, state_abbreviation)
+sample_geo <- panel %>% distinct(geocode, state_abbreviation = uf)  # the panel's key is uf since phase 2R
 six <- c("Saúde", "Educação", "Assistência Social", "Previdência Social", "Gestão Ambiental")
 totals <- c("Despesas por Função", "Total Geral da Despesa por Função",
             "Despesas (Exceto Intra-Orçamentárias)", "Despesas (Exceto Intraorçamentárias)",
@@ -293,7 +293,7 @@ pd %>% select(exp_total_pc_brl_2024, exp_health_pc_brl_2024, exp_education_pc_br
 pd %>% summarise(rows = n(), with_expenditure = sum(!is.na(exp_total_brl)), with_revenue = sum(!is.na(rev_total_brl)),
                  both = sum(!is.na(exp_total_brl) & !is.na(rev_total_brl)))
 pd %>% filter(exp_total_pc_brl_2024 > 15000 | rev_total_pc_brl_2024 > 15000) %>%
-  select(geocode, municipality, state_abbreviation, year, population, exp_total_pc_brl_2024, rev_total_pc_brl_2024) %>%
+  select(geocode, municipality, uf, year, dem_pop_n, exp_total_pc_brl_2024, rev_total_pc_brl_2024) %>%
   mutate(across(c(exp_total_pc_brl_2024, rev_total_pc_brl_2024), round)) %>% arrange(desc(exp_total_pc_brl_2024)) %>% head(10)
 ```
 

@@ -15,7 +15,10 @@ execute:
 Source: none. This notebook audits the outcome stage: the within-municipality
 normalized deforestation increment on its two pre-treatment reference windows
 and the exposure offset for the Poisson specifications, with the diagnostics
-the legacy script printed to the console.
+the legacy script printed to the console. Since phase 2R the pipeline stores
+the main window only (D-2026-10-30-e); the short-window outcome is rebuilt
+here with the shared `norm_within()`, and the sample panel is read through
+the crosswalk so that both objects carry the final names (D-2026-10-30-a).
 Pipeline script: `_scripts/06-normalized-outcome.R`.
 Final output: `_data/final/panel_amz_2000_2020_final.rds`.
 Equivalence with the recovered panel is not checked here (the notebook never
@@ -32,12 +35,18 @@ options(width = 110)
 ```
 
 ```{r read}
-panel_in <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds")
-panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds")
+source("_scripts/utils/crosswalk.R")
+source("_scripts/utils/derived_variables.R")
+xwalk <- read_crosswalk()
+panel_in <- read_rds("_data/interim/panel_amz_2000_2020_sample.rds") %>%
+  rename_through_crosswalk(xwalk)
 REF_SHORT <- 2000:2003
 REF_MAIN  <- 2000:2007
 SD_FLOOR  <- 1e-9
-SAMPLES <- c("all", "avail_ok", "at_risk_broad", "at_risk_narrow")
+panel <- read_rds("_data/final/panel_amz_2000_2020_final.rds") %>%
+  norm_within("env_defor_area_km2", REF_SHORT, "env_defor_area_z_bl0003",
+              SD_FLOOR)
+SAMPLES <- c("all", "smp_avail_dum", "smp_atrisk_broad_dum", "smp_atrisk_narrow_dum")
 in_sample <- function(d, s) if (s == "all") d else filter(d, .data[[s]])
 ```
 
@@ -52,15 +61,15 @@ tibble(
   rows = nrow(panel_in),
   columns = ncol(panel_in),
   years = paste(range(panel_in$year), collapse = "-"),
-  defor_na = sum(is.na(panel_in$deforestation_area_km2)),
-  defor_min = min(panel_in$deforestation_area_km2),
-  defor_zero_cells = sum(panel_in$deforestation_area_km2 == 0),
-  forest_na = sum(is.na(panel_in$forest_area_km2)),
-  forest_min = round(min(panel_in$forest_area_km2), 1)
+  defor_na = sum(is.na(panel_in$env_defor_area_km2)),
+  defor_min = min(panel_in$env_defor_area_km2),
+  defor_zero_cells = sum(panel_in$env_defor_area_km2 == 0),
+  forest_na = sum(is.na(panel_in$env_forest_area_km2)),
+  forest_min = round(min(panel_in$env_forest_area_km2), 1)
 )
 panel_in %>%
-  filter(deforestation_area_km2 == 0) %>%
-  count(municipality, state_abbreviation, name = "zero_years") %>%
+  filter(env_defor_area_km2 == 0) %>%
+  count(municipality, uf, name = "zero_years") %>%
   arrange(desc(zero_years)) %>%
   head(10)
 ```
@@ -86,31 +95,31 @@ denominator inflates their values.
 
 ```{r q2}
 ref_sd <- panel_in %>%
-  group_by(geocode, municipality, state_abbreviation,
-           avail_ok, at_risk_broad, at_risk_narrow) %>%
+  group_by(geocode, municipality, uf,
+           smp_avail_dum, smp_atrisk_broad_dum, smp_atrisk_narrow_dum) %>%
   summarise(
-    mean_short = mean(deforestation_area_km2[year %in% REF_SHORT]),
-    sd_short   = sd(deforestation_area_km2[year %in% REF_SHORT]),
-    mean_main  = mean(deforestation_area_km2[year %in% REF_MAIN]),
-    sd_main    = sd(deforestation_area_km2[year %in% REF_MAIN]),
+    mean_short = mean(env_defor_area_km2[year %in% REF_SHORT]),
+    sd_short   = sd(env_defor_area_km2[year %in% REF_SHORT]),
+    mean_main  = mean(env_defor_area_km2[year %in% REF_MAIN]),
+    sd_main    = sd(env_defor_area_km2[year %in% REF_MAIN]),
     .groups = "drop"
   )
 ref_sd %>%
   filter(sd_short <= SD_FLOOR | sd_main <= SD_FLOOR) %>%
-  select(municipality, state_abbreviation, avail_ok, at_risk_broad,
+  select(municipality, uf, smp_avail_dum, smp_atrisk_broad_dum,
          mean_short, sd_short, mean_main, sd_main)
 ref_sd %>%
   filter(sd_main < 0.1) %>%
   arrange(sd_main) %>%
-  select(municipality, state_abbreviation, avail_ok, at_risk_broad,
+  select(municipality, uf, smp_avail_dum, smp_atrisk_broad_dum,
          mean_main, sd_main)
 tibble(
   degenerate_short = sum(ref_sd$sd_short <= SD_FLOOR),
   degenerate_main = sum(ref_sd$sd_main <= SD_FLOOR),
   sd_main_below_0_1 = sum(ref_sd$sd_main < 0.1),
-  of_which_at_risk_broad = sum(ref_sd$sd_main < 0.1 & ref_sd$at_risk_broad),
-  na_cells_short = sum(is.na(panel$defor_norm_ref0003)),
-  na_cells_main = sum(is.na(panel$defor_norm_ref0007))
+  of_which_at_risk_broad = sum(ref_sd$sd_main < 0.1 & ref_sd$smp_atrisk_broad_dum),
+  na_cells_short = sum(is.na(panel$env_defor_area_z_bl0003)),
+  na_cells_main = sum(is.na(panel$env_defor_area_z_bl0007))
 )
 ```
 
@@ -148,22 +157,22 @@ q_tbl <- function(x) {
 map_dfr(SAMPLES, function(s) {
   d <- in_sample(panel, s)
   bind_rows(
-    q_tbl(d$defor_norm_ref0003) %>% mutate(outcome = "ref0003"),
-    q_tbl(d$defor_norm_ref0007) %>% mutate(outcome = "ref0007")
+    q_tbl(d$env_defor_area_z_bl0003) %>% mutate(outcome = "ref0003"),
+    q_tbl(d$env_defor_area_z_bl0007) %>% mutate(outcome = "ref0007")
   ) %>% mutate(sample = s, n = nrow(d))
 }) %>%
   select(sample, outcome, n, everything()) %>%
   mutate(across(where(is.double), ~ round(.x, 2)))
 panel %>%
-  filter(at_risk_narrow) %>%
-  arrange(desc(defor_norm_ref0007)) %>%
-  select(municipality, state_abbreviation, year, deforestation_area_km2,
-         defor_norm_ref0007) %>%
+  filter(smp_atrisk_narrow_dum) %>%
+  arrange(desc(env_defor_area_z_bl0007)) %>%
+  select(municipality, uf, year, env_defor_area_km2,
+         env_defor_area_z_bl0007) %>%
   head(8)
 panel %>%
-  arrange(desc(defor_norm_ref0007)) %>%
-  select(municipality, state_abbreviation, year, at_risk_broad,
-         deforestation_area_km2, defor_norm_ref0007) %>%
+  arrange(desc(env_defor_area_z_bl0007)) %>%
+  select(municipality, uf, year, smp_atrisk_broad_dum,
+         env_defor_area_km2, env_defor_area_z_bl0007) %>%
   head(8)
 ```
 
@@ -201,17 +210,17 @@ map_dfr(SAMPLES, function(s) {
          p05 = quantile(d$sd_ratio, .05), p25 = quantile(d$sd_ratio, .25),
          med = median(d$sd_ratio), p75 = quantile(d$sd_ratio, .75),
          p95 = quantile(d$sd_ratio, .95),
-         cor_outcomes = cor(in_sample(panel, s)$defor_norm_ref0003,
-                            in_sample(panel, s)$defor_norm_ref0007,
+         cor_outcomes = cor(in_sample(panel, s)$env_defor_area_z_bl0003,
+                            in_sample(panel, s)$env_defor_area_z_bl0007,
                             use = "complete.obs"))
 }) %>% mutate(across(where(is.double), ~ round(.x, 3)))
 demeaned <- panel %>%
-  filter(!is.na(defor_norm_ref0007)) %>%
+  filter(!is.na(env_defor_area_z_bl0007)) %>%
   left_join(select(ref_sd, geocode, sd_main), by = "geocode") %>%
   group_by(geocode) %>%
-  mutate(y_ref = defor_norm_ref0007 - mean(defor_norm_ref0007),
-         y_alt = deforestation_area_km2 / sd_main -
-           mean(deforestation_area_km2 / sd_main)) %>%
+  mutate(y_ref = env_defor_area_z_bl0007 - mean(env_defor_area_z_bl0007),
+         y_alt = env_defor_area_km2 / sd_main -
+           mean(env_defor_area_km2 / sd_main)) %>%
   ungroup()
 tibble(max_abs_gap = max(abs(demeaned$y_ref - demeaned$y_alt)))
 ```
@@ -238,16 +247,16 @@ names are generated from the window constants and tied by assertion).
 ```{r q5}
 panel %>%
   group_by(year) %>%
-  summarise(na_offset = sum(is.na(log_forest_exposure)),
-            min_offset = round(min(log_forest_exposure), 2),
-            max_offset = round(max(log_forest_exposure), 2),
+  summarise(na_offset = sum(is.na(env_forest_exposure_log)),
+            min_offset = round(min(env_forest_exposure_log), 2),
+            max_offset = round(max(env_forest_exposure_log), 2),
             .groups = "drop") %>%
   filter(year <= 2002 | year == max(year))
 panel %>%
   filter(year > min(year)) %>%
   group_by(geocode) %>%
-  summarise(lag_ok = all(abs(exp(log_forest_exposure) -
-                               lag(forest_area_km2, default = NA)) < 1e-6,
+  summarise(lag_ok = all(abs(exp(env_forest_exposure_log) -
+                               lag(env_forest_area_km2, default = NA)) < 1e-6,
                          na.rm = TRUE), .groups = "drop") %>%
   count(lag_ok)
 ```
