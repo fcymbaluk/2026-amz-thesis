@@ -3,7 +3,7 @@ chapter: 2
 title: Historical trajectory
 stage: drafting # conception | drafting | full draft | under review | revising | final
 updated: 2026-11-03
-current_focus: "Work plan step 2: corpus assembly in Zotero and imports into ATLAS.ti (highlights in Zotero, codes in ATLAS.ti project 2026-amz-ch2; importer in scratch/zotero_to_atlasti.py; codebook approved 2026-11-03 and created in the project). First source imported 2026-11-03: london2007, The Last Forest, 152 highlights placed as dimension-coded quotations (150 by the importer, 2 by hand after OCR drop-cap glitches at chapter openings); the author now codes it in ATLAS.ti; the next sources are highlighted, then imported on signal."
+current_focus: "Work plan step 2: corpus assembly in Zotero and imports into ATLAS.ti (highlights in Zotero, codes in ATLAS.ti project 2026-amz-ch2; importer in scratch/zotero_to_atlasti.py; codebook approved 2026-11-03 and created in the project). First source imported 2026-11-03: london2007, The Last Forest, 152 highlights placed as dimension-coded quotations (150 by the importer, 2 by hand after OCR drop-cap glitches at chapter openings); the author now codes it in ATLAS.ti. On the author's request, Claude Code produced code and claim proposals for all 152 quotations (839 codings, validated against the codebook, review table in scratch/atlasti-coding/); they await four author decisions (pre-1870 period code, the 2003/2004 rule, new policy codes, a logger actor code) before being written with the ai-proposed marker. The next sources are highlighted, then imported on signal."
 next_milestone: "Corpus inventory at ch2-historical/coding/corpus-inventory.csv and the corpus imported into ATLAS.ti"
 ---
 
