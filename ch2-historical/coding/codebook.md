@@ -411,7 +411,10 @@ families carry the color of the dimension they refine (`as-` red,
 `inst-` light blue, `gov-` light green); the other families are
 uncolored. Folders and groups are organization only (rule 2). A code
 added to this file is created in the project the same way, by hand or
-on request.
+on request. One code outside the families, `ai-proposed` (gray), is a
+review marker, not evidence: it sits on every quotation an agent coded
+until the author reviews it (guidance, "Zotero and ATLAS.ti workflow"),
+and the export's validation treats it as such.
 
 **Source attributes.** The source of a quotation is its document, named
 by the citation key; no code names a source. Source tier, the one
