@@ -413,6 +413,13 @@ uncolored. Folders and groups are organization only (rule 2). A code
 added to this file is created in the project the same way, by hand or
 on request.
 
+**Source attributes.** The source of a quotation is its document, named
+by the citation key; no code names a source. Source tier, the one
+attribute the matrix filters on (the source-tier rule), is a document
+group: `Tier: academic` and `Tier: journalistic` (created 2026-11-03,
+author's decision), each document added to one at import, mirroring
+the tier column of `corpus-inventory.csv`.
+
 **Export.** The quotation table (document, quotation text, codes,
 comment) is exported from ATLAS.ti into `ch2-historical/evidence/
 quotations/`, dated; the page and the Zotero key are parsed from the
