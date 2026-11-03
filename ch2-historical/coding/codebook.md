@@ -1,7 +1,7 @@
 ---
 role: codebook
 chapter: 2
-status: draft for the author's approval
+status: approved by the author on 2026-11-03; grows only by inductive codes added during coding (see "Adding codes")
 created: 2026-10-18
 updated: 2026-11-03
 source: "ch2-historical/GUIDANCE.md (dimensions as revised 2026-10-18); the author's draft codebook of 2026-10-18; revised 2026-10-20 for coding in ATLAS.ti (docs/decisions/2026-10-20-ch2-highlights-in-zotero-coding-in-atlasti.md)"
@@ -99,13 +99,14 @@ later one, and the comment names the comparison.
 | `p5-drift` | 2016–2022 | Asymmetric drift: environmental dismantling versus social-track survival |
 | `p6-present` | 2023– | Present conjuncture |
 
-Two deviations from the author's draft, for the author's approval: the
-draft's `p3_pressure` is `p3-founding` here, since the guidance names the
-period by the founding of both tracks; and the years 1946–1963, which
-neither the guidance nor the draft assigned, are given to `p2-integration`
-(SPVEA, 1953, and the Belém–Brasília highway, 1960, are integration
-policies by the chapter's own criterion). Period boundaries remain
-provisional in the guidance; a change there changes this table.
+Two deviations from the author's draft, approved by the author on
+2026-11-03: the draft's `p3_pressure` is `p3-founding` here, since the
+guidance names the period by the founding of both tracks; and the years
+1946–1963, which neither the guidance nor the draft assigned, are given
+to `p2-integration` (SPVEA, 1953, and the Belém–Brasília highway, 1960,
+are integration policies by the chapter's own criterion). Period
+boundaries remain provisional in the guidance; a change there changes
+this table.
 
 ### Asset (multi-valued; red highlights only): `as-`
 
@@ -151,7 +152,8 @@ The draft's `security_` is not kept: if it meant the national-security
 doctrine of the military period, that is a motive for integration policy
 and belongs in the comment or in a `dir-exploit` green highlight on the
 federal role; if it meant public security and rural violence, that is
-dimension 1. The author decides whether either reading needs a code.
+dimension 1. Neither reading gets a code (author's decision,
+2026-11-03): the two rules above cover them.
 
 ### Level (multi-valued; green highlights only): `gov-`
 
@@ -410,6 +412,13 @@ families carry the color of the dimension they refine (`as-` red,
 uncolored. Folders and groups are organization only (rule 2). A code
 added to this file is created in the project the same way, by hand or
 on request.
+
+**Source attributes.** The source of a quotation is its document, named
+by the citation key; no code names a source. Source tier, the one
+attribute the matrix filters on (the source-tier rule), is a document
+group: `Tier: academic` and `Tier: journalistic` (created 2026-11-03,
+author's decision), each document added to one at import, mirroring
+the tier column of `corpus-inventory.csv`.
 
 **Export.** The quotation table (document, quotation text, codes,
 comment) is exported from ATLAS.ti into `ch2-historical/evidence/
