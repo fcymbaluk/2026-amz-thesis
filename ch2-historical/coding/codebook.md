@@ -3,18 +3,20 @@ role: codebook
 chapter: 2
 status: draft for the author's approval
 created: 2026-10-18
-updated: 2026-10-20
+updated: 2026-11-03
 source: "ch2-historical/GUIDANCE.md (dimensions as revised 2026-10-18); the author's draft codebook of 2026-10-18; revised 2026-10-20 for coding in ATLAS.ti (docs/decisions/2026-10-20-ch2-highlights-in-zotero-coding-in-atlasti.md)"
 ---
 
 # Chapter 2 codebook: code vocabulary and color map
 
 The evidence for Chapter 2 is highlighted in Zotero and coded in ATLAS.ti
-(decision of 2026-10-20). In Zotero a highlight is a quotation, its color
-is the dimension, its comment is a one-line paraphrase of the claim in
-English. The importer brings each source's PDF into ATLAS.ti, named by
-citation key, and places every highlight on it as a quotation pre-coded
-with its dimension code; every other code is applied in ATLAS.ti. This file is the only
+(decision of 2026-10-20). In Zotero a highlight is a quotation and its
+color is the dimension. The importer brings each source's PDF into
+ATLAS.ti, named by citation key, and places every highlight on it as a
+quotation pre-coded with its dimension code; every other code, and the
+one-line claim in English as the quotation comment, is applied in
+ATLAS.ti (author's decision of 2026-11-03: the claim is written where
+the coding happens, not in the Zotero comment). This file is the only
 authority on which codes exist and what they mean. A code not listed here
 is not applied; a new code is added here, dated, before its first use
 (see "Adding codes"). Coding is the author's act.
@@ -315,12 +317,15 @@ turns out to need it.
 In Zotero, while reading:
 
 1. Highlight the passage; set the color to its dimension (leave yellow
-   for context).
-2. Write the comment: one English sentence stating the claim.
+   for context). A Zotero comment is optional (a reading note); the
+   claim is written in ATLAS.ti (step 2).
 
 After the source is fully highlighted, import it (the guidance's
 "Zotero and ATLAS.ti workflow"). In ATLAS.ti, per quotation:
 
+2. Write the claim: one English sentence, as the quotation comment,
+   above the provenance line the importer leaves there (since
+   2026-11-03; before, the claim was the Zotero comment).
 3. Check the dimension code the importer set; add it by hand on
    off-palette highlights.
 4. Code the period (`p1`–`p6`) and the voice (`v-`).
@@ -381,8 +386,9 @@ in the text ATLAS.ti extracts (exact match after whitespace and
 hyphenation normalization, then an anchored fuzzy match). Each
 quotation is coded with its dimension code and carries the Zotero
 comment plus a provenance line (`zotero <key>, p. <page>, <color>`) as
-its ATLAS.ti comment. The comment written on a highlight (step 2 of
-the per-highlight procedure) is therefore kept; what is skipped, and
+its ATLAS.ti comment. A comment written on a highlight in Zotero is
+therefore kept, above the provenance line, where the claim is written
+(step 2 of the per-highlight procedure); what is skipped, and
 counted, are the annotation types that have no highlighted passage:
 Zotero's standalone sticky notes ("note"), free-text boxes ("text"),
 ink drawings and image areas. Highlights that cannot be located are listed in
@@ -390,7 +396,20 @@ ink drawings and image areas. Highlights that cannot be located are listed in
 nothing into Zotero, skips a document that already exists, and rebuilds
 one only under `--replace --yes`, which deletes its codings: the
 author's command only. Verified 2026-10-20 on `london2007` (40
-highlights, all located).
+highlights, all located); first real import 2026-11-03, `london2007`,
+152 highlights, 150 located and 2 placed by hand (chapter openings
+whose OCR drop cap garbles the first word).
+
+**Codes in ATLAS.ti.** The vocabulary of this file was created in the
+project on 2026-11-03 from the family tables: 63 codes besides the four
+dimension codes, each with its definition as the code comment, in a
+code folder and a code group per family (Dimension, Period, Asset,
+Field, Level, Direction, Activity, Actor, Policy, Voice). Refinement
+families carry the color of the dimension they refine (`as-` red,
+`inst-` light blue, `gov-` light green); the other families are
+uncolored. Folders and groups are organization only (rule 2). A code
+added to this file is created in the project the same way, by hand or
+on request.
 
 **Export.** The quotation table (document, quotation text, codes,
 comment) is exported from ATLAS.ti into `ch2-historical/evidence/
