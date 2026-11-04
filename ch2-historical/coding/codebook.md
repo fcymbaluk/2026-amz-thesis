@@ -3,7 +3,7 @@ role: codebook
 chapter: 2
 status: approved by the author on 2026-11-03; grows only by inductive codes added during coding (see "Adding codes")
 created: 2026-10-18
-updated: 2026-11-03
+updated: 2026-11-04
 source: "ch2-historical/GUIDANCE.md (dimensions as revised 2026-10-18); the author's draft codebook of 2026-10-18; revised 2026-10-20 for coding in ATLAS.ti (docs/decisions/2026-10-20-ch2-highlights-in-zotero-coding-in-atlasti.md)"
 ---
 
@@ -84,7 +84,7 @@ codebook (2026-10-18) are the expected case.
 
 ## Code families
 
-### Period (single-valued, required): `p1` to `p6`
+### Period (single-valued, required): `p0` to `p6`
 
 The six periods of the guidance. A highlight that spans periods takes the
 period of the event it reports; a passage comparing periods takes the
@@ -92,6 +92,7 @@ later one, and the comment names the comparison.
 
 | Code | Years | Content |
 |---|---|---|
+| `p0-before` | before c. 1870 | The deep past the narrative uses as context: pre-Columbian settlement, conquest, colonial and imperial Amazonia before the rubber boom. Not a period of the chapter: a code for passages that predate its first period (added 2026-11-04, author's decision) |
 | `p1-rubber` | c. 1870–1952 | Rubber cycles and extractivism |
 | `p2-integration` | 1953–1985 | State-led integration and colonization: SPVEA, SUDAM, Transamazônica, directed settlement, intensified 1964–1985 |
 | `p3-founding` | 1985–2003 | Democratization, the 1988 Constitution, the founding of both tracks |
@@ -107,6 +108,15 @@ to `p2-integration` (SPVEA, 1953, and the Belém–Brasília highway, 1960,
 are integration policies by the chapter's own criterion). Period
 boundaries remain provisional in the guidance; a change there changes
 this table.
+
+**Dating a passage** (author's decision, 2026-11-04, taken on the
+2003/2004 boundary in `london2007`): a passage that reports a dated
+event takes the period of that date; an undated passage takes the
+period of the writer's vantage point, which in a reportage is the trip
+it reports. In *The Last Forest* the first trip is 1980
+(`p2-integration`) and the second 2003–2005: undated second-trip
+material is `p4-ppcdam`, and only a passage dated to 2003 is
+`p3-founding`.
 
 ### Asset (multi-valued; red highlights only): `as-`
 
@@ -228,6 +238,7 @@ level (`gov-`) because that is what the chapter asks about them.
 | `who-movement` | Social, environmental and socio-environmental movements, unions, church organizations (CPT, CIMI) |
 | `who-ngo` | Domestic and international NGOs and foundations |
 | `who-international` | Foreign governments, multilateral organizations, donors, foreign markets and consumers |
+| `who-logger` | Loggers, logging crews, sawmill owners and timber firms, from the small operator to the mahogany trade, when the passage names them as actors; timber capital acting as landholder carries `who-landowner` as well (added 2026-11-04) |
 
 `who-local-economy` is the actor counterpart of the indirect dependence
 in `as-deforest-livelihood`: use it when the source speaks of the town,
@@ -275,6 +286,20 @@ is in the passage.
 | `pol-seguro-defeso` | Seguro-defeso |
 | `pol-terra-legal` | Terra Legal (2009) |
 | `pol-car` | CAR, the rural environmental registry (2012) |
+| `pol-belem-brasilia` | Belém–Brasília highway (1960), the opening of the road frontier (added 2026-11-04) |
+| `pol-zona-franca-manaus` | Zona Franca de Manaus, the Manaus free-trade zone and its fiscal incentives (1967) (added 2026-11-04) |
+| `pol-incra` | INCRA, the federal colonization and agrarian-reform institute (1970) (added 2026-11-04) |
+| `pol-br163` | BR-163, the Cuiabá–Santarém highway (1973) and its paving plan (2004–) (added 2026-11-04) |
+| `pol-constitution-1988` | Federal Constitution of 1988, its environmental chapter and decentralization (added 2026-11-04) |
+| `pol-nossa-natureza` | Programa Nossa Natureza, the Sarney government's environmental package (1988) (added 2026-11-04) |
+| `pol-ppg7` | PPG7, the Pilot Program to Conserve the Brazilian Rain Forest (announced 1990, launched 1992) (added 2026-11-04) |
+| `pol-governo-da-floresta` | Governo da Floresta, Acre's state program under Jorge Viana (1999–2006) (added 2026-11-04) |
+| `pol-sivam` | SIVAM/SIPAM, the Amazon surveillance and protection system (2002) (added 2026-11-04) |
+| `pol-rubber-battle` | Batalha da Borracha, the wartime campaign that recruited northeastern rubber soldiers (1942–1945) (added 2026-11-04) |
+| `pol-mahogany-ban` | Mahogany restrictions: the federal moratorium on new logging permits (1996), the ban on harvest, transport and export (2001) and the CITES listing (2003) (added 2026-11-04) |
+| `pol-embrapa` | EMBRAPA, the federal agricultural research corporation (1973) (added 2026-11-04) |
+| `pol-decreto-lei-1164` | Decree-Law 1.164, federalizing land 100 km on each side of federal highways (1971) (added 2026-11-04) |
+| `pol-zona-franca-verde` | Zona Franca Verde, the Amazonas state sustainable-development program under Governor Braga (2003) (added 2026-11-04) |
 
 The draft's `social_inclusion`/`social_exclusion` subcodes are not kept:
 whether a social policy included or excluded frontier populations is the
@@ -337,8 +362,13 @@ After the source is fully highlighted, import it (the guidance's
 6. Code `act-`, `who-` and `pol-` for every activity, actor and policy
    the passage names.
 
-Minimum codes on a `d1`–`d3` quotation: dimension, period, voice, one
-refinement. Minimum on a `d0` quotation: dimension, period, voice.
+Minimum codes on a `d2` or `d3` quotation: dimension, period, voice, one
+refinement. Minimum on a `d1` quotation: dimension, period, voice, and
+one asset code when the passage says what an actor holds; a `d1`
+passage about the organization of conflict itself, with no stated
+asset holder, carries the actors involved and no asset code (softened
+2026-11-04, author's decision; the Asset family already allowed this).
+Minimum on a `d0` quotation: dimension, period, voice.
 
 ## Retrieval of the post-coding constructs
 
@@ -411,7 +441,10 @@ families carry the color of the dimension they refine (`as-` red,
 `inst-` light blue, `gov-` light green); the other families are
 uncolored. Folders and groups are organization only (rule 2). A code
 added to this file is created in the project the same way, by hand or
-on request. One code outside the families, `ai-proposed` (gray), is a
+on request: on 2026-11-04 the 16 codes added that day (`p0-before`,
+`who-logger`, 14 `pol-` slugs) were created on request from the
+definitions in this file and placed in their family folder and group
+(`scratch/atlasti-coding/create_codes.py`). One code outside the families, `ai-proposed` (gray), is a
 review marker, not evidence: it sits on every quotation an agent coded
 until the author reviews it (guidance, "Zotero and ATLAS.ti workflow"),
 and the export's validation treats it as such.
