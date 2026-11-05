@@ -105,7 +105,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 ## Stage 9 — RAIS track (parallel, any time after stage 3)
 
 - [x] `gcloud auth login` + application-default; budget alert confirmed. Verified 2026-11-04 from the sandbox (`gcloud auth list`, `bq ls`); the alert was recorded as set at the stage 3 gate.
-- [ ] Task 3.A → \[ \] 3.B → \[ \] 3.C, under the brief's rules and CLAUDE.md's BigQuery section. 3.B step 1 done 2026-11-04 (branch rais-3b-query1-rebuild, D-2026-11-04-a): Query 1 rebuilt with CNAE, legal nature and the December wage into `social_employment_2.rais_vinculos_deflat_v2`; regression rule exact for 1999-2022, 2023-2024 moved by a Base dos Dados source update (2026-05-28), the current version adopted; Parquet export in the project bucket, snapshot into `_data/raw/rais/rais_vinculos_v2/` by the author. Next: 3.A and 3.B aggregations locally, then 3.C.
+- [ ] Task 3.A → \[ \] 3.B → \[ \] 3.C, under the brief's rules and CLAUDE.md's BigQuery section. 3.B step 1 done 2026-11-04 (branch rais-3b-query1-rebuild, D-2026-11-04-a): Query 1 rebuilt with CNAE, legal nature and the December wage into `social_employment_2.rais_vinculos_deflat_v2`; regression rule exact for 1999-2022, 2023-2024 moved by a Base dos Dados source update (2026-05-28), the current version adopted; Parquet export in the project bucket, snapshot into `_data/raw/rais/rais_vinculos_v2/` by the author; merged 1131945. Drive mirror refreshed 2026-11-04 (author, rclone: 255 files transferred, 1.70 GiB; `rclone check` 0 differences on 551 files). Next: 3.A and 3.B aggregations locally, then 3.C.
 - [ ] Regression rule passed before any new variable enters script 02; merged before stage 10 closes.
 
 ## Stage 10 — Rerun + Phase 3: documentation
