@@ -2902,3 +2902,110 @@ Affects: no panel cell yet. When script 02 reads the snapshot: every
          public-sector flag and any December-wage statistic need a missing
          rule in tasks 3.A-3.B
 Supersedes: none
+
+## D-2026-11-05-a  RAIS: public sector = natureza jurídica 1xxx, an empty code private; the CNAE 75/84 count stored beside it
+
+Status: open (RAIS track, task 3.B step 2, branch rais-3a-wage-distribution,
+        2026-11-05; closes when the flag reaches the panel through the
+        script 02 re-point)
+Scope: _scripts/utils/rais_snapshot.R (rais_public_sql, rais_public_cnae_sql);
+       02-social-rais-wages.R (n_bonds_public, n_bonds_public_cnae,
+       n_bonds_priv and every _priv statistic); later the _priv variants
+       of the emp_* columns and workers_public (task 3.B step 3)
+Context: the brief's decision 0.1 (resolved 2026-10-05) makes natureza
+         jurídica in the CONCLA range 1xxx the primary public-sector flag
+         and CNAE division 84 (2.0) / 75 (1.0) the alternative, both
+         extracted. On the snapshot (_audit/rais.qmd Q6) the 1xxx range
+         holds 31 codes and 29-39 percent of bonds a year; the CNAE
+         definition runs 1-2 points lower from 2006 (public schools,
+         hospitals and other services under a public legal nature) and
+         within 0.2 points from 2002 to 2005. The code is empty in 4
+         percent of the rows of 2022-2024 and nowhere else; those rows
+         are agriculture, construction and legal services, and none
+         carries the public-administration division. Public enterprises
+         and mixed-capital companies (2011, 2038; 1.3 million bonds) are
+         2xxx codes.
+Reason: the primary flag is natureza jurídica LIKE '1%', with COALESCE
+        to FALSE so an empty code is private under the flag and inside
+        its complement (a bare NOT would drop the row from the private
+        pass); the rule is consistent with the alternative flag on every
+        empty-code row. The 2xxx public enterprises stay outside the
+        flag, as decision 0.1 states; the CNAE count is stored so either
+        definition can be used later. Reversible without a new
+        extraction: both predicates are functions of the utils file.
+Evidence: _audit/rais.qmd Q6 (code list, shares by year, disagreement
+          sets, the empty-code rows' divisions)
+Affects: no panel cell yet; n_bonds_public, n_bonds_public_cnae and
+         n_bonds_priv of _data/interim/rais_wage_distribution_1999_2024
+         (20,870 municipality-years, 190 with no private bond)
+Supersedes: none
+
+## D-2026-11-05-b  RAIS: wage distribution on the average wage; minimum wage in force on 31 December, ratio and threshold shares nominal; no reliability floor in the interim file
+
+Status: open (RAIS track, task 3.A, branch rais-3a-wage-distribution,
+        2026-11-05; closes with the floor decision 0.4 and the labor
+        dataset definition)
+Scope: 02-social-rais-wages.R; _data/aux/minimum_wage_dec_1999_2024.csv;
+       _data/interim/rais_wage_distribution_1999_2024 (34 columns)
+Context: task A of the brief asks for the municipal wage distribution by
+         year (count, p10, p25, median, p75, mean; nominal and deflated),
+         the ratio of the year's minimum wage to the municipal median, and
+         the shares of bonds at or below 1.0, 1.2 and 1.5 times the
+         contemporaneous minimum wage, whole sector and private sector;
+         decision 0.3 fixes the minimum wage in force on 31 December;
+         decision 0.4 leaves the reliability floor open until the
+         distribution of bond counts is reported.
+Reason: (1) the statistics use valor_remuneracao_media, positive in every
+        row by the Query 1 filter; the December wage carried by the
+        snapshot is zero in 2-5 percent of rows and null in 5 percent of
+        2023-2024 and is not used. (2) The minimum wage is a hand-built
+        aux lookup (year, value at 31 December, legal instrument), every
+        December value equal to IPEADATA MTE12_SALMIN12 (raw cross-check
+        file ipeadata_MTE12_SALMIN12.json, fetched 2026-11-05); the
+        deflated value is the lookup times the existing IPCA deflator
+        (deflator_ipca_2024.csv, the series Query 1 applied), never a
+        second deflator. (3) mw_to_median and the threshold shares are
+        nominal on both sides. (4) No floor is applied: n_bonds and
+        n_bonds_priv are stored, and the floor evidence (whole sector
+        3.6 / 4.9 / 7.7 percent of municipality-years below 30 / 50 /
+        100; private sector 16 / 22 / 33 percent, 190 with no private
+        bond) goes to the author for decision 0.4. (5) A municipality-year
+        with no private bond keeps n_bonds_priv = 0 and NA private
+        statistics (observed, undefined), unlike an absent
+        municipality-year, which has no row (D-2026-10-28-b).
+Evidence: _audit/rais.qmd Q7 (floors, stability), Q8 (table check,
+          distributions, relation to the 2024-bracket share), Q9 (public
+          share, divergence)
+Affects: no panel cell; the new interim file only
+Supersedes: none
+
+## D-2026-11-05-c  RAIS: reliability floor of 50 bonds on the count of the sector described, applied in the 02 script; statistics NA below it
+
+Status: closed (RAIS track, task 3.A, branch rais-3a-wage-distribution,
+        author's decision 2026-11-05 on the evidence of _audit/rais.qmd Q7)
+Scope: 02-social-rais-wages.R (RAIS_FLOOR_N_BONDS); every wage statistic
+       of _data/interim/rais_wage_distribution_1999_2024 (whole-sector
+       columns where n_bonds < 50, 1,025 municipality-years; _priv
+       columns where n_bonds_priv < 50, 4,655); later the _priv variants
+       of the emp_* columns and the sector shares, under the same rule
+Context: the brief's decision 0.4 left the floor provisional at 30
+         pending the distribution of bond counts. On the snapshot the
+         whole-sector floor is marginal (3.6 / 4.9 / 7.7 percent of
+         municipality-years below 30 / 50 / 100) and the private-sector
+         floor is not (16 / 22 / 33 percent; 190 with no private bond);
+         the year-to-year change of the private low-wage share has a
+         standard deviation of 0.22 below 30 bonds and 0.14 at 30-49,
+         against 0.06 at 300-999, and the yearly medians move by up to
+         two points across the floors.
+Reason: the author set the floor at 50 bonds. It applies to the count
+        of the sector the statistic describes (n_bonds for the
+        whole-sector columns, n_bonds_priv for the private columns), in
+        the pipeline script rather than downstream, so every consumer
+        reads one rule; the counts stay in the file so the rule is
+        visible. The floor supersedes clause (4) of D-2026-11-05-b ("no
+        floor applied"); the evidence in _audit/rais.qmd Q7 is computed
+        from the snapshot without the floor.
+Evidence: _audit/rais.qmd Q7
+Affects: no panel cell; the interim file only (NA cells as counted in
+         Scope)
+Supersedes: D-2026-11-05-b, clause (4)

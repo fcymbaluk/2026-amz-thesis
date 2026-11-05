@@ -23,10 +23,22 @@ The brief's questions on CBO codes around the agricultural cutoff and on
 public administration need the vínculo-level table and belong to the RAIS
 track (`rebuild/upstream-reform-rais.md`), not to this aggregate.
 
+RAIS track (Q6 onward, 2026-11-05). Source: the bond-level snapshot of
+Query 1 version 2 (`social_employment_2.rais_vinculos_deflat_v2`, Base dos
+Dados `microdados_vinculos` as of 2026-05-28, exported 2026-11-04,
+D-2026-11-04-a), `_data/raw/rais/rais_vinculos_v2/*.parquet`, read with
+DuckDB through `_scripts/utils/rais_snapshot.R`. Minimum wage:
+`_data/aux/minimum_wage_dec_1999_2024.csv`, checked against IPEADATA
+`MTE12_SALMIN12` (`_data/raw/ipeadata/ipeadata_MTE12_SALMIN12.json`).
+Pipeline script: `_scripts/02-social-rais-wages.R`. Interim output:
+`_data/interim/rais_wage_distribution_1999_2024.rds`.
+
 ```{r setup}
 #| include: false
 knitr::opts_knit$set(root.dir = normalizePath(".."))
-suppressPackageStartupMessages(library(tidyverse))
+# Quarto renders in the system R session; duckdb lives in the renv library.
+.libPaths(c(normalizePath(Sys.glob("../renv/library/*/R-*/*")), .libPaths()))
+suppressPackageStartupMessages({library(tidyverse); library(DBI)})
 options(width = 110)
 ```
 
@@ -269,3 +281,356 @@ NA and adding up; agricultural shares NA iff `workers_agric == 0`);
 `04-panel-assemble.R`, output block (99 NA cells of `emp_workers_n`,
 shared by every `emp_*` column; the two cells of Serra Nova Dourada
 after installation admitted).
+
+## Q6. What does the bond-level snapshot hold, and how is the public sector identified? (RAIS track, task 3.B, 2026-11-05)
+
+What is checked: the legal-nature code list of the snapshot (CONCLA
+table, four digits) and the size of the public sector under the two
+definitions of the brief's decision 0.1, natureza jurídica 1xxx
+(primary) and CNAE division 75 / 84 (alternative); where the two
+disagree; what the rows with an empty legal-nature code are.
+
+```{r q6-codes}
+source("_scripts/utils/rais_snapshot.R")
+con <- rais_snapshot_connect()
+natjur_labels <- c(
+  "1015" = "federal executive body", "1023" = "state executive body",
+  "1031" = "municipal executive body", "1058" = "state legislature",
+  "1066" = "municipal legislature", "1074" = "federal judiciary",
+  "1082" = "state judiciary", "1104" = "federal autarchy",
+  "1112" = "state autarchy", "1120" = "municipal autarchy",
+  "1139" = "federal public foundation", "1147" = "state public foundation",
+  "1155" = "municipal public foundation", "1236" = "state or Federal District",
+  "1244" = "municipality", "1333" = "municipal direct-administration fund",
+  "2011" = "public enterprise (not public sector here)",
+  "2038" = "mixed-capital company (not public sector here)",
+  "2062" = "limited company", "2135" = "individual entrepreneur")
+codes <- dbGetQuery(con, "
+  SELECT natureza_juridica AS code, COUNT(*) AS bonds
+  FROM rais GROUP BY 1 ORDER BY bonds DESC") %>%
+  as_tibble() %>%
+  mutate(label = natjur_labels[code], share = bonds / sum(bonds))
+codes %>% filter(str_starts(code, "1")) %>% arrange(code) %>% print(n = 40)
+codes %>% slice_head(n = 12)
+codes %>% filter(is.na(code) | code == "")
+```
+
+```{r q6-flags}
+flags_year <- dbGetQuery(con, sprintf("
+  SELECT CAST(ano AS INTEGER) AS year, COUNT(*) AS bonds,
+    AVG(CASE WHEN %1$s THEN 1.0 ELSE 0 END) AS public_natjur,
+    AVG(CASE WHEN %2$s THEN 1.0 ELSE 0 END) AS public_cnae,
+    AVG(CASE WHEN %1$s AND NOT %2$s THEN 1.0 ELSE 0 END) AS natjur_only,
+    AVG(CASE WHEN %2$s AND NOT %1$s THEN 1.0 ELSE 0 END) AS cnae_only,
+    AVG(CASE WHEN natureza_juridica IS NULL OR natureza_juridica = ''
+             THEN 1.0 ELSE 0 END) AS natjur_empty,
+    AVG(CASE WHEN (natureza_juridica IS NULL OR natureza_juridica = '')
+                   AND %2$s THEN 1.0 ELSE 0 END) AS empty_and_cnae_public
+  FROM rais GROUP BY 1 ORDER BY 1", rais_public_sql(), rais_public_cnae_sql())) %>%
+  as_tibble()
+flags_year %>% mutate(across(-c(year, bonds), ~ round(100 * .x, 2))) %>% print(n = 30)
+# What the natureza-jurídica-only public bonds do (CNAE 2.0 division, 2010-2024).
+dbGetQuery(con, sprintf("
+  SELECT LEFT(cnae_2, 2) AS cnae2_division, COUNT(*) AS bonds
+  FROM rais WHERE ano >= 2010 AND %s AND NOT %s
+  GROUP BY 1 ORDER BY bonds DESC LIMIT 8", rais_public_sql(), rais_public_cnae_sql()))
+# What the empty-code rows do (2022-2024).
+dbGetQuery(con, "
+  SELECT LEFT(cnae_2, 2) AS cnae2_division, COUNT(*) AS bonds
+  FROM rais WHERE ano >= 2022 AND (natureza_juridica IS NULL OR natureza_juridica = '')
+  GROUP BY 1 ORDER BY bonds DESC LIMIT 8")
+```
+
+**Finding.** The snapshot carries 108 legal-nature codes. The 1xxx range,
+Administração Pública in the CONCLA table, holds 31 codes and a third of
+all bonds, led by the municipal executive (14.1 million bonds), the state
+executive (10.3 million), the code "município" (1.6 million) and the
+federal executive (1.2 million); public enterprises and mixed-capital
+companies (2011 and 2038, 1.3 million) sit in the 2xxx range and stay
+outside the flag. Under the legal-nature definition the public sector is
+36 to 39 percent of bonds through 2010, 33 to 36 percent in 2011-2021
+and 29 to 33 percent from 2022. The CNAE definition is the larger one
+only in 1999 and 2000, when 4.3 and 2.5 percent of bonds carry the
+public-administration division under a non-public legal nature; from
+2001 it runs below the legal-nature definition by 0.6 to 2.7 points
+through 2021 and by 3.5 to 4.4 points from 2022, the difference being
+public bodies classified under education (CNAE 85, 0.8 million bonds
+since 2010), health (86), membership organisations (94) and water
+supply (36), as the brief anticipated. The empty code appears in 4
+percent of the rows of 2022-2024, in 0.06 percent of 1999 and nowhere
+else; the 2022-2024 rows are concentrated in agriculture (CNAE 01),
+construction and legal services and none carries the
+public-administration division, so counting them as private agrees with
+the alternative flag; in 1999 about 600 empty-code bonds carry the
+division and are the only rows the two rules read differently.
+**Decision.** D-2026-11-05-a: public sector = natureza jurídica 1xxx
+(`rais_public_sql()`), an empty code private; the CNAE 75 / 84 count
+stored beside it (`n_bonds_public_cnae`).
+**Assertion.** `02-social-rais-wages.R`, output block (`n_bonds_public +
+n_bonds_priv == n_bonds`, `n_bonds_public_cnae <= n_bonds`).
+
+## Q7. How many municipality-years fall below candidate reliability floors, and how stable are the wage statistics across them? (brief decision 0.4, open)
+
+What is checked: the bond count per municipality-year, whole and private
+sector, against the floors 30, 50 and 100 of the brief (all years; the
+2000-2020 window; the biome sample); how the yearly median wage and the
+low-wage share change when municipality-years below each floor are
+dropped; and the year-to-year volatility of the low-wage share by size
+class, the direct measure of the instability the floor is meant to
+remove.
+
+```{r q7-floors}
+wages <- read_rds("_data/interim/rais_wage_distribution_1999_2024.rds") %>%
+  left_join(flags, by = "geocode")
+# The interim file carries the floor (D-2026-11-05-c), so the evidence for
+# it is computed here from the snapshot without a floor; the counts of the
+# file are not floored.
+mw_q7 <- read_csv("_data/aux/minimum_wage_dec_1999_2024.csv",
+                  col_types = cols(year = col_integer(), mw_nominal_dec = col_double(),
+                                   legal_instrument = col_character()))
+duckdb::duckdb_register(con, "mw_q7", mw_q7 %>% select(year, mw_nominal_dec))
+unfloored <- dbGetQuery(con, sprintf("
+  SELECT CAST(r.ano AS INTEGER) AS year, r.id_municipio AS geocode,
+    COUNT(*) AS n_bonds,
+    SUM(CASE WHEN NOT %1$s THEN 1 ELSE 0 END) AS n_bonds_priv,
+    AVG(CASE WHEN r.valor_remuneracao_media <= mw.mw_nominal_dec THEN 1.0 ELSE 0 END)
+      AS share_le_mw100,
+    AVG(CASE WHEN r.valor_remuneracao_media <= mw.mw_nominal_dec THEN 1.0 ELSE 0 END)
+      FILTER (WHERE NOT %1$s) AS share_le_mw100_priv
+  FROM rais AS r LEFT JOIN mw_q7 AS mw ON mw.year = r.ano
+  GROUP BY 1, 2", rais_public_sql())) %>%
+  as_tibble() %>%
+  mutate(n_bonds = as.integer(n_bonds), n_bonds_priv = as.integer(n_bonds_priv))
+stopifnot(nrow(unfloored) == nrow(wages))
+floors <- c(30, 50, 100)
+below <- function(d, n) {
+  map_dfr(floors, ~ tibble(floor = .x,
+                           below = sum(d[[n]] < .x),
+                           share = mean(d[[n]] < .x)))
+}
+bind_rows(
+  `all years, whole` = below(wages, "n_bonds"),
+  `all years, private` = below(wages, "n_bonds_priv"),
+  `2000-2020, whole` = below(filter(wages, year %in% 2000:2020), "n_bonds"),
+  `2000-2020, private` = below(filter(wages, year %in% 2000:2020), "n_bonds_priv"),
+  `2000-2020 biome, whole` = below(filter(wages, year %in% 2000:2020, biome_amazon == 1), "n_bonds"),
+  `2000-2020 biome, private` = below(filter(wages, year %in% 2000:2020, biome_amazon == 1), "n_bonds_priv"),
+  .id = "sample") %>%
+  mutate(share = round(100 * share, 1)) %>%
+  pivot_wider(names_from = floor, values_from = c(below, share))
+# Municipality-years with no private bond at all.
+wages %>% filter(n_bonds_priv == 0) %>% count(year) %>% print(n = 30)
+```
+
+```{r q7-stability}
+by_floor <- function(d, n, stat) {
+  map_dfr(c(0, floors), function(f) {
+    d %>% filter(.data[[n]] >= f) %>%
+      group_by(year) %>%
+      summarise(floor = f, value = median(.data[[stat]], na.rm = TRUE), .groups = "drop")
+  })
+}
+bind_rows(
+  whole = by_floor(unfloored, "n_bonds", "share_le_mw100"),
+  private = by_floor(unfloored, "n_bonds_priv", "share_le_mw100_priv"),
+  .id = "sector") %>%
+  filter(year %in% c(2000, 2005, 2010, 2015, 2020, 2024)) %>%
+  mutate(value = round(value, 3)) %>%
+  pivot_wider(names_from = floor, values_from = value, names_prefix = "floor_")
+# Year-to-year volatility of the low-wage share by size class.
+unfloored %>%
+  arrange(geocode, year) %>%
+  group_by(geocode) %>%
+  mutate(d_share = share_le_mw100 - lag(share_le_mw100),
+         d_share_priv = share_le_mw100_priv - lag(share_le_mw100_priv)) %>%
+  ungroup() %>%
+  mutate(size = cut(n_bonds, c(0, 30, 50, 100, 300, 1000, Inf), right = FALSE),
+         size_priv = cut(n_bonds_priv, c(0, 1, 30, 50, 100, 300, 1000, Inf), right = FALSE)) %>%
+  {
+    bind_rows(
+      whole = group_by(., size) %>% summarise(n = n(), sd_change = sd(d_share, na.rm = TRUE),
+                                               p90_abs_change = quantile(abs(d_share), 0.9, na.rm = TRUE)) %>%
+        rename(class = size),
+      private = group_by(., size_priv) %>% summarise(n = n(), sd_change = sd(d_share_priv, na.rm = TRUE),
+                                                      p90_abs_change = quantile(abs(d_share_priv), 0.9, na.rm = TRUE)) %>%
+        rename(class = size_priv),
+      .id = "sector")
+  } %>%
+  mutate(across(c(sd_change, p90_abs_change), ~ round(.x, 3)))
+```
+
+**Finding.** For the whole formal sector the floor is a marginal rule:
+3.6, 4.9 and 7.7 percent of the 20,870 municipality-years fall below 30,
+50 and 100 bonds (4, 5 and 8 percent on the biome in 2000-2020), and the
+yearly median of the low-wage share moves by at most about a point
+across the floors. For the private sector it is not: 16, 22 and 33
+percent fall below the same floors (17, 24 and 35 percent in the
+2000-2020 window), 190 municipality-years have no private bond at all
+(154 of them in 1999-2007), the yearly median of the private low-wage
+share moves by up to two points across the floors, and the year-to-year
+change of the private share has a standard deviation of 0.22 below 30
+bonds and 0.14 at 30-49, against 0.06 at 300-999 and 0.03 above 1,000;
+the whole-sector share shows the same gradient (0.29 below 30 bonds,
+0.06 above 1,000). The evidence supports a floor of about 50 bonds
+applied to the count of the sector the statistic describes, with the
+statistic NA below it.
+**Decision.** D-2026-11-05-c (author, 2026-11-05): floor of 50 bonds,
+`RAIS_FLOOR_N_BONDS`, applied in `02-social-rais-wages.R` to the count
+of the sector described; the statistics are NA below it (1,025
+whole-sector and 4,655 private-sector municipality-years), the counts
+are kept.
+**Assertion.** `02-social-rais-wages.R`, output block (whole-sector
+statistics NA iff `n_bonds < 50`, private statistics NA iff
+`n_bonds_priv < 50`; below-floor shares under 6 and 25 percent).
+
+## Q8. Is the minimum-wage table right, and where does the local wage distribution sit relative to the floor? (task 3.A)
+
+What is checked: the hand-built table of the minimum wage in force on
+31 December against the IPEADATA monthly series `MTE12_SALMIN12`
+(December values); the deflated series; the ratio of the minimum wage to
+the municipal median wage and the threshold shares by year and by state;
+the relation of the contemporaneous low-wage share to the existing
+`emp_share_low_workers`, which uses the 2024 minimum wage in real terms.
+
+```{r q8-mw}
+mw_dec <- read_csv("_data/aux/minimum_wage_dec_1999_2024.csv",
+                   col_types = cols(year = col_integer(), mw_nominal_dec = col_double(),
+                                    legal_instrument = col_character()))
+ipea <- jsonlite::fromJSON("_data/raw/ipeadata/ipeadata_MTE12_SALMIN12.json")$value %>%
+  as_tibble() %>%
+  transmute(year = as.integer(substr(VALDATA, 1, 4)), month = as.integer(substr(VALDATA, 6, 7)),
+            mw_ipea = VALVALOR) %>%
+  filter(month == 12L, year %in% mw_dec$year)
+deflator <- read_csv("_data/aux/deflator_ipca_2024.csv", col_types = cols(.default = col_double()))
+mw_check <- mw_dec %>%
+  left_join(ipea %>% select(year, mw_ipea), by = "year") %>%
+  left_join(deflator %>% transmute(year = as.integer(year), ipca_deflator), by = "year") %>%
+  mutate(mw_brl_2024 = round(mw_nominal_dec * ipca_deflator, 0), equal = mw_nominal_dec == mw_ipea)
+mw_check %>% select(year, mw_nominal_dec, mw_ipea, equal, mw_brl_2024) %>% print(n = 30)
+stopifnot(all(mw_check$equal))
+```
+
+```{r q8-distribution}
+wages %>%
+  group_by(year) %>%
+  summarise(across(c(wage_median_2024, mw_to_median, share_le_mw100, share_le_mw150),
+                   list(p25 = ~ quantile(.x, 0.25, na.rm = TRUE), p50 = ~ median(.x, na.rm = TRUE),
+                        p75 = ~ quantile(.x, 0.75, na.rm = TRUE))),
+            .groups = "drop") %>%
+  mutate(across(-year, ~ round(.x, 2))) %>%
+  filter(year %in% c(1999, 2004, 2009, 2014, 2019, 2024))
+wages %>%
+  filter(year == 2020) %>%
+  group_by(state_abbreviation) %>%
+  summarise(n = n(), median_wage_2024 = median(wage_median_2024, na.rm = TRUE),
+            mw_to_median = median(mw_to_median, na.rm = TRUE),
+            share_le_mw100 = median(share_le_mw100, na.rm = TRUE),
+            share_le_mw150 = median(share_le_mw150, na.rm = TRUE),
+            .groups = "drop") %>%
+  mutate(across(-c(state_abbreviation, n), ~ round(.x, 2)))
+```
+
+```{r q8-brackets}
+rais_year <- rais %>% select(geocode, year, emp_share_low_workers, workers_total)
+wages %>%
+  inner_join(rais_year, by = c("geocode", "year")) %>%
+  group_by(year) %>%
+  filter(!is.na(share_le_mw100)) %>%
+  summarise(cor_le_mw100 = cor(share_le_mw100, emp_share_low_workers),
+            cor_le_mw150 = cor(share_le_mw150, emp_share_low_workers),
+            mean_le_mw100 = mean(share_le_mw100), mean_low_2024 = mean(emp_share_low_workers),
+            .groups = "drop") %>%
+  mutate(across(-year, ~ round(.x, 3))) %>%
+  filter(year %in% c(1999, 2004, 2009, 2014, 2019, 2024))
+```
+
+**Finding.** Every December value of the table equals the IPEADATA
+series, 136 reais in 1999 to 1,412 in 2024 (608 to 1,412 reais of 2024;
+the real value rises through 2014 and is flat after). The minimum wage
+sits at 0.59 to 0.79 of the municipal median wage in the middle half of
+municipality-years (yearly medians 0.63 to 0.74), so the typical median
+is between 1.3 and 1.7 minimum wages; in the median municipality-year a
+tenth of the bonds earn at most the minimum wage and half earn at most
+1.5 minimum wages. Mato Grosso stands apart in 2020 (median wage 2,494
+reais of 2024 against 1,920 to 2,003 elsewhere; a third of bonds at or
+below 1.5 minimum wages against half). The contemporaneous low-wage
+share and the existing bracket share are different objects: the bracket
+is fixed at the 2024 minimum wage in real terms, which equals 2.3
+minimum wages of 1999 and one of 2024, so the two means converge only
+at the end of the window (0.23 against 0.74 in 1999, 0.11 against 0.15
+in 2024); across municipalities the bracket share correlates with the
+1.5-minimum-wage share at 0.83 to 0.95 through 2009 and with the
+1.0-minimum-wage share at 0.78 to 0.83 in 2009-2019.
+**Decision.** D-2026-11-05-b: the table and the deflator as stored; the
+ratio and the threshold shares nominal on both sides; the December wage
+of the snapshot not used for any statistic.
+**Assertion.** `02-social-rais-wages.R`, raw-state block (table complete
+1999-2024, strictly increasing; the snapshot's deflator equals the aux
+lookup in every year).
+
+## Q9. Which municipalities are dominated by public employment, and how do the whole-sector and private-sector low-wage shares diverge? (task 3.B diagnostics)
+
+What is checked: the public share of bonds by year and by state; the
+twenty municipalities with the highest average public share in
+2000-2020; the gap between the whole-sector and private-sector
+low-wage shares and the municipalities where it is widest.
+
+```{r q9-public}
+wages <- wages %>% mutate(public_share = n_bonds_public / n_bonds)
+wages %>%
+  group_by(year) %>%
+  summarise(across(public_share, list(p10 = ~ quantile(.x, 0.1), p50 = ~ median(.x),
+                                      p90 = ~ quantile(.x, 0.9))), .groups = "drop") %>%
+  mutate(across(-year, ~ round(.x, 2))) %>%
+  filter(year %in% c(1999, 2004, 2009, 2014, 2019, 2024))
+wages %>%
+  filter(year %in% 2000:2020) %>%
+  group_by(state_abbreviation) %>%
+  summarise(n = n_distinct(geocode), public_share = round(median(public_share), 2), .groups = "drop")
+wages %>%
+  filter(year %in% 2000:2020) %>%
+  group_by(geocode, municipality, state_abbreviation, biome_amazon) %>%
+  summarise(public_share = mean(public_share), bonds = mean(n_bonds), .groups = "drop") %>%
+  arrange(desc(public_share)) %>%
+  mutate(across(c(public_share, bonds), ~ round(.x, 2))) %>%
+  slice_head(n = 20)
+```
+
+```{r q9-divergence}
+# Above the floor in both sectors (the file carries the floor, D-2026-11-05-c).
+wages %>%
+  filter(year %in% 2000:2020, !is.na(share_le_mw100_priv), !is.na(share_le_mw100)) %>%
+  summarise(n = n(), cor_floor50 = cor(share_le_mw100, share_le_mw100_priv),
+            median_gap = median(share_le_mw100_priv - share_le_mw100))
+wages %>%
+  filter(year %in% 2000:2020) %>%
+  group_by(geocode, municipality, state_abbreviation) %>%
+  summarise(whole = mean(share_le_mw100), private = mean(share_le_mw100_priv, na.rm = TRUE),
+            public_share = mean(public_share), bonds_priv = mean(n_bonds_priv), .groups = "drop") %>%
+  mutate(gap = private - whole) %>%
+  arrange(desc(abs(gap))) %>%
+  mutate(across(c(whole, private, public_share, gap, bonds_priv), ~ round(.x, 2))) %>%
+  slice_head(n = 20)
+dbDisconnect(con, shutdown = TRUE)
+```
+
+**Finding.** The median municipality-year has half of its formal bonds
+in public administration (0.40 in 1999, 0.50 to 0.59 in 2004-2019, 0.40
+in 2024) and the top tenth above 93 percent; the 2000-2020 median is
+0.85 in Amazonas and 0.75 in Maranhão, 0.46 to 0.59 in the other states
+and 0.25 in Mato Grosso. The twenty municipalities at the top of the
+list, with 94 to 99 percent of 150 to 1,200 bonds in the public sector,
+are small interior municipalities of Maranhão, Amazonas, Acre, Pará and
+Tocantins where the prefeitura and the state are nearly the only formal
+employers, the case the brief describes. Across the municipality-years of
+2000-2020 above the floor in both sectors the whole-sector and
+private-sector low-wage shares correlate at 0.68 with a median gap of
+one point; the widest gaps in the municipality averages, in both
+directions, are municipalities of Maranhão, Tocantins and Pará with
+public shares of 0.55 to 0.96 and private sectors of a few dozen to a
+few hundred bonds, so a whole-sector share there describes public
+payroll and the private variant rests on a thin base.
+**Decision.** None here: the private variants of the existing employment
+variables (task 3.B step 3) are built when `02-social-rais.R` is
+re-pointed at the snapshot, with the same flag.
+**Assertion.** None.
