@@ -2216,6 +2216,10 @@ vertical-align: -.125em;
   <li><a href="#q3.-where-do-the-agricultural-wage-group-counts-and-the-shares-turn-na" id="toc-q3.-where-do-the-agricultural-wage-group-counts-and-the-shares-turn-na" class="nav-link" data-scroll-target="#q3.-where-do-the-agricultural-wage-group-counts-and-the-shares-turn-na">Q3. Where do the agricultural wage-group counts and the shares turn NA?</a></li>
   <li><a href="#q4.-how-are-the-rates-and-shares-distributed" id="toc-q4.-how-are-the-rates-and-shares-distributed" class="nav-link" data-scroll-target="#q4.-how-are-the-rates-and-shares-distributed">Q4. How are the rates and shares distributed?</a></li>
   <li><a href="#q5.-which-municipality-years-are-gaps-rather-than-zeros-and-where-are-the-agricultural-shares-na-after-the-bracket-fix-phase-2-step-2.7-2026-10-28" id="toc-q5.-which-municipality-years-are-gaps-rather-than-zeros-and-where-are-the-agricultural-shares-na-after-the-bracket-fix-phase-2-step-2.7-2026-10-28" class="nav-link" data-scroll-target="#q5.-which-municipality-years-are-gaps-rather-than-zeros-and-where-are-the-agricultural-shares-na-after-the-bracket-fix-phase-2-step-2.7-2026-10-28">Q5. Which municipality-years are gaps rather than zeros, and where are the agricultural shares NA after the bracket fix? (phase 2, step 2.7, 2026-10-28)</a></li>
+  <li><a href="#q6.-what-does-the-bond-level-snapshot-hold-and-how-is-the-public-sector-identified-rais-track-task-3.b-2026-11-05" id="toc-q6.-what-does-the-bond-level-snapshot-hold-and-how-is-the-public-sector-identified-rais-track-task-3.b-2026-11-05" class="nav-link" data-scroll-target="#q6.-what-does-the-bond-level-snapshot-hold-and-how-is-the-public-sector-identified-rais-track-task-3.b-2026-11-05">Q6. What does the bond-level snapshot hold, and how is the public sector identified? (RAIS track, task 3.B, 2026-11-05)</a></li>
+  <li><a href="#q7.-how-many-municipality-years-fall-below-candidate-reliability-floors-and-how-stable-are-the-wage-statistics-across-them-brief-decision-0.4-open" id="toc-q7.-how-many-municipality-years-fall-below-candidate-reliability-floors-and-how-stable-are-the-wage-statistics-across-them-brief-decision-0.4-open" class="nav-link" data-scroll-target="#q7.-how-many-municipality-years-fall-below-candidate-reliability-floors-and-how-stable-are-the-wage-statistics-across-them-brief-decision-0.4-open">Q7. How many municipality-years fall below candidate reliability floors, and how stable are the wage statistics across them? (brief decision 0.4, open)</a></li>
+  <li><a href="#q8.-is-the-minimum-wage-table-right-and-where-does-the-local-wage-distribution-sit-relative-to-the-floor-task-3.a" id="toc-q8.-is-the-minimum-wage-table-right-and-where-does-the-local-wage-distribution-sit-relative-to-the-floor-task-3.a" class="nav-link" data-scroll-target="#q8.-is-the-minimum-wage-table-right-and-where-does-the-local-wage-distribution-sit-relative-to-the-floor-task-3.a">Q8. Is the minimum-wage table right, and where does the local wage distribution sit relative to the floor? (task 3.A)</a></li>
+  <li><a href="#q9.-which-municipalities-are-dominated-by-public-employment-and-how-do-the-whole-sector-and-private-sector-low-wage-shares-diverge-task-3.b-diagnostics" id="toc-q9.-which-municipalities-are-dominated-by-public-employment-and-how-do-the-whole-sector-and-private-sector-low-wage-shares-diverge-task-3.b-diagnostics" class="nav-link" data-scroll-target="#q9.-which-municipalities-are-dominated-by-public-employment-and-how-do-the-whole-sector-and-private-sector-low-wage-shares-diverge-task-3.b-diagnostics">Q9. Which municipalities are dominated by public employment, and how do the whole-sector and private-sector low-wage shares diverge? (task 3.B diagnostics)</a></li>
   </ul>
 </nav>
 </div>
@@ -2247,6 +2251,7 @@ vertical-align: -.125em;
 
 
 <p>Source: own BigQuery extraction from Base dos Dados RAIS (<code>basedosdados.br_me_rais.microdados_vinculos</code>, update 2025-08-26); Query 2 output, table <code>social_employment_1.export_table_v4</code> (created 2025-11-25), exported 2026-10-06 (<code>_scripts/sql/2026-10-06-export-table-v4.sql</code>). Raw file: <code>_data/raw/rais/export_table_v4.csv</code>. Pipeline script: <code>_scripts/02-social-rais.R</code>. Interim output: <code>_data/interim/rais_employment_1999_2024.rds</code>. The brief’s questions on CBO codes around the agricultural cutoff and on public administration need the vínculo-level table and belong to the RAIS track (<code>rebuild/upstream-reform-rais.md</code>), not to this aggregate.</p>
+<p>RAIS track (Q6 onward, 2026-11-05). Source: the bond-level snapshot of Query 1 version 2 (<code>social_employment_2.rais_vinculos_deflat_v2</code>, Base dos Dados <code>microdados_vinculos</code> as of 2026-05-28, exported 2026-11-04, D-2026-11-04-a), <code>_data/raw/rais/rais_vinculos_v2/*.parquet</code>, read with DuckDB through <code>_scripts/utils/rais_snapshot.R</code>. Minimum wage: <code>_data/aux/minimum_wage_dec_1999_2024.csv</code>, checked against IPEADATA <code>MTE12_SALMIN12</code> (<code>_data/raw/ipeadata/ipeadata_MTE12_SALMIN12.json</code>). Pipeline script: <code>_scripts/02-social-rais-wages.R</code>. Interim output: <code>_data/interim/rais_wage_distribution_1999_2024.rds</code>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2716,6 +2721,631 @@ vertical-align: -.125em;
 </div>
 </div>
 <p><strong>Finding.</strong> Of the 99 absent municipality-years of the 808 × 21 window (64 on the biome’s 503), 36 are years before the installation of the sixteen lookup municipalities (Mojuí dos Campos 2000-2012, thirteen Mato Grosso municipalities in 2000, Ipiranga do Norte and Itanhangá 2000-2004) and 63 are reporting gaps: 34 of 2000-2005 in twenty small Maranhão and Roraima municipalities of the biome, and 29 in eighteen municipalities added at step 2.9, 23 of them in 2000-2002 of the same kind (small Maranhão and Tocantins municipalities; Serra Nova Dourada 2001-2002 is the one gap after installation in the lookup, D-2026-10-29-b) and four in the middle of the window, which the biome never showed: Belágua 2008 (137 bonds before, 81 after), Santa Filomena do Maranhão 2008 (92 and 2), São Roberto 2008-2009 (112 and 191) and Marajá do Sena 2015 (167 and 195). Several gaps sit between years with substantial counts (Serrano do Maranhão 2005: 211 bonds before and 209 after; São João da Ponta 2000: 86 and 170; Amapá do Maranhão 2001: 10 and 157), so absence is a reporting gap, not a year without bonds; the rows stay NA. After the fix the three agricultural bracket counts are never NA and add up to the agricultural total in every row; the three agricultural shares are NA exactly where no agricultural bond exists (0 / 0) and 0 where the bracket is empty. Against the pre-step output the fix moved 541 cells of <code>emp_share_agri_high_workers</code> (163 municipalities) and 19 of <code>emp_share_agri_mid_workers</code> from NA to 0 in the final panel, none of <code>emp_share_agri_low_workers</code> (<code>compare_outputs</code>, commit message of step 2.7). <strong>Decision.</strong> D-2026-10-28-a (bracket counts 0, the counts <code>workers_total</code>, <code>workers_agric</code> and <code>pia</code> carried into the panel as <code>emp_workers_n</code>, <code>emp_agri_workers_n</code>, <code>pia</code>; <code>lab_emp_formal_n</code>, <code>lab_emp_formal_agri_n</code> and <code>lab_pia_n</code> in the final panel since phase 2R), D-2026-10-28-b (absent municipality-years NA), D-2026-10-31-a (the gaps of the added municipalities, the four mid-window ones named). <strong>Assertion.</strong> <code>02-social-rais.R</code>, output block (bracket counts never NA and adding up; agricultural shares NA iff <code>workers_agric == 0</code>); <code>04-panel-assemble.R</code>, output block (99 NA cells of <code>emp_workers_n</code>, shared by every <code>emp_*</code> column; the two cells of Serra Nova Dourada after installation admitted).</p>
+</section>
+<section id="q6.-what-does-the-bond-level-snapshot-hold-and-how-is-the-public-sector-identified-rais-track-task-3.b-2026-11-05" class="level2">
+<h2 class="anchored" data-anchor-id="q6.-what-does-the-bond-level-snapshot-hold-and-how-is-the-public-sector-identified-rais-track-task-3.b-2026-11-05">Q6. What does the bond-level snapshot hold, and how is the public sector identified? (RAIS track, task 3.B, 2026-11-05)</h2>
+<p>What is checked: the legal-nature code list of the snapshot (CONCLA table, four digits) and the size of the public sector under the two definitions of the brief’s decision 0.1, natureza jurídica 1xxx (primary) and CNAE division 75 / 84 (alternative); where the two disagree; what the rows with an empty legal-nature code are.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;_scripts/utils/rais_snapshot.R&quot;</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">rais_snapshot_connect</span>()</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>natjur_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1015&quot;</span> <span class="ot">=</span> <span class="st">&quot;federal executive body&quot;</span>, <span class="st">&quot;1023&quot;</span> <span class="ot">=</span> <span class="st">&quot;state executive body&quot;</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1031&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipal executive body&quot;</span>, <span class="st">&quot;1058&quot;</span> <span class="ot">=</span> <span class="st">&quot;state legislature&quot;</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1066&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipal legislature&quot;</span>, <span class="st">&quot;1074&quot;</span> <span class="ot">=</span> <span class="st">&quot;federal judiciary&quot;</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1082&quot;</span> <span class="ot">=</span> <span class="st">&quot;state judiciary&quot;</span>, <span class="st">&quot;1104&quot;</span> <span class="ot">=</span> <span class="st">&quot;federal autarchy&quot;</span>,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1112&quot;</span> <span class="ot">=</span> <span class="st">&quot;state autarchy&quot;</span>, <span class="st">&quot;1120&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipal autarchy&quot;</span>,</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1139&quot;</span> <span class="ot">=</span> <span class="st">&quot;federal public foundation&quot;</span>, <span class="st">&quot;1147&quot;</span> <span class="ot">=</span> <span class="st">&quot;state public foundation&quot;</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1155&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipal public foundation&quot;</span>, <span class="st">&quot;1236&quot;</span> <span class="ot">=</span> <span class="st">&quot;state or Federal District&quot;</span>,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1244&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipality&quot;</span>, <span class="st">&quot;1333&quot;</span> <span class="ot">=</span> <span class="st">&quot;municipal direct-administration fund&quot;</span>,</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;2011&quot;</span> <span class="ot">=</span> <span class="st">&quot;public enterprise (not public sector here)&quot;</span>,</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;2038&quot;</span> <span class="ot">=</span> <span class="st">&quot;mixed-capital company (not public sector here)&quot;</span>,</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;2062&quot;</span> <span class="ot">=</span> <span class="st">&quot;limited company&quot;</span>, <span class="st">&quot;2135&quot;</span> <span class="ot">=</span> <span class="st">&quot;individual entrepreneur&quot;</span>)</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>codes <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="st">&quot;</span></span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT natureza_juridica AS code, COUNT(*) AS bonds</span></span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM rais GROUP BY 1 ORDER BY bonds DESC&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> natjur_labels[code], <span class="at">share =</span> bonds <span class="sc">/</span> <span class="fu">sum</span>(bonds))</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>codes <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">str_starts</span>(code, <span class="st">&quot;1&quot;</span>)) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(code) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">40</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 31 × 4
+   code     bonds label                                       share
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;                                       &lt;dbl&gt;
+ 1 1015   1212414 federal executive body               0.0134      
+ 2 1023  10310762 state executive body                 0.114       
+ 3 1031  14101838 municipal executive body             0.156       
+ 4 1040      1900 &lt;NA&gt;                                 0.0000211   
+ 5 1058    503641 state legislature                    0.00559     
+ 6 1066    357193 municipal legislature                0.00396     
+ 7 1074    229436 federal judiciary                    0.00254     
+ 8 1082    552979 state judiciary                      0.00613     
+ 9 1090     40618 &lt;NA&gt;                                 0.000451    
+10 1104    580537 federal autarchy                     0.00644     
+11 1112    370836 state autarchy                       0.00411     
+12 1120    150883 municipal autarchy                   0.00167     
+13 1139    433789 federal public foundation            0.00481     
+14 1147    223261 state public foundation              0.00248     
+15 1155     83510 municipal public foundation          0.000926    
+16 1163      2789 &lt;NA&gt;                                 0.0000309   
+17 1171     41579 &lt;NA&gt;                                 0.000461    
+18 1180      6593 &lt;NA&gt;                                 0.0000731   
+19 1198         3 &lt;NA&gt;                                 0.0000000333
+20 1201     79265 &lt;NA&gt;                                 0.000879    
+21 1210      5517 &lt;NA&gt;                                 0.0000612   
+22 1228       181 &lt;NA&gt;                                 0.00000201  
+23 1236     81406 state or Federal District            0.000903    
+24 1244   1565359 municipality                         0.0174      
+25 1260      1369 &lt;NA&gt;                                 0.0000152   
+26 1279       540 &lt;NA&gt;                                 0.00000599  
+27 1309      1632 &lt;NA&gt;                                 0.0000181   
+28 1317      1320 &lt;NA&gt;                                 0.0000146   
+29 1325      8707 &lt;NA&gt;                                 0.0000966   
+30 1333    284413 municipal direct-administration fund 0.00315     
+31 1341        40 &lt;NA&gt;                                 0.000000444 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>codes <span class="sc">%&gt;%</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">12</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 4
+   code     bonds label                                            share
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;                                            &lt;dbl&gt;
+ 1 2062  33743014 limited company                                0.374  
+ 2 1031  14101838 municipal executive body                       0.156  
+ 3 1023  10310762 state executive body                           0.114  
+ 4 2135   6769435 individual entrepreneur                        0.0751 
+ 5 2054   4894219 &lt;NA&gt;                                           0.0543 
+ 6 3999   2454873 &lt;NA&gt;                                           0.0272 
+ 7 2046   1954947 &lt;NA&gt;                                           0.0217 
+ 8 2305   1588483 &lt;NA&gt;                                           0.0176 
+ 9 1244   1565359 municipality                                   0.0174 
+10 4081   1393015 &lt;NA&gt;                                           0.0155 
+11 1015   1212414 federal executive body                         0.0134 
+12 2038    688448 mixed-capital company (not public sector here) 0.00764</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>codes <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(code) <span class="sc">|</span> code <span class="sc">==</span> <span class="st">&quot;&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  code   bonds label   share
+  &lt;chr&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+1 &lt;NA&gt;  603266 &lt;NA&gt;  0.00669</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>flags_year <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="fu">sprintf</span>(<span class="st">&quot;</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT CAST(ano AS INTEGER) AS year, COUNT(*) AS bonds,</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN %1$s THEN 1.0 ELSE 0 END) AS public_natjur,</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN %2$s THEN 1.0 ELSE 0 END) AS public_cnae,</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN %1$s AND NOT %2$s THEN 1.0 ELSE 0 END) AS natjur_only,</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN %2$s AND NOT %1$s THEN 1.0 ELSE 0 END) AS cnae_only,</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN natureza_juridica IS NULL OR natureza_juridica = &#39;&#39;</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="st">             THEN 1.0 ELSE 0 END) AS natjur_empty,</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN (natureza_juridica IS NULL OR natureza_juridica = &#39;&#39;)</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="st">                   AND %2$s THEN 1.0 ELSE 0 END) AS empty_and_cnae_public</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM rais GROUP BY 1 ORDER BY 1&quot;</span>, <span class="fu">rais_public_sql</span>(), <span class="fu">rais_public_cnae_sql</span>())) <span class="sc">%&gt;%</span></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>()</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>flags_year <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span><span class="fu">c</span>(year, bonds), <span class="sc">~</span> <span class="fu">round</span>(<span class="dv">100</span> <span class="sc">*</span> .x, <span class="dv">2</span>))) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 26 × 8
+    year   bonds public_natjur public_cnae natjur_only cnae_only natjur_empty empty_and_cnae_public
+   &lt;int&gt;   &lt;dbl&gt;         &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;                 &lt;dbl&gt;
+ 1  1999 1588912          36.6        38.5        2.44      4.31         0.06                  0.04
+ 2  2000 1687494          36.0        36.2        2.23      2.5          0                     0   
+ 3  2001 1809124          37.6        36.5        1.64      0.56         0                     0   
+ 4  2002 2000705          39.0        38.0        1.14      0.14         0                     0   
+ 5  2003 2137639          38.8        38          0.9       0.15         0                     0   
+ 6  2004 2367490          37.1        36.2        1.07      0.15         0                     0   
+ 7  2005 2531613          38.0        37.3        0.85      0.12         0                     0   
+ 8  2006 2732493          38.1        36.2        2.01      0.12         0                     0   
+ 9  2007 2988019          37.2        34.5        2.9       0.17         0                     0   
+10  2008 3183599          36.9        35.4        1.76      0.21         0                     0   
+11  2009 3348188          36.8        36.1        0.93      0.22         0                     0   
+12  2010 3672596          36.1        35.2        1.06      0.15         0                     0   
+13  2011 3913821          34.8        33.8        1.06      0.1          0                     0   
+14  2012 4027736          32.8        31.9        1.14      0.17         0                     0   
+15  2013 4219518          33.2        32.2        1.15      0.12         0                     0   
+16  2014 4300846          33          31.8        1.31      0.1          0                     0   
+17  2015 4197760          34.1        32.8        1.4       0.1          0                     0   
+18  2016 3995517          34.3        33.0        1.48      0.11         0                     0   
+19  2017 4095699          35.7        34.1        1.65      0.11         0                     0   
+20  2018 4194462          35.4        33.8        1.71      0.13         0                     0   
+21  2019 4099423          36.0        34.5        1.57      0.1          0                     0   
+22  2020 4081562          33.9        32.6        1.33      0.09         0                     0   
+23  2021 4426566          33.5        32.4        1.19      0.1          0                     0   
+24  2022 4784052          32.7        29.2        3.85      0.33         4.04                  0   
+25  2023 4802766          29.6        25.3        4.37      0.09         4.17                  0   
+26  2024 4969265          29.2        25.7        3.53      0.08         4.2                   0   </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What the natureza-jurídica-only public bonds do (CNAE 2.0 division, 2010-2024).</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dbGetQuery</span>(con, <span class="fu">sprintf</span>(<span class="st">&quot;</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT LEFT(cnae_2, 2) AS cnae2_division, COUNT(*) AS bonds</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM rais WHERE ano &gt;= 2010 AND %s AND NOT %s</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="st">  GROUP BY 1 ORDER BY bonds DESC LIMIT 8&quot;</span>, <span class="fu">rais_public_sql</span>(), <span class="fu">rais_public_cnae_sql</span>()))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  cnae2_division  bonds
+1             85 809457
+2             86 250965
+3             94  38531
+4             36  31512
+5             01  13540
+6             69  13243
+7             82   7465
+8             91   7444</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># What the empty-code rows do (2022-2024).</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dbGetQuery</span>(con, <span class="st">&quot;</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT LEFT(cnae_2, 2) AS cnae2_division, COUNT(*) AS bonds</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM rais WHERE ano &gt;= 2022 AND (natureza_juridica IS NULL OR natureza_juridica = &#39;&#39;)</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="st">  GROUP BY 1 ORDER BY bonds DESC LIMIT 8&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  cnae2_division  bonds
+1             01 397702
+2             41  88992
+3             42  55633
+4             69  24190
+5             43  13502
+6             86   7211
+7             02   3004
+8             71   2640</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> The snapshot carries 108 legal-nature codes. The 1xxx range, Administração Pública in the CONCLA table, holds 31 codes and a third of all bonds, led by the municipal executive (14.1 million bonds), the state executive (10.3 million), the code “município” (1.6 million) and the federal executive (1.2 million); public enterprises and mixed-capital companies (2011 and 2038, 1.3 million) sit in the 2xxx range and stay outside the flag. Under the legal-nature definition the public sector is 36 to 39 percent of bonds through 2010, 33 to 36 percent in 2011-2021 and 29 to 33 percent from 2022. The CNAE definition is the larger one only in 1999 and 2000, when 4.3 and 2.5 percent of bonds carry the public-administration division under a non-public legal nature; from 2001 it runs below the legal-nature definition by 0.6 to 2.7 points through 2021 and by 3.5 to 4.4 points from 2022, the difference being public bodies classified under education (CNAE 85, 0.8 million bonds since 2010), health (86), membership organisations (94) and water supply (36), as the brief anticipated. The empty code appears in 4 percent of the rows of 2022-2024, in 0.06 percent of 1999 and nowhere else; the 2022-2024 rows are concentrated in agriculture (CNAE 01), construction and legal services and none carries the public-administration division, so counting them as private agrees with the alternative flag; in 1999 about 600 empty-code bonds carry the division and are the only rows the two rules read differently. <strong>Decision.</strong> D-2026-11-05-a: public sector = natureza jurídica 1xxx (<code>rais_public_sql()</code>), an empty code private; the CNAE 75 / 84 count stored beside it (<code>n_bonds_public_cnae</code>). <strong>Assertion.</strong> <code>02-social-rais-wages.R</code>, output block (<code>n_bonds_public + n_bonds_priv == n_bonds</code>, <code>n_bonds_public_cnae &lt;= n_bonds</code>).</p>
+</section>
+<section id="q7.-how-many-municipality-years-fall-below-candidate-reliability-floors-and-how-stable-are-the-wage-statistics-across-them-brief-decision-0.4-open" class="level2">
+<h2 class="anchored" data-anchor-id="q7.-how-many-municipality-years-fall-below-candidate-reliability-floors-and-how-stable-are-the-wage-statistics-across-them-brief-decision-0.4-open">Q7. How many municipality-years fall below candidate reliability floors, and how stable are the wage statistics across them? (brief decision 0.4, open)</h2>
+<p>What is checked: the bond count per municipality-year, whole and private sector, against the floors 30, 50 and 100 of the brief (all years; the 2000-2020 window; the biome sample); how the yearly median wage and the low-wage share change when municipality-years below each floor are dropped; and the year-to-year volatility of the low-wage share by size class, the direct measure of the instability the floor is meant to remove.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>wages <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">&quot;_data/interim/rais_wage_distribution_1999_2024.rds&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(flags, <span class="at">by =</span> <span class="st">&quot;geocode&quot;</span>)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The interim file carries the floor (D-2026-11-05-c), so the evidence for</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="co"># it is computed here from the snapshot without a floor; the counts of the</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="co"># file are not floored.</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>mw_q7 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/minimum_wage_dec_1999_2024.csv&quot;</span>,</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">year =</span> <span class="fu">col_integer</span>(), <span class="at">mw_nominal_dec =</span> <span class="fu">col_double</span>(),</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">legal_instrument =</span> <span class="fu">col_character</span>()))</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>duckdb<span class="sc">::</span><span class="fu">duckdb_register</span>(con, <span class="st">&quot;mw_q7&quot;</span>, mw_q7 <span class="sc">%&gt;%</span> <span class="fu">select</span>(year, mw_nominal_dec))</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>unfloored <span class="ot">&lt;-</span> <span class="fu">dbGetQuery</span>(con, <span class="fu">sprintf</span>(<span class="st">&quot;</span></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT CAST(r.ano AS INTEGER) AS year, r.id_municipio AS geocode,</span></span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a><span class="st">    COUNT(*) AS n_bonds,</span></span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a><span class="st">    SUM(CASE WHEN NOT %1$s THEN 1 ELSE 0 END) AS n_bonds_priv,</span></span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN r.valor_remuneracao_media &lt;= mw.mw_nominal_dec THEN 1.0 ELSE 0 END)</span></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a><span class="st">      AS share_le_mw100,</span></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(CASE WHEN r.valor_remuneracao_media &lt;= mw.mw_nominal_dec THEN 1.0 ELSE 0 END)</span></span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a><span class="st">      FILTER (WHERE NOT %1$s) AS share_le_mw100_priv</span></span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM rais AS r LEFT JOIN mw_q7 AS mw ON mw.year = r.ano</span></span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a><span class="st">  GROUP BY 1, 2&quot;</span>, <span class="fu">rais_public_sql</span>())) <span class="sc">%&gt;%</span></span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n_bonds =</span> <span class="fu">as.integer</span>(n_bonds), <span class="at">n_bonds_priv =</span> <span class="fu">as.integer</span>(n_bonds_priv))</span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(unfloored) <span class="sc">==</span> <span class="fu">nrow</span>(wages))</span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>floors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">100</span>)</span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>below <span class="ot">&lt;-</span> <span class="cf">function</span>(d, n) {</span>
+<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(floors, <span class="sc">~</span> <span class="fu">tibble</span>(<span class="at">floor =</span> .x,</span>
+<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>                           <span class="at">below =</span> <span class="fu">sum</span>(d[[n]] <span class="sc">&lt;</span> .x),</span>
+<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a>                           <span class="at">share =</span> <span class="fu">mean</span>(d[[n]] <span class="sc">&lt;</span> .x)))</span>
+<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">all years, whole</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(wages, <span class="st">&quot;n_bonds&quot;</span>),</span>
+<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">all years, private</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(wages, <span class="st">&quot;n_bonds_priv&quot;</span>),</span>
+<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">2000-2020, whole</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(<span class="fu">filter</span>(wages, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>), <span class="st">&quot;n_bonds&quot;</span>),</span>
+<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">2000-2020, private</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(<span class="fu">filter</span>(wages, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>), <span class="st">&quot;n_bonds_priv&quot;</span>),</span>
+<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">2000-2020 biome, whole</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(<span class="fu">filter</span>(wages, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>, biome_amazon <span class="sc">==</span> <span class="dv">1</span>), <span class="st">&quot;n_bonds&quot;</span>),</span>
+<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">2000-2020 biome, private</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">below</span>(<span class="fu">filter</span>(wages, year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>, biome_amazon <span class="sc">==</span> <span class="dv">1</span>), <span class="st">&quot;n_bonds_priv&quot;</span>),</span>
+<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">.id =</span> <span class="st">&quot;sample&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">share =</span> <span class="fu">round</span>(<span class="dv">100</span> <span class="sc">*</span> share, <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> floor, <span class="at">values_from =</span> <span class="fu">c</span>(below, share))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 7
+  sample                   below_30 below_50 below_100 share_30 share_50 share_100
+  &lt;chr&gt;                       &lt;int&gt;    &lt;int&gt;     &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+1 all years, whole              760     1025      1610      3.6      4.9       7.7
+2 all years, private           3340     4655      6926     16       22.3      33.2
+3 2000-2020, whole              614      832      1310      3.6      4.9       7.8
+4 2000-2020, private           2896     4013      5872     17.2     23.8      34.8
+5 2000-2020 biome, whole        416      545       793      4        5.2       7.6
+6 2000-2020 biome, private     1686     2297      3278     16.1     21.9      31.2</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Municipality-years with no private bond at all.</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span> <span class="fu">filter</span>(n_bonds_priv <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="fu">count</span>(year) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 2
+    year     n
+   &lt;int&gt; &lt;int&gt;
+ 1  1999    30
+ 2  2000    21
+ 3  2001    30
+ 4  2002    20
+ 5  2003    24
+ 6  2004    13
+ 7  2005    13
+ 8  2006    10
+ 9  2007     7
+10  2008     4
+11  2009     3
+12  2010     5
+13  2011     4
+14  2012     2
+15  2013     2
+16  2014     2</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>by_floor <span class="ot">&lt;-</span> <span class="cf">function</span>(d, n, stat) {</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">c</span>(<span class="dv">0</span>, floors), <span class="cf">function</span>(f) {</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    d <span class="sc">%&gt;%</span> <span class="fu">filter</span>(.data[[n]] <span class="sc">&gt;=</span> f) <span class="sc">%&gt;%</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarise</span>(<span class="at">floor =</span> f, <span class="at">value =</span> <span class="fu">median</span>(.data[[stat]], <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">whole =</span> <span class="fu">by_floor</span>(unfloored, <span class="st">&quot;n_bonds&quot;</span>, <span class="st">&quot;share_le_mw100&quot;</span>),</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">private =</span> <span class="fu">by_floor</span>(unfloored, <span class="st">&quot;n_bonds_priv&quot;</span>, <span class="st">&quot;share_le_mw100_priv&quot;</span>),</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">.id =</span> <span class="st">&quot;sector&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">2005</span>, <span class="dv">2010</span>, <span class="dv">2015</span>, <span class="dv">2020</span>, <span class="dv">2024</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">value =</span> <span class="fu">round</span>(value, <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> floor, <span class="at">values_from =</span> value, <span class="at">names_prefix =</span> <span class="st">&quot;floor_&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 6
+   sector   year floor_0 floor_30 floor_50 floor_100
+   &lt;chr&gt;   &lt;int&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+ 1 whole    2000   0.125    0.132    0.123     0.118
+ 2 whole    2005   0.193    0.192    0.193     0.181
+ 3 whole    2010   0.099    0.099    0.099     0.099
+ 4 whole    2015   0.067    0.067    0.067     0.066
+ 5 whole    2020   0.09     0.09     0.09      0.09 
+ 6 whole    2024   0.093    0.093    0.092     0.092
+ 7 private  2000   0.1      0.104    0.098     0.091
+ 8 private  2005   0.17     0.159    0.156     0.15 
+ 9 private  2010   0.133    0.126    0.122     0.114
+10 private  2015   0.093    0.092    0.089     0.083
+11 private  2020   0.147    0.145    0.142     0.137
+12 private  2024   0.131    0.13     0.128     0.123</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Year-to-year volatility of the low-wage share by size class.</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>unfloored <span class="sc">%&gt;%</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(geocode, year) <span class="sc">%&gt;%</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode) <span class="sc">%&gt;%</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">d_share =</span> share_le_mw100 <span class="sc">-</span> <span class="fu">lag</span>(share_le_mw100),</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">d_share_priv =</span> share_le_mw100_priv <span class="sc">-</span> <span class="fu">lag</span>(share_le_mw100_priv)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">size =</span> <span class="fu">cut</span>(n_bonds, <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">300</span>, <span class="dv">1000</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">size_priv =</span> <span class="fu">cut</span>(n_bonds_priv, <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">300</span>, <span class="dv">1000</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">whole =</span> <span class="fu">group_by</span>(., size) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">sd_change =</span> <span class="fu">sd</span>(d_share, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>                                               <span class="at">p90_abs_change =</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(d_share), <span class="fl">0.9</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rename</span>(<span class="at">class =</span> size),</span>
+<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">private =</span> <span class="fu">group_by</span>(., size_priv) <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">sd_change =</span> <span class="fu">sd</span>(d_share_priv, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb57-16"><a href="#cb57-16" aria-hidden="true" tabindex="-1"></a>                                                      <span class="at">p90_abs_change =</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(d_share_priv), <span class="fl">0.9</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-17"><a href="#cb57-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rename</span>(<span class="at">class =</span> size_priv),</span>
+<span id="cb57-18"><a href="#cb57-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">.id =</span> <span class="st">&quot;sector&quot;</span>)</span>
+<span id="cb57-19"><a href="#cb57-19" aria-hidden="true" tabindex="-1"></a>  } <span class="sc">%&gt;%</span></span>
+<span id="cb57-20"><a href="#cb57-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(sd_change, p90_abs_change), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 5
+   sector  class           n sd_change p90_abs_change
+   &lt;chr&gt;   &lt;fct&gt;       &lt;int&gt;     &lt;dbl&gt;          &lt;dbl&gt;
+ 1 whole   [0,30)        760     0.285          0.5  
+ 2 whole   [30,50)       265     0.224          0.322
+ 3 whole   [50,100)      585     0.221          0.352
+ 4 whole   [100,300)    3344     0.172          0.275
+ 5 whole   [300,1e+03)  7586     0.118          0.164
+ 6 whole   [1e+03,Inf)  8330     0.06           0.077
+ 7 private [0,1)         190    NA             NA    
+ 8 private [1,30)       3150     0.22           0.337
+ 9 private [30,50)      1315     0.143          0.226
+10 private [50,100)     2271     0.112          0.173
+11 private [100,300)    4320     0.088          0.13 
+12 private [300,1e+03)  4428     0.062          0.087
+13 private [1e+03,Inf)  5196     0.033          0.048</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> For the whole formal sector the floor is a marginal rule: 3.6, 4.9 and 7.7 percent of the 20,870 municipality-years fall below 30, 50 and 100 bonds (4, 5 and 8 percent on the biome in 2000-2020), and the yearly median of the low-wage share moves by at most about a point across the floors. For the private sector it is not: 16, 22 and 33 percent fall below the same floors (17, 24 and 35 percent in the 2000-2020 window), 190 municipality-years have no private bond at all (154 of them in 1999-2007), the yearly median of the private low-wage share moves by up to two points across the floors, and the year-to-year change of the private share has a standard deviation of 0.22 below 30 bonds and 0.14 at 30-49, against 0.06 at 300-999 and 0.03 above 1,000; the whole-sector share shows the same gradient (0.29 below 30 bonds, 0.06 above 1,000). The evidence supports a floor of about 50 bonds applied to the count of the sector the statistic describes, with the statistic NA below it. <strong>Decision.</strong> D-2026-11-05-c (author, 2026-11-05): floor of 50 bonds, <code>RAIS_FLOOR_N_BONDS</code>, applied in <code>02-social-rais-wages.R</code> to the count of the sector described; the statistics are NA below it (1,025 whole-sector and 4,655 private-sector municipality-years), the counts are kept. <strong>Assertion.</strong> <code>02-social-rais-wages.R</code>, output block (whole-sector statistics NA iff <code>n_bonds &lt; 50</code>, private statistics NA iff <code>n_bonds_priv &lt; 50</code>; below-floor shares under 6 and 25 percent).</p>
+</section>
+<section id="q8.-is-the-minimum-wage-table-right-and-where-does-the-local-wage-distribution-sit-relative-to-the-floor-task-3.a" class="level2">
+<h2 class="anchored" data-anchor-id="q8.-is-the-minimum-wage-table-right-and-where-does-the-local-wage-distribution-sit-relative-to-the-floor-task-3.a">Q8. Is the minimum-wage table right, and where does the local wage distribution sit relative to the floor? (task 3.A)</h2>
+<p>What is checked: the hand-built table of the minimum wage in force on 31 December against the IPEADATA monthly series <code>MTE12_SALMIN12</code> (December values); the deflated series; the ratio of the minimum wage to the municipal median wage and the threshold shares by year and by state; the relation of the contemporaneous low-wage share to the existing <code>emp_share_low_workers</code>, which uses the 2024 minimum wage in real terms.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>mw_dec <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/minimum_wage_dec_1999_2024.csv&quot;</span>,</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">year =</span> <span class="fu">col_integer</span>(), <span class="at">mw_nominal_dec =</span> <span class="fu">col_double</span>(),</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">legal_instrument =</span> <span class="fu">col_character</span>()))</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>ipea <span class="ot">&lt;-</span> jsonlite<span class="sc">::</span><span class="fu">fromJSON</span>(<span class="st">&quot;_data/raw/ipeadata/ipeadata_MTE12_SALMIN12.json&quot;</span>)<span class="sc">$</span>value <span class="sc">%&gt;%</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(<span class="at">year =</span> <span class="fu">as.integer</span>(<span class="fu">substr</span>(VALDATA, <span class="dv">1</span>, <span class="dv">4</span>)), <span class="at">month =</span> <span class="fu">as.integer</span>(<span class="fu">substr</span>(VALDATA, <span class="dv">6</span>, <span class="dv">7</span>)),</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">mw_ipea =</span> VALVALOR) <span class="sc">%&gt;%</span></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(month <span class="sc">==</span> <span class="dv">12</span>L, year <span class="sc">%in%</span> mw_dec<span class="sc">$</span>year)</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>deflator <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;_data/aux/deflator_ipca_2024.csv&quot;</span>, <span class="at">col_types =</span> <span class="fu">cols</span>(<span class="at">.default =</span> <span class="fu">col_double</span>()))</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>mw_check <span class="ot">&lt;-</span> mw_dec <span class="sc">%&gt;%</span></span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ipea <span class="sc">%&gt;%</span> <span class="fu">select</span>(year, mw_ipea), <span class="at">by =</span> <span class="st">&quot;year&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(deflator <span class="sc">%&gt;%</span> <span class="fu">transmute</span>(<span class="at">year =</span> <span class="fu">as.integer</span>(year), ipca_deflator), <span class="at">by =</span> <span class="st">&quot;year&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mw_brl_2024 =</span> <span class="fu">round</span>(mw_nominal_dec <span class="sc">*</span> ipca_deflator, <span class="dv">0</span>), <span class="at">equal =</span> mw_nominal_dec <span class="sc">==</span> mw_ipea)</span>
+<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a>mw_check <span class="sc">%&gt;%</span> <span class="fu">select</span>(year, mw_nominal_dec, mw_ipea, equal, mw_brl_2024) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 26 × 5
+    year mw_nominal_dec mw_ipea equal mw_brl_2024
+   &lt;int&gt;          &lt;dbl&gt;   &lt;dbl&gt; &lt;lgl&gt;       &lt;dbl&gt;
+ 1  1999            136     136 TRUE          608
+ 2  2000            151     151 TRUE          637
+ 3  2001            180     180 TRUE          706
+ 4  2002            200     200 TRUE          696
+ 5  2003            240     240 TRUE          763
+ 6  2004            260     260 TRUE          770
+ 7  2005            300     300 TRUE          840
+ 8  2006            350     350 TRUE          952
+ 9  2007            380     380 TRUE          988
+10  2008            415     415 TRUE         1017
+11  2009            465     465 TRUE         1093
+12  2010            510     510 TRUE         1132
+13  2011            545     545 TRUE         1139
+14  2012            622     622 TRUE         1225
+15  2013            678     678 TRUE         1261
+16  2014            724     724 TRUE         1267
+17  2015            788     788 TRUE         1245
+18  2016            880     880 TRUE         1311
+19  2017            937     937 TRUE         1349
+20  2018            954     954 TRUE         1326
+21  2019            998     998 TRUE         1327
+22  2020           1045    1045 TRUE         1338
+23  2021           1100    1100 TRUE         1276
+24  2022           1212    1212 TRUE         1333
+25  2023           1320    1320 TRUE         1386
+26  2024           1412    1412 TRUE         1412</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(mw_check<span class="sc">$</span>equal))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(wage_median_2024, mw_to_median, share_le_mw100, share_le_mw150),</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">p25 =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.x, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">p50 =</span> <span class="sc">~</span> <span class="fu">median</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">p75 =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.x, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))),</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1999</span>, <span class="dv">2004</span>, <span class="dv">2009</span>, <span class="dv">2014</span>, <span class="dv">2019</span>, <span class="dv">2024</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 13
+   year wage_median_2024_p25 wage_median_2024_p50 wage_median_2024_p75 mw_to_median_p25 mw_to_median_p50
+  &lt;int&gt;                &lt;dbl&gt;                &lt;dbl&gt;                &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+1  1999                 724.                 923.                1191.             0.51             0.66
+2  2004                 880.                1072.                1311.             0.59             0.72
+3  2009                1319.                1482.                1689.             0.65             0.74
+4  2014                1693.                1881.                2118.             0.6              0.67
+5  2019                1806.                1995                 2259.             0.59             0.67
+6  2024                1969.                2256.                2675.             0.53             0.63
+# ℹ 7 more variables: mw_to_median_p75 &lt;dbl&gt;, share_le_mw100_p25 &lt;dbl&gt;, share_le_mw100_p50 &lt;dbl&gt;,
+#   share_le_mw100_p75 &lt;dbl&gt;, share_le_mw150_p25 &lt;dbl&gt;, share_le_mw150_p50 &lt;dbl&gt;, share_le_mw150_p75 &lt;dbl&gt;</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">median_wage_2024 =</span> <span class="fu">median</span>(wage_median_2024, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">mw_to_median =</span> <span class="fu">median</span>(mw_to_median, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_le_mw100 =</span> <span class="fu">median</span>(share_le_mw100, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">share_le_mw150 =</span> <span class="fu">median</span>(share_le_mw150, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span><span class="fu">c</span>(state_abbreviation, n), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 6
+  state_abbreviation     n median_wage_2024 mw_to_median share_le_mw100 share_le_mw150
+  &lt;chr&gt;              &lt;int&gt;            &lt;dbl&gt;        &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;
+1 AC                    22            1920.         0.7            0.1            0.54
+2 AM                    62            1920          0.7            0.1            0.54
+3 AP                    16            1919.         0.7            0.09           0.54
+4 MA                   217            2010.         0.67           0.11           0.5 
+5 MT                   141            2494.         0.54           0.07           0.32
+6 PA                   144            1988.         0.67           0.08           0.51
+7 RO                    52            2003.         0.67           0.09           0.5 
+8 RR                    15            1920          0.7            0.1            0.54
+9 TO                   139            1920          0.7            0.1            0.55</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>rais_year <span class="ot">&lt;-</span> rais <span class="sc">%&gt;%</span> <span class="fu">select</span>(geocode, year, emp_share_low_workers, workers_total)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(rais_year, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;geocode&quot;</span>, <span class="st">&quot;year&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(share_le_mw100)) <span class="sc">%&gt;%</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cor_le_mw100 =</span> <span class="fu">cor</span>(share_le_mw100, emp_share_low_workers),</span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">cor_le_mw150 =</span> <span class="fu">cor</span>(share_le_mw150, emp_share_low_workers),</span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_le_mw100 =</span> <span class="fu">mean</span>(share_le_mw100), <span class="at">mean_low_2024 =</span> <span class="fu">mean</span>(emp_share_low_workers),</span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">3</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1999</span>, <span class="dv">2004</span>, <span class="dv">2009</span>, <span class="dv">2014</span>, <span class="dv">2019</span>, <span class="dv">2024</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+   year cor_le_mw100 cor_le_mw150 mean_le_mw100 mean_low_2024
+  &lt;int&gt;        &lt;dbl&gt;        &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+1  1999        0.637        0.873         0.226         0.742
+2  2004        0.703        0.947         0.248         0.688
+3  2009        0.787        0.948         0.178         0.471
+4  2014        0.821        0.804         0.111         0.244
+5  2019        0.806        0.708         0.088         0.173
+6  2024        0.451        0.382         0.113         0.147</code></pre>
+</div>
+</div>
+<p><strong>Finding.</strong> Every December value of the table equals the IPEADATA series, 136 reais in 1999 to 1,412 in 2024 (608 to 1,412 reais of 2024; the real value rises through 2014 and is flat after). The minimum wage sits at 0.59 to 0.79 of the municipal median wage in the middle half of municipality-years (yearly medians 0.63 to 0.74), so the typical median is between 1.3 and 1.7 minimum wages; in the median municipality-year a tenth of the bonds earn at most the minimum wage and half earn at most 1.5 minimum wages. Mato Grosso stands apart in 2020 (median wage 2,494 reais of 2024 against 1,920 to 2,003 elsewhere; a third of bonds at or below 1.5 minimum wages against half). The contemporaneous low-wage share and the existing bracket share are different objects: the bracket is fixed at the 2024 minimum wage in real terms, which equals 2.3 minimum wages of 1999 and one of 2024, so the two means converge only at the end of the window (0.23 against 0.74 in 1999, 0.11 against 0.15 in 2024); across municipalities the bracket share correlates with the 1.5-minimum-wage share at 0.83 to 0.95 through 2009 and with the 1.0-minimum-wage share at 0.78 to 0.83 in 2009-2019. <strong>Decision.</strong> D-2026-11-05-b: the table and the deflator as stored; the ratio and the threshold shares nominal on both sides; the December wage of the snapshot not used for any statistic. <strong>Assertion.</strong> <code>02-social-rais-wages.R</code>, raw-state block (table complete 1999-2024, strictly increasing; the snapshot’s deflator equals the aux lookup in every year).</p>
+</section>
+<section id="q9.-which-municipalities-are-dominated-by-public-employment-and-how-do-the-whole-sector-and-private-sector-low-wage-shares-diverge-task-3.b-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="q9.-which-municipalities-are-dominated-by-public-employment-and-how-do-the-whole-sector-and-private-sector-low-wage-shares-diverge-task-3.b-diagnostics">Q9. Which municipalities are dominated by public employment, and how do the whole-sector and private-sector low-wage shares diverge? (task 3.B diagnostics)</h2>
+<p>What is checked: the public share of bonds by year and by state; the twenty municipalities with the highest average public share in 2000-2020; the gap between the whole-sector and private-sector low-wage shares and the municipalities where it is widest.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>wages <span class="ot">&lt;-</span> wages <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">public_share =</span> n_bonds_public <span class="sc">/</span> n_bonds)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(public_share, <span class="fu">list</span>(<span class="at">p10 =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.x, <span class="fl">0.1</span>), <span class="at">p50 =</span> <span class="sc">~</span> <span class="fu">median</span>(.x),</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">p90 =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.x, <span class="fl">0.9</span>))), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>year, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1999</span>, <span class="dv">2004</span>, <span class="dv">2009</span>, <span class="dv">2014</span>, <span class="dv">2019</span>, <span class="dv">2024</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+   year public_share_p10 public_share_p50 public_share_p90
+  &lt;int&gt;            &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+1  1999             0                0.4              0.95
+2  2004             0                0.5              0.94
+3  2009             0.17             0.59             0.95
+4  2014             0.19             0.56             0.93
+5  2019             0.18             0.57             0.93
+6  2024             0.12             0.4              0.87</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n_distinct</span>(geocode), <span class="at">public_share =</span> <span class="fu">round</span>(<span class="fu">median</span>(public_share), <span class="dv">2</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 3
+  state_abbreviation     n public_share
+  &lt;chr&gt;              &lt;int&gt;        &lt;dbl&gt;
+1 AC                    22         0.56
+2 AM                    62         0.85
+3 AP                    16         0.5 
+4 MA                   217         0.75
+5 MT                   141         0.25
+6 PA                   144         0.56
+7 RO                    52         0.46
+8 RR                    15         0.59
+9 TO                   139         0.57</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality, state_abbreviation, biome_amazon) <span class="sc">%&gt;%</span></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">public_share =</span> <span class="fu">mean</span>(public_share), <span class="at">bonds =</span> <span class="fu">mean</span>(n_bonds), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(public_share)) <span class="sc">%&gt;%</span></span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(public_share, bonds), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 6
+   geocode municipality                 state_abbreviation biome_amazon public_share bonds
+   &lt;chr&gt;   &lt;chr&gt;                        &lt;chr&gt;                     &lt;int&gt;        &lt;dbl&gt; &lt;dbl&gt;
+ 1 2111631 São Raimundo do Doca Bezerra MA                            0         0.99  267.
+ 2 1300839 Caapiranga                   AM                            1         0.98  659.
+ 3 1200351 Marechal Thaumaturgo         AC                            1         0.97  726.
+ 4 1200427 Rodrigues Alves              AC                            1         0.97  514.
+ 5 1301951 Itamarati                    AM                            1         0.97  344 
+ 6 2102374 Cachoeira Grande             MA                            0         0.97  178.
+ 7 2109205 Presidente Juscelino         MA                            1         0.96  368.
+ 8 2110278 Santo Amaro do Maranhão      MA                            0         0.96  346.
+ 9 1503101 Gurupá                       PA                            1         0.96 1188.
+10 2101731 Belágua                      MA                            0         0.96  323.
+11 1503002 Faro                         PA                            1         0.96  408.
+12 2105104 Icatu                        MA                            1         0.95  696.
+13 2106672 Milagres do Maranhão         MA                            0         0.95  237.
+14 1703891 Carrasco Bonito              TO                            1         0.94  153 
+15 2110906 São Francisco do Maranhão    MA                            0         0.94  404.
+16 2109056 Porto Rico do Maranhão       MA                            1         0.94  213.
+17 2112456 Turilândia                   MA                            1         0.94  329.
+18 1303007 Nhamundá                     AM                            1         0.94  666.
+19 1504109 Magalhães Barata             PA                            1         0.94  341.
+20 2111722 Satubinha                    MA                            1         0.94  252.</code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Above the floor in both sectors (the file carries the floor, D-2026-11-05-c).</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>, <span class="sc">!</span><span class="fu">is.na</span>(share_le_mw100_priv), <span class="sc">!</span><span class="fu">is.na</span>(share_le_mw100)) <span class="sc">%&gt;%</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">cor_floor50 =</span> <span class="fu">cor</span>(share_le_mw100, share_le_mw100_priv),</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">median_gap =</span> <span class="fu">median</span>(share_le_mw100_priv <span class="sc">-</span> share_le_mw100))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+      n cor_floor50 median_gap
+  &lt;int&gt;       &lt;dbl&gt;      &lt;dbl&gt;
+1 12856       0.683     0.0126</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>wages <span class="sc">%&gt;%</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2020</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geocode, municipality, state_abbreviation) <span class="sc">%&gt;%</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">whole =</span> <span class="fu">mean</span>(share_le_mw100), <span class="at">private =</span> <span class="fu">mean</span>(share_le_mw100_priv, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">public_share =</span> <span class="fu">mean</span>(public_share), <span class="at">bonds_priv =</span> <span class="fu">mean</span>(n_bonds_priv), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gap =</span> private <span class="sc">-</span> whole) <span class="sc">%&gt;%</span></span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="fu">abs</span>(gap))) <span class="sc">%&gt;%</span></span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(whole, private, public_share, gap, bonds_priv), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">20</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 8
+   geocode municipality                 state_abbreviation whole private public_share bonds_priv   gap
+   &lt;chr&gt;   &lt;chr&gt;                        &lt;chr&gt;              &lt;dbl&gt;   &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;
+ 1 2106409 Mata Roma                    MA                  0.56    0.14         0.85      124.  -0.42
+ 2 2110401 São Benedito do Rio Preto    MA                  0.51    0.14         0.86       49.9 -0.37
+ 3 2107407 Olho d&#39;Água das Cunhãs       MA                  0.72    0.42         0.79      157   -0.3 
+ 4 2105005 Humberto de Campos           MA                  0.39    0.69         0.55      226.   0.29
+ 5 1720804 Sítio Novo do Tocantins      TO                  0.44    0.16         0.8        93.9 -0.28
+ 6 1503101 Gurupá                       PA                  0.05    0.32         0.96       34.8  0.27
+ 7 2110302 Santo Antônio dos Lopes      MA                  0.48    0.21         0.7       288.  -0.26
+ 8 2106607 Matões                       MA                  0.14    0.38         0.88      137.   0.24
+ 9 2106755 Miranda do Norte             MA                  0.55    0.32         0.66      298.  -0.24
+10 1505205 Oeiras do Pará               PA                  0.07    0.3          0.92       35.6  0.23
+11 2110005 Santa Luzia                  MA                  0.15    0.38         0.67      833.   0.23
+12 1200302 Feijó                        AC                  0.13    0.35         0.64      487.   0.22
+13 2112704 Vargem Grande                MA                  0.27    0.48         0.71      499.   0.22
+14 2104107 Fortaleza dos Nogueiras      MA                  0.58    0.37         0.74      175.  -0.21
+15 2111409 São Luís Gonzaga do Maranhão MA                  0.45    0.24         0.79      125.  -0.2 
+16 1300508 Barreirinha                  AM                  0.18    0.37         0.93       59.4  0.19
+17 1300607 Benjamin Constant            AM                  0.1     0.3          0.81      192.   0.19
+18 1720200 São Miguel do Tocantins      TO                  0.38    0.19         0.74      120.  -0.19
+19 1721109 Tocantínia                   TO                  0.33    0.14         0.67      111.  -0.19
+20 2108702 Pio XII                      MA                  0.55    0.36         0.79      223.  -0.19</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dbDisconnect</span>(con, <span class="at">shutdown =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p><strong>Finding.</strong> The median municipality-year has half of its formal bonds in public administration (0.40 in 1999, 0.50 to 0.59 in 2004-2019, 0.40 in 2024) and the top tenth above 93 percent; the 2000-2020 median is 0.85 in Amazonas and 0.75 in Maranhão, 0.46 to 0.59 in the other states and 0.25 in Mato Grosso. The twenty municipalities at the top of the list, with 94 to 99 percent of 150 to 1,200 bonds in the public sector, are small interior municipalities of Maranhão, Amazonas, Acre, Pará and Tocantins where the prefeitura and the state are nearly the only formal employers, the case the brief describes. Across the municipality-years of 2000-2020 above the floor in both sectors the whole-sector and private-sector low-wage shares correlate at 0.68 with a median gap of one point; the widest gaps in the municipality averages, in both directions, are municipalities of Maranhão, Tocantins and Pará with public shares of 0.55 to 0.96 and private sectors of a few dozen to a few hundred bonds, so a whole-sector share there describes public payroll and the private variant rests on a thin base. <strong>Decision.</strong> None here: the private variants of the existing employment variables (task 3.B step 3) are built when <code>02-social-rais.R</code> is re-pointed at the snapshot, with the same flag. <strong>Assertion.</strong> None.</p>
 </section>
 
 </main>
