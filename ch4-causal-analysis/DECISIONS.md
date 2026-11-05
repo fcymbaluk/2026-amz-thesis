@@ -2837,3 +2837,68 @@ Reason: two parts, decided by the author 2026-10-31. (1) Dedupe,
 Evidence: _audit/tse.qmd Q2 and Q6 (2026-10-31 render after the fix); comparator of scripts 03 to 06 against the post-tie-break outputs: elec_enc, elec_mov and elec_winner_share in 144 cells each (36 municipalities, 2001-2008), elec_competitive 60 (15 elections flip), elec_winner_id 44 (11 elections), elec_winner_party 36 (9 elections), elec_n_candidates 36 (the 9 different-party pairs), no other column, no schema change, panel_amz_baseline identical
 Affects: the electoral block of the 36 elections over their governing years: 144 municipality-years of 36 municipalities, 26 in the biome; the ENC moves by up to 1.0 (median -0.08), the winner's share by up to 0.24, the margin by up to 0.43, with 15 competitive flags flipped (eight to 0, seven to 1) and 11 winners changed (the nine declared winners above plus the id of Chaves and Zé Doca 2004, same party); nothing outside 2001-2008
 Supersedes: none (takes up the dedupe D-2026-10-10-c deferred; the ballot-order tie-break of phase 1 was already replaced by D-2026-10-31-c)
+
+## D-2026-11-04-a  RAIS: extraction rebuilt on the current Base dos Dados version with sector, legal nature and the December wage; 1999-2022 reproduce exactly, 2023-2024 move with the source
+
+Status: open (extraction, regression check and export done 2026-11-04;
+        closes when 02-social-rais.R reads the new extraction, task 3.B)
+Scope: BigQuery social_employment_2.rais_vinculos_deflat_v2 (new dataset;
+       social_employment_1 read only), _scripts/sql/2026-11-04-rais-query1-v2.sql,
+       _data/raw/rais/rais_vinculos_v2/ (Parquet snapshot, 252 shards),
+       later 02-social-rais.R and every emp_* column of the stage 10 panel
+Context: the RAIS brief (rebuild/upstream-reform-rais.md) reopens Query 1
+         so the vínculo-level table carries CNAE 1.0 and 2.0, the legal
+         nature and the December wage, under a regression rule: Query 2
+         rerun unchanged on the rebuilt table must reproduce
+         _data/raw/rais/export_table_v4.csv exactly. Base dos Dados
+         recreated microdados_vinculos on 2026-05-28 (BigQuery
+         lastModifiedTime 1780009150642), after the 2025-11-25 extraction
+         that export_table_v4 summarises, and the earlier version is no
+         longer served. With the original Query 1 filter the source now
+         returns the same row count as the old table in every year
+         1999-2022 and more rows in 2023 (+244,689, +5.4 percent) and 2024
+         (+1,445,533, +41.0 percent, between +25.7 percent in MT and +86.3
+         percent in RR, every state): the 2024 slice of the old extraction
+         was a partial release and 2023 was revised. The brief's three
+         route decisions (bucket, local path, national pass) also had to
+         be fixed against the project as it exists.
+Reason: decided by the author 2026-11-04. (1) The rebuilt extraction
+        adopts the current Base dos Dados version for old and new
+        variables alike, one source for the whole block: the regression
+        rule holds exactly for 1999-2022 (157,897 cells of the Query 2
+        aggregate identical, none on one side only) and the 2023-2024
+        differences are quantified here and carried as a source-version
+        change when script 02 is re-pointed, as the phase 1 gate treated
+        re-acquired sources; both years lie outside the 2000-2020
+        analysis window and inside the stage 10 panel. Keeping the old
+        2023-2024 values for the existing variables was rejected (two
+        source versions in one block). (2) Query 1 version 2 is the
+        original text with an explicit 1999-2024 filter and the five
+        columns carried through; it builds no flag, so the public-sector
+        and sector definitions of tasks 3.B and 3.C are made locally on
+        the snapshot after the code lists are inspected, reversible
+        without a new extraction. (3) The export goes to the existing
+        bucket gs://amz-data-dissertation-social/ under rais_v2/ (no new
+        cloud resource) and the local snapshot to
+        _data/raw/rais/rais_vinculos_v2/ per docs/bigquery.md and the repo
+        conventions, superseding the brief's _data/rais_parquet/; the
+        national reference pass of task 3.C (66.7 GB in one query, above
+        the brief's 50 GB stop line) runs split by year blocks when its
+        turn comes. The brief carries these as dated amendments.
+Evidence: _scripts/sql/2026-11-04-rais-query1-v2.sql (pre-flights A-B,
+          the regression comparison, probes C-F, every dry-run byte count;
+          day total 36.44 GB); the cell-by-cell comparison of the Query 2
+          rerun against export_table_v4.csv: 2023 3,612 cells differ, 6
+          only old, 42 only new, 742 municipalities; 2024 5,382 differ, 4
+          only old, 296 only new, all 808 municipalities
+Affects: no panel cell yet. When script 02 reads the snapshot: every
+         emp_* column in 2023 (742 municipalities) and 2024 (all), the
+         counts lab_emp_formal_n and lab_emp_formal_agri_n included,
+         nothing in 1999-2022; Boa Esperança do Norte (5101837) appears as
+         an 809th geocode in 2023-2024 (1,074 bonds), to be handled by the
+         installation rule and the N_RAIS_MUNIC_EXPECTED assertion at that
+         step; natureza_juridica is empty in 4-5 percent of 2022-2024 rows
+         and the December wage null in 5 percent of 2023-2024 rows, so the
+         public-sector flag and any December-wage statistic need a missing
+         rule in tasks 3.A-3.B
+Supersedes: none
