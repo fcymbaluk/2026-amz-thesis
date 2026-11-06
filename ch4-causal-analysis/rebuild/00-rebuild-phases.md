@@ -119,9 +119,9 @@ After phase 2, the rename and the RAIS merge, the analysis scripts (`08-data-ana
 
 ## Phase 3. Documentation from the final state
 
-Goal: the annex, codebook and README describe the dataset that exists.
+Goal: the annex, codebook and README describe the datasets that exist: the final panel and the labor-market dataset of the RAIS track (`docs/decisions/2026-11-05-labor-market-variables-in-a-separate-final-dataset.md`).
 
-1. `codebook.csv` is completed for every variable in the final panel. The annex codebook table is rendered from this file.
+1. `codebook.csv` is completed for every variable of the final panel and of the labor-market dataset, the `dataset` column saying which. The annex codebook table is rendered from this file.
 2. The annex is written per variable following `03-annex-variable-template.md`, in the section order: sample, outcome, treatment, moderators, covariates, codebook, provenance. The parked prose from phase 1 is the raw material, not the text.
 3. `README.md` is written: layout, run order, provenance table, how to reproduce.
 

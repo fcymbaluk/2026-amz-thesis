@@ -43,4 +43,5 @@ the author's approval: `rebuild/00-rebuild-phases.md` (phase 3 outputs),
 `docs/execution-path.md` stage 10 ("Done when" line),
 `docs/repo-conventions.md` (final datasets: one example of a second
 content-first final dataset), `rebuild/naming-convention.md` (public and
-private tokens for the sector slot). None is applied until approved.
+private tokens for the sector slot). Approved and applied 2026-11-05
+(branch guidance-labor-dataset).
