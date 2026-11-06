@@ -67,6 +67,8 @@ Design rationale: the theory distinguishes policy instruments (`enf_`, `sop_`) f
 | `transf` | transfers (monetary) |
 | `emp` | employment |
 | `formal` | formal sector (RAIS) |
+| `public` | public sector (RAIS, natureza jurídica 1xxx; D-2026-11-05-a) |
+| `private` | private sector (RAIS, the complement of `public`) |
 | `informal` | informality |
 | `agri` | agricultural sector |
 | `lowwage`, `midwage`, `highwage` | wage brackets anchored to the 2024 real minimum wage (R\$1,412) |

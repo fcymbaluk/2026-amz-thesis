@@ -113,7 +113,7 @@ Master tracker, above the per-chapter checklists: this file orders the stages; t
 - [ ] Analysis scripts rerun (`08-data-analysis-2WFE-CS.R` at minimum); new stratum ATTs known.
 - [ ] The single annex written from the final state per `rebuild/03-annex-variable-template.md` (H3 section-order amendment decided here). The sample section waits on task 5.2 (gate rationale and main sample).
 - [ ] Codebook §6 and provenance §7 rendered; chapter README written.
-- [ ] Done when `panel_amz_2000_2024_final` exists and is fully documented.
+- [ ] Done when `panel_amz_2000_2024_final` and the labor-market dataset of the RAIS track exist and are fully documented (memo of 2026-11-05).
 
 ## Stage 11 — Descriptive stage
 
