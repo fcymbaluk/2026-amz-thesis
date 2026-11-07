@@ -33,6 +33,16 @@ DuckDB through `_scripts/utils/rais_snapshot.R`. Minimum wage:
 Pipeline script: `_scripts/02-social-rais-wages.R`. Interim output:
 `_data/interim/rais_wage_distribution_1999_2024.rds`.
 
+Task 3.C (Q10 onward, 2026-11-06). Sections: the Base dos Dados
+directories `_data/raw/cnae/cnae_1.csv` and `cnae_2.csv`
+(`br_bd_diretorios_brasil`). National reference: own BigQuery pass over
+all Brazil, `_data/raw/rais/rais_sector_national.csv`
+(`social_employment_2.rais_sector_national`, 2026-11-06,
+`_scripts/sql/2026-11-06-rais-sector-national.sql`). Pipeline script:
+`_scripts/02-social-rais-sector.R`. Interim outputs:
+`_data/interim/rais_sector_1999_2024.rds` and
+`_data/interim/rais_sector_national_1999_2024.rds`.
+
 ```{r setup}
 #| include: false
 knitr::opts_knit$set(root.dir = normalizePath(".."))
@@ -634,3 +644,278 @@ payroll and the private variant rests on a thin base.
 variables (task 3.B step 3) are built when `02-social-rais.R` is
 re-pointed at the snapshot, with the same flag.
 **Assertion.** None.
+
+## Q10. Which CNAE codes does the snapshot carry, and which sections match across the 2006 break? (task 3.C, 2026-11-06)
+
+What is checked: the length and directory coverage of the CNAE 1.0 and
+CNAE 2.0 class codes by year, at the class and at the division level;
+what the codes that fall in no section are, and how they spread across
+municipalities; on the bonds of 2006-2021 that carry both codes, how the
+sections of one version map into the other, and the exactness of the
+harmonized groups of `RAIS_SECTION_GROUPS` in both directions, against the
+alternative that splits transport out of the residual.
+
+```{r q10-coverage}
+source("_scripts/utils/rais_snapshot.R")
+con <- rais_snapshot_connect()
+dir1 <- read_csv("_data/raw/cnae/cnae_1.csv", col_types = cols(.default = col_character()))
+dir2 <- read_csv("_data/raw/cnae/cnae_2.csv", col_types = cols(.default = col_character()))
+lookup <- rais_section_lookup(dir1, dir2)
+duckdb::duckdb_register(con, "lk", lookup %>% rename(grp = group))
+duckdb::duckdb_register(con, "cls1", dir1 %>% distinct(cnae_1))
+duckdb::duckdb_register(con, "cls2", dir2 %>% distinct(classe))
+coverage <- dbGetQuery(con, sprintf("
+  SELECT CAST(r.ano AS INTEGER) AS year, COUNT(*) AS bonds,
+    SUM(CASE WHEN r.cnae_1 IS NULL OR LENGTH(TRIM(r.cnae_1)) <> 5 THEN 1 ELSE 0 END) AS odd_1,
+    SUM(CASE WHEN c1.cnae_1 IS NULL THEN 1 ELSE 0 END) AS no_class_1,
+    SUM(CASE WHEN l1.section IS NULL THEN 1 ELSE 0 END) AS no_section_1,
+    SUM(CASE WHEN r.ano >= 2006 AND c2.classe IS NULL THEN 1 ELSE 0 END) AS no_class_2,
+    SUM(CASE WHEN r.ano >= 2006 AND l2.section IS NULL THEN 1 ELSE 0 END) AS no_section_2,
+    STRING_AGG(DISTINCT CASE WHEN l1.section IS NULL THEN TRIM(r.cnae_1) END, ' ') AS codes_1,
+    STRING_AGG(DISTINCT CASE WHEN r.ano >= 2006 AND l2.section IS NULL THEN TRIM(r.cnae_2) END, ' ') AS codes_2
+  FROM rais AS r
+  LEFT JOIN cls1 AS c1 ON c1.cnae_1 = LPAD(TRIM(r.cnae_1), 5, '0')
+  LEFT JOIN cls2 AS c2 ON c2.classe = LPAD(TRIM(r.cnae_2), 5, '0')
+  LEFT JOIN lk AS l1 ON l1.version = 1 AND l1.division = %s
+  LEFT JOIN lk AS l2 ON l2.version = 2 AND l2.division = %s
+  GROUP BY 1 ORDER BY 1", rais_division_sql("r.cnae_1"), rais_division_sql("r.cnae_2"))) %>%
+  as_tibble()
+coverage %>%
+  mutate(pct_no_section_1 = round(100 * no_section_1 / bonds, 2),
+         pct_no_section_2 = round(100 * no_section_2 / bonds, 2)) %>%
+  select(year, bonds, odd_1, no_class_1, no_section_1, pct_no_section_1,
+         no_class_2, no_section_2, pct_no_section_2, codes_1, codes_2) %>%
+  print(n = 30)
+# What the rows without a section in one version are under the other.
+dbGetQuery(con, sprintf("
+  SELECT CAST(r.ano AS INTEGER) AS year, 'cnae_1 placeholder' AS which,
+         l2.section AS other_section, COUNT(*) AS bonds
+  FROM rais AS r
+  LEFT JOIN lk AS l1 ON l1.version = 1 AND l1.division = %1$s
+  LEFT JOIN lk AS l2 ON l2.version = 2 AND l2.division = %2$s
+  WHERE l1.section IS NULL AND r.ano >= 2006
+  GROUP BY 1, 2, 3
+  UNION ALL
+  SELECT CAST(r.ano AS INTEGER), 'cnae_2 placeholder', l1.section, COUNT(*)
+  FROM rais AS r
+  LEFT JOIN lk AS l1 ON l1.version = 1 AND l1.division = %1$s
+  LEFT JOIN lk AS l2 ON l2.version = 2 AND l2.division = %2$s
+  WHERE l2.section IS NULL AND r.ano >= 2006
+  GROUP BY 1, 2, 3
+  ORDER BY 2, 1, bonds DESC", rais_division_sql("r.cnae_1"), rais_division_sql("r.cnae_2"))) %>%
+  as_tibble() %>%
+  group_by(year, which) %>%
+  slice_head(n = 3) %>%
+  ungroup() %>%
+  print(n = 40)
+# The municipal spread of the CNAE 1.0 placeholders, 2022-2024.
+dbGetQuery(con, sprintf("
+  SELECT year, ROUND(quantile_cont(ph, 0.5), 3) AS p50,
+         ROUND(quantile_cont(ph, 0.9), 3) AS p90, ROUND(MAX(ph), 3) AS max,
+         SUM(CASE WHEN ph > 0.2 THEN 1 ELSE 0 END) AS munic_over_20pct
+  FROM (SELECT CAST(r.ano AS INTEGER) AS year, r.id_municipio,
+          AVG(CASE WHEN l1.section IS NULL THEN 1.0 ELSE 0 END) AS ph
+        FROM rais AS r
+        LEFT JOIN lk AS l1 ON l1.version = 1 AND l1.division = %s
+        WHERE r.ano >= 2022 GROUP BY 1, 2)
+  GROUP BY 1 ORDER BY 1", rais_division_sql("r.cnae_1")))
+```
+
+```{r q10-harmonization}
+crosstab <- dbGetQuery(con, sprintf("
+  SELECT l1.section AS sec1, l2.section AS sec2, COUNT(*) AS bonds
+  FROM rais AS r
+  JOIN lk AS l1 ON l1.version = 1 AND l1.division = %s
+  JOIN lk AS l2 ON l2.version = 2 AND l2.division = %s
+  WHERE r.ano BETWEEN 2006 AND 2021
+  GROUP BY 1, 2", rais_division_sql("r.cnae_1"), rais_division_sql("r.cnae_2"))) %>%
+  as_tibble()
+# Where each CNAE 1.0 section goes in CNAE 2.0, and the reverse.
+crosstab %>%
+  group_by(sec1) %>%
+  mutate(share = bonds / sum(bonds), n = sum(bonds)) %>%
+  arrange(desc(share)) %>%
+  summarise(bonds = first(n),
+            to_cnae2 = paste(sprintf("%s %.3f", sec2, share)[1:3], collapse = ", "),
+            .groups = "drop")
+crosstab %>%
+  group_by(sec2) %>%
+  mutate(share = bonds / sum(bonds), n = sum(bonds)) %>%
+  arrange(desc(share)) %>%
+  summarise(bonds = first(n),
+            from_cnae1 = paste(sprintf("%s %.3f", sec1, share)[1:3], collapse = ", "),
+            .groups = "drop")
+# Exactness of a grouping in both directions.
+exactness <- function(groups) {
+  g1 <- groups %>% select(group, section = cnae1) %>% separate_rows(section, sep = ",")
+  g2 <- groups %>% select(group, section = cnae2) %>% separate_rows(section, sep = ",")
+  crosstab %>%
+    left_join(g1, by = c("sec1" = "section")) %>%
+    left_join(g2, by = c("sec2" = "section"), suffix = c("_1", "_2")) %>%
+    group_by(group_1) %>% mutate(n1 = sum(bonds)) %>%
+    group_by(group_2) %>% mutate(n2 = sum(bonds)) %>%
+    ungroup() %>%
+    filter(group_1 == group_2) %>%
+    group_by(group = group_1) %>%
+    summarise(bonds_cnae1 = first(n1), to_cnae2 = round(sum(bonds) / first(n1), 3),
+              bonds_cnae2 = first(n2), from_cnae2 = round(sum(bonds) / first(n2), 3),
+              .groups = "drop") %>%
+    arrange(match(group, groups$group))
+}
+exactness(RAIS_SECTION_GROUPS)
+transport_split <- RAIS_SECTION_GROUPS %>%
+  mutate(cnae1 = if_else(group == "res", "E,K,O", cnae1),
+         cnae2 = if_else(group == "res", "D,E,J,L,M,N,R,S", cnae2)) %>%
+  add_row(group = "trn", label = "transport", cnae1 = "I", cnae2 = "H")
+exactness(transport_split) %>% filter(group %in% c("trn", "res"))
+dbDisconnect(con, shutdown = TRUE)
+```
+
+**Finding.** CNAE 1.0 is a five-character class in every year and
+CNAE 2.0 from 2006, but neither is a clean series on its own. In 2022 the
+source fills 6.7 percent of bonds with the code 00999 and in 2023-2024
+5.8 to 6.0 percent with 9999; these rows are agriculture under CNAE 2.0
+(86 percent in 2022, 99.5 percent after), and at the municipal level the
+placeholder share is 9 to 11 percent at the median, above 40 percent at
+the ninth decile and above 20 percent in 232 to 271 municipalities a
+year, so a series on CNAE 1.0 alone would lose two thirds of agriculture
+from 2022. CNAE 2.0 carries the placeholder 00000 in 1.3, 2.5 and 0.9
+percent of 2006-2008, mostly public administration under CNAE 1.0, and
+nothing after. At the class level 4.6 percent of 1999-2001 miss the
+directory (codes of the pre-2002 revision); at the division level every
+valid code of every year maps, and only ten null rows of 1999 remain.
+On the 61.3 million bonds of 2006-2021 that carry both codes, twelve
+section pairs match at 0.96 or better in both directions (agriculture
+with fishing, extractive, manufacturing, construction, trade,
+accommodation and food, finance, public administration, education,
+health, domestic services, international bodies) and the residual that
+pools the remaining sections matches at 0.98; transport split out of it
+would match at 0.92 one way, since telecommunications moved to
+information and communication.
+**Decision.** D-2026-11-06-a: sections by division through the
+directories; the thirteen harmonized groups of `RAIS_SECTION_GROUPS`,
+the CNAE 2.0 code first and the CNAE 1.0 code as fallback; a bond
+mapping in neither version is counted under `unk`. Approved by the
+author 2026-11-06.
+**Assertion.** `02-social-rais-sector.R`, raw-state block (directory
+sizes, one section per division, every group present) and output block
+(the `unk` counts by block).
+
+## Q11. What do the sector files hold, and how does the establishment-based agricultural share compare with the occupation-based one? (task 3.C diagnostics)
+
+What is checked: the structure of the two interim files and the
+municipality-years below the floor in each block; the continuity of the
+harmonized shares across the 2006 break in the nine states and in
+Brazil; the share of bonds in the agriculture group against the
+CBO-based `emp_share_agri_workers` of `rais_employment_1999_2024`
+(occupation against establishment sector; the brief's step 5), and the
+private-sector variant against the whole-sector one; the median
+municipal composition in 2000-2020; the nine states against the rest of
+Brazil.
+
+```{r q11-structure}
+sector <- read_rds("_data/interim/rais_sector_1999_2024.rds")
+national <- read_rds("_data/interim/rais_sector_national_1999_2024.rds")
+sector %>%
+  group_by(classification) %>%
+  summarise(rows = n(), munic_years = n_distinct(paste(geocode, year)),
+            categories = n_distinct(section),
+            below_floor_whole = sum(is.na(share)) / categories,
+            below_floor_private = sum(is.na(share_priv)) / categories,
+            unk_bonds = sum(n_bonds[section == RAIS_SECTION_UNKNOWN]),
+            .groups = "drop")
+national %>% count(scope, classification, name = "rows")
+# Continuity across the break: harmonized shares 2004-2007.
+national %>%
+  filter(classification == "harmonized", scope %in% c("la_states", "brazil"),
+         year %in% 2004:2007, section != RAIS_SECTION_UNKNOWN) %>%
+  mutate(share = round(share, 3)) %>%
+  select(scope, section, year, share) %>%
+  pivot_wider(names_from = year, values_from = share) %>%
+  arrange(scope, desc(`2005`))
+```
+
+```{r q11-agriculture}
+emp <- read_rds("_data/interim/rais_employment_1999_2024.rds") %>%
+  select(geocode, year, emp_share_agri_workers)
+agr <- sector %>%
+  filter(classification == "harmonized", section == "agr") %>%
+  inner_join(emp, by = c("geocode", "year")) %>%
+  mutate(gap = share - emp_share_agri_workers)
+# 1999-2022: the CBO-based share still comes from the 2025-11 extraction,
+# whose 2023-2024 slices differ from the snapshot (D-2026-11-04-a).
+agr %>%
+  filter(!is.na(share), year <= 2022) %>%
+  summarise(n = n(), cor = round(cor(share, emp_share_agri_workers), 3),
+            median_sector = round(median(share), 3),
+            median_cbo = round(median(emp_share_agri_workers), 3),
+            median_gap = round(median(gap), 3))
+agr %>%
+  filter(!is.na(share)) %>%
+  group_by(year) %>%
+  summarise(cor = round(cor(share, emp_share_agri_workers), 2),
+            median_sector = round(median(share), 3),
+            median_cbo = round(median(emp_share_agri_workers), 3),
+            gap_p10 = round(quantile(gap, 0.1), 3),
+            gap_p90 = round(quantile(gap, 0.9), 3), .groups = "drop") %>%
+  filter(year %in% c(1999, 2005, 2006, 2010, 2015, 2020, 2022, 2023, 2024))
+# Whole against private agriculture share, above the floor in both.
+agr %>%
+  filter(!is.na(share), !is.na(share_priv)) %>%
+  summarise(n = n(), cor = round(cor(share, share_priv), 3),
+            median_whole = round(median(share), 3),
+            median_private = round(median(share_priv), 3))
+```
+
+```{r q11-composition}
+sector %>%
+  filter(classification == "harmonized", year %in% 2000:2020, !is.na(share)) %>%
+  group_by(section) %>%
+  summarise(median_share = round(median(share), 3),
+            p90_share = round(quantile(share, 0.9), 3),
+            public_within = round(sum(n_bonds_public) / sum(n_bonds), 3),
+            .groups = "drop") %>%
+  arrange(desc(median_share))
+national %>%
+  filter(classification == "harmonized", year %in% c(1999, 2006, 2015, 2024),
+         section %in% c("agr", "man", "tra", "pub", "res")) %>%
+  mutate(share = round(share, 3)) %>%
+  select(section, year, scope, share) %>%
+  pivot_wider(names_from = scope, values_from = share) %>%
+  arrange(section, year)
+```
+
+**Finding.** The municipal file holds 1,005,364 rows: 20,870
+municipality-years under the harmonized and the CNAE 1.0 blocks (14 and
+18 categories) and 15,342 of 2006-2024 under the CNAE 2.0 block (22),
+with the same 1,025 whole-sector and 4,655 private-sector
+municipality-years below the floor as the wage file; the national file
+holds 3,750 rows over three scopes. The harmonized shares move by at most
+one point between 2005 and 2006 in the nine states and in Brazil, within
+the year-to-year drift of the surrounding years, so the break leaves no
+step. Across the municipality-years of 1999-2022 above the floor the
+agriculture group's share and the CBO-based agricultural share correlate
+at 0.94 with a median gap of under one point, the establishment measure
+running higher (the ninth decile of the gap is 8 to 12 points: farm
+establishments employ drivers, clerks and labourers whose occupation is
+not agricultural); in 2024 the correlation falls to 0.79 because the
+occupation-based share still comes from the partial 2024 slice of the
+earlier extraction, a difference the script 02 re-point will close. The
+private-sector agriculture share correlates at 0.86 with the whole-sector
+one and runs twice as high at the median (0.21 against 0.09), the
+arithmetic of a public sector that holds half of the median
+municipality's bonds and none of its agriculture. In 2000-2020 the median
+municipality has 56 percent of its bonds in public administration
+(99 percent of them public under the legal-nature flag), 9 percent in
+trade, 7 percent in agriculture, 3 percent in the residual and 2 percent
+in manufacturing, and no bonds at all in half of the groups; the nine
+states carry a public share of 26 to 39 percent against 15 to 23 in the
+rest of Brazil, and half its manufacturing share.
+**Decision.** D-2026-11-06-b: the long, complete layout with the floor
+on the municipal shares and the three national scopes. The 2000-2003
+average and the choice of columns for the labor-market dataset wait for
+its definition at the script 02 re-point.
+**Assertion.** `02-social-rais-sector.R`, output block (grid
+completeness, the blocks summing to the snapshot, shares summing to one
+above the floor and NA below it, the nine-state scope equal to the
+municipal file cell by cell).

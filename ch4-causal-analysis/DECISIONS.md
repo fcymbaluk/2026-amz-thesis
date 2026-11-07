@@ -3009,3 +3009,90 @@ Evidence: _audit/rais.qmd Q7
 Affects: no panel cell; the interim file only (NA cells as counted in
          Scope)
 Supersedes: D-2026-11-05-b, clause (4)
+
+## D-2026-11-06-a  RAIS: CNAE sections by division through the Base dos Dados directories; thirteen harmonized groups across the 2006 break; CNAE 2.0 first, CNAE 1.0 as fallback; placeholders unknown
+
+Status: open (RAIS track, task 3.C, branch rais-3c-sector-counts,
+        2026-11-06; closes with the labor dataset definition)
+Scope: _scripts/utils/rais_snapshot.R (RAIS_SECTION_GROUPS,
+       rais_section_lookup(), rais_division_sql()); 02-social-rais-sector.R;
+       _data/raw/cnae/cnae_1.csv and cnae_2.csv (new raw source)
+Context: task C of the brief asks for counts by CNAE section harmonized
+         across the 2005/2006 break (decision 0.2: section level, a
+         crosswalk only where the match is exact), the directory tables
+         rather than hand-coded sections. The task 3.A finding that
+         cnae_1 could serve as a single series does not hold: in
+         2022-2024 the source fills 6 percent of bonds with the
+         placeholder codes 00999 and 9999, nearly all agriculture under
+         CNAE 2.0, with municipal placeholder shares of 10 percent at the
+         median and above 40 percent at the ninth decile; CNAE 2.0 has
+         its own placeholder 00000 in 1.3, 2.5 and 0.9 percent of
+         2006-2008, mostly public administration under CNAE 1.0. The
+         class codes of 1999-2001 predate the 2002 revision and 4.6
+         percent miss the directory at the class level, none at the
+         division level.
+Reason: (1) the section is read by division (the first two digits of the
+        trimmed, left-padded class), joined to the distinct
+        division-to-section pairs of each directory, so every valid code
+        of every year maps; (2) thirteen harmonized groups: the twelve
+        pairs of sections that match in both directions at 0.96 or better
+        on the 2006-2021 bonds carrying both codes (agriculture with
+        fishing, extractive, manufacturing, construction, trade,
+        accommodation and food, finance, public administration,
+        education, health, domestic services, international bodies) and
+        one residual pooling CNAE 1.0 E, I, K, O with CNAE 2.0 D, E, H, J,
+        L, M, N, R, S (0.98 both ways), the sections whose boundaries
+        moved; transport alone would match at 0.92 one way (telecom moved
+        to information) and is not split out; (3) each bond takes the
+        group of its CNAE 2.0 code where that code maps, else of its
+        CNAE 1.0 code, which classifies 1999-2005 by CNAE 1.0, 2006-2024
+        by CNAE 2.0, and the placeholder rows of either version by the
+        other; (4) a bond mapping in neither version takes the code "unk"
+        and stays in the counts (ten null rows of 1999 under the
+        harmonized rule; the placeholders under the native rules).
+        The author approved the grouping and the threshold 2026-11-06.
+Evidence: _audit/rais.qmd Q10 (code lengths and placeholders by year,
+          division match against the directories, the exactness of each
+          group in both directions, the transport alternative)
+Affects: no panel cell; the two new interim files only
+Supersedes: none (the 3.A finding on cnae_1 was a note, not a decision)
+
+## D-2026-11-06-b  RAIS: sector files long and complete; floor on the municipal shares; national reference series by state from one BigQuery pass, three scopes
+
+Status: open (RAIS track, task 3.C, branch rais-3c-sector-counts,
+        2026-11-06; closes with the labor dataset definition)
+Scope: 02-social-rais-sector.R; _data/interim/rais_sector_1999_2024
+       (1,005,364 rows: 20,870 municipality-years under the harmonized and
+       the CNAE 1.0 blocks, 15,342 of 2006-2024 under the CNAE 2.0 block,
+       14, 18 and 22 categories); _data/interim/rais_sector_national_1999_2024
+       (3 scopes, 26 years, the same blocks, 3,750 rows);
+       _data/raw/rais/rais_sector_national.csv (new raw file);
+       social_employment_2.rais_sector_national
+Context: the memo of 2026-11-05 stores the sector counts long; the brief
+         asks for shares, a flag below the reliability floor, and national
+         and Legal-Amazon-excluded reference series; the author approved
+         the three-block layout and the national pass 2026-11-06.
+Reason: (1) one row per unit, year, classification (harmonized, cnae1,
+        cnae2) and section, with n_bonds, n_bonds_public (D-2026-11-05-a),
+        n_bonds_priv, share and share_priv; the grid is complete over the
+        categories of each block, including "unk", so a section absent
+        from an observed municipality-year is a zero, not a missing row
+        (consistent with D-2026-10-28-b); (2) the municipal shares are NA
+        where the count of the sector described is below 50
+        (D-2026-11-05-c: n_bonds of the municipality-year for share,
+        n_bonds_priv for share_priv), the counts kept; (3) the 2000-2003
+        average of the brief's step 2 is not built here, it is a baseline
+        summary for the store's _bl0003 grammar at the labor dataset
+        definition; (4) the national series come from one BigQuery pass
+        over all Brazil grouped by year, state, CNAE 1.0 class, CNAE 2.0
+        class and the public flag, with the bond filter of Query 1, run in
+        two year blocks under the 50 GB line (66.7 GB in all) and mapped
+        locally with the same lookup as the municipal series, so the two
+        agree by construction; three scopes, brazil, brazil_excl_la and
+        la_states, no floor; the state code IGNORADO (12,662 bonds) is
+        inside the Brazil scopes and outside the nine states; (5) the
+        la_states scope equals the municipal file summed by year and
+        section in every cell, which the script asserts.
+Evidence: _audit/rais.qmd Q10-Q11; _scripts/sql/2026-11-06-rais-sector-national.sql
+Affects: no panel cell; the two new interim files only
+Supersedes: none
